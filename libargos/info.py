@@ -11,9 +11,10 @@ PACKAGE_NAME = "libargos"
 PROJECT_NAME = "Argos"
 SHORT_DESCRIPTION = ""
 PROJECT_URL = "https://github.com/titusjan/argos"
-AUTOR = ""
+AUTOR = "Pepijn Kenter"
 EMAIL = "titusjan@gmail.com"
-
+ORGANIZATION_NAME = "titusjan"
+ORGANIZATION_DOMAIN = "titusjan"
 
 def program_directory():
     """ Returns the program directory where this program is installed

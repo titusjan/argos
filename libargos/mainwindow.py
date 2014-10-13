@@ -44,7 +44,7 @@ def browse(fileName = None, **kwargs):
 
 
 class MainWindow(QtGui.QMainWindow):
-    """ pepyeye main application window.
+    """ Main application window.
     """
     _nInstances = 0
     

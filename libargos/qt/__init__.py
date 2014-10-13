@@ -20,11 +20,11 @@ else:
     from PySide import QtCore, QtGui
     from PySide.QtCore import Qt
 
-from . import info
 
 import sys, logging
-#from .info import REPO_NAME, VERSION
-from .utils import check_class
+
+from .. import info
+from ..utils import check_class
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +39,8 @@ def getQApplicationInstance():
     
     app.setApplicationName(info.REPO_NAME)
     app.setApplicationVersion(info.VERSION)
-    app.setOrganizationName("titusjan")
-    app.setOrganizationDomain("titusjan.nl")    
+    app.setOrganizationName(info.ORGANIZATION_NAME)
+    app.setOrganizationDomain(info.ORGANIZATION_DOMAIN)    
     
     return app
 
