@@ -1,5 +1,20 @@
 # -*- coding: utf-8 -*-
 
+# This file is part of Argos.
+# 
+# Argos is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# Argos is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with Argos.  If not, see <http://www.gnu.org/licenses/>.
+
 """ 
     Main window functionality
 """
@@ -11,6 +26,7 @@ import logging, platform
 
 from .info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
 from .qt import executeApplication, Qt, QtCore, QtGui, USE_PYQT
+from .qt.togglecolumn import ToggleColumnTreeView
 
 
 logger = logging.getLogger(__name__)
@@ -111,10 +127,10 @@ class MainWindow(QtGui.QMainWindow):
         centralLayout = QtGui.QVBoxLayout()
         self.mainSplitter.setLayout(centralLayout)
         
-        self.label1 = QtGui.QLabel("Hello", parent=self)
-        centralLayout.addWidget(self.label1)        
+        self.treeView = ToggleColumnTreeView(self)
+        centralLayout.addWidget(self.treeView)        
         
-        self.label2 = QtGui.QLabel("World", parent=self)
+        self.label2 = QtGui.QLabel("Hi there", parent=self)
         centralLayout.addWidget(self.label2)        
         
         # Connect signals
