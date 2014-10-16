@@ -13,13 +13,26 @@
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along with Argos.  If not, see <http://www.gnu.org/licenses/>.
+# along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
 """ Routines that do type checking or create classes
 """
-import logging
+import logging, sys
 
 logger = logging.getLogger(__name__)
+    
+    
+def python_major_version():
+    """ Returns 2 or 3 for Python 2.x or 3.x respectively
+    """
+    return sys.version_info[0]
+
+def python2():
+    """ Returns True if we are running python 2
+    """
+    major_version = sys.version_info[0]
+    assert major_version == 2 or major_version == 3, "major_version = {!r}".format(major_version)
+    return major_version == 2
     
 
 def remove_process_serial_number(arg_list):
@@ -32,6 +45,20 @@ def remove_process_serial_number(arg_list):
     """
     return [arg for arg in arg_list if not arg.startswith("-psn_0_")]
     
+
+def is_a_string(var):
+    """ Returns True if var is a string (regular or unicode)
+
+        :param var: variable of which we want to know if it is a string
+        :type var: any type
+        :returns: True if var is of type string
+        :rtype: Boolean
+    """
+    if python2():
+        return isinstance(var, basestring)
+    else:
+        return isinstance(var, str)
+
 
 def check_class(obj, target_class, allow_none = False):
     """ Checks that the  obj is a (sub)type of target_class. 
