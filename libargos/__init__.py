@@ -13,13 +13,12 @@
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along with Argos.  If not, see <http://www.gnu.org/licenses/>.
+# along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
 """ Functionality for Argos
 
     This is the top level module and should not be imported by sub modules.
     The only way is up in that respect.
 """
-
 
 from .info import VERSION as __version__

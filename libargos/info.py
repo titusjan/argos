@@ -13,9 +13,9 @@
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along with Argos.  If not, see <http://www.gnu.org/licenses/>.
+# along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Version info for this program
+""" Version and other info for this program
 """
 import os
 
@@ -26,7 +26,7 @@ REPO_NAME = "argos"
 SCRIPT_NAME = "argos"
 PACKAGE_NAME = "libargos"
 PROJECT_NAME = "Argos"
-SHORT_DESCRIPTION = ""
+SHORT_DESCRIPTION = "Argos Panoptes HDF/NCDF/array data inspector."
 PROJECT_URL = "https://github.com/titusjan/argos"
 AUTOR = "Pepijn Kenter"
 EMAIL = "titusjan@gmail.com"

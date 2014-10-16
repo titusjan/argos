@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along with Argos.  If not, see <http://www.gnu.org/licenses/>.
+# along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
 """ Qt specific stuff, which is not specific to this project.
 """
@@ -24,8 +24,13 @@ USE_PYQT = True # Use PySide if False
 if USE_PYQT:
     # This is only needed for Python v2 but is harmless for Python v3.
     import sip
-    sip.setapi('QVariant', 2)
+    sip.setapi('QDate', 2)
+    sip.setapi('QDateTime', 2)
     sip.setapi('QString', 2)
+    sip.setapi('QTextStream', 2)
+    sip.setapi('QTime', 2)
+    sip.setapi('QUrl', 2)
+    sip.setapi('QVariant', 2)
     
 
 if USE_PYQT:
