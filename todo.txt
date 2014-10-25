@@ -7,3 +7,8 @@ https://datamarket.com/data/set/1cfl/total-population#!ds=1cfl!r3d=55.66.l.6d&di
 
 http://www.gdngeoservices.nl/wms/dinomap/M11M0802
 
+
+
+    niet meer rootItem terug als index invalid 
+    DeleteChild
+

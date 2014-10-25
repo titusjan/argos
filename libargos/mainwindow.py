@@ -13,10 +13,11 @@
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along with Argos.  If not, see <http://www.gnu.org/licenses/>.
+# along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
 """ 
     Main window functionality
+
 """
 from __future__ import absolute_import
 from __future__ import print_function
@@ -24,9 +25,10 @@ from __future__ import division
 
 import logging, platform
 
-from .info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
-from .qt import executeApplication, Qt, QtCore, QtGui, USE_PYQT
-from .qt.togglecolumn import ToggleColumnTreeView
+from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
+from libargos.qt import executeApplication, Qt, QtCore, QtGui, USE_PYQT
+from libargos.qt.togglecolumn import ToggleColumnTreeView
+from libargos.selector.repository import RepositoryTreeModel
 
 
 logger = logging.getLogger(__name__)
@@ -74,7 +76,8 @@ class MainWindow(QtGui.QMainWindow):
         self._InstanceNr = self._nInstances        
         
         # Model
-        pass
+        self.model = RepositoryTreeModel(self)
+        self.__addTestData()
     
         # Views
         self.__setupActions()
@@ -85,14 +88,18 @@ class MainWindow(QtGui.QMainWindow):
         app.lastWindowClosed.connect(app.quit) 
 
         self._readViewSettings(reset = reset)
-            
+        
+        # Connect signals and slots 
+        self.insertChildAction.triggered.connect(self.insertChild)
+        
         logger.debug("MainWindow constructor finished")
      
 
     def __setupActions(self):
         """ Creates the main window actions.
         """
-        pass
+        self.insertChildAction = QtGui.QAction("Insert Child", self)
+        self.insertChildAction.setShortcut("Ctrl+N")           
                   
                               
     def __setupMenu(self):
@@ -111,6 +118,9 @@ class MainWindow(QtGui.QMainWindow):
             fileMenu.addSeparator()
             fileMenu.addAction("&Test", self.myTest, "Ctrl+T")
         
+        actionsMenu = menuBar.addMenu("&Actions")
+        actionsMenu.addAction(self.insertChildAction)
+                
         menuBar.addSeparator()
         help_menu = menuBar.addMenu("&Help")
         help_menu.addAction('&About', self.about)
@@ -128,6 +138,12 @@ class MainWindow(QtGui.QMainWindow):
         self.mainSplitter.setLayout(centralLayout)
         
         self.treeView = ToggleColumnTreeView(self)
+        self.treeView.setModel(self.model)
+        self.treeView.setAlternatingRowColors(True)
+        self.treeView.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
+        self.treeView.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.treeView.setAnimated(True)
+        self.treeView.setAllColumnsShowFocus(True)        
         centralLayout.addWidget(self.treeView)        
         
         self.label2 = QtGui.QLabel("Hi there", parent=self)
@@ -215,6 +231,31 @@ class MainWindow(QtGui.QMainWindow):
         settings.endGroup()
             
 
+    def __addTestData(self):
+        """ Temporary function to add test data
+        """
+        self.model.addScalar("six", 6)
+        self.model.addScalar("seven", 7)
+
+        
+    def insertChild(self):
+        """ Temporary test method
+        """
+        import random
+        curIndex = self.treeView.selectionModel().currentIndex()
+        row = curIndex.row()
+        col0Index = curIndex.sibling(row, 0)
+        
+        model = self.treeView.model()
+        value = random.randint(0, 99)
+        newChildItem = model.addScalar("new child", value, position=None, parentIndex=col0Index)
+        
+        self.treeView.selectionModel().setCurrentIndex(model.index(0, 0, col0Index),
+                                                       QtGui.QItemSelectionModel.ClearAndSelect)
+        logger.debug("Added child: {} under {}".format(newChildItem, newChildItem.parentItem))
+        #self.updateActions() # TODO: needed?        
+        
+
     def myTest(self):
         """ Function for testing """
         logger.debug("myTest")
@@ -222,7 +263,7 @@ class MainWindow(QtGui.QMainWindow):
         
     def about(self):
         """ Shows the about message window. """
-        message = u"{} version {}\n\n{}""".format(PROJECT_NAME, VERSION, PROJECT_URL)
+        message = "{} version {}\n\n{}".format(PROJECT_NAME, VERSION, PROJECT_URL)
         QtGui.QMessageBox.about(self, "About {}".format(PROJECT_NAME), message)
 
     def closeWindow(self):
