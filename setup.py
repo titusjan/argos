@@ -7,9 +7,11 @@ try:
 except ImportError:
     from distutils.core import setup
 
-from libemptyqt import info
+from libargos import info
+from libargos.qt import USE_PYQT
 
 assert not info.DEBUGGING, "info.DEBUGGING should be False" 
+assert USE_PYQT, "USE_PYQT should be True"
 
 
 readme = open('README.rst').read()

@@ -26,7 +26,7 @@ from __future__ import division
 import logging, platform
 
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
-from libargos.qt import executeApplication, Qt, QtCore, QtGui, USE_PYQT
+from libargos.qt import executeApplication, Qt, QtCore, QtGui, USE_PYQT, QtSlot, QtSlot_Unchecked
 from libargos.qt.togglecolumn import ToggleColumnTreeView
 from libargos.selector.repository import RepositoryTreeModel
 
@@ -240,8 +240,12 @@ class MainWindow(QtGui.QMainWindow):
         """
         self.model.addScalar("six", 6)
         self.model.addScalar("seven", 7)
+        self.model.addScalar("eight", 8)
+        self.model.addScalar("nine", 9)
+        self.model.addScalar("ten", 10)
 
         
+    @QtSlot()
     def insertChild(self):
         """ Temporary test method
         """
@@ -250,20 +254,22 @@ class MainWindow(QtGui.QMainWindow):
         col0Index = curIndex.sibling(curIndex.row(), 0)
         
         model = self.treeView.model()
-        value = random.randint(0, 99)
+        value = random.randint(20, 99)
         childIndex = model.addScalar("new child", value, position=None, parentIndex=col0Index)
         
         self.treeView.selectionModel().setCurrentIndex(childIndex, 
                                                        QtGui.QItemSelectionModel.ClearAndSelect)
         
-        newChildItem = model._getItem(childIndex)
+        newChildItem = model.getItem(childIndex)
         logger.debug("Added child: {} under {}".format(newChildItem, newChildItem.parentItem))
         #self.updateActions() # TODO: needed?        
         
         
+    @QtSlot()    
     def removeRow(self):
         """ Temporary test method
         """
+        logger.debug("RemoveRow()")
         index = self.treeView.selectionModel().currentIndex()
         self.treeView.model().deleteItem(index)
             

@@ -152,7 +152,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         if role != QtCore.Qt.DisplayRole and role != QtCore.Qt.EditRole:
             return None
 
-        item = self._getItem(index)
+        item = self.getItem(index)
         return item.data(index.column())
 
 
@@ -204,7 +204,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         if parentIndex.isValid() and parentIndex.column() != 0:
             return QtCore.QModelIndex()
 
-        parentItem = self._getItem(parentIndex)
+        parentItem = self.getItem(parentIndex)
         childItem = parentItem.child(row)
         if childItem:
             return self.createIndex(row, column, childItem)
@@ -227,7 +227,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         if not index.isValid():
             return QtCore.QModelIndex()
 
-        childItem = self._getItem(index)
+        childItem = self.getItem(index)
         parentItem = childItem.parentItem
 
         if parentItem == self.rootItem:
@@ -243,7 +243,7 @@ class TreeModel(QtCore.QAbstractItemModel):
             Note: When implementing a table based model, rowCount() should return 0 when the parent 
             is valid.
         """
-        parentItem = self._getItem(parentIndex)
+        parentItem = self.getItem(parentIndex)
         return parentItem.childCount()
 
 
@@ -264,7 +264,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         if role != QtCore.Qt.EditRole:
             return False
 
-        item = self._getItem(index)
+        item = self.getItem(index)
         result = item.setData(index.column(), value)
 
         if result:
@@ -297,7 +297,7 @@ class TreeModel(QtCore.QAbstractItemModel):
     ##################################################################
     
     
-    def _getItem(self, index):
+    def getItem(self, index):
         """ Returns the TreeItem for the given index. Returns the rootItem if the index is invalid.
         
             Since the model's interface to the other model/view components is based on model 
@@ -313,6 +313,22 @@ class TreeModel(QtCore.QAbstractItemModel):
                 return item
 
         return self.rootItem
+    
+    
+    def __new__getItem(self, index):
+        """ Returns the TreeItem for the given index. Returns the rootItem if the index is invalid.
+        
+            Since the model's interface to the other model/view components is based on model 
+            indexes, and the internal data structure is item-based, many of the functions 
+            implemented by the model need to be able to convert any given model index to its 
+            corresponding item. 
+            
+            Auxiliary function, not part of the QAbstractItemModel interface.
+        """
+        assert index.isValid, "Invalid index:"
+        item = index.internalPointer()
+        assert item, "Invalid item at internalPointer"
+        return item
         
 
     def insertChild(self, childItem, position=None, parentIndex=QtCore.QModelIndex()):
@@ -321,7 +337,7 @@ class TreeModel(QtCore.QAbstractItemModel):
             If position is None the child will be appended as the last child of the parent.
             Returns the index of the new inserted child.
         """
-        parentItem = self._getItem(parentIndex)
+        parentItem = self.getItem(parentIndex)
         
         nChildren = parentItem.childCount()
         if position is None:
@@ -344,12 +360,11 @@ class TreeModel(QtCore.QAbstractItemModel):
         """ Removes the item at the itemIndex.
         """
         parentIndex = itemIndex.parent()
-        parentItem = self._getItem(parentIndex)
+        parentItem = self.getItem(parentIndex)
         row = itemIndex.row()
         self.beginRemoveRows(parentIndex, row, row)
         try:
             parentItem.removeChild(row)
         finally:
             self.endRemoveRows()
-        
             
