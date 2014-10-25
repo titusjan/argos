@@ -91,7 +91,7 @@ class MainWindow(QtGui.QMainWindow):
         
         # Connect signals and slots 
         self.insertChildAction.triggered.connect(self.insertChild)
-        
+        self.deleteItemAction.triggered.connect(self.removeRow)
         logger.debug("MainWindow constructor finished")
      
 
@@ -100,6 +100,9 @@ class MainWindow(QtGui.QMainWindow):
         """
         self.insertChildAction = QtGui.QAction("Insert Child", self)
         self.insertChildAction.setShortcut("Ctrl+N")           
+
+        self.deleteItemAction = QtGui.QAction("Delete Item", self)
+        self.deleteItemAction.setShortcut("Ctrl+D")           
                   
                               
     def __setupMenu(self):
@@ -120,6 +123,7 @@ class MainWindow(QtGui.QMainWindow):
         
         actionsMenu = menuBar.addMenu("&Actions")
         actionsMenu.addAction(self.insertChildAction)
+        actionsMenu.addAction(self.deleteItemAction)
                 
         menuBar.addSeparator()
         help_menu = menuBar.addMenu("&Help")
@@ -243,18 +247,26 @@ class MainWindow(QtGui.QMainWindow):
         """
         import random
         curIndex = self.treeView.selectionModel().currentIndex()
-        row = curIndex.row()
-        col0Index = curIndex.sibling(row, 0)
+        col0Index = curIndex.sibling(curIndex.row(), 0)
         
         model = self.treeView.model()
         value = random.randint(0, 99)
-        newChildItem = model.addScalar("new child", value, position=None, parentIndex=col0Index)
+        childIndex = model.addScalar("new child", value, position=None, parentIndex=col0Index)
         
-        self.treeView.selectionModel().setCurrentIndex(model.index(0, 0, col0Index),
+        self.treeView.selectionModel().setCurrentIndex(childIndex, 
                                                        QtGui.QItemSelectionModel.ClearAndSelect)
+        
+        newChildItem = model._getItem(childIndex)
         logger.debug("Added child: {} under {}".format(newChildItem, newChildItem.parentItem))
         #self.updateActions() # TODO: needed?        
         
+        
+    def removeRow(self):
+        """ Temporary test method
+        """
+        index = self.treeView.selectionModel().currentIndex()
+        self.treeView.model().deleteItem(index)
+            
 
     def myTest(self):
         """ Function for testing """

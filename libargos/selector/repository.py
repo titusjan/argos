@@ -51,8 +51,8 @@ class RepositoryTreeModel(TreeModel):
     def addScalar(self, name, value, position=None, parentIndex=QtCore.QModelIndex()):
         
         childItem = TreeItem(data=(name, value))
-        self.insertChild(childItem, position, parentIndex)
-        return childItem
+        childIndex = self.insertChild(childItem, position, parentIndex)
+        return childIndex
         
         
     

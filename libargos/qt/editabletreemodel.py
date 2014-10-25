@@ -61,7 +61,6 @@ class TreeItem(object):
         return self.childItems[row]
 
     def childCount(self):
-        #logger.debug("childCount: {}".format(len(self.childItems)))
         return len(self.childItems)
 
     def childNumber(self):
@@ -75,17 +74,6 @@ class TreeItem(object):
     def data(self, column):
         return self.itemData[column]
 
-#    def __insertChildren(self, position, count, columns):
-#        assert 0 <= position <= len(self.childItems), \
-#            "position should be 0 < {} < {}".format(position, len(self.childItems))
-#
-#        for row in range(count):
-#            data = [None for v in range(columns)]
-#            item = TreeItem(data, self)
-#            self.childItems.insert(position, item)
-#
-#        return True
-
 
     def insertChild(self, childItem, position): 
         
@@ -96,10 +84,7 @@ class TreeItem(object):
             
         childItem.parentItem = self    
         self.childItems.insert(position, childItem)
-        
 
-#    def parent(self):
-#        return self.parentItem
 
     def removeChild(self, position):
         
@@ -144,6 +129,10 @@ class TreeModel(QtCore.QAbstractItemModel):
         self.rootItem = TreeItem(rootData)
 
 
+    ###########################################################
+    # These methods re-implement the QAbstractModel interface #
+    ###########################################################
+    
     def columnCount(self, parentIndex=QtCore.QModelIndex()):
         """ Returns the number of columns for the children of the given parent.
             In most subclasses, the number of columns is independent of the parent.
@@ -179,23 +168,6 @@ class TreeModel(QtCore.QAbstractItemModel):
         return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
 
 
-    def _getItem(self, index):
-        """ Returns the TreeItem for the given index. Returns the rootItem if the index is invalid.
-        
-            Since the model's interface to the other model/view components is based on model 
-            indexes, and the internal data structure is item-based, many of the functions 
-            implemented by the model need to be able to convert any given model index to its 
-            corresponding item. 
-            
-            Auxiliary function, not part of the QAbstractItemModel interface.
-        """
-        if index.isValid():
-            item = index.internalPointer()
-            if item:
-                return item
-
-        return self.rootItem
-    
 
     def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
         """ Returns the data for the given role and section in the header with the specified 
@@ -238,41 +210,8 @@ class TreeModel(QtCore.QAbstractItemModel):
             return self.createIndex(row, column, childItem)
         else:
             return QtCore.QModelIndex()
-        
-
-#
-#    def insertRows(self, position, rows, parent=QtCore.QModelIndex()):
-#        """ Note: this function has a different signature than QAbstractModel.insertRows.
-#            It calls TreeItem.insertRows to insert the columns and notifies the view. 
-#            Is called indirectly (by QAbstractItemModel), when the model dimension change.
-#        """
-#        parentItem = self._getItem(parent)
-#        self.beginInsertRows(parent, position, position + rows - 1)
-#        success = parentItem.insertChildren(position, rows, self.rootItem.columnCount())
-#        self.endInsertRows()
-#        return success
 
 
-
-    def insertChild(self, childItem, position=None, parentIndex=QtCore.QModelIndex()):
-        """ 
-        """
-        parentItem = self._getItem(parentIndex)
-        
-        nChildren = parentItem.childCount()
-        if position is None:
-            position = nChildren
-            
-        assert 0 <= position <= nChildren, \
-            "position should be 0 < {} <= {}".format(position, nChildren)
-                    
-        self.beginInsertRows(parentIndex, position, position)
-        try:
-            parentItem.insertChild(childItem, position)
-        finally:
-            self.endInsertRows()
-            
-        
     def parent(self, index):
         """ Returns the parent of the model item with the given index. If the item has no parent, 
             an invalid QModelIndex is returned.
@@ -297,19 +236,6 @@ class TreeModel(QtCore.QAbstractItemModel):
         return self.createIndex(parentItem.childNumber(), 0, parentItem)
     
 
-
-#    def removeRows(self, position, rows, parent=QtCore.QModelIndex()):
-#        """ Note: this function has a different signature than QAbstractModel.removeRows.
-#            It calls TreeItem.removeRows to insert the columns and notifies the view. 
-#            Is called indirectly (by QAbstractItemModel), when the model dimension change.
-#        """
-#        parentItem = self._getItem(parent)
-#        self.beginRemoveRows(parent, position, position + rows - 1)
-#        success = parentItem.removeChildren(position, rows)
-#        self.endRemoveRows()
-#        return success
-    
-
     def rowCount(self, parentIndex=QtCore.QModelIndex()):
         """ Returns the number of rows under the given parent. When the parent is valid it means 
             that rowCount is returning the number of children of parent.
@@ -318,7 +244,6 @@ class TreeModel(QtCore.QAbstractItemModel):
             is valid.
         """
         parentItem = self._getItem(parentIndex)
-        logger.debug("rowCount: {}".format(parentItem.childCount()))
         return parentItem.childCount()
 
 
@@ -367,3 +292,64 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         return result
 
+    ##################################################################
+    # The methods below are not part of the QAbstractModel interface #
+    ##################################################################
+    
+    
+    def _getItem(self, index):
+        """ Returns the TreeItem for the given index. Returns the rootItem if the index is invalid.
+        
+            Since the model's interface to the other model/view components is based on model 
+            indexes, and the internal data structure is item-based, many of the functions 
+            implemented by the model need to be able to convert any given model index to its 
+            corresponding item. 
+            
+            Auxiliary function, not part of the QAbstractItemModel interface.
+        """
+        if index.isValid():
+            item = index.internalPointer()
+            if item:
+                return item
+
+        return self.rootItem
+        
+
+    def insertChild(self, childItem, position=None, parentIndex=QtCore.QModelIndex()):
+        """ Inserts a childItem before row 'position' under the parent index.
+        
+            If position is None the child will be appended as the last child of the parent.
+            Returns the index of the new inserted child.
+        """
+        parentItem = self._getItem(parentIndex)
+        
+        nChildren = parentItem.childCount()
+        if position is None:
+            position = nChildren
+            
+        assert 0 <= position <= nChildren, \
+            "position should be 0 < {} <= {}".format(position, nChildren)
+                    
+        self.beginInsertRows(parentIndex, position, position)
+        try:
+            parentItem.insertChild(childItem, position)
+        finally:
+            self.endInsertRows()
+            
+        childIndex = parentIndex.child(position, 0)
+        return childIndex
+    
+    
+    def deleteItem(self, itemIndex):
+        """ Removes the item at the itemIndex.
+        """
+        parentIndex = itemIndex.parent()
+        parentItem = self._getItem(parentIndex)
+        row = itemIndex.row()
+        self.beginRemoveRows(parentIndex, row, row)
+        try:
+            parentItem.removeChild(row)
+        finally:
+            self.endRemoveRows()
+        
+            
