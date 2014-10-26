@@ -260,7 +260,7 @@ class MainWindow(QtGui.QMainWindow):
         self.treeView.selectionModel().setCurrentIndex(childIndex, 
                                                        QtGui.QItemSelectionModel.ClearAndSelect)
         
-        newChildItem = model.getItem(childIndex)
+        newChildItem = model.getItem(childIndex, altItem=model.rootItem)
         logger.debug("Added child: {} under {}".format(newChildItem, newChildItem.parentItem))
         #self.updateActions() # TODO: needed?        
         
