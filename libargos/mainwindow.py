@@ -75,24 +75,21 @@ class MainWindow(QtGui.QMainWindow):
         MainWindow._nInstances += 1
         self._InstanceNr = self._nInstances        
         
-        # Model
         self.model = RepositoryTreeModel(self)
-        self.__addTestData()
     
-        # Views
         self.__setupActions()
         self.__setupMenu()
         self.__setupViews()
+        
         self.setWindowTitle("{}".format(PROJECT_NAME))
         app = QtGui.QApplication.instance()
         app.lastWindowClosed.connect(app.quit) 
 
         self._readViewSettings(reset = reset)
-        
-        # Connect signals and slots 
-        self.insertChildAction.triggered.connect(self.insertChild)
-        self.deleteItemAction.triggered.connect(self.removeRow)
-        logger.debug("MainWindow constructor finished")
+
+        # Update model 
+        self.__addTestData()
+
      
 
     def __setupActions(self):
@@ -144,7 +141,8 @@ class MainWindow(QtGui.QMainWindow):
         self.treeView = ToggleColumnTreeView(self)
         self.treeView.setModel(self.model)
         self.treeView.setAlternatingRowColors(True)
-        self.treeView.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
+        self.treeView.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems) # TODO: SelectRows
+        self.treeView.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.treeView.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.treeView.setAnimated(True)
         self.treeView.setAllColumnsShowFocus(True)        
@@ -153,8 +151,10 @@ class MainWindow(QtGui.QMainWindow):
         self.label2 = QtGui.QLabel("Hi there", parent=self)
         centralLayout.addWidget(self.label2)        
         
-        # Connect signals
-        pass
+        # Connect signals and slots 
+        self.insertChildAction.triggered.connect(self.insertChild)
+        self.deleteItemAction.triggered.connect(self.removeRow)
+
 
     # End of setup_methods
     
@@ -242,8 +242,12 @@ class MainWindow(QtGui.QMainWindow):
         self.model.addScalar("seven", 7)
         self.model.addScalar("eight", 8)
         self.model.addScalar("nine", 9)
-        self.model.addScalar("ten", 10)
-
+        childIndex = self.model.addScalar("ten", 10)
+        
+        selectionModel = self.treeView.selectionModel()
+        selectionModel.setCurrentIndex(childIndex, QtGui.QItemSelectionModel.ClearAndSelect)
+        logger.debug("selected tree item: has selection: {}".format(selectionModel.hasSelection()))
+        
         
     @QtSlot()
     def insertChild(self):
@@ -262,6 +266,7 @@ class MainWindow(QtGui.QMainWindow):
         
         newChildItem = model.getItem(childIndex, altItem=model.rootItem)
         logger.debug("Added child: {} under {}".format(newChildItem, newChildItem.parentItem))
+
         #self.updateActions() # TODO: needed?        
         
         
@@ -270,14 +275,16 @@ class MainWindow(QtGui.QMainWindow):
         """ Temporary test method
         """
         logger.debug("RemoveRow()")
-        index = self.treeView.selectionModel().currentIndex()
-        self.treeView.model().deleteItem(index)
+        selectionModel = self.treeView.selectionModel()
+        assert selectionModel.hasSelection(), "No selection"
+        self.treeView.model().deleteItem(selectionModel.currentIndex())
             
 
     def myTest(self):
         """ Function for testing """
         logger.debug("myTest")
-        logger.debug("row height: {}".format(self.tableView.rowHeight(0)))
+        selectionModel = self.treeView.selectionModel()
+        logger.debug("selected tree item: has selection: {}".format(selectionModel.hasSelection()))
         
     def about(self):
         """ Shows the about message window. """

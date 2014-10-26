@@ -306,8 +306,9 @@ class TreeModel(QtCore.QAbstractItemModel):
             item = index.internalPointer()
             if item:
                 return item
-
-        return altItem
+            
+        return altItem if altItem is not None else self.rootItem # TODO: remove
+        #return altItem
         
 
     def insertChild(self, childItem, position=None, parentIndex=QtCore.QModelIndex()):
@@ -331,14 +332,23 @@ class TreeModel(QtCore.QAbstractItemModel):
         finally:
             self.endInsertRows()
             
-        childIndex = parentIndex.child(position, 0)
+        childIndex = self.index(position, 0, parentIndex)
+        assert childIndex.isValid(), "Sanity check failed: childIndex not valid"        
         return childIndex
     
     
     def deleteItem(self, itemIndex):
         """ Removes the item at the itemIndex.
         """
+        if not itemIndex.isValid():
+            logger.debug("No valid item selected for deletion (ignored).")
+            return
+        
+        item = self.getItem(itemIndex, "<no item>")
+        logger.debug("Trying to remove {!r}".format(item))
+        
         parentIndex = itemIndex.parent()
+        #parentItem = self.getItem(parentIndex, altItem=self.rootItem)
         parentItem = self.getItem(parentIndex)
         row = itemIndex.row()
         self.beginRemoveRows(parentIndex, row, row)
