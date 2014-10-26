@@ -26,7 +26,7 @@ from __future__ import division
 import logging, platform
 
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
-from libargos.qt import executeApplication, Qt, QtCore, QtGui, USE_PYQT, QtSlot, QtSlot_Unchecked
+from libargos.qt import executeApplication, Qt, QtCore, QtGui, USE_PYQT, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
 from libargos.selector.repository import RepositoryTreeModel
 
@@ -254,7 +254,9 @@ class MainWindow(QtGui.QMainWindow):
         """ Temporary test method
         """
         import random
-        curIndex = self.treeView.selectionModel().currentIndex()
+        selectionModel = self.treeView.selectionModel()
+        assert selectionModel.hasSelection(), "No selection"        
+        curIndex = selectionModel.currentIndex()
         col0Index = curIndex.sibling(curIndex.row(), 0)
         
         model = self.treeView.model()
@@ -278,6 +280,7 @@ class MainWindow(QtGui.QMainWindow):
         selectionModel = self.treeView.selectionModel()
         assert selectionModel.hasSelection(), "No selection"
         self.treeView.model().deleteItem(selectionModel.currentIndex())
+        logger.debug("removeRow completed")        
             
 
     def myTest(self):

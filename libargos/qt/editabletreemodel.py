@@ -68,8 +68,6 @@ class TreeItem(object):
             return self.parentItem.childItems.index(self)
         return 0
 
-    def columnCount(self):
-        return len(self.itemData)
 
     def data(self, column):
         return self.itemData[column]
@@ -125,9 +123,24 @@ class TreeModel(QtCore.QAbstractItemModel):
         # This way you can have a tree with multiple items at the top level.
         # The root item also is returned by getItem in case of an invalid index. 
         # Finally, it is used to store the header data.
-        rootData = [header for header in headers]
-        self.rootItem = TreeItem(rootData)
+        self._horizontalHeaders = [header for header in headers]
+        self._rootItem = TreeItem(["<should not be visible>", "Invisible_root_item"])
 
+
+    @property
+    def rootItem(self):
+        """ Returns the invisible root item, which contains no actual data
+        """
+        return self._rootItem
+    
+
+    @property
+    def horizontalHeaders(self):
+        """ Returns list of horizontal header labels. 
+            See also self.headerData()
+        """
+        return self._horizontalHeaders
+    
 
     ###########################################################
     # These methods re-implement the QAbstractModel interface #
@@ -137,7 +150,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         """ Returns the number of columns for the children of the given parent.
             In most subclasses, the number of columns is independent of the parent.
         """
-        return self.rootItem.columnCount()
+        return len(self.horizontalHeaders)
 
 
     def data(self, index, role):
@@ -168,7 +181,6 @@ class TreeModel(QtCore.QAbstractItemModel):
         return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
 
 
-
     def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
         """ Returns the data for the given role and section in the header with the specified 
             orientation.
@@ -177,7 +189,7 @@ class TreeModel(QtCore.QAbstractItemModel):
             for vertical headers, the section number corresponds to the row number.
         """
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
-            return self.rootItem.data(section)
+            return self._horizontalHeaders[section] 
 
         return None
 
@@ -198,13 +210,15 @@ class TreeModel(QtCore.QAbstractItemModel):
             When reimplementing this function in a subclass, call createIndex() to generate 
             model indexes that other components can use to refer to items in your model.
         """
-        #logger.debug("called index()")
-        #logger.debug("  parentIndex.isValid(): {}".format(parentIndex.isValid()))
-        #logger.debug("  parentIndex.column(): {}".format(parentIndex.column()))
+        logger.debug("  called index({}, {}, {}) {}"
+                     .format(parentIndex.row(), parentIndex.column(), parentIndex.isValid(), 
+                             parentIndex.isValid() and parentIndex.column() != 0))
+                
         if parentIndex.isValid() and parentIndex.column() != 0:
             return QtCore.QModelIndex()
 
         parentItem = self.getItem(parentIndex, altItem=self.rootItem)
+        logger.debug("Getting row {} from parentItem: {}".format(row, parentItem))
         childItem = parentItem.child(row)
         if childItem:
             return self.createIndex(row, column, childItem)
@@ -273,25 +287,6 @@ class TreeModel(QtCore.QAbstractItemModel):
         return result
     
 
-    def setHeaderData(self, section, orientation, value, role=QtCore.Qt.EditRole):
-        """ Sets the data for the given role and section in the header with the specified 
-            orientation to the value supplied.
-            
-            Returns true if the header's data was updated; otherwise returns false.
-            
-            When reimplementing this function, the headerDataChanged() signal must be emitted 
-            explicitly.
-        """
-        assert False, "not needed since we don't insert columns."
-        if role != QtCore.Qt.EditRole or orientation != QtCore.Qt.Horizontal:
-            return False
-
-        result = self.rootItem.setData(section, value)
-        if result:
-            self.headerDataChanged.emit(orientation, section, section)
-
-        return result
-
     ##################################################################
     # The methods below are not part of the QAbstractModel interface #
     ##################################################################
@@ -307,8 +302,8 @@ class TreeModel(QtCore.QAbstractItemModel):
             if item:
                 return item
             
-        return altItem if altItem is not None else self.rootItem # TODO: remove
-        #return altItem
+        #return altItem if altItem is not None else self.rootItem # TODO: remove
+        return altItem
         
 
     def insertChild(self, childItem, position=None, parentIndex=QtCore.QModelIndex()):
@@ -348,12 +343,14 @@ class TreeModel(QtCore.QAbstractItemModel):
         logger.debug("Trying to remove {!r}".format(item))
         
         parentIndex = itemIndex.parent()
-        #parentItem = self.getItem(parentIndex, altItem=self.rootItem)
-        parentItem = self.getItem(parentIndex)
+        parentItem = self.getItem(parentIndex, altItem=self.rootItem)
+        #parentItem = self.getItem(parentIndex)
         row = itemIndex.row()
         self.beginRemoveRows(parentIndex, row, row)
         try:
             parentItem.removeChild(row)
         finally:
             self.endRemoveRows()
+            
+        logger.debug("deleteItem completed")
             
