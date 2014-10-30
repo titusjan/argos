@@ -44,6 +44,8 @@ else:
     from PySide.QtCore import Signal as QtSignal
     from PySide.QtCore import Slot as QtSlot_Unchecked
 
+QtSlot = QtSlot_Unchecked
+
 
 import sys, logging, traceback
 
@@ -79,19 +81,19 @@ def __check_slot_function_result(f):
     return check_slot_function_result_wrapper
 
 
-if USE_PYQT:
-    logger.warn("Checked slots don't work yet with PyQt")
-    QtSlot = QtSlot_Unchecked
-else:        
-    def QtSlot(*args, **kwargs):
-        """ A QT slot decorator that will cause the program to exit in case of an exception
-            or in case the slot doesn't return None
-        """
-        decorator = QtSlot_Unchecked(*args, **kwargs)
-        def wrapped_qtslot_decorator(f):
-            logger.debug("Wrapping: {!r}".format(f))
-            return decorator(__check_slot_function_result(f))
-        return wrapped_qtslot_decorator
+#if USE_PYQT:
+#    logger.warn("Checked slots don't work yet with PyQt")
+#    QtSlot = QtSlot_Unchecked
+#else:        
+#    def QtSlot(*args, **kwargs):
+#        """ A QT slot decorator that will cause the program to exit in case of an exception
+#            or in case the slot doesn't return None
+#        """
+#        decorator = QtSlot_Unchecked(*args, **kwargs)
+#        def wrapped_qtslot_decorator(f):
+#            logger.debug("Wrapping: {!r}".format(f))
+#            return decorator(__check_slot_function_result(f))
+#        return wrapped_qtslot_decorator
 
 
 
@@ -115,6 +117,7 @@ def getQApplicationInstance():
 # having to call getQApplicationInstance them selves (lets see if this is a good idea)
 APPLICATION_INSTANCE = getQApplicationInstance()
 
+
 def executeApplication():
     """ Executes all browsers by starting the Qt main application
     """  
@@ -123,3 +126,25 @@ def executeApplication():
     exit_code = app.exec_()
     logger.info("Browser(s) done...")
     return exit_code
+
+
+def handleException(exc_type, exc_value, exc_traceback):
+
+    traceback.format_exception(exc_type, exc_value, exc_traceback)
+    
+    logger.error("Bug: unexpected {}".format(exc_type), 
+                 exc_info=(exc_type, exc_value, exc_traceback))
+    if info.DEBUGGING:
+        sys.exit(1)
+    else:
+        msgBox = QtGui.QMessageBox()
+        msgBox.setText("Bug: unexpected {}".format(exc_type.__name__))
+        msgBox.setInformativeText(str(exc_value))
+        lst = traceback.format_exception(exc_type, exc_value, exc_traceback)
+        msgBox.setDetailedText("".join(lst))
+        msgBox.setIcon(QtGui.QMessageBox.Warning)
+        msgBox.exec_()
+        sys.exit(1)
+                
+# Must be after application instance has been instantiated
+sys.excepthook = handleException

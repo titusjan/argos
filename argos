@@ -54,6 +54,8 @@ def main():
     logger.info('Started {} {}'.format(PROJECT_NAME, VERSION))
     logger.info("Python version: {}".format(sys.version).replace('\n', ''))
     logger.info('Using: {}'.format('PyQt' if USE_PYQT else 'PySide'))
+    if DEBUGGING:
+        logger.warn("Debugging flag is on!")
 
     if args.version:
         print(about_str)

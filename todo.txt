@@ -8,7 +8,10 @@ https://datamarket.com/data/set/1cfl/total-population#!ds=1cfl!r3d=55.66.l.6d&di
 http://www.gdngeoservices.nl/wms/dinomap/M11M0802
 
 
-Exception also in non-slots must fail.
+Handle Exception:
+	Raise with old exception handler.
+	Quit button.
+	Resize message box.
 
 
 Test:

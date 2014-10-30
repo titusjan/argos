@@ -114,7 +114,7 @@ class MainWindow(QtGui.QMainWindow):
         openAction.setShortcut("Ctrl+O")
         fileMenu.addAction("C&lose", self.closeWindow, "Ctrl+W")
         fileMenu.addAction("E&xit", self.quitApplication, "Ctrl+Q")
-        if DEBUGGING is True:
+        if True or DEBUGGING is True: # TODO: remove True clause
             fileMenu.addSeparator()
             fileMenu.addAction("&Test", self.myTest, "Ctrl+T")
         
@@ -288,6 +288,7 @@ class MainWindow(QtGui.QMainWindow):
         logger.debug("myTest")
         selectionModel = self.treeView.selectionModel()
         logger.debug("selected tree item: has selection: {}".format(selectionModel.hasSelection()))
+        raise AssertionError("False positive")
         
     def about(self):
         """ Shows the about message window. """
