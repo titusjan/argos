@@ -20,7 +20,7 @@
 from __future__ import print_function
 
 import logging, sys, argparse
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('libargos')
 logging.basicConfig(level='DEBUG', stream=sys.stderr,
                     format='%(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s')
 
@@ -43,7 +43,7 @@ def main():
     parser.add_argument('-V', '--version', action = 'store_true',  
                         help="Prints the program version")    
         
-    parser.add_argument('-L', '--log-level', dest='log_level', default='debug' if DEBUGGING else 'warn',
+    parser.add_argument('-L', '--log-level', dest='log_level', default='warn',
                         help="Log level. Only log messages with a level higher or equal than this will be printed. "
                         "Default: 'warn'", choices=('debug', 'info', 'warn', 'error', 'critical'))
     args = parser.parse_args(remove_process_serial_number(sys.argv[1:]))

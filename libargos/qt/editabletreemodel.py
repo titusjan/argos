@@ -198,9 +198,6 @@ class TreeModel(QtCore.QAbstractItemModel):
         """ Returns the index of the item in the model specified by the given row, column and parent 
             index. 
             
-            In this model, we only return model indexes for child items if the parent index is 
-            invalid (corresponding to the root item) or if it has a zero column number.
-            
             Since each item contains information for an entire row of data, we create a model index 
             to uniquely identify it by calling createIndex() it with the row and column numbers and 
             a pointer to the item. (In the data() function, we will use the item pointer and column 
@@ -213,16 +210,24 @@ class TreeModel(QtCore.QAbstractItemModel):
         logger.debug("  called index({}, {}, {}) {}"
                      .format(parentIndex.row(), parentIndex.column(), parentIndex.isValid(), 
                              parentIndex.isValid() and parentIndex.column() != 0))
-                
-        if parentIndex.isValid() and parentIndex.column() != 0:
+        
+        parentItem = self.getItem(parentIndex, altItem=self.rootItem)
+        logger.debug("    Getting row {} from parentItem: {}".format(row, parentItem))
+        
+        if not (0 <= row < parentItem.childCount()):
+            # Can happen when deleting the last child. TODO: remove warning.
+            logger.warn("Index row {} invalid for parent item: {}".format(row, parentItem))
+            return QtCore.QModelIndex()
+        
+        if not (0 <= column < self.columnCount()):
+            logger.warn("Index column {} invalid for parent item: {}".format(row, parentItem))
             return QtCore.QModelIndex()
 
-        parentItem = self.getItem(parentIndex, altItem=self.rootItem)
-        logger.debug("Getting row {} from parentItem: {}".format(row, parentItem))
         childItem = parentItem.child(row)
         if childItem:
             return self.createIndex(row, column, childItem)
         else:
+            logger.warn("No child item found at row {} for parent item: {}".format(row, parentItem))
             return QtCore.QModelIndex()
 
 
