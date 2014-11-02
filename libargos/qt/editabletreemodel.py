@@ -46,16 +46,18 @@ from libargos.qt import QtCore
 
 logger = logging.getLogger(__name__)
 
+
+    
 # Placed TreeItem in the same module as TreeModel since they are meant to be used together.
 
-class TreeItem(object):
-    def __init__(self, data, parentItem=None):
+class BaseTreeItem(object):
+    def __init__(self, parentItem=None):
         self.parentItem = parentItem
-        self.itemData = data
+        #self.data = None
         self.childItems = []
         
     def __repr__(self):
-        return "<TreeItem value={}>".format(self.itemData[1])
+        return "<TreeItem>".format()
 
     def child(self, row):
         return self.childItems[row]
@@ -68,9 +70,8 @@ class TreeItem(object):
             return self.parentItem.childItems.index(self)
         return 0
 
-
-    def data(self, column):
-        return self.itemData[column]
+    def columnValue(self, column):
+        raise NotImplementedError("Subclass and override this method")
 
 
     def insertChild(self, childItem, position): 
@@ -93,12 +94,13 @@ class TreeItem(object):
 
 
     def setData(self, column, value): 
-        
+        raise NotImplementedError("Subclass and override this method")
+        assert False, "not tested"
         # TODO: remove this check and return value
-        if column < 0 or column >= len(self.itemData):
+        if column < 0 or column >= len(self.data):
             return False
 
-        self.itemData[column] = value
+        self.data[column] = value
 
         return True
     
@@ -124,7 +126,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         # The root item also is returned by getItem in case of an invalid index. 
         # Finally, it is used to store the header data.
         self._horizontalHeaders = [header for header in headers]
-        self._rootItem = TreeItem(["<should not be visible>", "Invisible_root_item"])
+        self._rootItem = BaseTreeItem()
 
 
     @property
@@ -166,7 +168,7 @@ class TreeModel(QtCore.QAbstractItemModel):
             return None
 
         item = self.getItem(index, altItem=self.rootItem)
-        return item.data(index.column())
+        return item.columnValue(index.column())
 
 
     def flags(self, index):
@@ -359,3 +361,4 @@ class TreeModel(QtCore.QAbstractItemModel):
             
         logger.debug("deleteItem completed")
             
+
