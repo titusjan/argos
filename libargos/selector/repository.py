@@ -2,7 +2,7 @@
 
 from libargos.utils import check_class
 from libargos.qt import QtGui, QtCore
-from libargos.qt.editabletreemodel import TreeModel, BaseTreeItem
+from libargos.qt.editabletreemodel import BaseTreeModel, BaseTreeItem
 
 
 
@@ -14,20 +14,14 @@ class ScalarTreeItem(BaseTreeItem):
         self.value = value 
 
 
-    def columnValue(self, column):
-        if column == 0:
-            return self.name
-        elif column == 1:
-            return self.value
-        else:
-            raise ValueError("Invalid column: {}".format(column))
   
     
 
-class RepositoryTreeModel(TreeModel):
+class RepositoryTreeModel(BaseTreeModel):
     """ The main entry point of all the data
     
-        Maintains a list of open files and  offers a QStandardDataModel for read-only access
+        Maintains a list of open files and offers a QAbstractItemModel for read-only access of
+        the data with QTreeViews.
     """
     
     def __init__(self, parent=None):
@@ -41,6 +35,33 @@ class RepositoryTreeModel(TreeModel):
         childItem = ScalarTreeItem(name, value)
         childIndex = self.insertChild(childItem, position, parentIndex)
         return childIndex
+
+    
+    def _itemValueForColumn(self, treeItem, column):
+        """ Returns the value of the item given the column number
+        """
+        if column == 0:
+            return treeItem.name
+        elif column == 1:
+            return treeItem.value
+        else:
+            raise ValueError("Invalid column: {}".format(column))
+
         
+# Making a separate class instead of inheriting form BaseTreeModel/AbstractItemModel 
+# as to keep the interface small.
+   
+class Repository(object):
+    """ Keeps a list of stores (generally open files) and allows for adding and removing them.
+    """
+    
+    def __init__(self):
+        
+        self.stores = []
+        self.treeModel = RepositoryTreeModel()
+        
+    
+    def addStore(self, store):
+        pass
         
     

@@ -48,12 +48,17 @@ logger = logging.getLogger(__name__)
 
 
     
-# Placed TreeItem in the same module as TreeModel since they are meant to be used together.
+# Placed TreeItem in the same module as BaseTreeModel since they are meant to be used together.
 
 class BaseTreeItem(object):
+    """ Base class for storing item data in a tree form. Each tree item represents a row
+        in the BaseTreeModel (QAbstractItemModel). 
+        
+        The tree items have no notion of which field is stored in which column. This is implemented
+        in BaseTreeModel._itemValueForColumn
+    """
     def __init__(self, parentItem=None):
         self.parentItem = parentItem
-        #self.data = None
         self.childItems = []
         
     def __repr__(self):
@@ -69,9 +74,6 @@ class BaseTreeItem(object):
         if self.parentItem != None:
             return self.parentItem.childItems.index(self)
         return 0
-
-    def columnValue(self, column):
-        raise NotImplementedError("Subclass and override this method")
 
 
     def insertChild(self, childItem, position): 
@@ -106,7 +108,7 @@ class BaseTreeItem(object):
     
     
     
-class TreeModel(QtCore.QAbstractItemModel):
+class BaseTreeModel(QtCore.QAbstractItemModel):
     """ Tree model from the editabletreemodel.py example.
     
         We place an item at the root of the tree of items. This root item corresponds to the null 
@@ -119,7 +121,7 @@ class TreeModel(QtCore.QAbstractItemModel):
     def __init__(self, headers, parent=None):
         """ Constructor
         """
-        super(TreeModel, self).__init__(parent)
+        super(BaseTreeModel, self).__init__(parent)
 
         # The root item is invisible in the tree but is the parent of all items.
         # This way you can have a tree with multiple items at the top level.
@@ -155,6 +157,13 @@ class TreeModel(QtCore.QAbstractItemModel):
         return len(self.horizontalHeaders)
 
 
+    def _itemValueForColumn(self, treeItem, column):
+        """ Descendants should override this function to return the value of the item that
+            for the given column number.
+        """
+        raise NotImplementedError("Abstract class.")
+    
+        
     def data(self, index, role):
         """ Returns the data stored under the given role for the item referred to by the index.
         
@@ -168,7 +177,7 @@ class TreeModel(QtCore.QAbstractItemModel):
             return None
 
         item = self.getItem(index, altItem=self.rootItem)
-        return item.columnValue(index.column())
+        return self._itemValueForColumn(item, index.column())
 
 
     def flags(self, index):
