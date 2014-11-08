@@ -14,14 +14,26 @@ class RepositoryTreeModel(BaseTreeModel):
         Maintains a list of open files and offers a QAbstractItemModel for read-only access of
         the data with QTreeViews.
     """
-    
     def __init__(self, parent=None):
         """ Constructor
         """
         headers = ["name", "value", "shape", "type"]
         super(RepositoryTreeModel, self).__init__(headers=headers, parent=parent)
-        
+        self._isEditable = False
 
+
+    def flags(self, index):
+        """ Returns the item flags for the given index.
+        """
+        if not index.isValid():
+            return 0
+        
+        if index.column() == 1:
+            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable
+        else:
+            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        
+        
     def addScalar(self, name, value, position=None, parentIndex=QtCore.QModelIndex()): # TODO: remove?
         childItem = StoreScalarTreeItem(name, value)
         return self.insertItem(childItem, position=position, parentIndex=parentIndex)
@@ -49,6 +61,19 @@ class RepositoryTreeModel(BaseTreeModel):
             else:
                 return ""
             
+
+    def _setItemValueForColumn(self, treeItem, column, value):
+        """ Sets the value in the item, of the item given the column number.
+            It returns True for success, otherwise False.
+        """
+        if column == 1:
+            treeItem.value = value
+            return True
+        else:
+            if DEBUGGING:
+                raise IndexError("Invalid column number: {}".format(column))
+            return False
+
 
         
 # Making a separate class instead of inheriting form BaseTreeModel/AbstractItemModel 

@@ -98,18 +98,6 @@ class BaseTreeItem(object):
         self.childItems.pop(position)
 
 
-    def setData(self, column, value): # TODO: move to BaseTreeModel
-        raise NotImplementedError("Subclass and override this method")
-        assert False, "not tested"
-        # TODO: remove this check and return value
-        if column < 0 or column >= len(self.data):
-            return False
-
-        self.data[column] = value
-
-        return True
-    
-    
     
 class BaseTreeModel(QtCore.QAbstractItemModel):
     """ Tree model from the editabletreemodel.py example.
@@ -132,6 +120,9 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         # Finally, it is used to store the header data.
         self._horizontalHeaders = [header for header in headers]
         self._rootItem = BaseTreeItem()
+        
+        # To easy turn-on off editing flags without having to override the flags() member
+        self._isEditable = True 
 
 
     @property
@@ -161,7 +152,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
 
 
     def _itemValueForColumn(self, treeItem, column):
-        """ Descendants should override this function to return the value of the item that
+        """ Descendants should override this function to return the value of the item 
             for the given column number.
         """
         raise NotImplementedError("Abstract class.")
@@ -171,7 +162,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         """ Returns the data stored under the given role for the item referred to by the index.
         
             Note: If you do not have a value to return, return an invalid QVariant instead of 
-            returning 0. (This means returning None in Python.)
+            returning 0. (This means returning None in Python)
         """
         if not index.isValid():
             return None
@@ -191,8 +182,11 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         """
         if not index.isValid():
             return 0
-
-        return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        
+        if self._isEditable:
+            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable
+        else:
+            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
 
 
     def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
@@ -286,6 +280,15 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             Use rowCount() on the parent to find out the number of children.
         """
         return self.rowCount(parentIndex) > 0
+    
+
+
+    def _setItemValueForColumn(self, treeItem, column, value):
+        """ Descendants should override this function to set the value corresponding
+            to the column number in treeItem.
+            It should return True for success, otherwise False.
+        """
+        raise NotImplementedError("Abstract class.")    
 
 
     def setData(self, index, value, role=QtCore.Qt.EditRole):
@@ -297,12 +300,10 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         if role != QtCore.Qt.EditRole:
             return False
 
-        item = self.getItem(index, altItem=self.rootItem)
-        result = item.setData(index.column(), value)
-
+        treeItem = self.getItem(index, altItem=self.rootItem)
+        result = self._setItemValueForColumn(treeItem, index.column(), value)
         if result:
             self.dataChanged.emit(index, index)
-
         return result
     
 
