@@ -76,8 +76,11 @@ class BaseTreeItem(object):
         return 0
 
 
-    def insertChild(self, childItem, position): 
+    def insertItem(self, childItem, position=None): 
         
+        if position is None:
+            position = self.childCount()
+            
         assert 0 <= position <= len(self.childItems), \
             "position should be 0 < {} <= {}".format(position, len(self.childItems))
             
@@ -95,7 +98,7 @@ class BaseTreeItem(object):
         self.childItems.pop(position)
 
 
-    def setData(self, column, value): 
+    def setData(self, column, value): # TODO: move to BaseTreeModel
         raise NotImplementedError("Subclass and override this method")
         assert False, "not tested"
         # TODO: remove this check and return value
@@ -322,7 +325,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         return altItem
         
 
-    def insertChild(self, childItem, position=None, parentIndex=QtCore.QModelIndex()):
+    def insertItem(self, childItem, position=None, parentIndex=QtCore.QModelIndex()):
         """ Inserts a childItem before row 'position' under the parent index.
         
             If position is None the child will be appended as the last child of the parent.
@@ -339,7 +342,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
                     
         self.beginInsertRows(parentIndex, position, position)
         try:
-            parentItem.insertChild(childItem, position)
+            parentItem.insertItem(childItem, position)
         finally:
             self.endInsertRows()
             

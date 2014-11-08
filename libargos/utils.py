@@ -35,6 +35,12 @@ def python2():
     return major_version == 2
     
 
+if python2():
+    StringType = basestring
+else:
+    StringType = str
+     
+
 def remove_process_serial_number(arg_list):
     """ Creates a copy of a list (typically sys.argv) where the strings that
         start with '-psn_0_' are removed.
@@ -54,10 +60,7 @@ def is_a_string(var):
         :returns: True if var is of type string
         :rtype: Boolean
     """
-    if python2():
-        return isinstance(var, basestring)
-    else:
-        return isinstance(var, str)
+    return isinstance(var, StringType)
 
 
 def check_class(obj, target_class, allow_none = False):

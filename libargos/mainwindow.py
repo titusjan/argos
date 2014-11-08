@@ -28,7 +28,8 @@ import logging, platform
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
 from libargos.qt import executeApplication, Qt, QtCore, QtGui, USE_PYQT, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
-from libargos.selector.repository import RepositoryTreeModel
+from libargos.selector.repository import Repository
+from libargos.selector.datastore import SimpleTextFileStore
 
 
 logger = logging.getLogger(__name__)
@@ -75,7 +76,7 @@ class MainWindow(QtGui.QMainWindow):
         MainWindow._nInstances += 1
         self._InstanceNr = self._nInstances        
         
-        self.model = RepositoryTreeModel(self)
+        self._repository = Repository()
     
         self.__setupActions()
         self.__setupMenu()
@@ -88,7 +89,7 @@ class MainWindow(QtGui.QMainWindow):
         self._readViewSettings(reset = reset)
 
         # Update model 
-        self.__addTestData()
+        #self.__addTestData()
 
      
 
@@ -139,39 +140,51 @@ class MainWindow(QtGui.QMainWindow):
         self.mainSplitter.setLayout(centralLayout)
         
         self.treeView = ToggleColumnTreeView(self)
-        self.treeView.setModel(self.model)
+        self.treeView.setModel(self._repository.treeModel) # TODO: use a selector with its own model
         self.treeView.setAlternatingRowColors(True)
         self.treeView.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems) # TODO: SelectRows
         self.treeView.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.treeView.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.treeView.setAnimated(True)
         self.treeView.setAllColumnsShowFocus(True)        
-        centralLayout.addWidget(self.treeView)        
+        centralLayout.addWidget(self.treeView)
+        
+        treeHeader = self.treeView.header()
+        treeHeader.setMovable(True)
+        treeHeader.setStretchLastSection(False)  
+        treeHeader.resizeSection(0, 200)
+        headerNames = self.treeView.model().horizontalHeaders
+        enabled = dict((name, True) for name in headerNames)
+        enabled[headerNames[0]] = False # Fist column cannot be unchecked
+        self.treeView.addHeaderContextMenu(enabled=enabled)
         
         self.label2 = QtGui.QLabel("Hi there", parent=self)
         centralLayout.addWidget(self.label2)        
         
         # Connect signals and slots 
-        self.insertChildAction.triggered.connect(self.insertChild)
+        self.insertChildAction.triggered.connect(self.insertItem)
         self.deleteItemAction.triggered.connect(self.removeRow)
 
 
     # End of setup_methods
     
-    def loadFile(self, fileName):
+    def loadTextFile(self, fileName):
         """ Loads a pstats file and updates the table model
         """
         logger.debug("Loading file: {}".format(fileName))
-        #TODO: implement
+        textFileStore = SimpleTextFileStore(fileName)
+        textFileStore.open()
+        storeRootIndex = self._repository.appendStore(textFileStore)
+        self.treeView.setExpanded(storeRootIndex, True)
         
 
     def openFile(self, fileName=None): 
-        """ Lets the user select a pstats file and opens it.
+        """ Lets the user select an Ascii file and opens it.
         """
         if not fileName:
             fileName = QtGui.QFileDialog.getOpenFileName(self, 
                 caption = "Choose a pstats file", directory = '', 
-                filter='All files (*);;MyExtension (*.ext;*.ex)')
+                filter='Txt (*.txt;*.text);;All files (*)')
             if not USE_PYQT:
                 # PySide returns: (file, selectedFilter)
                 fileName = fileName[0]
@@ -179,7 +192,7 @@ class MainWindow(QtGui.QMainWindow):
         if fileName:
             logger.info("Loading data from: {!r}".format(fileName))
             try:
-                self.loadFile(fileName)
+                self.loadTextFile(fileName)
             except Exception as ex:
                 if DEBUGGING:
                     raise
@@ -238,11 +251,12 @@ class MainWindow(QtGui.QMainWindow):
     def __addTestData(self):
         """ Temporary function to add test data
         """
-        self.model.addScalar("six", 6)
-        self.model.addScalar("seven", 7)
-        self.model.addScalar("eight", 8)
-        self.model.addScalar("nine", 9)
-        childIndex = self.model.addScalar("ten", 10)
+        #assert False, "not yet operational"
+        self._model.addScalar("six", 6)
+        self._model.addScalar("seven", 7)
+        self._model.addScalar("eight", 8)
+        self._model.addScalar("nine", 9)
+        childIndex = self._model.addScalar("ten", 10)
         
         selectionModel = self.treeView.selectionModel()
         selectionModel.setCurrentIndex(childIndex, QtGui.QItemSelectionModel.ClearAndSelect)
@@ -250,7 +264,7 @@ class MainWindow(QtGui.QMainWindow):
         
         
     @QtSlot()
-    def insertChild(self):
+    def insertItem(self):
         """ Temporary test method
         """
         import random
@@ -305,7 +319,7 @@ class MainWindow(QtGui.QMainWindow):
         app.closeAllWindows()
 
     def closeEvent(self, event):
-        """ Close all windows (e.g. the L0 window).
+        """ Called when closing all windows.
         """
         logger.debug("closeEvent")
         self._writeViewSettings()

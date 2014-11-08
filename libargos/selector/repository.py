@@ -1,20 +1,11 @@
 
 
-from libargos.utils import check_class
 from libargos.qt import QtGui, QtCore
-from libargos.qt.editabletreemodel import BaseTreeModel, BaseTreeItem
+from libargos.qt.editabletreemodel import BaseTreeModel
+from libargos.selector.storeitems import StoreScalarTreeItem
+from libargos.info import DEBUGGING
+#from libargos.utils import check_class
 
-
-
-class ScalarTreeItem(BaseTreeItem):
-    
-    def __init__(self, name, value, parentItem=None):
-        super(ScalarTreeItem, self).__init__(parentItem)
-        self.name = name
-        self.value = value 
-
-
-  
     
 
 class RepositoryTreeModel(BaseTreeModel):
@@ -27,25 +18,37 @@ class RepositoryTreeModel(BaseTreeModel):
     def __init__(self, parent=None):
         """ Constructor
         """
-        super(RepositoryTreeModel, self).__init__(headers=["name", "value"], parent=parent)
+        headers = ["name", "value", "shape", "type"]
+        super(RepositoryTreeModel, self).__init__(headers=headers, parent=parent)
         
 
-    def addScalar(self, name, value, position=None, parentIndex=QtCore.QModelIndex()):
-        
-        childItem = ScalarTreeItem(name, value)
-        childIndex = self.insertChild(childItem, position, parentIndex)
-        return childIndex
-
+    def addScalar(self, name, value, position=None, parentIndex=QtCore.QModelIndex()): # TODO: remove?
+        childItem = StoreScalarTreeItem(name, value)
+        return self.insertItem(childItem, position=position, parentIndex=parentIndex)
+   
     
     def _itemValueForColumn(self, treeItem, column):
-        """ Returns the value of the item given the column number
+        """ Returns the value of the item given the column number.
+            :rtype: string
         """
-        if column == 0:
-            return treeItem.name
-        elif column == 1:
-            return treeItem.value
-        else:
-            raise ValueError("Invalid column: {}".format(column))
+        try:
+            if column == 0:
+                return treeItem.nodeName
+            elif column == 1:
+                return str(treeItem.value)
+            elif column == 2:
+                return " x ".join(str(elem) for elem in treeItem.arrayShape)
+            elif column == 3:
+                return str(treeItem.arrayElemType)
+            else:
+                raise ValueError("Invalid column: {}".format(column))
+        except AttributeError:
+            # Not all items may have every attribute (e.g group items have only a name)
+            if DEBUGGING:
+                return "<Not found>"
+            else:
+                return ""
+            
 
         
 # Making a separate class instead of inheriting form BaseTreeModel/AbstractItemModel 
@@ -57,11 +60,24 @@ class Repository(object):
     
     def __init__(self):
         
-        self.stores = []
-        self.treeModel = RepositoryTreeModel()
+        self._stores = []
+        self._treeModel = RepositoryTreeModel() # TODO: move to selector
         
     
-    def addStore(self, store):
-        pass
+    @property
+    def treeModel(self):
+        return self._treeModel
         
     
+    def appendStore(self, store):
+        self._stores.append(store)
+        storeRootItem = store.createItems()
+        storeRootIndex = self.treeModel.insertItem(storeRootItem)
+        return storeRootIndex
+        
+    
+    def closeStore(self, store):
+        assert False, "TODO: implement"
+
+        
+        
