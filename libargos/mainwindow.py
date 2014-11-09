@@ -89,7 +89,7 @@ class MainWindow(QtGui.QMainWindow):
         self._readViewSettings(reset = reset)
 
         # Update model 
-        #self.__addTestData()
+        self.__addTestData()
 
      
 
@@ -156,7 +156,7 @@ class MainWindow(QtGui.QMainWindow):
         headerNames = self.treeView.model().horizontalHeaders
         enabled = dict((name, True) for name in headerNames)
         enabled[headerNames[0]] = False # Fist column cannot be unchecked
-        self.treeView.addHeaderContextMenu(enabled=enabled)
+        self.treeView.addHeaderContextMenu(enabled=enabled, checkable={})
         
         self.label2 = QtGui.QLabel("Hi there", parent=self)
         centralLayout.addWidget(self.label2)        
@@ -251,13 +251,14 @@ class MainWindow(QtGui.QMainWindow):
     def __addTestData(self):
         """ Temporary function to add test data
         """
-        #assert False, "not yet operational"
-        self._model.addScalar("six", 6)
-        self._model.addScalar("seven", 7)
-        self._model.addScalar("eight", 8)
-        self._model.addScalar("nine", 9)
-        childIndex = self._model.addScalar("ten", 10)
-        
+        from libargos.selector.storeitems import StoreScalarTreeItem # temp
+        treeModel = self._repository.treeModel
+        treeModel.insertItem(StoreScalarTreeItem("six", 6))
+        treeModel.insertItem(StoreScalarTreeItem("seven", 7))
+        treeModel.insertItem(StoreScalarTreeItem("eight", 8))
+        treeModel.insertItem(StoreScalarTreeItem("nine", 9))
+        childIndex = treeModel.insertItem(StoreScalarTreeItem("ten", 10))
+
         selectionModel = self.treeView.selectionModel()
         selectionModel.setCurrentIndex(childIndex, QtGui.QItemSelectionModel.ClearAndSelect)
         logger.debug("selected tree item: has selection: {}".format(selectionModel.hasSelection()))

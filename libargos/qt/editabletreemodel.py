@@ -108,8 +108,9 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         any of the standard views, we use its internal list of QVariant objects to store a list of 
         strings that will be passed to views for use as horizontal header titles.
     """
+    HEADERS = tuple() # override in descendants
     
-    def __init__(self, headers, parent=None):
+    def __init__(self, parent=None):
         """ Constructor
         """
         super(BaseTreeModel, self).__init__(parent)
@@ -118,7 +119,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         # This way you can have a tree with multiple items at the top level.
         # The root item also is returned by getItem in case of an invalid index. 
         # Finally, it is used to store the header data.
-        self._horizontalHeaders = [header for header in headers]
+        #self._horizontalHeaders = [header for header in headers]
         self._rootItem = BaseTreeItem()
         
         # To easy turn-on off editing flags without having to override the flags() member
@@ -137,7 +138,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         """ Returns list of horizontal header labels. 
             See also self.headerData()
         """
-        return self._horizontalHeaders
+        return self.HEADERS
     
 
     ###########################################################
@@ -197,7 +198,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             for vertical headers, the section number corresponds to the row number.
         """
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
-            return self._horizontalHeaders[section] 
+            return self.horizontalHeaders[section] 
 
         return None
 
@@ -215,12 +216,12 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             When reimplementing this function in a subclass, call createIndex() to generate 
             model indexes that other components can use to refer to items in your model.
         """
-        logger.debug("  called index({}, {}, {}) {}"
-                     .format(parentIndex.row(), parentIndex.column(), parentIndex.isValid(), 
-                             parentIndex.isValid() and parentIndex.column() != 0))
+#        logger.debug("  called index({}, {}, {}) {}"
+#                     .format(parentIndex.row(), parentIndex.column(), parentIndex.isValid(), 
+#                             parentIndex.isValid() and parentIndex.column() != 0))
         
         parentItem = self.getItem(parentIndex, altItem=self.rootItem)
-        logger.debug("    Getting row {} from parentItem: {}".format(row, parentItem))
+        #logger.debug("    Getting row {} from parentItem: {}".format(row, parentItem))
         
         if not (0 <= row < parentItem.childCount()):
             # Can happen when deleting the last child. TODO: remove warning.

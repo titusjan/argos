@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Wrappers that offer a uniform interface to variables, groups etc.
+""" Tree items (derived from BaseTreeItem) that store information for in a 
+    data store in a repository. 
 
-    
 """
 import numpy as np
 from libargos.utils import check_class, StringType
@@ -50,6 +50,23 @@ class StoreTreeItem(BaseTreeItem):
         """ The node identifier. Defaults to the name"""
         return self._nodeId
     
+    
+    @property
+    def typeName(self):
+        return ""
+    
+    @property
+    def elementTypeName(self):
+        return ""
+    
+    @property
+    def arrayShape(self):
+        return tuple()
+    
+    @property
+    def dimensions(self):
+        return []
+    
     @property
     def attributes(self):
         return {}
@@ -60,17 +77,25 @@ class StoreGroupTreeItem(StoreTreeItem):
 
 
 
-class StoreScalarTreeItem(BaseTreeItem): # TODO: remove?
+class StoreScalarTreeItem(StoreTreeItem):
+    """ Stores a Python or numpy scalar
+    """
+    def __init__(self, nodeName, scalar, parentItem=None):
+        super(StoreScalarTreeItem, self).__init__(parentItem, nodeName = nodeName)
+        self._scalar = scalar 
     
-    def __init__(self, name, value, parentItem=None):
-        super(StoreScalarTreeItem, self).__init__(parentItem)
-        self.name = name
-        self.value = value 
-
+    @property
+    def typeName(self):
+        return type(self._scalar).__name__
+    
+    @property
+    def elementTypeName(self):
+        return self.typeName
+    
 
 class StoreArrayTreeItem(StoreTreeItem):
     
-    def __init__(self, array, parentItem=None, nodeName=None):
+    def __init__(self, nodeName, array, parentItem=None):
         """ Constructor
         """
         super(StoreArrayTreeItem, self).__init__(parentItem=parentItem, nodeName=nodeName)
@@ -82,15 +107,39 @@ class StoreArrayTreeItem(StoreTreeItem):
         return []
     
     @property
-    def elementType(self):
-        return None # Not an array
+    def arrayShape(self):
+        return self._array.shape
+
+    @property
+    def typeName(self):
+        return type(self._array).__name__
+    
+    @property
+    def elementTypeName(self):
+        return self._array.dtype.name
+    
+
+    
+
+class StoreDictionaryTreeItem(StoreTreeItem):
+    
+    def __init__(self, nodeName, dictionary, parentItem=None, ):
+        """ Constructor
+        """
+        super(StoreArrayTreeItem, self).__init__(parentItem=parentItem, nodeName=nodeName)
+        check_class(array, np.ndarray)
+        self._array = array
+   
+    @property
+    def dimensions(self):
+        return []
     
     @property
     def arrayShape(self):
         return self._array.shape
     
     @property
-    def arrayElemType(self):
+    def type(self):
         return self._array.dtype
-
+    
     

@@ -1,3 +1,24 @@
+# -*- coding: utf-8 -*-
+
+# This file is part of Argos.
+# 
+# Argos is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# Argos is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with Argos. If not, see <http://www.gnu.org/licenses/>.
+
+""" Data stores for use in the Repository
+
+"""
+
 #from .wrappers import BaseWrapper
 import logging, os
 import numpy as np
@@ -65,7 +86,8 @@ class SimpleTextFileStore(AbstractDataStore):
                                           nodeId=self.fileName)
         _nRows, nCols = self._data2D.shape
         for col in range(nCols):
-            colItem = StoreArrayTreeItem(self._data2D[:,col], nodeName="column {}".format(col))
+            nodeName="column {}".format(col)
+            colItem = StoreArrayTreeItem(nodeName, self._data2D[:,col])
             fileRootItem.insertItem(colItem)
             
         return fileRootItem
