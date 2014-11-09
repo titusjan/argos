@@ -39,22 +39,9 @@ class RepositoryTreeModel(BaseTreeModel):
     def __init__(self, parent=None):
         """ Constructor
         """
-        
         super(RepositoryTreeModel, self).__init__(parent=parent)
         self._isEditable = False
 
-
-    def flags(self, index):
-        """ Returns the item flags for the given index.
-        """
-        if not index.isValid():
-            return 0
-        
-        if index.column() == 1:
-            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable
-        else:
-            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
-        
     
     def _itemValueForColumn(self, treeItem, column):
         """ Returns the value of the item given the column number.

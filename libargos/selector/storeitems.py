@@ -20,7 +20,7 @@
 
 """
 import numpy as np
-from libargos.utils import check_class, StringType
+from libargos.utils import check_class, check_is_a_sequence, StringType
 from libargos.qt.editabletreemodel import BaseTreeItem
 
 
@@ -49,7 +49,6 @@ class StoreTreeItem(BaseTreeItem):
     def nodeId(self): # TODO: needed?
         """ The node identifier. Defaults to the name"""
         return self._nodeId
-    
     
     @property
     def typeName(self):
@@ -103,10 +102,6 @@ class StoreArrayTreeItem(StoreTreeItem):
         self._array = array
    
     @property
-    def dimensions(self):
-        return []
-    
-    @property
     def arrayShape(self):
         return self._array.shape
 
@@ -119,27 +114,40 @@ class StoreArrayTreeItem(StoreTreeItem):
         return self._array.dtype.name
     
 
+class StoreSequenceTreeItem(StoreTreeItem):
+    
+    def __init__(self, nodeName, sequence, parentItem=None):
+        """ Constructor
+        """
+        super(StoreSequenceTreeItem, self).__init__(parentItem=parentItem, nodeName=nodeName)
+        check_is_a_sequence(check_is_a_sequence)
+        self._sequence = sequence
+   
+    @property
+    def arrayShape(self):
+        return len(self._sequence)
+
+    @property
+    def typeName(self):
+        return type(self._sequence)
     
 
-class StoreDictionaryTreeItem(StoreTreeItem):
+
+class StoreMapTreeItem(StoreTreeItem):
     
     def __init__(self, nodeName, dictionary, parentItem=None, ):
         """ Constructor
         """
         super(StoreArrayTreeItem, self).__init__(parentItem=parentItem, nodeName=nodeName)
-        check_class(array, np.ndarray)
-        self._array = array
-   
-    @property
-    def dimensions(self):
-        return []
-    
+        check_class(dictionary, dict) # TODO: ordered dict?
+        self._dictionary = dictionary
+
     @property
     def arrayShape(self):
-        return self._array.shape
-    
+        return len(self._dictionary)
+
     @property
-    def type(self):
-        return self._array.dtype
+    def typeName(self):
+        return type(self._dictionary)
     
     

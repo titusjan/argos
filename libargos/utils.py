@@ -17,7 +17,7 @@
 
 """ Routines that do type checking or create classes
 """
-import logging, sys
+import logging, sys, types
 
 logger = logging.getLogger(__name__)
     
@@ -62,6 +62,20 @@ def is_a_string(var):
     """
     return isinstance(var, StringType)
 
+
+def is_a_sequence(var):
+    """ Returns True if var is a list or a tuple (but not a string!)
+    """
+    return (type(var) == list or type(var) == tuple)
+
+
+def check_is_a_sequence(var, element_type = None):
+    """ Calls is_a_sequence and raises a type error if the check fails.
+    """
+    if not is_a_sequence(var, element_type = element_type):
+        raise TypeError("var must be a list of either {}, however type(var) is {}"
+                        .format(element_type, type(var)))
+    
 
 def check_class(obj, target_class, allow_none = False):
     """ Checks that the  obj is a (sub)type of target_class. 

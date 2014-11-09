@@ -23,6 +23,7 @@
 import logging, os
 import numpy as np
 
+from libargos.utils import check_class  
 from libargos.selector.storeitems import StoreGroupTreeItem, StoreArrayTreeItem
 
 logger = logging.getLogger(__name__)
@@ -41,25 +42,31 @@ class AbstractDataStore(object):
         """
         pass
 
-#
-#class MemoryStore(AbstractDataStore):
-#    
-#    def open(self, fileName):
-#        pass
-#    
-#    def close(self):
-#        pass
-#    
-#    def createItems(self):
-#        """ Walks through all items and returns node to fill the repository
-#        """
-#        pass
+
+class DictStore(AbstractDataStore):
+    """ Stores a dictionary with variables (e.g. the local scope)
+    """
+
+    def __init__(self, dictionary):
+        check_class(dictionary, dict) # TODO: ordered dict?
+        self._dictionary = dictionary
+        self._data2D = None
+    
+    def open(self):
+        pass
+    
+    def close(self):
+        pass
+    
+    def createItems(self):
+        """ Walks through all items and returns node to fill the repository
+        """
+        pass
 
 
 class SimpleTextFileStore(AbstractDataStore):
     """ 
     """
-    
     def __init__(self, fileName):
         self._fileName = fileName
         self._data2D = None
@@ -70,11 +77,9 @@ class SimpleTextFileStore(AbstractDataStore):
     def close(self):
         self._data2D = None
         
-    
     @property
     def fileName(self):
         return self._fileName
-            
     
     def createItems(self):
         """ Walks through all items and returns node to fill the repository
