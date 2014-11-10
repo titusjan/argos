@@ -23,8 +23,9 @@
 import logging, os
 import numpy as np
 
-from libargos.utils import check_class  
-from libargos.selector.storeitems import StoreGroupTreeItem, StoreArrayTreeItem
+from libargos.utils import check_class, check_is_a_mapping
+from libargos.selector.storeitems import (StoreGroupTreeItem, StoreArrayTreeItem, 
+                                          StoreMappingTreeItem)
 
 logger = logging.getLogger(__name__)
 
@@ -43,14 +44,14 @@ class AbstractDataStore(object):
         pass
 
 
-class DictStore(AbstractDataStore):
+class MappingStore(AbstractDataStore):
     """ Stores a dictionary with variables (e.g. the local scope)
     """
 
-    def __init__(self, dictionary):
-        check_class(dictionary, dict) # TODO: ordered dict?
+    def __init__(self, dictName, dictionary):
+        check_is_a_mapping(dictionary)
         self._dictionary = dictionary
-        self._data2D = None
+        self._dictName = dictName
     
     def open(self):
         pass
@@ -61,7 +62,8 @@ class DictStore(AbstractDataStore):
     def createItems(self):
         """ Walks through all items and returns node to fill the repository
         """
-        pass
+        rootItem = StoreMappingTreeItem(self._dictName, self._dictionary)
+        return rootItem
 
 
 class SimpleTextFileStore(AbstractDataStore):

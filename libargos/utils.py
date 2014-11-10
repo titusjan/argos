@@ -18,6 +18,7 @@
 """ Routines that do type checking or create classes
 """
 import logging, sys, types
+import numpy as np
 
 logger = logging.getLogger(__name__)
     
@@ -50,6 +51,12 @@ def remove_process_serial_number(arg_list):
         See: http://hintsforums.macworld.com/showthread.php?t=11978
     """
     return [arg for arg in arg_list if not arg.startswith("-psn_0_")]
+
+
+def type_name(var):
+    """ Returns the name of the type of var"""
+    return type(var).__name__
+    
     
 
 def is_a_string(var):
@@ -69,12 +76,40 @@ def is_a_sequence(var):
     return (type(var) == list or type(var) == tuple)
 
 
-def check_is_a_sequence(var, element_type = None):
+def check_is_a_sequence(var):
     """ Calls is_a_sequence and raises a type error if the check fails.
     """
-    if not is_a_sequence(var, element_type = element_type):
-        raise TypeError("var must be a list of either {}, however type(var) is {}"
-                        .format(element_type, type(var)))
+    if not is_a_sequence(var):
+        raise TypeError("var must be a list or tuple, however type(var) is {}"
+                        .format(type(var)))
+    
+
+def is_a_mapping(var):
+    """ Returns True if var is a dictionary # TODO: ordered dict 
+    """
+    return isinstance(var, dict)
+
+
+def check_is_a_mapping(var):
+    """ Calls is_a_mapping and raises a type error if the check fails.
+    """
+    if not is_a_mapping(var):
+        raise TypeError("var must be a dict, however type(var) is {}"
+                        .format(type(var)))
+    
+
+def is_an_array(var):
+    """ Returns True if var is a dictionary # TODO: ordered dict 
+    """
+    return isinstance(var, np.ndarray)
+
+
+def check_is_an_array(var):
+    """ Calls is_a_mapping and raises a type error if the check fails.
+    """
+    if not is_an_array(var):
+        raise TypeError("var must be a NumPy array, however type(var) is {}"
+                        .format(type(var)))
     
 
 def check_class(obj, target_class, allow_none = False):

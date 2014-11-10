@@ -29,7 +29,7 @@ from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
 from libargos.qt import executeApplication, Qt, QtCore, QtGui, USE_PYQT, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
 from libargos.selector.repository import Repository
-from libargos.selector.datastore import SimpleTextFileStore
+from libargos.selector.datastore import SimpleTextFileStore, MappingStore
 from libargos.selector.storeitems import StoreScalarTreeItem
 
 
@@ -174,8 +174,7 @@ class MainWindow(QtGui.QMainWindow):
         """
         logger.debug("Loading file: {}".format(fileName))
         textFileStore = SimpleTextFileStore(fileName)
-        textFileStore.open()
-        storeRootIndex = self._repository.appendStore(textFileStore)
+        storeRootIndex = self._repository.openAndAppendStore(textFileStore)
         self.treeView.setExpanded(storeRootIndex, True)
         
 
@@ -252,16 +251,20 @@ class MainWindow(QtGui.QMainWindow):
     def __addTestData(self):
         """ Temporary function to add test data
         """
-        from libargos.selector.storeitems import StoreScalarTreeItem # temp
-        treeModel = self._repository.treeModel
-        treeModel.insertItem(StoreScalarTreeItem("six", 6))
-        treeModel.insertItem(StoreScalarTreeItem("seven", 7))
-        treeModel.insertItem(StoreScalarTreeItem("eight", 8))
-        treeModel.insertItem(StoreScalarTreeItem("nine", 9))
-        childIndex = treeModel.insertItem(StoreScalarTreeItem("ten", 10))
+        import numpy as np
+        myDict = {}
+        myDict['name'] = 'Pac Man'
+        myDict['age'] = 34
+        myDict['ghosts'] = ['Inky', 'Blinky', 'Pinky', 'Clyde']
+        myDict['array'] = np.arange(24).reshape(3, 8)
+        myDict['subDict'] = {'mean': np.ones(111), 'stddev': np.zeros(111, dtype=np.uint16)}
+        
+        localStore = MappingStore("myDict", myDict)
+        storeRootIndex = self._repository.openAndAppendStore(localStore)
+        self.treeView.setExpanded(storeRootIndex, True)
 
         selectionModel = self.treeView.selectionModel()
-        selectionModel.setCurrentIndex(childIndex, QtGui.QItemSelectionModel.ClearAndSelect)
+        selectionModel.setCurrentIndex(storeRootIndex, QtGui.QItemSelectionModel.ClearAndSelect)
         logger.debug("selected tree item: has selection: {}".format(selectionModel.hasSelection()))
         
         
@@ -295,7 +298,7 @@ class MainWindow(QtGui.QMainWindow):
         logger.debug("RemoveRow()")
         selectionModel = self.treeView.selectionModel()
         assert selectionModel.hasSelection(), "No selection"
-        self.treeView.model().deleteItem(selectionModel.currentIndex())
+        self.treeView.model().deleteItem(selectionModel.currentIndex()) # TODO: repository close
         logger.debug("removeRow completed")        
             
 

@@ -20,11 +20,15 @@
 
 """
 import numpy as np
-from libargos.utils import check_class, check_is_a_sequence, StringType
+import logging
+
+from libargos.utils import (StringType, check_class, 
+                            check_is_a_sequence, check_is_a_mapping, check_is_an_array,  
+                            is_a_sequence, is_a_mapping, is_an_array, type_name)
 from libargos.qt.editabletreemodel import BaseTreeItem
 
 
-# TODO: derive from object?
+logger = logging.getLogger(__name__)
 
 class StoreTreeItem(BaseTreeItem):
     """ Base node from which to derive the other types of nodes.
@@ -39,7 +43,7 @@ class StoreTreeItem(BaseTreeItem):
         check_class(nodeName, StringType, allow_none=True) # TODO: allow_none?
         self._nodeName = nodeName
         self._nodeId = nodeId if nodeId is not None else self._nodeName
-        
+
     @property
     def nodeName(self): # TODO: to BaseTreeItem?
         """ The node name."""
@@ -70,10 +74,46 @@ class StoreTreeItem(BaseTreeItem):
     def attributes(self):
         return {}
     
+    def canFetchChildren(self):
+        return False
+    
+    def fetchChildren(self):
+        return []
 
+    @staticmethod
+    def createFromObject(nodeName, obj):
+        if is_a_sequence(obj):
+            return StoreSequenceTreeItem(nodeName, obj)
+        elif is_a_mapping(obj):
+            return StoreMappingTreeItem(nodeName, obj)
+        elif is_an_array(obj):
+            return StoreArrayTreeItem(nodeName, obj)
+        else:
+            return StoreScalarTreeItem(nodeName, obj)
+        
+    
 class StoreGroupTreeItem(StoreTreeItem):
-    pass
 
+    def __init__(self, parentItem, nodeName=None, nodeId=None):
+        """ Constructor
+        """
+        super(StoreGroupTreeItem, self).__init__(parentItem, nodeName = nodeName)
+        self._childrenFetched = False
+        
+    def hasChildren(self):
+        """ Returns True if the item has (fetched or unfetched) children 
+        """
+        return True
+        
+    def canFetchChildren(self):
+        return not self._childrenFetched
+        
+    def fetchChildren(self):
+        assert self.canFetchChildren(), "canFetchChildren must be True"
+        self._childrenFetched = True
+        return []
+    
+    
 
 
 class StoreScalarTreeItem(StoreTreeItem):
@@ -85,7 +125,7 @@ class StoreScalarTreeItem(StoreTreeItem):
     
     @property
     def typeName(self):
-        return type(self._scalar).__name__
+        return type_name(self._scalar)
     
     @property
     def elementTypeName(self):
@@ -98,7 +138,7 @@ class StoreArrayTreeItem(StoreTreeItem):
         """ Constructor
         """
         super(StoreArrayTreeItem, self).__init__(parentItem=parentItem, nodeName=nodeName)
-        check_class(array, np.ndarray)
+        check_is_an_array(array)
         self._array = array
    
     @property
@@ -107,47 +147,78 @@ class StoreArrayTreeItem(StoreTreeItem):
 
     @property
     def typeName(self):
-        return type(self._array).__name__
+        return type_name(self._array)
     
     @property
     def elementTypeName(self):
         return self._array.dtype.name
     
 
-class StoreSequenceTreeItem(StoreTreeItem):
+class StoreSequenceTreeItem(StoreGroupTreeItem):
     
     def __init__(self, nodeName, sequence, parentItem=None):
         """ Constructor
         """
         super(StoreSequenceTreeItem, self).__init__(parentItem=parentItem, nodeName=nodeName)
-        check_is_a_sequence(check_is_a_sequence)
+        check_is_a_sequence(sequence)
         self._sequence = sequence
    
     @property
     def arrayShape(self):
-        return len(self._sequence)
+        return (len(self._sequence), )
 
     @property
     def typeName(self):
-        return type(self._sequence)
+        return type_name(self._sequence)
+    
+    def hasChildren(self):
+        """ Returns True if the item has (fetched or unfetched) children 
+        """
+        return len(self._sequence) > 0
+        
+    def fetchChildren(self):
+        assert self.canFetchChildren(), "canFetchChildren must be True"
+        self._childrenFetched = True
+        childItems = []
+        for nr, elem in enumerate(self._sequence):
+            childItems.append(self.FromObject("elem-{}".format(nr), elem))
+        return childItems
     
 
 
-class StoreMapTreeItem(StoreTreeItem):
+class StoreMappingTreeItem(StoreGroupTreeItem):
     
     def __init__(self, nodeName, dictionary, parentItem=None, ):
         """ Constructor
         """
-        super(StoreArrayTreeItem, self).__init__(parentItem=parentItem, nodeName=nodeName)
-        check_class(dictionary, dict) # TODO: ordered dict?
+        super(StoreMappingTreeItem, self).__init__(parentItem=parentItem, nodeName=nodeName)
+        check_is_a_mapping(dictionary)
         self._dictionary = dictionary
 
     @property
     def arrayShape(self):
-        return len(self._dictionary)
+        return (len(self._dictionary), )
 
     @property
     def typeName(self):
-        return type(self._dictionary)
+        return type_name(self._dictionary)
     
+    def hasChildren(self):
+        """ Returns True if the item has (fetched or unfetched) children 
+        """
+        return len(self._dictionary) > 0
+    
+    def canFetchChildren(self):
+        return not self._childrenFetched
+        
+    def fetchChildren(self):
+        assert self.canFetchChildren(), "canFetchChildren must be True"
+        self._childrenFetched = True
+        childItems = []
+        for key, value in sorted(self._dictionary.items()):
+            logger.debug("appending: {} -> {!r}".format(key, value))
+            childItems.append(self.createFromObject(str(key), value))
+        return childItems
+
+
     

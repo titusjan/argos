@@ -59,15 +59,20 @@ class BaseTreeItem(object):
     """
     def __init__(self, parentItem=None):
         self.parentItem = parentItem
-        self.childItems = []
+        self.childItems = [] # the fetched children
         
     def __repr__(self):
-        return "<TreeItem>".format()
+        return "<{}>".format(type(self).__name__)
+
+    def hasChildren(self):
+        """ Returns True if the item has (fetched or unfetched) children 
+        """
+        return len(self.childItems) > 0
 
     def child(self, row):
         return self.childItems[row]
 
-    def childCount(self):
+    def nChildren(self):
         return len(self.childItems)
 
     def childNumber(self):
@@ -79,7 +84,7 @@ class BaseTreeItem(object):
     def insertItem(self, childItem, position=None): 
         
         if position is None:
-            position = self.childCount()
+            position = self.nChildren()
             
         assert 0 <= position <= len(self.childItems), \
             "position should be 0 < {} <= {}".format(position, len(self.childItems))
@@ -223,7 +228,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         parentItem = self.getItem(parentIndex, altItem=self.rootItem)
         #logger.debug("    Getting row {} from parentItem: {}".format(row, parentItem))
         
-        if not (0 <= row < parentItem.childCount()):
+        if not (0 <= row < parentItem.nChildren()):
             # Can happen when deleting the last child. TODO: remove warning.
             logger.warn("Index row {} invalid for parent item: {}".format(row, parentItem))
             return QtCore.QModelIndex()
@@ -272,16 +277,16 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             is valid.
         """
         parentItem = self.getItem(parentIndex, altItem=self.rootItem)
-        return parentItem.childCount()
+        return parentItem.nChildren()
 
 
     def hasChildren(self, parentIndex=QtCore.QModelIndex()):
         """ Returns true if parent has any children; otherwise returns false.
-
             Use rowCount() on the parent to find out the number of children.
         """
-        return self.rowCount(parentIndex) > 0
-    
+        parentItem = self.getItem(parentIndex, altItem=self.rootItem)
+        return parentItem.hasChildren()
+        
 
 
     def _setItemValueForColumn(self, treeItem, column, value):
@@ -335,7 +340,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         """
         parentItem = self.getItem(parentIndex, altItem=self.rootItem)
         
-        nChildren = parentItem.childCount()
+        nChildren = parentItem.nChildren()
         if position is None:
             position = nChildren
             

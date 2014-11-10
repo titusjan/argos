@@ -71,8 +71,34 @@ class RepositoryTreeModel(BaseTreeModel):
             if DEBUGGING:
                 raise IndexError("Invalid column number: {}".format(column))
             return False
-
-
+        
+        
+    def canFetchMore(self, parentIndex):
+        """ Returns true if there is more data available for parent; otherwise returns false.
+        """
+        parentItem = self.getItem(parentIndex)
+        if not parentItem:
+            return False
+        
+        logger.debug("canFetchMore {}: {}".format(parentItem, parentItem.canFetchChildren()))
+        
+        return parentItem.canFetchChildren()
+        
+        
+    def fetchMore(self, parentIndex):
+        """ Fetches any available data for the items with the parent specified by the parent index.
+        """
+        parentItem = self.getItem(parentIndex)
+        if not parentItem:
+            return
+        
+        if not parentItem.canFetchChildren():
+            return
+        #assert parentItem.canFetchChildren, "Unable to fetch more children: {}".format(parentItem)
+        
+        for childItem in parentItem.fetchChildren(): # TODO: implementInsertItems?
+            self.insertItem(childItem, parentIndex=parentIndex)
+            
         
    
 class Repository(object):
@@ -96,7 +122,11 @@ class Repository(object):
         storeRootIndex = self.treeModel.insertItem(storeRootItem)
         return storeRootIndex
         
-    
+        
+    def openAndAppendStore(self, store):
+        store.open()
+        return self.appendStore(store)
+        
     def closeStore(self, store):
         assert False, "TODO: implement"
 
