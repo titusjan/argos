@@ -30,7 +30,7 @@ from libargos.selector.storeitems import (StoreGroupTreeItem, StoreArrayTreeItem
 logger = logging.getLogger(__name__)
 
 
-class AbstractDataStore(object):
+class AbstractStore(object):
     
     def open(self, fileName):
         pass
@@ -44,7 +44,7 @@ class AbstractDataStore(object):
         pass
 
 
-class MappingStore(AbstractDataStore):
+class MappingStore(AbstractStore):
     """ Stores a dictionary with variables (e.g. the local scope)
     """
 
@@ -66,7 +66,7 @@ class MappingStore(AbstractDataStore):
         return rootItem
 
 
-class SimpleTextFileStore(AbstractDataStore):
+class SimpleTextFileStore(AbstractStore):
     """ 
     """
     def __init__(self, fileName):
