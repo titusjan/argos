@@ -102,7 +102,8 @@ class GroupStoreTreeItem(StoreTreeItem):
     def hasChildren(self):
         """ Returns True if the item has (fetched or unfetched) children 
         """
-        return True
+        logger.debug("{} has children = {}".format(self, not self._childrenFetched or len(self.childItems) > 0))
+        return not self._childrenFetched or len(self.childItems) > 0
         
     def canFetchChildren(self):
         return not self._childrenFetched

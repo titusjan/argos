@@ -79,8 +79,6 @@ class RepositoryTreeModel(BaseTreeModel):
         if not parentItem:
             return False
         
-        logger.debug("canFetchMore {}: {}".format(parentItem, parentItem.canFetchChildren()))
-        
         return parentItem.canFetchChildren()
         
         
@@ -93,9 +91,8 @@ class RepositoryTreeModel(BaseTreeModel):
         
         if not parentItem.canFetchChildren():
             return
-        #assert parentItem.canFetchChildren, "Unable to fetch more children: {}".format(parentItem)
         
-        for childItem in parentItem.fetchChildren(): # TODO: implementInsertItems?
+        for childItem in parentItem.fetchChildren(): # TODO: implement InsertItems?
             self.insertItem(childItem, parentIndex=parentIndex)
             
         

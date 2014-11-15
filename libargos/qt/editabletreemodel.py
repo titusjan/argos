@@ -81,7 +81,7 @@ class BaseTreeItem(object):
         return 0
 
 
-    def insertItem(self, childItem, position=None): 
+    def insertChild(self, childItem, position=None): 
         
         if position is None:
             position = self.nChildren()
@@ -95,7 +95,7 @@ class BaseTreeItem(object):
         self.childItems.insert(position, childItem)
 
 
-    def removeChild(self, position): # TODO: rename to remove item?
+    def removeChild(self, position):
         
         assert 0 <= position <= len(self.childItems), \
             "position should be 0 < {} <= {}".format(position, len(self.childItems))
@@ -349,7 +349,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
                     
         self.beginInsertRows(parentIndex, position, position)
         try:
-            parentItem.insertItem(childItem, position)
+            parentItem.insertChild(childItem, position)
         finally:
             self.endInsertRows()
             
