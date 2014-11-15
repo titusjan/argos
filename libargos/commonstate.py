@@ -27,12 +27,10 @@ logger = logging.getLogger(__name__)
 
 class StateSingleton(object):
     """ Singleton object that stores the shared state between all windows
-    
     """
     def __init__(self):
         """ Constructor """
         self._repository = Repository()
-        self.narf = 'narf'
         
         
     def __repr__(self):

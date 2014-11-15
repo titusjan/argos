@@ -31,7 +31,7 @@ from libargos.qt import executeApplication, Qt, QtCore, QtGui, USE_PYQT, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
 from libargos.selector.abstractstore import SimpleTextFileStore, MappingStore
 from libargos.selector.ncdfstore import NcdfStore
-from libargos.selector.storeitems import StoreScalarTreeItem
+from libargos.selector.storeitems import ScalarStoreTreeItem
 
 
 logger = logging.getLogger(__name__)
@@ -293,7 +293,7 @@ class MainWindow(QtGui.QMainWindow):
 
         value = random.randint(20, 99)
         model = getCommonState().repository.treeModel
-        childIndex = model.insertItem(StoreScalarTreeItem("new child", value), 
+        childIndex = model.insertItem(ScalarStoreTreeItem("new child", value), 
                                       parentIndex = col0Index)
         self.treeView.selectionModel().setCurrentIndex(childIndex, 
                                                        QtGui.QItemSelectionModel.ClearAndSelect)

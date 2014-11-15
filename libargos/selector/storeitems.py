@@ -82,21 +82,21 @@ class StoreTreeItem(BaseTreeItem):
     @staticmethod
     def createFromObject(nodeName, obj):
         if is_a_sequence(obj):
-            return StoreSequenceTreeItem(nodeName, obj)
+            return SequenceStoreTreeItem(nodeName, obj)
         elif is_a_mapping(obj):
-            return StoreMappingTreeItem(nodeName, obj)
+            return MappingStoreTreeItem(nodeName, obj)
         elif is_an_array(obj):
-            return StoreArrayTreeItem(nodeName, obj)
+            return ArrayStoreTreeItem(nodeName, obj)
         else:
-            return StoreScalarTreeItem(nodeName, obj)
+            return ScalarStoreTreeItem(nodeName, obj)
         
     
-class StoreGroupTreeItem(StoreTreeItem):
+class GroupStoreTreeItem(StoreTreeItem):
 
     def __init__(self, parentItem=None, nodeName=None, nodeId=None):
         """ Constructor
         """
-        super(StoreGroupTreeItem, self).__init__(parentItem, nodeName = nodeName)
+        super(GroupStoreTreeItem, self).__init__(parentItem, nodeName = nodeName)
         self._childrenFetched = False
         
     def hasChildren(self):
@@ -120,12 +120,11 @@ class StoreGroupTreeItem(StoreTreeItem):
     
     
 
-
-class StoreScalarTreeItem(StoreTreeItem):
+class ScalarStoreTreeItem(StoreTreeItem):
     """ Stores a Python or numpy scalar
     """
     def __init__(self, nodeName, scalar, parentItem=None):
-        super(StoreScalarTreeItem, self).__init__(parentItem, nodeName = nodeName)
+        super(ScalarStoreTreeItem, self).__init__(parentItem, nodeName = nodeName)
         self._scalar = scalar 
     
     @property
@@ -137,12 +136,12 @@ class StoreScalarTreeItem(StoreTreeItem):
         return self.typeName
     
 
-class StoreArrayTreeItem(StoreTreeItem):
+class ArrayStoreTreeItem(StoreTreeItem):
     
     def __init__(self, nodeName, array, parentItem=None):
         """ Constructor
         """
-        super(StoreArrayTreeItem, self).__init__(parentItem=parentItem, nodeName=nodeName)
+        super(ArrayStoreTreeItem, self).__init__(parentItem=parentItem, nodeName=nodeName)
         check_is_an_array(array)
         self._array = array
    
@@ -160,12 +159,12 @@ class StoreArrayTreeItem(StoreTreeItem):
         return '<compound>' if dtype.names else str(dtype)
     
 
-class StoreSequenceTreeItem(StoreGroupTreeItem):
+class SequenceStoreTreeItem(GroupStoreTreeItem):
     
     def __init__(self, nodeName, sequence, parentItem=None):
         """ Constructor
         """
-        super(StoreSequenceTreeItem, self).__init__(parentItem=parentItem, nodeName=nodeName)
+        super(SequenceStoreTreeItem, self).__init__(parentItem=parentItem, nodeName=nodeName)
         check_is_a_sequence(sequence)
         self._sequence = sequence
    
@@ -193,12 +192,12 @@ class StoreSequenceTreeItem(StoreGroupTreeItem):
     
 
 
-class StoreMappingTreeItem(StoreGroupTreeItem):
+class MappingStoreTreeItem(GroupStoreTreeItem):
     
     def __init__(self, nodeName, dictionary, parentItem=None, ):
         """ Constructor
         """
-        super(StoreMappingTreeItem, self).__init__(parentItem=parentItem, nodeName=nodeName)
+        super(MappingStoreTreeItem, self).__init__(parentItem=parentItem, nodeName=nodeName)
         check_is_a_mapping(dictionary)
         self._dictionary = dictionary
 

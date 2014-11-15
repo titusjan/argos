@@ -22,8 +22,8 @@ import logging, os
 import numpy as np
 
 from libargos.utils import check_is_a_mapping
-from libargos.selector.storeitems import (StoreGroupTreeItem, StoreArrayTreeItem, 
-                                          StoreMappingTreeItem)
+from libargos.selector.storeitems import (GroupStoreTreeItem, ArrayStoreTreeItem, 
+                                          MappingStoreTreeItem)
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ class MappingStore(AbstractStore):
     def createItems(self):
         """ Walks through all items and returns node to fill the repository
         """
-        rootItem = StoreMappingTreeItem(self._dictName, self._dictionary)
+        rootItem = MappingStoreTreeItem(self._dictName, self._dictionary)
         return rootItem
 
 
@@ -86,13 +86,13 @@ class SimpleTextFileStore(AbstractStore):
         """
         assert self._data2D is not None, "File not opened: {}".format(self.fileName)
         
-        fileRootItem = StoreGroupTreeItem(parentItem=None, 
+        fileRootItem = GroupStoreTreeItem(parentItem=None, 
                                           nodeName=os.path.basename(self.fileName), 
                                           nodeId=self.fileName)
         _nRows, nCols = self._data2D.shape
         for col in range(nCols):
             nodeName="column {}".format(col)
-            colItem = StoreArrayTreeItem(nodeName, self._data2D[:,col])
+            colItem = ArrayStoreTreeItem(nodeName, self._data2D[:,col])
             fileRootItem.insertItem(colItem)
             
         return fileRootItem

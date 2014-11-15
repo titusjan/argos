@@ -20,7 +20,6 @@
 
 
 import logging
-from libargos.qt import QtCore
 from libargos.qt.editabletreemodel import BaseTreeModel
 from libargos.info import DEBUGGING
 #from libargos.utils import check_class

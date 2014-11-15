@@ -25,18 +25,18 @@ from netCDF4 import Dataset, Variable
 
 from libargos.utils import check_class, type_name
 from libargos.selector.abstractstore import AbstractStore
-from libargos.selector.storeitems import (StoreGroupTreeItem, StoreTreeItem)
+from libargos.selector.storeitems import (GroupStoreTreeItem, StoreTreeItem)
 
 logger = logging.getLogger(__name__)
 
 
 
-class StoreVariableTreeItem(StoreTreeItem):
+class VariableStroreTreeItem(StoreTreeItem):
 
     def __init__(self, ncVar, parentItem=None, nodeName=None, nodeId=None):
         """ Constructor
         """
-        super(StoreVariableTreeItem, self).__init__(parentItem, nodeName = nodeName)
+        super(VariableStroreTreeItem, self).__init__(parentItem, nodeName = nodeName)
         check_class(ncVar, Variable)
 
         self._ncVar = ncVar
@@ -58,12 +58,12 @@ class StoreVariableTreeItem(StoreTreeItem):
     
     
 
-class StoreDatasetTreeItem(StoreGroupTreeItem):
+class DatasetStoreTreeItem(GroupStoreTreeItem):
 
     def __init__(self, dataset, parentItem=None, nodeName=None, nodeId=None):
         """ Constructor
         """
-        super(StoreGroupTreeItem, self).__init__(parentItem, nodeName = nodeName)
+        super(GroupStoreTreeItem, self).__init__(parentItem, nodeName = nodeName)
         check_class(dataset, Dataset)
 
         self._dataset = dataset
@@ -76,11 +76,11 @@ class StoreDatasetTreeItem(StoreGroupTreeItem):
         
         # Add groups
         for groupName, ncGroup in self._dataset.groups.items():
-            childItems.append(StoreDatasetTreeItem(ncGroup, nodeName=groupName))
+            childItems.append(DatasetStoreTreeItem(ncGroup, nodeName=groupName))
             
         # Add variables
         for varName, ncVar in self._dataset.variables.items():
-            childItems.append(StoreVariableTreeItem(ncVar, nodeName=varName))
+            childItems.append(VariableStroreTreeItem(ncVar, nodeName=varName))
                         
         self._childrenFetched = True
         return childItems
@@ -112,7 +112,7 @@ class NcdfStore(AbstractStore):
         """
         assert self._rootDataset is not None, "File not opened: {}".format(self.fileName)
         
-        fileRootItem = StoreDatasetTreeItem(self._rootDataset, parentItem=None, 
+        fileRootItem = DatasetStoreTreeItem(self._rootDataset, parentItem=None, 
                                             nodeName=os.path.basename(self.fileName), 
                                             nodeId=self.fileName)
             
