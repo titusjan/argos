@@ -23,13 +23,14 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
 
-import logging, platform
+import logging, platform, os
 
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
 from libargos.qt import executeApplication, Qt, QtCore, QtGui, USE_PYQT, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
 from libargos.selector.repository import Repository
-from libargos.selector.datastore import SimpleTextFileStore, MappingStore
+from libargos.selector.abstractstore import SimpleTextFileStore, MappingStore
+from libargos.selector.ncdfstore import NcdfStore
 from libargos.selector.storeitems import StoreScalarTreeItem
 
 
@@ -170,11 +171,20 @@ class MainWindow(QtGui.QMainWindow):
     # End of setup_methods
     
     def loadTextFile(self, fileName):
-        """ Loads a pstats file and updates the table model
+        """ Loads a text file into the repository.
         """
         logger.debug("Loading file: {}".format(fileName))
-        textFileStore = SimpleTextFileStore(fileName)
-        storeRootIndex = self._repository.openAndAppendStore(textFileStore)
+        dataStore = SimpleTextFileStore(fileName)
+        storeRootIndex = self._repository.openAndAppendStore(dataStore)
+        self.treeView.setExpanded(storeRootIndex, True)
+        
+    
+    def loadNcdfFile(self, fileName):
+        """ Loads a netCDF file into the repository.
+        """
+        logger.debug("Loading file: {}".format(fileName))
+        dataStore = NcdfStore(fileName)
+        storeRootIndex = self._repository.openAndAppendStore(dataStore)
         self.treeView.setExpanded(storeRootIndex, True)
         
 
@@ -183,8 +193,8 @@ class MainWindow(QtGui.QMainWindow):
         """
         if not fileName:
             fileName = QtGui.QFileDialog.getOpenFileName(self, 
-                caption = "Choose a pstats file", directory = '', 
-                filter='Txt (*.txt;*.text);;All files (*)')
+                caption = "Choose a file", directory = '', 
+                filter='Txt (*.txt;*.text);;netCDF(*.nc;*.nc4);;All files (*)')
             if not USE_PYQT:
                 # PySide returns: (file, selectedFilter)
                 fileName = fileName[0]
@@ -192,7 +202,12 @@ class MainWindow(QtGui.QMainWindow):
         if fileName:
             logger.info("Loading data from: {!r}".format(fileName))
             try:
-                self.loadTextFile(fileName)
+                # Autodetect (temporary solution)
+                _, extension = os.path.splitext(fileName)
+                if extension in ('.nc', '.nc4'):
+                    self.loadNcdfFile(fileName)
+                else:
+                    self.loadTextFile(fileName)
             except Exception as ex:
                 if DEBUGGING:
                     raise

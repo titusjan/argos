@@ -19,7 +19,6 @@
     data store in a repository. 
 
 """
-import numpy as np
 import logging
 
 from libargos.utils import (StringType, check_class, 
@@ -36,7 +35,7 @@ class StoreTreeItem(BaseTreeItem):
         Serves as an interface but can also be instantiated for debugging purposes.
     
     """
-    def __init__(self, parentItem, nodeName=None, nodeId=None):
+    def __init__(self, parentItem=None, nodeName=None, nodeId=None):
         """ Constructor
         """
         super(StoreTreeItem, self).__init__(parentItem)
@@ -94,7 +93,7 @@ class StoreTreeItem(BaseTreeItem):
     
 class StoreGroupTreeItem(StoreTreeItem):
 
-    def __init__(self, parentItem, nodeName=None, nodeId=None):
+    def __init__(self, parentItem=None, nodeName=None, nodeId=None):
         """ Constructor
         """
         super(StoreGroupTreeItem, self).__init__(parentItem, nodeName = nodeName)
@@ -110,8 +109,14 @@ class StoreGroupTreeItem(StoreTreeItem):
         
     def fetchChildren(self):
         assert self.canFetchChildren(), "canFetchChildren must be True"
+
+        # When overriding, put your code here. Keep the other lines.        
+        childItems = [] 
+        # childItems must be a list of StoreTreeItems. Their parent must be None, it
+        # will be set by BaseTreeitem.insertItem()
+        
         self._childrenFetched = True
-        return []
+        return childItems
     
     
 
@@ -151,7 +156,8 @@ class StoreArrayTreeItem(StoreTreeItem):
     
     @property
     def elementTypeName(self):
-        return self._array.dtype.name
+        dtype =  self._array.dtype
+        return '<compound>' if dtype.names else str(dtype)
     
 
 class StoreSequenceTreeItem(StoreGroupTreeItem):
@@ -178,10 +184,11 @@ class StoreSequenceTreeItem(StoreGroupTreeItem):
         
     def fetchChildren(self):
         assert self.canFetchChildren(), "canFetchChildren must be True"
-        self._childrenFetched = True
         childItems = []
         for nr, elem in enumerate(self._sequence):
-            childItems.append(self.FromObject("elem-{}".format(nr), elem))
+            childItems.append(self.createFromObject("elem-{}".format(nr), elem))
+
+        self._childrenFetched = True
         return childItems
     
 
@@ -207,17 +214,15 @@ class StoreMappingTreeItem(StoreGroupTreeItem):
         """ Returns True if the item has (fetched or unfetched) children 
         """
         return len(self._dictionary) > 0
-    
-    def canFetchChildren(self):
-        return not self._childrenFetched
         
     def fetchChildren(self):
         assert self.canFetchChildren(), "canFetchChildren must be True"
-        self._childrenFetched = True
         childItems = []
         for key, value in sorted(self._dictionary.items()):
-            logger.debug("appending: {} -> {!r}".format(key, value))
+            #logger.debug("appending: {} -> {!r}".format(key, value))
             childItems.append(self.createFromObject(str(key), value))
+            
+        self._childrenFetched = True
         return childItems
 
 

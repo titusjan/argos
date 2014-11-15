@@ -89,13 +89,13 @@ class BaseTreeItem(object):
         assert 0 <= position <= len(self.childItems), \
             "position should be 0 < {} <= {}".format(position, len(self.childItems))
             
-        assert childItem.parentItem is None, "childItem already has a parent"
+        assert childItem.parentItem is None, "childItem already has a parent: {}".format(childItem)
             
         childItem.parentItem = self    
         self.childItems.insert(position, childItem)
 
 
-    def removeChild(self, position):
+    def removeChild(self, position): # TODO: rename to remove item?
         
         assert 0 <= position <= len(self.childItems), \
             "position should be 0 < {} <= {}".format(position, len(self.childItems))

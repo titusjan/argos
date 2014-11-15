@@ -18,12 +18,10 @@
 """ Data stores for use in the Repository
 
 """
-
-#from .wrappers import BaseWrapper
 import logging, os
 import numpy as np
 
-from libargos.utils import check_class, check_is_a_mapping
+from libargos.utils import check_is_a_mapping
 from libargos.selector.storeitems import (StoreGroupTreeItem, StoreArrayTreeItem, 
                                           StoreMappingTreeItem)
 
