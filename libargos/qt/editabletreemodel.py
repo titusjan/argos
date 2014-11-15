@@ -58,11 +58,21 @@ class BaseTreeItem(object):
         in BaseTreeModel._itemValueForColumn
     """
     def __init__(self, parentItem=None):
-        self.parentItem = parentItem
-        self.childItems = [] # the fetched children
+        self._parentItem = parentItem
+        self._childItems = [] # the fetched children
         
     def __repr__(self):
         return "<{}>".format(type(self).__name__)
+    
+    @property
+    def parentItem(self):
+        """ The parent item """
+        return self._parentItem
+    
+    @property
+    def childItems(self):
+        """ List of child items """
+        return self._childItems
 
     def hasChildren(self):
         """ Returns True if the item has (fetched or unfetched) children 
@@ -91,7 +101,7 @@ class BaseTreeItem(object):
             
         assert childItem.parentItem is None, "childItem already has a parent: {}".format(childItem)
             
-        childItem.parentItem = self    
+        childItem._parentItem = self    
         self.childItems.insert(position, childItem)
 
 
