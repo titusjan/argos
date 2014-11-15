@@ -27,11 +27,11 @@ import logging, platform, os
 
 from libargos.commonstate import getCommonState
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
-from libargos.qt import executeApplication, Qt, QtCore, QtGui, USE_PYQT, QtSlot
+from libargos.qt import executeApplication, QtCore, QtGui, USE_PYQT, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
-from libargos.selector.abstractstore import SimpleTextFileStore, MappingStore
 from libargos.selector.ncdfstore import NcdfStore
-from libargos.selector.storeitems import ScalarStoreTreeItem
+from libargos.selector.memorystore import ScalarStoreTreeItem, MappingStore
+from libargos.selector.textfilestore import SimpleTextFileStore
 
 
 logger = logging.getLogger(__name__)

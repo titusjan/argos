@@ -20,15 +20,12 @@
 """
 
 import logging, os
-import numpy as np
 from netCDF4 import Dataset, Variable
 
 from libargos.utils import check_class, type_name
-from libargos.selector.abstractstore import AbstractStore
-from libargos.selector.storeitems import (GroupStoreTreeItem, StoreTreeItem)
+from libargos.selector.abstractstore import AbstractStore, GroupStoreTreeItem, StoreTreeItem
 
 logger = logging.getLogger(__name__)
-
 
 
 class VariableStroreTreeItem(StoreTreeItem):
@@ -40,7 +37,6 @@ class VariableStroreTreeItem(StoreTreeItem):
         check_class(ncVar, Variable)
 
         self._ncVar = ncVar
-        
    
     @property
     def arrayShape(self):
@@ -54,7 +50,6 @@ class VariableStroreTreeItem(StoreTreeItem):
     def elementTypeName(self):
         dtype =  self._ncVar.dtype
         return '<compound>' if dtype.names else str(dtype)
-
     
     
 
@@ -84,8 +79,6 @@ class DatasetStoreTreeItem(GroupStoreTreeItem):
                         
         self._childrenFetched = True
         return childItems
-    
-    
     
 
 

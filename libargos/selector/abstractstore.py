@@ -18,15 +18,95 @@
 """ Data stores for use in the Repository
 
 """
-import logging, os
-import numpy as np
+import logging
 
-from libargos.utils import check_is_a_mapping
-from libargos.selector.storeitems import (GroupStoreTreeItem, ArrayStoreTreeItem, 
-                                          MappingStoreTreeItem)
+from libargos.qt.editabletreemodel import BaseTreeItem
+from libargos.utils import StringType, check_class
 
 logger = logging.getLogger(__name__)
 
+
+
+class StoreTreeItem(BaseTreeItem):
+    """ Base node from which to derive the other types of nodes.
+    
+        Serves as an interface but can also be instantiated for debugging purposes.
+    
+    """
+    def __init__(self, parentItem=None, nodeName=None, nodeId=None):
+        """ Constructor
+        """
+        super(StoreTreeItem, self).__init__(parentItem)
+        check_class(nodeName, StringType, allow_none=True) # TODO: allow_none?
+        self._nodeName = nodeName
+        self._nodeId = nodeId if nodeId is not None else self._nodeName
+
+    @property
+    def nodeName(self): # TODO: to BaseTreeItem?
+        """ The node name."""
+        return self._nodeName
+        
+    @property
+    def nodeId(self): # TODO: needed?
+        """ The node identifier. Defaults to the name"""
+        return self._nodeId
+    
+    @property
+    def typeName(self):
+        return ""
+    
+    @property
+    def elementTypeName(self):
+        return ""
+    
+    @property
+    def arrayShape(self):
+        return tuple()
+    
+    @property
+    def dimensions(self):
+        return []
+    
+    @property
+    def attributes(self):
+        return {}
+    
+    def canFetchChildren(self):
+        return False
+    
+    def fetchChildren(self):
+        return []
+
+        
+    
+class GroupStoreTreeItem(StoreTreeItem):
+
+    def __init__(self, parentItem=None, nodeName=None, nodeId=None):
+        """ Constructor
+        """
+        super(GroupStoreTreeItem, self).__init__(parentItem, nodeName = nodeName)
+        self._childrenFetched = False
+        
+    def hasChildren(self):
+        """ Returns True if the item has (fetched or unfetched) children 
+        """
+        return not self._childrenFetched or len(self.childItems) > 0
+        
+    def canFetchChildren(self):
+        return not self._childrenFetched
+        
+    def fetchChildren(self):
+        assert self.canFetchChildren(), "canFetchChildren must be True"
+
+        # When overriding, put your code here. Keep the other lines.        
+        childItems = [] 
+        # childItems must be a list of StoreTreeItems. Their parent must be None, it
+        # will be set by BaseTreeitem.insertItem()
+        
+        self._childrenFetched = True
+        return childItems
+    
+        
 
 class AbstractStore(object):
     
@@ -40,63 +120,5 @@ class AbstractStore(object):
         """ Walks through all items and returns node to fill the repository
         """
         pass
-
-
-class MappingStore(AbstractStore):
-    """ Stores a dictionary with variables (e.g. the local scope)
-    """
-
-    def __init__(self, dictName, dictionary):
-        check_is_a_mapping(dictionary)
-        self._dictionary = dictionary
-        self._dictName = dictName
-    
-    def open(self):
-        pass
-    
-    def close(self):
-        pass
-    
-    def createItems(self):
-        """ Walks through all items and returns node to fill the repository
-        """
-        rootItem = MappingStoreTreeItem(self._dictName, self._dictionary)
-        return rootItem
-
-
-class SimpleTextFileStore(AbstractStore):
-    """ 
-    """
-    def __init__(self, fileName):
-        self._fileName = fileName
-        self._data2D = None
-    
-    def open(self):
-        self._data2D = np.loadtxt(self.fileName, ndmin=0)
-    
-    def close(self):
-        self._data2D = None
-        
-    @property
-    def fileName(self):
-        return self._fileName
-    
-    def createItems(self):
-        """ Walks through all items and returns node to fill the repository
-        """
-        assert self._data2D is not None, "File not opened: {}".format(self.fileName)
-        
-        fileRootItem = GroupStoreTreeItem(parentItem=None, 
-                                          nodeName=os.path.basename(self.fileName), 
-                                          nodeId=self.fileName)
-        _nRows, nCols = self._data2D.shape
-        for col in range(nCols):
-            nodeName="column {}".format(col)
-            colItem = ArrayStoreTreeItem(nodeName, self._data2D[:,col])
-            fileRootItem.insertItem(colItem)
-            
-        return fileRootItem
-
-
     
     
