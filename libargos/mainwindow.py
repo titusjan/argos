@@ -38,12 +38,12 @@ logger = logging.getLogger(__name__)
 
 
 
-def createBrowser(fileName = None, **kwargs):
+def createBrowser(fileNames = tuple(), **kwargs):
     """ Opens an MainWindow window
     """
     # Assumes qt.getQApplicationInstance() has been executed.
     browser = MainWindow(**kwargs)
-    if fileName is not None:
+    for fileName in fileNames:
         browser.openFile(fileName)
     browser.show()
     if platform.system() == 'Darwin':
@@ -51,10 +51,10 @@ def createBrowser(fileName = None, **kwargs):
     return browser
         
 
-def browse(fileName = None, **kwargs):
+def browse(fileNames = None, **kwargs):
     """ Opens and executes a main window
     """
-    _object_browser = createBrowser(fileName = fileName, **kwargs)
+    _object_browser = createBrowser(fileNames = fileNames, **kwargs)
     exit_code = executeApplication()
     return exit_code
 
@@ -174,7 +174,7 @@ class MainWindow(QtGui.QMainWindow):
         logger.debug("Loading file: {}".format(fileName))
         dataStore = SimpleTextFileStore(fileName)
         storeRootIndex = getCommonState().repository.openAndAppendStore(dataStore)
-        self.treeView.setExpanded(storeRootIndex, True)
+        #self.treeView.setExpanded(storeRootIndex, True)
         
     
     def loadNcdfFile(self, fileName):
@@ -183,7 +183,8 @@ class MainWindow(QtGui.QMainWindow):
         logger.debug("Loading file: {}".format(fileName))
         dataStore = NcdfStore(fileName)
         storeRootIndex = getCommonState().repository.openAndAppendStore(dataStore)
-        self.treeView.setExpanded(storeRootIndex, True)
+        self.treeView.setExpanded(storeRootIndex, False)
+        #self.treeView.setExpanded(storeRootIndex, True)
         
 
     def openFile(self, fileName=None): 

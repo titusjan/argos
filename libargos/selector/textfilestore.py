@@ -30,10 +30,14 @@ class SimpleTextFileStore(AbstractStore):
     """ Store for representing data that is read from a simple text file.
     """
     def __init__(self, fileName):
-        fileName = os.path.realpath(fileName)
-        super(SimpleTextFileStore, self).__init__(fileName) # use the fileName as storeId        
-        self._fileName = fileName
+        super(SimpleTextFileStore, self).__init__() # use the fileName as storeId        
+        self._fileName = os.path.normpath(fileName)
         self._data2D = None
+        
+    @property
+    def resourceNames(self):
+        "Returns the name of the text file"
+        return self._fileName
     
     def open(self):
         self._data2D = np.loadtxt(self.fileName, ndmin=0)
@@ -50,13 +54,11 @@ class SimpleTextFileStore(AbstractStore):
         """
         assert self._data2D is not None, "File not opened: {}".format(self.fileName)
         
-        fileRootItem = GroupStoreTreeItem(parentItem=None, 
-                                          nodeName=os.path.basename(self.fileName), 
-                                          nodeId=self.fileName)
+        fileRootItem = GroupStoreTreeItem(self, nodeName=os.path.basename(self.fileName))
         _nRows, nCols = self._data2D.shape
         for col in range(nCols):
             nodeName="column {}".format(col)
-            colItem = ArrayStoreTreeItem(nodeName, self._data2D[:,col])
+            colItem = ArrayStoreTreeItem(self, self._data2D[:,col], nodeName=nodeName)
             fileRootItem.insertChild(colItem)
             
         return fileRootItem

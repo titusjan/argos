@@ -23,26 +23,26 @@ logger = logging.getLogger(__name__)
 
 from libargos.selector.abstractstore import AbstractStore, StoreTreeItem, GroupStoreTreeItem
 
-from libargos.utils import (check_is_a_sequence, check_is_a_mapping, check_is_an_array,  
+from libargos.utils import (check_class, check_is_a_sequence, check_is_a_mapping, check_is_an_array,  
                             is_a_sequence, is_a_mapping, is_an_array, type_name)
 
 
-def _createFromObject(nodeName, obj):
+def _createFromObject(store, obj, nodeName):
     if is_a_sequence(obj):
-        return SequenceStoreTreeItem(nodeName, obj)
+        return SequenceStoreTreeItem(store, obj, nodeName=nodeName)
     elif is_a_mapping(obj):
-        return MappingStoreTreeItem(nodeName, obj)
+        return MappingStoreTreeItem(store, obj, nodeName=nodeName)
     elif is_an_array(obj):
-        return ArrayStoreTreeItem(nodeName, obj)
+        return ArrayStoreTreeItem(store, obj, nodeName=nodeName)
     else:
-        return ScalarStoreTreeItem(nodeName, obj)
+        return ScalarStoreTreeItem(store, obj, nodeName=nodeName)
     
 
 class ScalarStoreTreeItem(StoreTreeItem):
     """ Stores a Python or numpy scalar
     """
-    def __init__(self, nodeName, scalar, parentItem=None):
-        super(ScalarStoreTreeItem, self).__init__(parentItem, nodeName = nodeName)
+    def __init__(self, store, scalar, nodeName=None):
+        super(ScalarStoreTreeItem, self).__init__(store, nodeName = nodeName)
         self._scalar = scalar 
     
     @property
@@ -56,10 +56,10 @@ class ScalarStoreTreeItem(StoreTreeItem):
 
 class ArrayStoreTreeItem(StoreTreeItem):
     
-    def __init__(self, nodeName, array, parentItem=None):
+    def __init__(self, store, array, nodeName=None):
         """ Constructor
         """
-        super(ArrayStoreTreeItem, self).__init__(parentItem=parentItem, nodeName=nodeName)
+        super(ArrayStoreTreeItem, self).__init__(store, nodeName=nodeName)
         check_is_an_array(array)
         self._array = array
    
@@ -79,10 +79,10 @@ class ArrayStoreTreeItem(StoreTreeItem):
 
 class SequenceStoreTreeItem(GroupStoreTreeItem):
     
-    def __init__(self, nodeName, sequence, parentItem=None):
+    def __init__(self, store, sequence, nodeName=None):
         """ Constructor
         """
-        super(SequenceStoreTreeItem, self).__init__(parentItem=parentItem, nodeName=nodeName)
+        super(SequenceStoreTreeItem, self).__init__(store, nodeName=nodeName)
         check_is_a_sequence(sequence)
         self._sequence = sequence
    
@@ -103,7 +103,7 @@ class SequenceStoreTreeItem(GroupStoreTreeItem):
         assert self.canFetchChildren(), "canFetchChildren must be True"
         childItems = []
         for nr, elem in enumerate(self._sequence):
-            childItems.append(_createFromObject("elem-{}".format(nr), elem))
+            childItems.append(_createFromObject(self.store, elem, nodeName="elem-{}".format(nr)))
 
         self._childrenFetched = True
         return childItems
@@ -112,10 +112,10 @@ class SequenceStoreTreeItem(GroupStoreTreeItem):
 
 class MappingStoreTreeItem(GroupStoreTreeItem):
     
-    def __init__(self, nodeName, dictionary, parentItem=None, ):
+    def __init__(self, store, dictionary, nodeName=None):
         """ Constructor
         """
-        super(MappingStoreTreeItem, self).__init__(parentItem=parentItem, nodeName=nodeName)
+        super(MappingStoreTreeItem, self).__init__(store, nodeName=nodeName)
         check_is_a_mapping(dictionary)
         self._dictionary = dictionary
 
@@ -136,8 +136,7 @@ class MappingStoreTreeItem(GroupStoreTreeItem):
         assert self.canFetchChildren(), "canFetchChildren must be True"
         childItems = []
         for key, value in sorted(self._dictionary.items()):
-            #logger.debug("appending: {} -> {!r}".format(key, value))
-            childItems.append(_createFromObject(str(key), value))
+            childItems.append(_createFromObject(self.store, value, nodeName=str(key)))
             
         self._childrenFetched = True
         return childItems
@@ -149,20 +148,21 @@ class MappingStore(AbstractStore):
     """
 
     def __init__(self, dictName, dictionary):
-        super(MappingStore, self).__init__(dictName) # use the dictName as storeId
+        super(MappingStore, self).__init__()
         check_is_a_mapping(dictionary)
         self._dictionary = dictionary
-        self._dictName = dictName
-    
-    def open(self):
-        pass
-    
-    def close(self):
-        pass
-    
+        self._dictName = str(dictName)
+        
+    @property
+    def resourceNames(self):
+        "Returns the name and id of the dictionary"
+        return ("<{} {!r} at 0x{:x}>"
+                .format(type_name(self._dictionary), self._dictName, id(self._dictionary)))
+
+        
     def createItems(self):
         """ Walks through all items and returns node to fill the repository
         """
-        rootItem = MappingStoreTreeItem(self._dictName, self._dictionary)
+        rootItem = MappingStoreTreeItem(self, self._dictionary, nodeName=self._dictName)
         return rootItem
         

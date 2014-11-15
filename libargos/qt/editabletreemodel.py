@@ -57,8 +57,8 @@ class BaseTreeItem(object):
         The tree items have no notion of which field is stored in which column. This is implemented
         in BaseTreeModel._itemValueForColumn
     """
-    def __init__(self, parentItem=None):
-        self._parentItem = parentItem
+    def __init__(self):
+        self._parentItem = None
         self._childItems = [] # the fetched children
         
     def __repr__(self):

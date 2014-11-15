@@ -20,7 +20,6 @@
 
 
 import logging
-from collections import OrderedDict
 from libargos.qt.editabletreemodel import BaseTreeModel
 from libargos.info import DEBUGGING
 #from libargos.utils import check_class
@@ -33,8 +32,10 @@ class RepositoryTreeModel(BaseTreeModel):
         Maintains a list of open files and offers a QAbstractItemModel for read-only access of
         the data with QTreeViews.
     """
-    HEADERS = ["name", "shape", "type", "elem type"]
-    COL_NODE_NAME, COL_SHAPE, COL_TYPE, COL_ELEM_TYPE = range(len(HEADERS))
+    HEADERS = ["name", "shape", "type", "elem type", "resources", "resource names"]
+    (COL_NODE_NAME, COL_SHAPE, 
+     COL_TYPE, COL_ELEM_TYPE, 
+     COL_IS_OPEN, COL_RESOURCE_NAMES) = range(len(HEADERS))
     
     def __init__(self, parent=None):
         """ Constructor
@@ -55,6 +56,10 @@ class RepositoryTreeModel(BaseTreeModel):
             return treeItem.typeName
         elif column == self.COL_ELEM_TYPE:
             return treeItem.elementTypeName
+        elif column == self.COL_IS_OPEN:
+            return "open" if treeItem.store.isOpen() else "closed"
+        elif column == self.COL_RESOURCE_NAMES:
+            return treeItem.store.resourceNames
         else:
             raise ValueError("Invalid column: {}".format(column))
             
@@ -104,7 +109,7 @@ class Repository(object):
     
     def __init__(self):
         
-        self._stores = OrderedDict()
+        self._stores = []
         self._treeModel = RepositoryTreeModel()
         
     
@@ -115,17 +120,11 @@ class Repository(object):
     
     def appendStore(self, store):
         """ Appends a store to the end of the ordered store dictionary
-        
-            Raises ValueError if the repository already contains a store with the same ID.
-            This prevents files from being opened twice.
             
             Returns the index in of the store's root item (so it can be selected).
         """
-        if store.storeId in self._stores:
-            raise ValueError("Repository already contains {!r}".format(store.storeId))
-        
-        self._stores[store.storeId] = store
-        storeRootItem = store.createItems()
+        self._stores.append(store)
+        storeRootItem = store.createItems()  
         storeRootIndex = self.treeModel.insertItem(storeRootItem)
         return storeRootIndex
         
@@ -134,9 +133,6 @@ class Repository(object):
         """ Appends a store to the repository (using appendStore) and opens it.
             Returns the index in of the store's root item (so it can be selected).
         """
-        if store.storeId in self._stores: # check before opening
-            raise ValueError("Repository already contains {!r}".format(store.storeId))
-                
         store.open()
         storeRootIndex = self.appendStore(store)
         return storeRootIndex

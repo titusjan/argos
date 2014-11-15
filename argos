@@ -36,8 +36,8 @@ def main():
     """
     about_str = "{} version: {}".format(PROJECT_NAME, VERSION)
     parser = argparse.ArgumentParser(description = about_str)
-    parser.add_argument('file_name', metavar='FILE', nargs='?', 
-                        help='Input file')
+    parser.add_argument('fileNames', metavar='FILE', nargs='*', 
+                        help='Input files')
     parser.add_argument('--reset', action = 'store_true',  
                         help="If set, the size and shapes of the Qt widgets will be reset to their defaults.")
     parser.add_argument('-V', '--version', action = 'store_true',  
@@ -61,7 +61,7 @@ def main():
         print(about_str)
         sys.exit(0)
 
-    browse(fileName = args.file_name, reset=args.reset)
+    browse(fileNames = args.fileNames, reset=args.reset)
     logger.info('Done {}'.format(PROJECT_NAME))
   
 if __name__ == "__main__":

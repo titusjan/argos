@@ -33,13 +33,25 @@ class StoreTreeItem(BaseTreeItem):
         Serves as an interface but can also be instantiated for debugging purposes.
     
     """
-    def __init__(self, parentItem=None, nodeName=None, nodeId=None):
+    def __init__(self, store, nodeName=None):
         """ Constructor
+        
+            :param store: reference to the underlying store
+            :type  store: AbstractStore
+            :param nodeName: name of this node.
         """
-        super(StoreTreeItem, self).__init__(parentItem)
+        super(StoreTreeItem, self).__init__()
+        check_class(store, AbstractStore) 
         check_class(nodeName, StringType, allow_none=True) # TODO: allow_none?
-        self._nodeName = nodeName
-        self._nodeId = nodeId if nodeId is not None else self._nodeName
+        self._store = store
+        self._nodeName = str(nodeName)
+
+    @property
+    def store(self):
+        """ The underlying store.
+            :rtype: AbstractStore
+        """
+        return self._store
 
     @property
     def nodeName(self): # TODO: to BaseTreeItem?
@@ -81,10 +93,10 @@ class StoreTreeItem(BaseTreeItem):
     
 class GroupStoreTreeItem(StoreTreeItem):
 
-    def __init__(self, parentItem=None, nodeName=None, nodeId=None):
+    def __init__(self, store, nodeName=None):
         """ Constructor
         """
-        super(GroupStoreTreeItem, self).__init__(parentItem, nodeName = nodeName)
+        super(GroupStoreTreeItem, self).__init__(store, nodeName = nodeName)
         self._childrenFetched = False
         
     def hasChildren(self):
@@ -108,25 +120,45 @@ class GroupStoreTreeItem(StoreTreeItem):
     
         
 
-class AbstractStore(object):
+class AbstractStore(object): 
+    """ Defines an interface for data stores that can be added to the repository.
     
-    def __init__(self, storeId):
-        self._storeId = storeId
+        A data store reads a file (or other resource) and maps its contents to a 
+        tree. This tree consists of a hierarchy of StoreTreeItems and is created in 
+        createItems.
+    """
+    def __init__(self):
+        """ Constructor """
+        pass
         
     @property
-    def storeId(self):
-        " Returns the store identifier "
-        return self._storeId
+    def resourceNames(self):
+        """ Returns string that contains the underlying resources (usually the file name) 
+        """
+        return ""
+
+    def isOpen(self):
+        """ Returns True if the store's resources are opened.
+            The default implementation returns True (i.e. assumes no resources)
+        """
+        return True  # TODO: keep root item reference?
     
     def open(self):
+        """ Opens the underlying file(s) or other resources
+            The default implementation does nothing (i.e. assumes no resources) 
+        """
         pass
     
     def close(self):
-        pass
+        """ Closes the underlying file(s) or other resources
+            The default implementation does nothing (i.e. assumes no resources)
+        """
+        pass 
     
     def createItems(self):
-        """ Walks through all items and returns node to fill the repository
+        """ Walks through all items and returns a root item to fill the repository.
+            :rtype: StoreTreeItem
         """
-        pass
+        raise NotImplementedError("Abstract class")
     
     
