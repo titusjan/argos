@@ -25,10 +25,10 @@ from __future__ import division
 
 import logging, platform, os
 
+from libargos.commonstate import getCommonState
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
 from libargos.qt import executeApplication, Qt, QtCore, QtGui, USE_PYQT, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
-from libargos.selector.repository import Repository
 from libargos.selector.abstractstore import SimpleTextFileStore, MappingStore
 from libargos.selector.ncdfstore import NcdfStore
 from libargos.selector.storeitems import StoreScalarTreeItem
@@ -78,8 +78,6 @@ class MainWindow(QtGui.QMainWindow):
         MainWindow._nInstances += 1
         self._InstanceNr = self._nInstances        
         
-        self._repository = Repository()
-    
         self.__setupActions()
         self.__setupMenu()
         self.__setupViews()
@@ -142,7 +140,7 @@ class MainWindow(QtGui.QMainWindow):
         self.mainSplitter.setLayout(centralLayout)
         
         self.treeView = ToggleColumnTreeView(self)
-        self.treeView.setModel(self._repository.treeModel) # TODO: use a selector with its own model
+        self.treeView.setModel(getCommonState().repository.treeModel) # TODO: use a selector with its own model
         self.treeView.setAlternatingRowColors(True)
         self.treeView.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems) # TODO: SelectRows
         self.treeView.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
@@ -175,7 +173,7 @@ class MainWindow(QtGui.QMainWindow):
         """
         logger.debug("Loading file: {}".format(fileName))
         dataStore = SimpleTextFileStore(fileName)
-        storeRootIndex = self._repository.openAndAppendStore(dataStore)
+        storeRootIndex = getCommonState().repository.openAndAppendStore(dataStore)
         self.treeView.setExpanded(storeRootIndex, True)
         
     
@@ -184,7 +182,7 @@ class MainWindow(QtGui.QMainWindow):
         """
         logger.debug("Loading file: {}".format(fileName))
         dataStore = NcdfStore(fileName)
-        storeRootIndex = self._repository.openAndAppendStore(dataStore)
+        storeRootIndex = getCommonState().repository.openAndAppendStore(dataStore)
         self.treeView.setExpanded(storeRootIndex, True)
         
 
@@ -275,7 +273,7 @@ class MainWindow(QtGui.QMainWindow):
         myDict['subDict'] = {'mean': np.ones(111), 'stddev': np.zeros(111, dtype=np.uint16)}
         
         localStore = MappingStore("myDict", myDict)
-        storeRootIndex = self._repository.openAndAppendStore(localStore)
+        storeRootIndex = getCommonState().repository.openAndAppendStore(localStore)
         self.treeView.setExpanded(storeRootIndex, True)
 
         selectionModel = self.treeView.selectionModel()
@@ -294,7 +292,7 @@ class MainWindow(QtGui.QMainWindow):
         col0Index = curIndex.sibling(curIndex.row(), 0)
 
         value = random.randint(20, 99)
-        model = self._repository.treeModel
+        model = getCommonState().repository.treeModel
         childIndex = model.insertItem(StoreScalarTreeItem("new child", value), 
                                       parentIndex = col0Index)
         self.treeView.selectionModel().setCurrentIndex(childIndex, 
