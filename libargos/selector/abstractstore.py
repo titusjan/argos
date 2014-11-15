@@ -110,7 +110,15 @@ class GroupStoreTreeItem(StoreTreeItem):
 
 class AbstractStore(object):
     
-    def open(self, fileName):
+    def __init__(self, storeId):
+        self._storeId = storeId
+        
+    @property
+    def storeId(self):
+        " Returns the store identifier "
+        return self._storeId
+    
+    def open(self):
         pass
     
     def close(self):

@@ -20,6 +20,7 @@
 
 
 import logging
+from collections import OrderedDict
 from libargos.qt.editabletreemodel import BaseTreeModel
 from libargos.info import DEBUGGING
 #from libargos.utils import check_class
@@ -103,8 +104,8 @@ class Repository(object):
     
     def __init__(self):
         
-        self._stores = []
-        self._treeModel = RepositoryTreeModel() # TODO: move to selector
+        self._stores = OrderedDict()
+        self._treeModel = RepositoryTreeModel()
         
     
     @property
@@ -113,15 +114,33 @@ class Repository(object):
         
     
     def appendStore(self, store):
-        self._stores.append(store)
+        """ Appends a store to the end of the ordered store dictionary
+        
+            Raises ValueError if the repository already contains a store with the same ID.
+            This prevents files from being opened twice.
+            
+            Returns the index in of the store's root item (so it can be selected).
+        """
+        if store.storeId in self._stores:
+            raise ValueError("Repository already contains {!r}".format(store.storeId))
+        
+        self._stores[store.storeId] = store
         storeRootItem = store.createItems()
         storeRootIndex = self.treeModel.insertItem(storeRootItem)
         return storeRootIndex
         
         
     def openAndAppendStore(self, store):
+        """ Appends a store to the repository (using appendStore) and opens it.
+            Returns the index in of the store's root item (so it can be selected).
+        """
+        if store.storeId in self._stores: # check before opening
+            raise ValueError("Repository already contains {!r}".format(store.storeId))
+                
         store.open()
-        return self.appendStore(store)
+        storeRootIndex = self.appendStore(store)
+        return storeRootIndex
+         
         
     def closeStore(self, store):
         assert False, "TODO: implement"

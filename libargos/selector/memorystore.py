@@ -149,6 +149,7 @@ class MappingStore(AbstractStore):
     """
 
     def __init__(self, dictName, dictionary):
+        super(MappingStore, self).__init__(dictName) # use the dictName as storeId
         check_is_a_mapping(dictionary)
         self._dictionary = dictionary
         self._dictName = dictName

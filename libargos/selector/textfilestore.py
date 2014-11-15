@@ -30,6 +30,8 @@ class SimpleTextFileStore(AbstractStore):
     """ Store for representing data that is read from a simple text file.
     """
     def __init__(self, fileName):
+        fileName = os.path.realpath(fileName)
+        super(SimpleTextFileStore, self).__init__(fileName) # use the fileName as storeId        
         self._fileName = fileName
         self._data2D = None
     

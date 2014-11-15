@@ -86,8 +86,10 @@ class NcdfStore(AbstractStore):
     """ 
     """
     def __init__(self, fileName):
+        fileName = os.path.realpath(fileName)
+        super(NcdfStore, self).__init__(fileName) # use the fileName as storeId
         self._fileName = fileName
-        self._data2D = None
+        self._rootDataset = None
     
     def open(self):
         self._rootDataset = Dataset(self._fileName, 'r')

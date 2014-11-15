@@ -210,7 +210,8 @@ class MainWindow(QtGui.QMainWindow):
                 if DEBUGGING:
                     raise
                 else:
-                    logger.error("Error opening file: %s", ex)
+                    # TODO: message box with retry / close old file.
+                    logger.error("Error opening file: {}".format(ex))
                     QtGui.QMessageBox.warning(self, "Error opening file", str(ex))
     
     
