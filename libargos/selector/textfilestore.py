@@ -17,50 +17,28 @@
 
 """ Stores for representing data that is read from text files.
 """
-import logging, os
+import logging
 import numpy as np
 logger = logging.getLogger(__name__)
 
 
-from libargos.selector.abstractstore import AbstractStore, GroupStoreTreeItem
-from libargos.selector.memorystore import ArrayStoreTreeItem
+from libargos.selector.memorystore import ArrayRti
+from libargos.selector.abstractstore import OpenFileRtiMixin
 
 
-class SimpleTextFileStore(AbstractStore):
+class SimpleTextFileRti(ArrayRti, OpenFileRtiMixin):
     """ Store for representing data that is read from a simple text file.
     """
-    def __init__(self, fileName):
-        super(SimpleTextFileStore, self).__init__() # use the fileName as storeId        
-        self._fileName = os.path.normpath(fileName)
-        self._data2D = None
+    def __init__(self, fileName, nodeName=None):
+        OpenFileRtiMixin.__init__(self, fileName) 
+        ArrayRti.__init__(self, np.loadtxt(self.fileName, ndmin=0), nodeName=nodeName)
+        self._createItems()
         
-    @property
-    def resourceNames(self):
-        "Returns the name of the text file"
-        return self._fileName
-    
-    def open(self):
-        self._data2D = np.loadtxt(self.fileName, ndmin=0)
-    
-    def close(self):
-        self._data2D = None
-        
-    @property
-    def fileName(self):
-        return self._fileName
-    
-    def createItems(self):
+    def _createItems(self):
         """ Walks through all items and returns node to fill the repository
         """
-        assert self._data2D is not None, "File not opened: {}".format(self.fileName)
-        
-        fileRootItem = GroupStoreTreeItem(self, nodeName=os.path.basename(self.fileName))
-        _nRows, nCols = self._data2D.shape
+        _nRows, nCols = self._array.shape
         for col in range(nCols):
-            nodeName="column {}".format(col)
-            colItem = ArrayStoreTreeItem(self, self._data2D[:,col], nodeName=nodeName)
-            fileRootItem.insertChild(colItem)
+            colItem = ArrayRti(self._array[:, col], nodeName="column {}".format(col))
+            self.insertChild(colItem)
             
-        return fileRootItem
-
-

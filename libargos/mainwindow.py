@@ -29,9 +29,9 @@ from libargos.commonstate import getCommonState
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
 from libargos.qt import executeApplication, QtCore, QtGui, USE_PYQT, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
-from libargos.selector.ncdfstore import NcdfStore
-from libargos.selector.memorystore import ScalarStoreTreeItem, MappingStore
-from libargos.selector.textfilestore import SimpleTextFileStore
+from libargos.selector.ncdfstore import NcdfFileRti
+from libargos.selector.memorystore import ScalarRti, MappingRti
+from libargos.selector.textfilestore import SimpleTextFileRti
 
 
 logger = logging.getLogger(__name__)
@@ -172,17 +172,19 @@ class MainWindow(QtGui.QMainWindow):
         """ Loads a text file into the repository.
         """
         logger.debug("Loading file: {}".format(fileName))
-        dataStore = SimpleTextFileStore(fileName)
-        storeRootIndex = getCommonState().repository.openAndAppendStore(dataStore)
+        rootTreeItem = SimpleTextFileRti.createFromFileName(fileName)
+        storeRootIndex = getCommonState().repository.appendTreeItem(rootTreeItem)
         #self.treeView.setExpanded(storeRootIndex, True)
         
     
     def loadNcdfFile(self, fileName):
         """ Loads a netCDF file into the repository.
         """
+
         logger.debug("Loading file: {}".format(fileName))
-        dataStore = NcdfStore(fileName)
-        storeRootIndex = getCommonState().repository.openAndAppendStore(dataStore)
+        rootTreeItem = NcdfFileRti.createFromFileName(fileName)
+        assert rootTreeItem._parentItem is None, "rootTreeItem {!r}".format(rootTreeItem)
+        storeRootIndex = getCommonState().repository.appendTreeItem(rootTreeItem)
         self.treeView.setExpanded(storeRootIndex, False)
         #self.treeView.setExpanded(storeRootIndex, True)
         
@@ -274,8 +276,8 @@ class MainWindow(QtGui.QMainWindow):
         myDict['array'] = np.arange(24).reshape(3, 8)
         myDict['subDict'] = {'mean': np.ones(111), 'stddev': np.zeros(111, dtype=np.uint16)}
         
-        localStore = MappingStore("myDict", myDict)
-        storeRootIndex = getCommonState().repository.openAndAppendStore(localStore)
+        mappingRti = MappingRti(myDict, nodeName="myDict")
+        storeRootIndex = getCommonState().repository.appendTreeItem(mappingRti)
         self.treeView.setExpanded(storeRootIndex, True)
 
         selectionModel = self.treeView.selectionModel()
@@ -295,7 +297,7 @@ class MainWindow(QtGui.QMainWindow):
 
         value = random.randint(20, 99)
         model = getCommonState().repository.treeModel
-        childIndex = model.insertItem(ScalarStoreTreeItem("new child", value), 
+        childIndex = model.insertItem(ScalarRti("new child", value), 
                                       parentIndex = col0Index)
         self.treeView.selectionModel().setCurrentIndex(childIndex, 
                                                        QtGui.QItemSelectionModel.ClearAndSelect)

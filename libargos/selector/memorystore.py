@@ -21,28 +21,28 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from libargos.selector.abstractstore import AbstractStore, StoreTreeItem, GroupStoreTreeItem
+from libargos.selector.abstractstore import BaseRti, LazyLoadRti
 
-from libargos.utils import (check_class, check_is_a_sequence, check_is_a_mapping, check_is_an_array,  
+from libargos.utils import (check_is_a_sequence, check_is_a_mapping, check_is_an_array,  
                             is_a_sequence, is_a_mapping, is_an_array, type_name)
 
 
-def _createFromObject(store, obj, nodeName):
+def _createFromObject(obj, nodeName):
     if is_a_sequence(obj):
-        return SequenceStoreTreeItem(store, obj, nodeName=nodeName)
+        return SequenceRti(obj, nodeName=nodeName)
     elif is_a_mapping(obj):
-        return MappingStoreTreeItem(store, obj, nodeName=nodeName)
+        return MappingRti(obj, nodeName=nodeName)
     elif is_an_array(obj):
-        return ArrayStoreTreeItem(store, obj, nodeName=nodeName)
+        return ArrayRti(obj, nodeName=nodeName)
     else:
-        return ScalarStoreTreeItem(store, obj, nodeName=nodeName)
+        return ScalarRti(obj, nodeName=nodeName)
     
 
-class ScalarStoreTreeItem(StoreTreeItem):
+class ScalarRti(BaseRti):
     """ Stores a Python or numpy scalar
     """
-    def __init__(self, store, scalar, nodeName=None):
-        super(ScalarStoreTreeItem, self).__init__(store, nodeName = nodeName)
+    def __init__(self, scalar, nodeName=None):
+        super(ScalarRti, self).__init__(nodeName = nodeName)
         self._scalar = scalar 
     
     @property
@@ -54,12 +54,12 @@ class ScalarStoreTreeItem(StoreTreeItem):
         return self.typeName
     
 
-class ArrayStoreTreeItem(StoreTreeItem):
+class ArrayRti(BaseRti):
     
-    def __init__(self, store, array, nodeName=None):
+    def __init__(self, array, nodeName=None):
         """ Constructor
         """
-        super(ArrayStoreTreeItem, self).__init__(store, nodeName=nodeName)
+        super(ArrayRti, self).__init__(nodeName=nodeName)
         check_is_an_array(array)
         self._array = array
    
@@ -77,12 +77,12 @@ class ArrayStoreTreeItem(StoreTreeItem):
         return '<compound>' if dtype.names else str(dtype)
     
 
-class SequenceStoreTreeItem(GroupStoreTreeItem):
+class SequenceRti(LazyLoadRti):
     
-    def __init__(self, store, sequence, nodeName=None):
+    def __init__(self, sequence, nodeName=None):
         """ Constructor
         """
-        super(SequenceStoreTreeItem, self).__init__(store, nodeName=nodeName)
+        super(SequenceRti, self).__init__(nodeName=nodeName)
         check_is_a_sequence(sequence)
         self._sequence = sequence
    
@@ -103,19 +103,19 @@ class SequenceStoreTreeItem(GroupStoreTreeItem):
         assert self.canFetchChildren(), "canFetchChildren must be True"
         childItems = []
         for nr, elem in enumerate(self._sequence):
-            childItems.append(_createFromObject(self.store, elem, nodeName="elem-{}".format(nr)))
+            childItems.append(_createFromObject(elem, nodeName="elem-{}".format(nr)))
 
         self._childrenFetched = True
         return childItems
     
 
 
-class MappingStoreTreeItem(GroupStoreTreeItem):
+class MappingRti(LazyLoadRti):
     
-    def __init__(self, store, dictionary, nodeName=None):
+    def __init__(self, dictionary, nodeName=None):
         """ Constructor
         """
-        super(MappingStoreTreeItem, self).__init__(store, nodeName=nodeName)
+        super(MappingRti, self).__init__(nodeName=nodeName)
         check_is_a_mapping(dictionary)
         self._dictionary = dictionary
 
@@ -136,33 +136,8 @@ class MappingStoreTreeItem(GroupStoreTreeItem):
         assert self.canFetchChildren(), "canFetchChildren must be True"
         childItems = []
         for key, value in sorted(self._dictionary.items()):
-            childItems.append(_createFromObject(self.store, value, nodeName=str(key)))
+            childItems.append(_createFromObject(value, nodeName=str(key)))
             
         self._childrenFetched = True
         return childItems
 
-
-
-class MappingStore(AbstractStore):
-    """ Stores a dictionary with variables (e.g. the local scope)
-    """
-
-    def __init__(self, dictName, dictionary):
-        super(MappingStore, self).__init__()
-        check_is_a_mapping(dictionary)
-        self._dictionary = dictionary
-        self._dictName = str(dictName)
-        
-    @property
-    def resourceNames(self):
-        "Returns the name and id of the dictionary"
-        return ("<{} {!r} at 0x{:x}>"
-                .format(type_name(self._dictionary), self._dictName, id(self._dictionary)))
-
-        
-    def createItems(self):
-        """ Walks through all items and returns node to fill the repository
-        """
-        rootItem = MappingStoreTreeItem(self, self._dictionary, nodeName=self._dictName)
-        return rootItem
-        

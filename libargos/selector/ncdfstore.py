@@ -21,21 +21,22 @@
     See http://unidata.github.io/netcdf4-python/
 """
 
-import logging, os
+import logging
 from netCDF4 import Dataset, Variable
 
 from libargos.utils import check_class, type_name
-from libargos.selector.abstractstore import AbstractStore, GroupStoreTreeItem, StoreTreeItem
+from libargos.selector.abstractstore import (BaseRti, LazyLoadRti, 
+                                             OpenFileRtiMixin)
 
 logger = logging.getLogger(__name__)
 
 
-class VariableStroreTreeItem(StoreTreeItem):
+class VariableRti(BaseRti):
 
-    def __init__(self, store, ncVar, nodeName=None):
+    def __init__(self, ncVar, nodeName=None):
         """ Constructor
         """
-        super(VariableStroreTreeItem, self).__init__(store, nodeName = nodeName)
+        super(VariableRti, self).__init__(nodeName = nodeName)
         check_class(ncVar, Variable)
 
         self._ncVar = ncVar
@@ -55,12 +56,12 @@ class VariableStroreTreeItem(StoreTreeItem):
     
     
 
-class DatasetStoreTreeItem(GroupStoreTreeItem):
+class DatasetRti(LazyLoadRti):
 
-    def __init__(self, store, dataset, nodeName=None):
+    def __init__(self, dataset, nodeName=None):
         """ Constructor
         """
-        super(GroupStoreTreeItem, self).__init__(store, nodeName = nodeName)
+        super(LazyLoadRti, self).__init__(nodeName = nodeName)
         check_class(dataset, Dataset)
 
         self._dataset = dataset
@@ -69,57 +70,27 @@ class DatasetStoreTreeItem(GroupStoreTreeItem):
         
     def fetchChildren(self):
         assert self.canFetchChildren(), "canFetchChildren must be True"
+        
         childItems = []
         
         # Add groups
         for groupName, ncGroup in self._dataset.groups.items():
-            childItems.append(DatasetStoreTreeItem(self.store, ncGroup, nodeName=groupName))
+            childItems.append(DatasetRti(ncGroup, nodeName=groupName))
             
         # Add variables
         for varName, ncVar in self._dataset.variables.items():
-            childItems.append(VariableStroreTreeItem(self.store, ncVar, nodeName=varName))
+            childItems.append(VariableRti(ncVar, nodeName=varName))
                         
         self._childrenFetched = True
         return childItems
     
 
 
-class NcdfStore(AbstractStore):
+class NcdfFileRti(DatasetRti, OpenFileRtiMixin):
     """ 
     """
-    def __init__(self, fileName):
-        super(NcdfStore, self).__init__()
-        self._fileName = os.path.realpath(fileName)
-        self._rootDataset = None
-        
-    @property
-    def resourceNames(self):
-        "Returns the name of the NCDF file"
-        return self._fileName
-        
-    def isOpen(self):
-        return self._rootDataset is not None
-    
-    def open(self):
-        self._rootDataset = Dataset(self._fileName, 'r')
-        
-    def close(self):
-        self._rootDataset.close()
-        self._rootDataset = None
-        
-    @property
-    def fileName(self):
-        return self._fileName
-    
-    def createItems(self):
-        """ Walks through all items and returns node to fill the repository
-        """
-        assert self.isOpen(), "File not opened: {}".format(self.fileName)
-        
-        fileRootItem = DatasetStoreTreeItem(self, self._rootDataset,  
-                                            nodeName=os.path.basename(self.fileName))
-        return fileRootItem
-
-
-    
+    def __init__(self, fileName, nodeName=None):
+        OpenFileRtiMixin.__init__(self, fileName) 
+        DatasetRti.__init__(self, Dataset(self._fileName), nodeName=nodeName)
+  
     

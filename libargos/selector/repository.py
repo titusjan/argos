@@ -17,12 +17,11 @@
 
 """ Data repository functionality
 """
-
-
 import logging
 from libargos.qt.editabletreemodel import BaseTreeModel
+from libargos.selector.abstractstore import BaseRti
 from libargos.info import DEBUGGING
-#from libargos.utils import check_class
+from libargos.utils import check_class, type_name
 
 logger = logging.getLogger(__name__)
 
@@ -32,10 +31,10 @@ class RepositoryTreeModel(BaseTreeModel):
         Maintains a list of open files and offers a QAbstractItemModel for read-only access of
         the data with QTreeViews.
     """
-    HEADERS = ["name", "shape", "type", "elem type", "resources", "resource names"]
+    HEADERS = ["name", "shape", "tree item", "type", "elem type", "file name"]
     (COL_NODE_NAME, COL_SHAPE, 
-     COL_TYPE, COL_ELEM_TYPE, 
-     COL_IS_OPEN, COL_RESOURCE_NAMES) = range(len(HEADERS))
+     COL_RTI_TYPE, COL_TYPE, COL_ELEM_TYPE, 
+     COL_FILE_NAME) = range(len(HEADERS))
     
     def __init__(self, parent=None):
         """ Constructor
@@ -52,14 +51,14 @@ class RepositoryTreeModel(BaseTreeModel):
             return treeItem.nodeName
         elif column == self.COL_SHAPE:
             return " x ".join(str(elem) for elem in treeItem.arrayShape)
+        elif column == self.COL_RTI_TYPE: # repo tree item type
+            return type_name(treeItem)
         elif column == self.COL_TYPE:
             return treeItem.typeName
         elif column == self.COL_ELEM_TYPE:
             return treeItem.elementTypeName
-        elif column == self.COL_IS_OPEN:
-            return "open" if treeItem.store.isOpen() else "closed"
-        elif column == self.COL_RESOURCE_NAMES:
-            return treeItem.store.resourceNames
+        elif column == self.COL_FILE_NAME:
+            return treeItem.fileName if hasattr(treeItem, 'fileName') else ''
         else:
             raise ValueError("Invalid column: {}".format(column))
             
@@ -98,18 +97,17 @@ class RepositoryTreeModel(BaseTreeModel):
         if not parentItem.canFetchChildren():
             return
         
-        for childItem in parentItem.fetchChildren(): # TODO: implement InsertItems?
+        # TODO: implement InsertItems to optimize?
+        for childItem in parentItem.fetchChildren(): 
             self.insertItem(childItem, parentIndex=parentIndex)
             
         
    
 class Repository(object):
-    """ Keeps a list of stores (generally open files) and allows for adding and removing them.
+    """ TODO: do we keep this class? It doesn't do much
     """
     
     def __init__(self):
-        
-        self._stores = []
         self._treeModel = RepositoryTreeModel()
         
     
@@ -118,28 +116,13 @@ class Repository(object):
         return self._treeModel
         
     
-    def appendStore(self, store):
+    def appendTreeItem(self, repoTreeItem):
         """ Appends a store to the end of the ordered store dictionary
             
             Returns the index in of the store's root item (so it can be selected).
         """
-        self._stores.append(store)
-        storeRootItem = store.createItems()  
-        storeRootIndex = self.treeModel.insertItem(storeRootItem)
+        check_class(repoTreeItem, BaseRti)
+        storeRootIndex = self.treeModel.insertItem(repoTreeItem)
         return storeRootIndex
-        
-        
-    def openAndAppendStore(self, store):
-        """ Appends a store to the repository (using appendStore) and opens it.
-            Returns the index in of the store's root item (so it can be selected).
-        """
-        store.open()
-        storeRootIndex = self.appendStore(store)
-        return storeRootIndex
-         
-        
-    def closeStore(self, store):
-        assert False, "TODO: implement"
-
-        
+            
         
