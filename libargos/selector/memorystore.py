@@ -21,7 +21,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from libargos.selector.abstractstore import BaseRti, LazyLoadRti
+from libargos.selector.abstractstore import BaseRti, LazyLoadRtiMixin
 
 from libargos.utils import (check_is_a_sequence, check_is_a_mapping, check_is_an_array,  
                             is_a_sequence, is_a_mapping, is_an_array, type_name)
@@ -77,12 +77,13 @@ class ArrayRti(BaseRti):
         return '<compound>' if dtype.names else str(dtype)
     
 
-class SequenceRti(LazyLoadRti):
+class SequenceRti(LazyLoadRtiMixin, BaseRti):
     
     def __init__(self, sequence, nodeName=None):
         """ Constructor
         """
-        super(SequenceRti, self).__init__(nodeName=nodeName)
+        LazyLoadRtiMixin.__init__(self)
+        BaseRti.__init__(self, nodeName=nodeName)
         check_is_a_sequence(sequence)
         self._sequence = sequence
    
@@ -99,23 +100,24 @@ class SequenceRti(LazyLoadRti):
         """
         return len(self._sequence) > 0
         
-    def fetchChildren(self):
-        assert self.canFetchChildren(), "canFetchChildren must be True"
+    def _fetchAllChildren(self):
+        """ Adds a child item for each column 
+        """
         childItems = []
         for nr, elem in enumerate(self._sequence):
             childItems.append(_createFromObject(elem, nodeName="elem-{}".format(nr)))
 
-        self._childrenFetched = True
         return childItems
     
 
 
-class MappingRti(LazyLoadRti):
+class MappingRti(LazyLoadRtiMixin, BaseRti):
     
     def __init__(self, dictionary, nodeName=None):
         """ Constructor
         """
-        super(MappingRti, self).__init__(nodeName=nodeName)
+        LazyLoadRtiMixin.__init__(self)
+        BaseRti.__init__(self, nodeName=nodeName)
         check_is_a_mapping(dictionary)
         self._dictionary = dictionary
 

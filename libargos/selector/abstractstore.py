@@ -77,14 +77,15 @@ class VisDataRti(BaseRti):
     pass # TODO: implement?
             
     
-class LazyLoadRti(BaseRti):
-    """ TreeItem that is can do lazy loading of children by implementing the fetchChildren method.
+class LazyLoadRtiMixin(object):
+    """ Rti that can do lazy loading of children by implementing the fetchChildren method.
+    
+        Make sure to put this mixin before BaseRti in the ancestor list so that the
+        BaseRti.fetchChildren is overridden by the LazyLoadRtiMixin.fetchChildren
     """
-
     def __init__(self, nodeName=None):
         """ Constructor
         """
-        super(LazyLoadRti, self).__init__(nodeName = nodeName)
         self._childrenFetched = False
         
     def hasChildren(self):
@@ -97,23 +98,23 @@ class LazyLoadRti(BaseRti):
         
     def fetchChildren(self):
         assert self.canFetchChildren(), "canFetchChildren must be True"
-
-        # When overriding, put your code here. Keep the other lines.        
-        childItems = [] 
-        # childItems must be a list of RepoTreeItems. Their parent must be None, it
-        # will be set by BaseTreeitem.insertItem()
-        
+        childItems = self._fetchAllChildren()
         self._childrenFetched = True
         return childItems
     
+    def _fetchAllChildren(self):
+        """ The function that actually fetches the children.
+            The result must be a list of RepoTreeItems. Their parents must be None, 
+            it will be set by BaseTreeitem.insertItem()
+         
+            :rtype: list of BaseRti objects
+        """ 
+        raise NotImplementedError
+        
         
 
 class OpenFileRtiMixin(object): 
-    """ A a BaseRti reads a file (or other resource) and maintains a reference to
-        the resource. It is al a LazyLoadRti since, usually, the resource will 
-        be fetched later.
-        
-        This implementation does not 
+    """ A BaseRti that opens a file and maintains a reference to it.
     """
     def __init__(self, fileName):
         """ Constructor """

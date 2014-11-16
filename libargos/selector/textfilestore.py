@@ -23,22 +23,24 @@ logger = logging.getLogger(__name__)
 
 
 from libargos.selector.memorystore import ArrayRti
-from libargos.selector.abstractstore import OpenFileRtiMixin
+from libargos.selector.abstractstore import LazyLoadRtiMixin, OpenFileRtiMixin
 
 
-class SimpleTextFileRti(ArrayRti, OpenFileRtiMixin):
+class SimpleTextFileRti(LazyLoadRtiMixin, OpenFileRtiMixin, ArrayRti):
     """ Store for representing data that is read from a simple text file.
     """
     def __init__(self, fileName, nodeName=None):
+        LazyLoadRtiMixin.__init__(self) 
         OpenFileRtiMixin.__init__(self, fileName) 
         ArrayRti.__init__(self, np.loadtxt(self.fileName, ndmin=0), nodeName=nodeName)
-        self._createItems()
         
-    def _createItems(self):
+        
+    def _fetchAllChildren(self):
         """ Walks through all items and returns node to fill the repository
         """
+        childItems = []
         _nRows, nCols = self._array.shape
         for col in range(nCols):
             colItem = ArrayRti(self._array[:, col], nodeName="column {}".format(col))
-            self.insertChild(colItem)
-            
+            childItems.append(colItem)
+        return childItems

@@ -100,8 +100,11 @@ class RepositoryTreeModel(BaseTreeModel):
         # TODO: implement InsertItems to optimize?
         for childItem in parentItem.fetchChildren(): 
             self.insertItem(childItem, parentIndex=parentIndex)
-            
         
+        # Check that Rti implementation correctly sets _canFetchChildren    
+        assert not parentItem.canFetchChildren(), "not all children fetched: {}".format(parentItem)
+
+    
    
 class Repository(object):
     """ TODO: do we keep this class? It doesn't do much

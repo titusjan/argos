@@ -25,7 +25,7 @@ import logging
 from netCDF4 import Dataset, Variable
 
 from libargos.utils import check_class, type_name
-from libargos.selector.abstractstore import (BaseRti, LazyLoadRti, 
+from libargos.selector.abstractstore import (BaseRti, LazyLoadRtiMixin, 
                                              OpenFileRtiMixin)
 
 logger = logging.getLogger(__name__)
@@ -56,19 +56,20 @@ class VariableRti(BaseRti):
     
     
 
-class DatasetRti(LazyLoadRti):
+class DatasetRti(LazyLoadRtiMixin, BaseRti):
 
     def __init__(self, dataset, nodeName=None):
         """ Constructor
         """
-        super(LazyLoadRti, self).__init__(nodeName = nodeName)
+        LazyLoadRtiMixin.__init__(self)
+        BaseRti.__init__(self, nodeName=nodeName)
         check_class(dataset, Dataset)
 
         self._dataset = dataset
         self._childrenFetched = False
 
         
-    def fetchChildren(self):
+    def _fetchAllChildren(self):
         assert self.canFetchChildren(), "canFetchChildren must be True"
         
         childItems = []
