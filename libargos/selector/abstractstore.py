@@ -38,12 +38,6 @@ class BaseRti(BaseTreeItem):
         super(BaseRti, self).__init__()
         check_class(nodeName, StringType, allow_none=True) # TODO: allow_none?
         self._nodeName = str(nodeName)
-    
-    def canFetchChildren(self):  # Called in RepositoryTreeModel.canFetchChildren
-        return False
-    
-    def fetchChildren(self):
-        return []
 
     @property
     def nodeName(self): # TODO: to BaseTreeItem?
@@ -79,9 +73,6 @@ class VisDataRti(BaseRti):
     
 class LazyLoadRtiMixin(object):
     """ Rti that can do lazy loading of children by implementing the fetchChildren method.
-    
-        Make sure to put this mixin before BaseRti in the ancestor list so that the
-        BaseRti.fetchChildren is overridden by the LazyLoadRtiMixin.fetchChildren
     """
     def __init__(self, nodeName=None):
         """ Constructor

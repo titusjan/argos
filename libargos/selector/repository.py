@@ -19,7 +19,7 @@
 """
 import logging
 from libargos.qt.editabletreemodel import BaseTreeModel
-from libargos.selector.abstractstore import BaseRti
+from libargos.selector.abstractstore import BaseRti, LazyLoadRtiMixin
 from libargos.info import DEBUGGING
 from libargos.utils import check_class, type_name
 
@@ -93,6 +93,9 @@ class RepositoryTreeModel(BaseTreeModel):
         parentItem = self.getItem(parentIndex)
         if not parentItem:
             return
+        
+        if not isinstance(parentItem, LazyLoadRtiMixin):
+            return 
         
         if not parentItem.canFetchChildren():
             return
