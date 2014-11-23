@@ -109,7 +109,8 @@ class FileRtiMixin(object):
     """
     def __init__(self, fileName):
         """ Constructor """
-        fileName = os.path.normpath(fileName)
+        #fileName = os.path.normpath(fileName) # realpath?
+        fileName = os.path.realpath(fileName) 
         assert os.path.exists(fileName), "File not found: {}".format(fileName)
         self._fileName = fileName
         
@@ -119,7 +120,11 @@ class FileRtiMixin(object):
         """
         return self._fileName
     
-    # TODO: close method
+    def closeFile(self):
+        """ Closes the underlying file. 
+            Should be called before removing this item from the repository.
+        """
+        raise NotImplementedError("Descendants must implement closeFile")
         
     @classmethod
     def createFromFileName(cls, fileName):
@@ -127,46 +132,6 @@ class FileRtiMixin(object):
         """
         # See https://julien.danjou.info/blog/2013/guide-python-static-class-abstract-methods
         return cls(fileName, nodeName=os.path.basename(fileName))
-    
-#        
-#    @classmethod
-#    def createFromFileName(cls, fileName):
-#        """ Creates a rootnode (that opens the resource.) 
-#            :rtype: ResourceRepoTreeItem
-#        """
-#        
-#        raise NotImplementedError
-#        
 
-#    def isOpen(self):
-#        """ Returns True if the store's resources are opened.
-#            The default implementation returns True (i.e. assumes no resources)
-#        """
-#        return True # TODO: raise NotImplementedError and docstring?
-#    
-#    def open(self):
-#        """ Opens the underlying file(s) or other resources
-#            The default implementation does nothing (i.e. assumes no resources) 
-#        """
-#        assert not self.isOpen(), "File already open: {}".format(self.fileName)
-#        pass # TODO: raise NotImplementedError and docstring?
-#    
-#    def reOpen(self):
-#        """ Opens the underlying file(s) or other resources
-#            The default implementation does nothing (i.e. assumes no resources) 
-#        """
-#        if self.isOpen():
-#            self.close()
-#        self.open()
-#
-#    
-#    def close(self):
-#        """ Closes the underlying file(s) or other resources
-#            The default implementation does nothing (i.e. assumes no resources)
-#        """
-#        pass # TODO: raise NotImplementedError and docstring?
-    
-
-        
     
     

@@ -29,10 +29,11 @@ from libargos.commonstate import getCommonState
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
 from libargos.qt import executeApplication, QtCore, QtGui, USE_PYQT, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
+from libargos.selector.abstractstore import FileRtiMixin
 from libargos.selector.ncdfstore import NcdfFileRti
 from libargos.selector.memorystore import ScalarRti, MappingRti
 from libargos.selector.textfilestore import SimpleTextFileRti
-from libargos.selector.filesytemrti import DirectoryRti, ClosedFileRti, OpenFileRti
+from libargos.selector.filesytemrti import UnknownFileRti, DirectoryRti
 
 
 logger = logging.getLogger(__name__)
@@ -181,33 +182,29 @@ class MainWindow(QtGui.QMainWindow):
 
     # End of setup_methods
 
-    def loadTextFile(self, fileName):
-        """ Loads a text file into the repository.
+    def _autodetectedRepoTreeItem(self, fileName):
+        """ Determines the type of RepoTreeItem to use given a file name.
+            Temporary solution
         """
-        logger.debug("Loading file: {}".format(fileName))
-        rootTreeItem = SimpleTextFileRti.createFromFileName(fileName)
-        storeRootIndex = getCommonState().repository.appendTreeItem(rootTreeItem)
-        #self.treeView.setExpanded(storeRootIndex, True)
+        _, extension = os.path.splitext(fileName)
+        if os.path.isdir(fileName):
+            cls = DirectoryRti
+        elif extension in ('.nc', '.nc4'):
+            cls = NcdfFileRti
+        elif extension in ('.txt', '.text'):
+            cls = SimpleTextFileRti
+        else:
+            cls = UnknownFileRti
         
-    
-    def loadNcdfFile(self, fileName):
-        """ Loads a netCDF file into the repository.
-        """
-        logger.debug("Loading file: {}".format(fileName))
-        rootTreeItem = NcdfFileRti.createFromFileName(fileName)
-        assert rootTreeItem._parentItem is None, "rootTreeItem {!r}".format(rootTreeItem)
-        storeRootIndex = getCommonState().repository.appendTreeItem(rootTreeItem)
-        self.treeView.setExpanded(storeRootIndex, False)
+        return cls.createFromFileName(fileName)
+                    
         
-    
-    def loadDirectory(self, fileName):
-        """ Loads a directory into the repository.
+    def loadRepoTreeItem(self, repoTreeItem, expand=False):
+        """ Loads a tree item in the repository and selects it.
         """
-        logger.debug("Loading directory: {}".format(fileName))
-        rootTreeItem = DirectoryRti.createFromFileName(fileName)
-        assert rootTreeItem._parentItem is None, "rootTreeItem {!r}".format(rootTreeItem)
-        storeRootIndex = getCommonState().repository.appendTreeItem(rootTreeItem)
-        self.treeView.setExpanded(storeRootIndex, True)
+        assert repoTreeItem._parentItem is None, "repoTreeItem {!r}".format(repoTreeItem)
+        storeRootIndex = getCommonState().repository.appendTreeItem(repoTreeItem)
+        self.treeView.setExpanded(storeRootIndex, expand)
 
 
     def openFile(self, fileName=None): 
@@ -224,14 +221,8 @@ class MainWindow(QtGui.QMainWindow):
         if fileName:
             logger.info("Loading data from: {!r}".format(fileName))
             try:
-                # Autodetect (temporary solution)
-                _, extension = os.path.splitext(fileName)
-                if os.path.isdir(fileName):
-                    self.loadDirectory(fileName)
-                elif extension in ('.nc', '.nc4'):
-                    self.loadNcdfFile(fileName)
-                else:
-                    self.loadTextFile(fileName)
+                repoTreeItem = self._autodetectedRepoTreeItem(fileName)
+                self.loadRepoTreeItem(repoTreeItem, expand = True)
             except Exception as ex:
                 if DEBUGGING:
                     raise
@@ -333,12 +324,12 @@ class MainWindow(QtGui.QMainWindow):
         logger.debug("openSelectedFile")
         
         selectedItem, selectedIndex = self._getSelectedItem()
-        if not isinstance(selectedItem, ClosedFileRti):
+        if not isinstance(selectedItem, FileRtiMixin):
             logger.warn("Cannot closed item of type (ignored): {}".format(type(selectedItem)))
             return
 
         model = getCommonState().repository.treeModel
-        openFileItem = OpenFileRti(fileName=selectedItem.fileName, nodeName=selectedItem.nodeName)
+        openFileItem = self._autodetectedRepoTreeItem(selectedItem.fileName)
         insertedIndex = model.replaceItemAtIndex(openFileItem, selectedIndex)
         self.treeView.selectionModel().setCurrentIndex(insertedIndex, 
                                                        QtGui.QItemSelectionModel.ClearAndSelect)
@@ -351,12 +342,14 @@ class MainWindow(QtGui.QMainWindow):
         logger.debug("closeSelectedFile")
         
         selectedItem, selectedIndex = self._getSelectedItem()
-        if not isinstance(selectedItem, OpenFileRti):
+        if not isinstance(selectedItem, FileRtiMixin):
             logger.warn("Cannot closed item of type (ignored): {}".format(type(selectedItem)))
             return
+        
+        selectedItem.closeFile()
 
         model = getCommonState().repository.treeModel
-        openFileItem = ClosedFileRti(fileName=selectedItem.fileName, nodeName=selectedItem.nodeName)
+        openFileItem = UnknownFileRti(fileName=selectedItem.fileName, nodeName=selectedItem.nodeName)
         insertedIndex = model.replaceItemAtIndex(openFileItem, selectedIndex)
         self.treeView.selectionModel().setCurrentIndex(insertedIndex, 
                                                        QtGui.QItemSelectionModel.ClearAndSelect)

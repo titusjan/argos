@@ -87,11 +87,18 @@ class DatasetRti(LazyLoadRtiMixin, BaseRti):
     
 
 
-class NcdfFileRti(DatasetRti, FileRtiMixin):
-    """ 
+class NcdfFileRti(FileRtiMixin, DatasetRti):
+    """ Repository tree item that stores a netCDF file.
     """
     def __init__(self, fileName, nodeName=None):
         FileRtiMixin.__init__(self, fileName) 
         DatasetRti.__init__(self, Dataset(self._fileName), nodeName=nodeName)
   
+    
+    def closeFile(self):
+        """ Closes the root Dataset.
+        """
+        self._dataset.close()
+            
+            
     

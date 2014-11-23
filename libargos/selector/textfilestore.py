@@ -34,6 +34,12 @@ class SimpleTextFileRti(LazyLoadRtiMixin, FileRtiMixin, ArrayRti):
         FileRtiMixin.__init__(self, fileName) 
         ArrayRti.__init__(self, np.loadtxt(self.fileName, ndmin=0), nodeName=nodeName)
         
+    
+    def closeFile(self):
+        """ Does nothing since the underlying file is already closed during _fetchAllChildren
+        """
+        pass
+            
         
     def _fetchAllChildren(self):
         """ Walks through all items and returns node to fill the repository

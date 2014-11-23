@@ -19,71 +19,43 @@
 """
 
 import logging, os
-from libargos.selector.abstractstore import (BaseRti, LazyLoadRtiMixin)
+from libargos.selector.abstractstore import (BaseRti, LazyLoadRtiMixin, FileRtiMixin)
 
 logger = logging.getLogger(__name__)
 
 
-# TODO: merge with OpenFileRti? Then rename to FileRti
 
-class ClosedFileRti(BaseRti):
-    """ A repository tree item that has a reference to a file. 
+class UnknownFileRti(FileRtiMixin, BaseRti):
+    """ A repository tree item that has a reference to a file of unknown type. 
+        The file is not opened.
     """
     def __init__(self, fileName, nodeName=None):
         """ Constructor 
         """
+        FileRtiMixin.__init__(self, fileName) 
         BaseRti.__init__(self, nodeName=nodeName)
-        fileName = os.path.realpath(fileName) 
-        assert os.path.isfile(fileName), "Not a regular file: {}".format(fileName)
-        self._fileName = fileName
+        assert os.path.isfile(self.fileName), "Not a regular file: {}".format(self.fileName)
         
-    @property
-    def fileName(self):
-        """ Returns the name of the underlying the file. 
+    
+    def closeFile(self):
+        """ Does nothing since the underlying file is not opened.
         """
-        return self._fileName
+        pass
 
 
-class OpenFileRti(BaseRti):
+
+class DirectoryRti(LazyLoadRtiMixin, FileRtiMixin, BaseRti):
     """ A repository tree item that has a reference to a file. 
     """
     def __init__(self, fileName, nodeName=None):
-        """ Constructor 
-        """
-        BaseRti.__init__(self, nodeName=nodeName)
-        fileName = os.path.realpath(fileName) 
-        assert os.path.isfile(fileName), "Not a regular file: {}".format(fileName)
-        self._fileName = fileName
-        
-    @property
-    def fileName(self):
-        """ Returns the name of the underlying the file. 
-        """
-        return self._fileName
-
-
-class DirectoryRti(LazyLoadRtiMixin, BaseRti):
-    """ A repository tree item that has a reference to a file. 
-    """
-    def __init__(self, dirName, nodeName=None):
         """ Constructor
         """
         LazyLoadRtiMixin.__init__(self)
+        FileRtiMixin.__init__(self, fileName) 
         BaseRti.__init__(self, nodeName=nodeName)
-
-        dirName = os.path.realpath(dirName)
-        assert os.path.isdir(dirName), "Not a directory: {}".format(dirName)
-        self._fileName = dirName
-
+        assert os.path.isdir(self.fileName), "Not a directory: {}".format(self.fileName)
         self._childrenFetched = False
 
-        
-    @property
-    def fileName(self):
-        """ Returns the name of the underlying the file. 
-        """
-        return self._fileName
-    
         
     def _fetchAllChildren(self):
         """ Gets all sub directories and files within the current directory.
@@ -101,16 +73,8 @@ class DirectoryRti(LazyLoadRtiMixin, BaseRti):
         # Add regular files
         for fileName, absFileName in zip(fileNames, absFileNames):
             if os.path.isfile(absFileName) and not fileName.startswith('.'):
-                childItems.append(ClosedFileRti(absFileName, nodeName=fileName))
+                childItems.append(UnknownFileRti(absFileName, nodeName=fileName))
                         
         return childItems
-    
-        
-    @classmethod
-    def createFromFileName(cls, dirName):
-        """ Creates a OpenFileRtiMixin (or descendant), given a file name.
-        """
-        # See https://julien.danjou.info/blog/2013/guide-python-static-class-abstract-methods
-        return cls(dirName, nodeName=os.path.basename(dirName))
     
     
