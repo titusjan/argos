@@ -21,10 +21,7 @@ Handle Exception:
 	Raise with old exception handler.
 	Quit button.
 	Resize message box.
-
-
+	
 Test:
+	Memory leaks
 
-
-
-Rename StoreDatasetTreeItem -> DatasetStoreTreeItem? DatasetRepoTreeItem?

@@ -44,6 +44,24 @@ class ClosedFileRti(BaseRti):
         return self._fileName
 
 
+class OpenFileRti(BaseRti):
+    """ A repository tree item that has a reference to a file. 
+    """
+    def __init__(self, fileName, nodeName=None):
+        """ Constructor 
+        """
+        BaseRti.__init__(self, nodeName=nodeName)
+        fileName = os.path.realpath(fileName) 
+        assert os.path.isfile(fileName), "Not a regular file: {}".format(fileName)
+        self._fileName = fileName
+        
+    @property
+    def fileName(self):
+        """ Returns the name of the underlying the file. 
+        """
+        return self._fileName
+
+
 class DirectoryRti(LazyLoadRtiMixin, BaseRti):
     """ A repository tree item that has a reference to a file. 
     """

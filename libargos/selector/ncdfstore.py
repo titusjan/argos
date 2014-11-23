@@ -26,7 +26,7 @@ from netCDF4 import Dataset, Variable
 
 from libargos.utils import check_class, type_name
 from libargos.selector.abstractstore import (BaseRti, LazyLoadRtiMixin, 
-                                             OpenFileRtiMixin)
+                                             FileRtiMixin)
 
 logger = logging.getLogger(__name__)
 
@@ -87,11 +87,11 @@ class DatasetRti(LazyLoadRtiMixin, BaseRti):
     
 
 
-class NcdfFileRti(DatasetRti, OpenFileRtiMixin):
+class NcdfFileRti(DatasetRti, FileRtiMixin):
     """ 
     """
     def __init__(self, fileName, nodeName=None):
-        OpenFileRtiMixin.__init__(self, fileName) 
+        FileRtiMixin.__init__(self, fileName) 
         DatasetRti.__init__(self, Dataset(self._fileName), nodeName=nodeName)
   
     

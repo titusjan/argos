@@ -23,15 +23,15 @@ logger = logging.getLogger(__name__)
 
 
 from libargos.selector.memorystore import ArrayRti
-from libargos.selector.abstractstore import LazyLoadRtiMixin, OpenFileRtiMixin
+from libargos.selector.abstractstore import LazyLoadRtiMixin, FileRtiMixin
 
 
-class SimpleTextFileRti(LazyLoadRtiMixin, OpenFileRtiMixin, ArrayRti):
+class SimpleTextFileRti(LazyLoadRtiMixin, FileRtiMixin, ArrayRti):
     """ Store for representing data that is read from a simple text file.
     """
     def __init__(self, fileName, nodeName=None):
         LazyLoadRtiMixin.__init__(self) 
-        OpenFileRtiMixin.__init__(self, fileName) 
+        FileRtiMixin.__init__(self, fileName) 
         ArrayRti.__init__(self, np.loadtxt(self.fileName, ndmin=0), nodeName=nodeName)
         
         

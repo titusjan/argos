@@ -104,7 +104,7 @@ class LazyLoadRtiMixin(object):
         
         
 
-class OpenFileRtiMixin(object): 
+class FileRtiMixin(object): 
     """ A BaseRti that opens a file and maintains a reference to it.
     """
     def __init__(self, fileName):
@@ -123,7 +123,7 @@ class OpenFileRtiMixin(object):
         
     @classmethod
     def createFromFileName(cls, fileName):
-        """ Creates a OpenFileRtiMixin (or descendant), given a file name.
+        """ Creates a FileRtiMixin (or descendant), given a file name.
         """
         # See https://julien.danjou.info/blog/2013/guide-python-static-class-abstract-methods
         return cls(fileName, nodeName=os.path.basename(fileName))

@@ -368,7 +368,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         return childIndex
     
     
-    def deleteItem(self, itemIndex):
+    def deleteItemByIndex(self, itemIndex): 
         """ Removes the item at the itemIndex.
         """
         if not itemIndex.isValid():
@@ -388,6 +388,16 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         finally:
             self.endRemoveRows()
             
-        logger.debug("deleteItem completed")
+        logger.debug("deleteItemByIndex completed")
             
 
+    def replaceItemAtIndex(self, newItem, oldItemIndex): 
+        """ Removes the item at the itemIndex and insert a new item instead.
+        """
+        oldItem = self.getItem(oldItemIndex)
+        childNumber = oldItem.childNumber()
+        parentIndex = oldItemIndex.parent()
+        self.deleteItemByIndex(oldItemIndex)
+        insertedIndex = self.insertItem(newItem, position=childNumber, parentIndex=parentIndex)
+        return insertedIndex
+        

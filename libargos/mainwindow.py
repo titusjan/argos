@@ -32,7 +32,7 @@ from libargos.qt.togglecolumn import ToggleColumnTreeView
 from libargos.selector.ncdfstore import NcdfFileRti
 from libargos.selector.memorystore import ScalarRti, MappingRti
 from libargos.selector.textfilestore import SimpleTextFileRti
-from libargos.selector.filesytemrti import DirectoryRti
+from libargos.selector.filesytemrti import DirectoryRti, ClosedFileRti, OpenFileRti
 
 
 logger = logging.getLogger(__name__)
@@ -98,10 +98,17 @@ class MainWindow(QtGui.QMainWindow):
         """ Creates the main window actions.
         """
         self.insertChildAction = QtGui.QAction("Insert Child", self)
-        self.insertChildAction.setShortcut("Ctrl+N")           
+        self.insertChildAction.setShortcut("Ctrl+N")
 
         self.deleteItemAction = QtGui.QAction("Delete Item", self)
-        self.deleteItemAction.setShortcut("Ctrl+D")           
+        self.deleteItemAction.setShortcut("Ctrl+D")
+        
+        self.openFileAction = QtGui.QAction("Open File", self)
+        self.openFileAction.setShortcut("Ctrl+O")
+        
+        self.closeFileAction = QtGui.QAction("Close File", self)
+        self.closeFileAction.setShortcut("Ctrl+P") # TODO: remove shortcud
+        
                   
                               
     def __setupMenu(self):
@@ -123,6 +130,9 @@ class MainWindow(QtGui.QMainWindow):
         actionsMenu = menuBar.addMenu("&Actions")
         actionsMenu.addAction(self.insertChildAction)
         actionsMenu.addAction(self.deleteItemAction)
+
+        actionsMenu.addAction(self.openFileAction)
+        actionsMenu.addAction(self.closeFileAction)
                 
         menuBar.addSeparator()
         help_menu = menuBar.addMenu("&Help")
@@ -165,10 +175,12 @@ class MainWindow(QtGui.QMainWindow):
         # Connect signals and slots 
         self.insertChildAction.triggered.connect(self.insertItem)
         self.deleteItemAction.triggered.connect(self.removeRow)
+        self.openFileAction.triggered.connect(self.openSelectedFile)
+        self.closeFileAction.triggered.connect(self.closeSelectedFile)
 
 
     # End of setup_methods
-    
+
     def loadTextFile(self, fileName):
         """ Loads a text file into the repository.
         """
@@ -186,7 +198,6 @@ class MainWindow(QtGui.QMainWindow):
         assert rootTreeItem._parentItem is None, "rootTreeItem {!r}".format(rootTreeItem)
         storeRootIndex = getCommonState().repository.appendTreeItem(rootTreeItem)
         self.treeView.setExpanded(storeRootIndex, False)
-        #self.treeView.setExpanded(storeRootIndex, True)
         
     
     def loadDirectory(self, fileName):
@@ -196,8 +207,7 @@ class MainWindow(QtGui.QMainWindow):
         rootTreeItem = DirectoryRti.createFromFileName(fileName)
         assert rootTreeItem._parentItem is None, "rootTreeItem {!r}".format(rootTreeItem)
         storeRootIndex = getCommonState().repository.appendTreeItem(rootTreeItem)
-        self.treeView.setExpanded(storeRootIndex, False)
-        #self.treeView.setExpanded(storeRootIndex, True)
+        self.treeView.setExpanded(storeRootIndex, True)
 
 
     def openFile(self, fileName=None): 
@@ -298,15 +308,66 @@ class MainWindow(QtGui.QMainWindow):
         logger.debug("selected tree item: has selection: {}".format(selectionModel.hasSelection()))
         
         
+    def _getSelectedItemIndex(self):
+        """ Returns the index of the selected item in the repository. 
+        """
+        selectionModel = self.treeView.selectionModel()
+        assert selectionModel.hasSelection(), "No selection"        
+        curIndex = selectionModel.currentIndex()
+        col0Index = curIndex.sibling(curIndex.row(), 0)
+        return col0Index
+
+
+    def _getSelectedItem(self):
+        """ Returns a tuple with the selected item, and its index, in the repository. 
+        """
+        selectedIndex = self._getSelectedItemIndex()
+        model = getCommonState().repository.treeModel
+        selectedItem = model.getItem(selectedIndex)
+        return selectedItem, selectedIndex
+
+    
+    def openSelectedFile(self):
+        """ Opens the selected file in the repository. The file must be closed beforehand.
+        """
+        logger.debug("openSelectedFile")
+        
+        selectedItem, selectedIndex = self._getSelectedItem()
+        if not isinstance(selectedItem, ClosedFileRti):
+            logger.warn("Cannot closed item of type (ignored): {}".format(type(selectedItem)))
+            return
+
+        model = getCommonState().repository.treeModel
+        openFileItem = OpenFileRti(fileName=selectedItem.fileName, nodeName=selectedItem.nodeName)
+        insertedIndex = model.replaceItemAtIndex(openFileItem, selectedIndex)
+        self.treeView.selectionModel().setCurrentIndex(insertedIndex, 
+                                                       QtGui.QItemSelectionModel.ClearAndSelect)
+        logger.debug("selectedFile opened")
+         
+
+    def closeSelectedFile(self):
+        """ Opens the selected file in the repository. The file must be closed beforehand.
+        """
+        logger.debug("closeSelectedFile")
+        
+        selectedItem, selectedIndex = self._getSelectedItem()
+        if not isinstance(selectedItem, OpenFileRti):
+            logger.warn("Cannot closed item of type (ignored): {}".format(type(selectedItem)))
+            return
+
+        model = getCommonState().repository.treeModel
+        openFileItem = ClosedFileRti(fileName=selectedItem.fileName, nodeName=selectedItem.nodeName)
+        insertedIndex = model.replaceItemAtIndex(openFileItem, selectedIndex)
+        self.treeView.selectionModel().setCurrentIndex(insertedIndex, 
+                                                       QtGui.QItemSelectionModel.ClearAndSelect)
+        logger.debug("selectedFile closed")
+        
     @QtSlot()
     def insertItem(self):
         """ Temporary test method
         """
         import random
-        selectionModel = self.treeView.selectionModel()
-        assert selectionModel.hasSelection(), "No selection"        
-        curIndex = selectionModel.currentIndex()
-        col0Index = curIndex.sibling(curIndex.row(), 0)
+        col0Index = self._getSelectedItemIndex()
 
         value = random.randint(20, 99)
         model = getCommonState().repository.treeModel
@@ -328,7 +389,7 @@ class MainWindow(QtGui.QMainWindow):
         logger.debug("RemoveRow()")
         selectionModel = self.treeView.selectionModel()
         assert selectionModel.hasSelection(), "No selection"
-        self.treeView.model().deleteItem(selectionModel.currentIndex()) # TODO: repository close
+        self.treeView.model().deleteItemByIndex(selectionModel.currentIndex()) # TODO: repository close
         logger.debug("removeRow completed")        
             
 
