@@ -134,12 +134,12 @@ class MappingRti(LazyLoadRtiMixin, BaseRti):
         """
         return len(self._dictionary) > 0
         
-    def fetchChildren(self):
-        assert self.canFetchChildren(), "canFetchChildren must be True"
+    def _fetchAllChildren(self):
+        """ Adds a child item for each item 
+        """        
         childItems = []
         for key, value in sorted(self._dictionary.items()):
             childItems.append(_createFromObject(value, nodeName=str(key)))
             
-        self._childrenFetched = True
         return childItems
 

@@ -32,6 +32,7 @@ from libargos.qt.togglecolumn import ToggleColumnTreeView
 from libargos.selector.ncdfstore import NcdfFileRti
 from libargos.selector.memorystore import ScalarRti, MappingRti
 from libargos.selector.textfilestore import SimpleTextFileRti
+from libargos.selector.filesytemrti import DirectoryRti
 
 
 logger = logging.getLogger(__name__)
@@ -180,7 +181,6 @@ class MainWindow(QtGui.QMainWindow):
     def loadNcdfFile(self, fileName):
         """ Loads a netCDF file into the repository.
         """
-
         logger.debug("Loading file: {}".format(fileName))
         rootTreeItem = NcdfFileRti.createFromFileName(fileName)
         assert rootTreeItem._parentItem is None, "rootTreeItem {!r}".format(rootTreeItem)
@@ -188,6 +188,17 @@ class MainWindow(QtGui.QMainWindow):
         self.treeView.setExpanded(storeRootIndex, False)
         #self.treeView.setExpanded(storeRootIndex, True)
         
+    
+    def loadDirectory(self, fileName):
+        """ Loads a directory into the repository.
+        """
+        logger.debug("Loading directory: {}".format(fileName))
+        rootTreeItem = DirectoryRti.createFromFileName(fileName)
+        assert rootTreeItem._parentItem is None, "rootTreeItem {!r}".format(rootTreeItem)
+        storeRootIndex = getCommonState().repository.appendTreeItem(rootTreeItem)
+        self.treeView.setExpanded(storeRootIndex, False)
+        #self.treeView.setExpanded(storeRootIndex, True)
+
 
     def openFile(self, fileName=None): 
         """ Lets the user select an Ascii file and opens it.
@@ -205,7 +216,9 @@ class MainWindow(QtGui.QMainWindow):
             try:
                 # Autodetect (temporary solution)
                 _, extension = os.path.splitext(fileName)
-                if extension in ('.nc', '.nc4'):
+                if os.path.isdir(fileName):
+                    self.loadDirectory(fileName)
+                elif extension in ('.nc', '.nc4'):
                     self.loadNcdfFile(fileName)
                 else:
                     self.loadTextFile(fileName)
