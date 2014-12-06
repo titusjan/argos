@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # This file is part of Argos.
 # 
 # Argos is free software: you can redistribute it and/or modify
@@ -21,7 +20,7 @@ import logging
 
 from libargos.utils import type_name
 from libargos.selector.repository import Repository
-
+from libargos.repo.registry import Registry
 
 logger = logging.getLogger(__name__)
 
@@ -30,12 +29,18 @@ class StateSingleton(object):
     """
     def __init__(self):
         """ Constructor """
+        self._registry = Registry()
         self._repository = Repository()
         
         
     def __repr__(self):
         return "<{}>".format(type_name(self))
     
+    @property        
+    def registry(self):
+        """ Returns the data repository """
+        return self._registry
+
     @property        
     def repository(self):
         """ Returns the data repository """

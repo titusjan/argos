@@ -30,11 +30,8 @@ from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
 from libargos.qt import executeApplication, QtCore, QtGui, USE_PYQT, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
 from libargos.selector.abstractstore import FileRtiMixin
-from libargos.selector.ncdfstore import NcdfFileRti
 from libargos.selector.memorystore import ScalarRti, MappingRti
-from libargos.selector.textfilestore import SimpleTextFileRti
 from libargos.selector.filesytemrti import UnknownFileRti, DirectoryRti
-
 
 logger = logging.getLogger(__name__)
 
@@ -189,13 +186,12 @@ class MainWindow(QtGui.QMainWindow):
         _, extension = os.path.splitext(fileName)
         if os.path.isdir(fileName):
             cls = DirectoryRti
-        elif extension in ('.nc', '.nc4'):
-            cls = NcdfFileRti
-        elif extension in ('.txt', '.text'):
-            cls = SimpleTextFileRti
         else:
-            cls = UnknownFileRti
-        
+            try:
+                cls = getCommonState().registry.getRtiByExtension(extension)
+            except KeyError:
+                cls = UnknownFileRti
+
         return cls.createFromFileName(fileName)
                     
         

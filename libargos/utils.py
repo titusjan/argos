@@ -127,3 +127,13 @@ def check_class(obj, target_class, allow_none = False):
         if not (allow_none and obj is None):
             raise TypeError("obj must be a of type {}, got: {}"
                             .format(target_class, type(obj)))
+
+
+
+def prepend_point_to_extension(extension):
+    """ Prepends a point to the extension of it doesn't already start with it
+    """
+    if extension.startswith('.'):
+        return extension
+    else:
+        return '.' + extension

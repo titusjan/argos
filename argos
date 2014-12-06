@@ -24,6 +24,7 @@ logger = logging.getLogger('libargos')
 logging.basicConfig(level='DEBUG', stream=sys.stderr,
                     format='%(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s')
 
+import libargos.plugins as plugins
 from libargos.mainwindow import browse
 from libargos.qt import USE_PYQT
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION
