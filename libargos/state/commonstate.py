@@ -19,7 +19,7 @@
 import logging
 
 from libargos.utils import type_name
-from libargos.selector.repository import Repository
+from libargos.repo.repository import Repository
 from libargos.state.registry import Registry
 
 logger = logging.getLogger(__name__)

@@ -19,7 +19,7 @@
 """
 
 import logging, os
-from libargos.selector.abstractstore import (BaseRti, LazyLoadRtiMixin, FileRtiMixin)
+from .abstractstore import (BaseRti, LazyLoadRtiMixin, FileRtiMixin)
 
 logger = logging.getLogger(__name__)
 

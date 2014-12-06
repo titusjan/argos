@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from libargos.selector.abstractstore import BaseRti
+from libargos.repo.abstractstore import BaseRti
 
 # This file is part of Argos.
 # 
@@ -20,7 +20,7 @@ from libargos.selector.abstractstore import BaseRti
 """
 
 import logging
-from libargos.selector.abstractstore import FileRtiMixin
+from libargos.repo.abstractstore import FileRtiMixin
 from libargos.utils import prepend_point_to_extension
 
 logger = logging.getLogger(__name__)

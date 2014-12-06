@@ -21,7 +21,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from libargos.selector.abstractstore import BaseRti, LazyLoadRtiMixin
+from .abstractstore import BaseRti, LazyLoadRtiMixin
 
 from libargos.utils import (check_is_a_sequence, check_is_a_mapping, check_is_an_array,  
                             is_a_sequence, is_a_mapping, is_an_array, type_name)

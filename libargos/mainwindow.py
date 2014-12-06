@@ -29,9 +29,9 @@ from libargos.state.commonstate import getCommonState
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
 from libargos.qt import executeApplication, QtCore, QtGui, USE_PYQT, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
-from libargos.selector.abstractstore import FileRtiMixin
-from libargos.selector.memorystore import ScalarRti, MappingRti
-from libargos.selector.filesytemrti import UnknownFileRti, DirectoryRti
+from libargos.repo.abstractstore import FileRtiMixin
+from libargos.repo.memorystore import ScalarRti, MappingRti
+from libargos.repo.filesytemrti import UnknownFileRti, DirectoryRti
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +105,7 @@ class MainWindow(QtGui.QMainWindow):
         self.openFileAction.setShortcut("Ctrl+O")
         
         self.closeFileAction = QtGui.QAction("Close File", self)
-        self.closeFileAction.setShortcut("Ctrl+P") # TODO: remove shortcud
+        self.closeFileAction.setShortcut("Ctrl+P") # TODO: remove shortcut
         
                   
                               

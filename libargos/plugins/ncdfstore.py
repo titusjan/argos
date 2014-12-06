@@ -25,7 +25,7 @@ import logging
 from netCDF4 import Dataset, Variable
 
 from libargos.utils import check_class, type_name
-from libargos.selector.abstractstore import (BaseRti, LazyLoadRtiMixin, 
+from libargos.repo.abstractstore import (BaseRti, LazyLoadRtiMixin, 
                                              FileRtiMixin)
 
 logger = logging.getLogger(__name__)

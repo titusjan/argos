@@ -22,8 +22,8 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 
-from libargos.selector.memorystore import ArrayRti
-from libargos.selector.abstractstore import LazyLoadRtiMixin, FileRtiMixin
+from libargos.repo.memorystore import ArrayRti
+from libargos.repo.abstractstore import LazyLoadRtiMixin, FileRtiMixin
 
 
 class SimpleTextFileRti(LazyLoadRtiMixin, FileRtiMixin, ArrayRti):
