@@ -25,7 +25,7 @@ from __future__ import division
 
 import logging, platform, os
 
-from libargos.commonstate import getCommonState
+from libargos.state.commonstate import getCommonState
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
 from libargos.qt import executeApplication, QtCore, QtGui, USE_PYQT, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView

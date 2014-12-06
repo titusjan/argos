@@ -18,7 +18,7 @@
 """ TODO: remove
 """
 
-from libargos.commonstate import getCommonState
+from libargos.state.commonstate import getCommonState
 
 from .ncdfstore import NcdfFileRti
 from .textfilestore import SimpleTextFileRti
