@@ -19,7 +19,7 @@
 """
 
 import logging, os
-from .abstractstore import (BaseRti, LazyLoadRtiMixin, FileRtiMixin)
+from .treeitems import (BaseRti, LazyLoadRtiMixin, FileRtiMixin)
 
 logger = logging.getLogger(__name__)
 

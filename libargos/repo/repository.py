@@ -19,9 +19,11 @@
 """
 import logging
 from libargos.qt.editabletreemodel import BaseTreeModel
-from libargos.repo.abstractstore import BaseRti, LazyLoadRtiMixin
 from libargos.info import DEBUGGING
 from libargos.utils import check_class, type_name
+
+from .treeitems import BaseRti, LazyLoadRtiMixin
+
 
 logger = logging.getLogger(__name__)
 

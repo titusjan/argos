@@ -29,8 +29,8 @@ from libargos.state.commonstate import getCommonState
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
 from libargos.qt import executeApplication, QtCore, QtGui, USE_PYQT, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
-from libargos.repo.abstractstore import FileRtiMixin
-from libargos.repo.memorystore import ScalarRti, MappingRti
+from libargos.repo.treeitems import FileRtiMixin
+from libargos.repo.memoryrti import ScalarRti, MappingRti
 from libargos.repo.filesytemrti import UnknownFileRti, DirectoryRti
 
 logger = logging.getLogger(__name__)
