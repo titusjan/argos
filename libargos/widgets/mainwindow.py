@@ -143,7 +143,7 @@ class MainWindow(QtGui.QMainWindow):
         centralLayout = QtGui.QVBoxLayout()
         self.mainSplitter.setLayout(centralLayout)
         
-        self.treeView = RepoTree(getCommonState().repository.treeModel)
+        self.treeView = RepoTree(getCommonState().repositoryTreeModel)
         centralLayout.addWidget(self.treeView)
         
         self.label2 = QtGui.QLabel("Hi there", parent=self)
@@ -241,7 +241,7 @@ class MainWindow(QtGui.QMainWindow):
         myDict['subDict'] = {'mean': np.ones(111), 'stddev': np.zeros(111, dtype=np.uint16)}
         
         mappingRti = MappingRti(myDict, nodeName="myDict")
-        storeRootIndex = getCommonState().repository.appendTreeItem(mappingRti)
+        storeRootIndex = getCommonState().repositoryTreeModel.insertItem(mappingRti)
         self.treeView.setExpanded(storeRootIndex, True)
 
         selectionModel = self.treeView.selectionModel()

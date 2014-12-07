@@ -21,6 +21,7 @@ from __future__ import print_function
 import logging, os
 from libargos.qt import QtCore, QtGui, Qt, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
+
 from libargos.state.commonstate import getCommonState
 from libargos.repo.treeitems import FileRtiMixin
 from libargos.repo.memoryrti import ScalarRti
@@ -58,7 +59,7 @@ class RepoTree(ToggleColumnTreeView):
         """ Loads a tree item in the repository and expands it.
         """
         assert repoTreeItem._parentItem is None, "repoTreeItem {!r}".format(repoTreeItem)
-        storeRootIndex = getCommonState().repository.appendTreeItem(repoTreeItem)
+        storeRootIndex = self.model().insertItem(repoTreeItem)
         self.setExpanded(storeRootIndex, expand)
 
 
@@ -98,8 +99,7 @@ class RepoTree(ToggleColumnTreeView):
         """ Returns a tuple with the selected item, and its index, in the repository. 
         """
         selectedIndex = self._getSelectedItemIndex()
-        model = getCommonState().repository.treeModel
-        selectedItem = model.getItem(selectedIndex)
+        selectedItem = self.model().getItem(selectedIndex)
         return selectedItem, selectedIndex
 
     
@@ -113,9 +113,8 @@ class RepoTree(ToggleColumnTreeView):
             logger.warn("Cannot closed item of type (ignored): {}".format(type(selectedItem)))
             return
 
-        model = getCommonState().repository.treeModel
         openFileItem = self._autodetectedRepoTreeItem(selectedItem.fileName)
-        insertedIndex = model.replaceItemAtIndex(openFileItem, selectedIndex)
+        insertedIndex = self.model().replaceItemAtIndex(openFileItem, selectedIndex)
         self.selectionModel().setCurrentIndex(insertedIndex, 
                                                        QtGui.QItemSelectionModel.ClearAndSelect)
         logger.debug("selectedFile opened")
@@ -133,9 +132,8 @@ class RepoTree(ToggleColumnTreeView):
         
         selectedItem.closeFile()
 
-        model = getCommonState().repository.treeModel
         openFileItem = UnknownFileRti(fileName=selectedItem.fileName, nodeName=selectedItem.nodeName)
-        insertedIndex = model.replaceItemAtIndex(openFileItem, selectedIndex)
+        insertedIndex = self.model().replaceItemAtIndex(openFileItem, selectedIndex)
         self.selectionModel().setCurrentIndex(insertedIndex, 
                                                        QtGui.QItemSelectionModel.ClearAndSelect)
         logger.debug("selectedFile closed")
@@ -148,7 +146,7 @@ class RepoTree(ToggleColumnTreeView):
         col0Index = self._getSelectedItemIndex()
 
         value = random.randint(20, 99)
-        model = getCommonState().repository.treeModel
+        model = self.model()
         childIndex = model.insertItem(ScalarRti("new child", str(value)), 
                                       parentIndex = col0Index)
         self.selectionModel().setCurrentIndex(childIndex, 

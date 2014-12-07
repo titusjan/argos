@@ -109,28 +109,3 @@ class RepositoryTreeModel(BaseTreeModel):
         # Check that Rti implementation correctly sets _canFetchChildren    
         assert not parentItem.canFetchChildren(), "not all children fetched: {}".format(parentItem)
 
-    
-   
-class Repository(object):
-    """ TODO: do we keep this class? It doesn't do much
-    """
-    
-    def __init__(self):
-        self._treeModel = RepositoryTreeModel()
-        
-    
-    @property
-    def treeModel(self):
-        return self._treeModel
-        
-    
-    def appendTreeItem(self, repoTreeItem):
-        """ Appends a store to the end of the ordered store dictionary
-            
-            Returns the index in of the store's root item (so it can be selected).
-        """
-        check_class(repoTreeItem, BaseRti)
-        storeRootIndex = self.treeModel.insertItem(repoTreeItem)
-        return storeRootIndex
-            
-        

@@ -20,7 +20,7 @@ import logging
 
 from .registry import Registry
 from libargos.utils.cls import type_name
-from libargos.repo.repository import Repository
+from libargos.repo.repository import RepositoryTreeModel
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ class StateSingleton(object):
     def __init__(self):
         """ Constructor """
         self._registry = Registry()
-        self._repository = Repository()
+        self._repository = RepositoryTreeModel()
         
         
     def __repr__(self):
@@ -42,7 +42,7 @@ class StateSingleton(object):
         return self._registry
 
     @property        
-    def repository(self):
+    def repositoryTreeModel(self):
         """ Returns the data repository """
         return self._repository
     
