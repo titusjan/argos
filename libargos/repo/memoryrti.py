@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 
 from .treeitems import BaseRti, LazyLoadRtiMixin
 
-from libargos.utils import (check_is_a_sequence, check_is_a_mapping, check_is_an_array,  
-                            is_a_sequence, is_a_mapping, is_an_array, type_name)
+from libargos.utils.cls import (check_is_a_sequence, check_is_a_mapping, check_is_an_array,  
+                                is_a_sequence, is_a_mapping, is_an_array, type_name)
 
 
 def _createFromObject(obj, nodeName):

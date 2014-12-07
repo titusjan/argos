@@ -50,7 +50,7 @@ QtSlot = QtSlot_Unchecked
 import sys, logging, traceback
 
 from .. import info
-from ..utils import check_class
+from libargos.utils.cls import check_class
 
 logger = logging.getLogger(__name__)
 

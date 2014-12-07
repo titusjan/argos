@@ -20,7 +20,7 @@
 import logging
 from libargos.qt.editabletreemodel import BaseTreeModel
 from libargos.info import DEBUGGING
-from libargos.utils import check_class, type_name
+from libargos.utils.cls import check_class, type_name
 
 from .treeitems import BaseRti, LazyLoadRtiMixin
 

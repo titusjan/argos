@@ -21,7 +21,7 @@
 import logging, os
 
 from libargos.qt.editabletreemodel import BaseTreeItem
-from libargos.utils import StringType, check_class
+from libargos.utils.cls import StringType, check_class
 
 logger = logging.getLogger(__name__)
 

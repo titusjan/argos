@@ -30,4 +30,5 @@ TODO:
 	open/close ncdf plugins
 	path of items
 	icons
+	class for repotreeview
 	

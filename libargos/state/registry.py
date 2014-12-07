@@ -19,7 +19,8 @@
 
 import logging
 from libargos.repo.treeitems import FileRtiMixin
-from libargos.utils import prepend_point_to_extension, import_symbol, check_is_a_string
+from libargos.utils.cls import import_symbol, check_is_a_string
+from libargos.utils.misc import prepend_point_to_extension
 
 
 logger = logging.getLogger(__name__)
