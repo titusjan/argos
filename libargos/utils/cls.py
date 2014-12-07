@@ -114,8 +114,13 @@ def check_class(obj, target_class, allow_none = False):
         if not (allow_none and obj is None):
             raise TypeError("obj must be a of type {}, got: {}"
                             .format(target_class, type(obj)))
-
     
+
+def get_class_name(obj):
+    """ Returns the class name of an object.
+    """
+    return obj.__class__.__name__
+
 
 def import_symbol(full_symbol_name):
     """ Imports a symbol (e.g. class, variable, etc) from a dot separated name.

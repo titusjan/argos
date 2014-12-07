@@ -31,14 +31,30 @@ class _RegisteredRti(object):
     """ Class to keep track of a registered Repo Tree Item.
         For internal use only.
     """
-    def __init__(self, rtiClass, extensions):
+    def __init__(self, rtiFullName, rtiClass, extensions):
+        self.rtiFullName = rtiFullName
         self.rtiClass = rtiClass
         self.extensions = extensions
         
+        
     def __repr__(self):
-        return "<_RegisteredRti: {}>".format(self.rtiClass)
+        return "<_RegisteredRti: {}>".format(self.rtiShortName)
         
         
+    @property
+    def rtiShortName(self):
+        """ Short name for use in file dialogs, menus, etc.
+        """
+        return self.rtiFullName.rsplit('.', 1)[1]
+    
+
+    def getFileDialogFilter(self):
+        """ Returns a filters that can be used to construct file dialogs filters, 
+            for example: 'Txt (*.txt;*.text)'    
+        """
+        extStr = ';'.join(['*' + ext for ext in self.extensions])
+        return '{} ({})'.format(self.rtiShortName, extStr)
+    
 
 class Registry(object):
     """ Class that can be used to register plug-ins, data formats, etc.
@@ -83,7 +99,7 @@ class Registry(object):
         if not issubclass(rtiClass, FileRtiMixin):
             raise TypeError("rtiClass must be a subtype of BaseRti".format(rtiClass))         
         
-        regRti = _RegisteredRti(rtiClass, extensions=extensions)
+        regRti = _RegisteredRti(rtiFullName, rtiClass, extensions)
         self._registeredRtis.append(regRti)
         
         for ext in regRti.extensions:
@@ -94,4 +110,14 @@ class Registry(object):
         """ Returns the RepoTreeItem classes registered for that extension
         """
         return self._extensionToRti[extension]
-        
+    
+    
+    def getFileDialogFilter(self):
+        """ Returns a filter that can be used in open file dialogs, 
+            for example: 'All files (*);;Txt (*.txt;*.text);;netCDF(*.nc;*.nc4)'    
+        """
+        filters = ['All files (*)']
+        for regRti in self._registeredRtis:
+            filters.append(regRti.getFileDialogFilter())
+        return ';;'.join(filters)
+            

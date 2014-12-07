@@ -164,10 +164,9 @@ class MainWindow(QtGui.QMainWindow):
         if not fileName:
             fileName = QtGui.QFileDialog.getOpenFileName(self, 
                 caption = "Choose a file", directory = '', 
-                filter='Txt (*.txt;*.text);;netCDF(*.nc;*.nc4);;All files (*)')
+                filter=getCommonState().registry.getFileDialogFilter())
             if not USE_PYQT:
-                # PySide returns: (file, selectedFilter)
-                fileName = fileName[0]
+                fileName = fileName[0] # PySide returns: (file, selectedFilter)
 
         if fileName:
             logger.info("Loading data from: {!r}".format(fileName))

@@ -81,7 +81,6 @@ class RepoTree(ToggleColumnTreeView):
                 cls = getCommonState().registry.getRtiByExtension(extension)
             except KeyError:
                 cls = UnknownFileRti
-
         return cls.createFromFileName(fileName)
         
         
