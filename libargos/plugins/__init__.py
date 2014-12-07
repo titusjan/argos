@@ -20,11 +20,11 @@
 
 from libargos.state.commonstate import getCommonState
 
-from .ncdfstore import NcdfFileRti
-from .textfilestore import SimpleTextFileRti
 
 __registry = getCommonState().registry
 
-__registry.registerRti(NcdfFileRti, extensions=['nc', 'nc3', 'nc4', 'txt'])
-__registry.registerRti(SimpleTextFileRti, extensions=['txt', 'text'])
+__registry.registerRti('libargos.plugins.ncdfstore.NcdfFileRti', 
+                       extensions=['nc', 'nc3', 'nc4'])
+__registry.registerRti('libargos.plugins.textfilestore.SimpleTextFileRti', 
+                       extensions=['txt', 'text'])
 

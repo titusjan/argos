@@ -25,3 +25,9 @@ Handle Exception:
 Test:
 	Memory leaks
 
+TODO:
+	rename libargos -> argos
+	open/close ncdf plugins
+	path of items
+	icons
+	

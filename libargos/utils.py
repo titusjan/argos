@@ -57,7 +57,6 @@ def type_name(var):
     """ Returns the name of the type of var"""
     return type(var).__name__
     
-    
 
 def is_a_string(var):
     """ Returns True if var is a string (regular or unicode)
@@ -75,6 +74,14 @@ def is_a_sequence(var):
     """
     return (type(var) == list or type(var) == tuple)
 
+
+def check_is_a_string(var):
+    """ Calls is_a_sequence and raises a type error if the check fails.
+    """
+    if not is_a_string(var):
+        raise TypeError("var must be a string, however type(var) is {}"
+                        .format(type(var)))
+    
 
 def check_is_a_sequence(var):
     """ Calls is_a_sequence and raises a type error if the check fails.
@@ -128,7 +135,35 @@ def check_class(obj, target_class, allow_none = False):
             raise TypeError("obj must be a of type {}, got: {}"
                             .format(target_class, type(obj)))
 
+    
 
+def import_symbol(full_symbol_name):
+    """ Imports a symbol (e.g. class, variable, etc) from a dot separated name.
+        Can be used to create a class whose type is only known at run-time. 
+        
+        The full_symbol_name must contain packages and module, 
+        e.g.: 'libargos.plugins.rti.ncdf.NcdfFileRti'
+                
+        If the module doesn't exist an ImportError is raised.
+        If the class doesn't exist an AttributeError is raised.
+    """
+    parts = full_symbol_name.rsplit('.', 1)
+    if len(parts) == 2:
+        module_name, symbol_name = parts
+        module_name = str(module_name) # convert from possible unicode
+        symbol_name = str(symbol_name)
+        logger.debug("From module {} importing {!r}".format(module_name, symbol_name))
+        module = __import__(module_name, fromlist=[symbol_name])
+        cls = getattr(module, symbol_name)
+        return cls
+    elif len(parts) == 1:  
+        # No module part, only a class name. If you want to create a class
+        # by using name without module, you should use globals()[symbol_name]
+        # We cannot do this here because globals is of the module that defines
+        # this function, not of the modules where this function is called. 
+        raise ImportError("full_symbol_name should contain a module")
+    else:
+        assert False, "Bug: parts should have 1 or elements: {}".format(parts)
 
 def prepend_point_to_extension(extension):
     """ Prepends a point to the extension of it doesn't already start with it

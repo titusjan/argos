@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 from libargos.repo.memoryrti import ArrayRti
 from libargos.repo.treeitems import LazyLoadRtiMixin, FileRtiMixin
 
-
+# TODO: rename to NumpyTextFileRti
 class SimpleTextFileRti(LazyLoadRtiMixin, FileRtiMixin, ArrayRti):
     """ Store for representing data that is read from a simple text file.
     """

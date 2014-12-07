@@ -19,7 +19,7 @@
 
 import logging
 from libargos.repo.treeitems import FileRtiMixin
-from libargos.utils import prepend_point_to_extension
+from libargos.utils import prepend_point_to_extension, import_symbol, check_is_a_string
 
 
 logger = logging.getLogger(__name__)
@@ -57,18 +57,34 @@ class Registry(object):
         return self._registeredRtis
     
     
-    def registerRti(self, rtiClass, extensions=None):
-        """ Register a RepoTreeItem class
+    def registerExtension(self, extension, rtiClass):
+        """ Links an file name extension to a repository tree item. 
         """
+        # TODO: type checking
+        if extension in self._extensionToRti:
+            logger.warn("Overriding {} with {} for extension {!r}"
+                        .format(self._extensionToRti[extension], rtiClass, extension))
+        self._extensionToRti[extension] = rtiClass
+            
+            
+    def registerRti(self, rtiFullName, extensions=None):
+        """ Register which Repo Tree Item should be used to open a particular file type.
+                
+            :param rtiFullName: full name of the repo tree item. 
+                E.g.: 'libargos.plugins.rti.ncdf.NcdfFileRti'
+                The rti should be a descendant of libargos.repo.treeitems.FileRtiMixin
+            :param extensions: optional list of extensions that will be linked to this RTI
+                a point will be prepended to the extensions if not already present.
+        """
+        check_is_a_string(rtiFullName)
+        rtiClass = import_symbol(rtiFullName)
+        
         regRti = RegisteredRti(rtiClass, extensions=extensions)
+        self._registeredRtis.append(regRti)
+        
         logger.info("Registering {} for extensions: {}".format(regRti.rtiClass, regRti.extensions))
         for ext in regRti.extensions:
-            if ext in self._extensionToRti:
-                logger.warn("Overriding {} with {} for extension {!r}"
-                            .format(self._extensionToRti[ext], regRti.rtiClass, ext))
-            self._extensionToRti[ext] = regRti.rtiClass
-                
-        self._registeredRtis.append(regRti)
+            self.registerExtension(ext, regRti.rtiClass)
 
         
     def getRtiByExtension(self, extension):
