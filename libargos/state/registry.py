@@ -26,20 +26,16 @@ logger = logging.getLogger(__name__)
 
 
 
-class RegisteredRti(object):
-    """ Registered Repo Tree Item
+class _RegisteredRti(object):
+    """ Class to keep track of a registered Repo Tree Item.
+        For internal use only.
     """
-    def __init__(self, rtiClass, extensions=None):
-        """ Constructor
-        """
-        if not issubclass(rtiClass, FileRtiMixin):
-            raise TypeError("rtiClass must be a subtype of BaseRti".format(rtiClass))         
+    def __init__(self, rtiClass, extensions):
         self.rtiClass = rtiClass
-        self.extensions = extensions if extensions is not None else []
-        self.extensions = [prepend_point_to_extension(ext) for ext in self.extensions]
+        self.extensions = extensions
         
     def __repr__(self):
-        return "<RegisteredRti: {}>".format(self.rtiClass)
+        return "<_RegisteredRti: {}>".format(self.rtiClass)
         
         
 
@@ -57,7 +53,7 @@ class Registry(object):
         return self._registeredRtis
     
     
-    def registerExtension(self, extension, rtiClass):
+    def _registerExtension(self, extension, rtiClass):
         """ Links an file name extension to a repository tree item. 
         """
         # TODO: type checking
@@ -76,15 +72,21 @@ class Registry(object):
             :param extensions: optional list of extensions that will be linked to this RTI
                 a point will be prepended to the extensions if not already present.
         """
+        extensions = extensions if extensions is not None else []
+        extensions = [prepend_point_to_extension(ext) for ext in extensions]
+        logger.info("Registering {} for extensions: {}".format(rtiFullName, extensions))
+        
         check_is_a_string(rtiFullName)
         rtiClass = import_symbol(rtiFullName)
         
-        regRti = RegisteredRti(rtiClass, extensions=extensions)
+        if not issubclass(rtiClass, FileRtiMixin):
+            raise TypeError("rtiClass must be a subtype of BaseRti".format(rtiClass))         
+        
+        regRti = _RegisteredRti(rtiClass, extensions=extensions)
         self._registeredRtis.append(regRti)
         
-        logger.info("Registering {} for extensions: {}".format(regRti.rtiClass, regRti.extensions))
         for ext in regRti.extensions:
-            self.registerExtension(ext, regRti.rtiClass)
+            self._registerExtension(ext, regRti.rtiClass)
 
         
     def getRtiByExtension(self, extension):
