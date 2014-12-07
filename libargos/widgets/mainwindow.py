@@ -23,15 +23,12 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
 
-import logging, platform, os
+import logging, platform
 
+from .repotree import RepoTree
 from libargos.state.commonstate import getCommonState
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
 from libargos.qt import executeApplication, QtCore, QtGui, USE_PYQT, QtSlot
-from libargos.qt.togglecolumn import ToggleColumnTreeView
-from libargos.repo.treeitems import FileRtiMixin
-from libargos.repo.memoryrti import ScalarRti, MappingRti
-from libargos.repo.filesytemrti import UnknownFileRti, DirectoryRti
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +87,6 @@ class MainWindow(QtGui.QMainWindow):
         # Update model 
         self.__addTestData()
 
-     
 
     def __setupActions(self):
         """ Creates the main window actions.
@@ -106,7 +102,6 @@ class MainWindow(QtGui.QMainWindow):
         
         self.closeFileAction = QtGui.QAction("Close File", self)
         self.closeFileAction.setShortcut("Ctrl+P") # TODO: remove shortcut
-        
                   
                               
     def __setupMenu(self):
@@ -148,60 +143,20 @@ class MainWindow(QtGui.QMainWindow):
         centralLayout = QtGui.QVBoxLayout()
         self.mainSplitter.setLayout(centralLayout)
         
-        self.treeView = ToggleColumnTreeView(self)
-        self.treeView.setModel(getCommonState().repository.treeModel) # TODO: use a selector with its own model
-        self.treeView.setAlternatingRowColors(True)
-        self.treeView.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems) # TODO: SelectRows
-        self.treeView.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.treeView.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.treeView.setAnimated(True)
-        self.treeView.setAllColumnsShowFocus(True)        
+        self.treeView = RepoTree(getCommonState().repository.treeModel)
         centralLayout.addWidget(self.treeView)
-        
-        treeHeader = self.treeView.header()
-        treeHeader.setMovable(True)
-        treeHeader.setStretchLastSection(False)  
-        treeHeader.resizeSection(0, 200)
-        headerNames = self.treeView.model().horizontalHeaders
-        enabled = dict((name, True) for name in headerNames)
-        enabled[headerNames[0]] = False # Fist column cannot be unchecked
-        self.treeView.addHeaderContextMenu(enabled=enabled, checkable={})
         
         self.label2 = QtGui.QLabel("Hi there", parent=self)
         centralLayout.addWidget(self.label2)        
         
         # Connect signals and slots 
-        self.insertChildAction.triggered.connect(self.insertItem)
-        self.deleteItemAction.triggered.connect(self.removeRow)
-        self.openFileAction.triggered.connect(self.openSelectedFile)
-        self.closeFileAction.triggered.connect(self.closeSelectedFile)
+        self.insertChildAction.triggered.connect(self.treeView.insertItem)
+        self.deleteItemAction.triggered.connect(self.treeView.removeRow)
+        self.openFileAction.triggered.connect(self.treeView.openSelectedFile)
+        self.closeFileAction.triggered.connect(self.treeView.closeSelectedFile)
 
 
-    # End of setup_methods
-
-    def _autodetectedRepoTreeItem(self, fileName):
-        """ Determines the type of RepoTreeItem to use given a file name.
-            Temporary solution
-        """
-        _, extension = os.path.splitext(fileName)
-        if os.path.isdir(fileName):
-            cls = DirectoryRti
-        else:
-            try:
-                cls = getCommonState().registry.getRtiByExtension(extension)
-            except KeyError:
-                cls = UnknownFileRti
-
-        return cls.createFromFileName(fileName)
-                    
-        
-    def loadRepoTreeItem(self, repoTreeItem, expand=False):
-        """ Loads a tree item in the repository and selects it.
-        """
-        assert repoTreeItem._parentItem is None, "repoTreeItem {!r}".format(repoTreeItem)
-        storeRootIndex = getCommonState().repository.appendTreeItem(repoTreeItem)
-        self.treeView.setExpanded(storeRootIndex, expand)
-
+    # -- End of setup_methods --
 
     def openFile(self, fileName=None): 
         """ Lets the user select an Ascii file and opens it.
@@ -217,8 +172,7 @@ class MainWindow(QtGui.QMainWindow):
         if fileName:
             logger.info("Loading data from: {!r}".format(fileName))
             try:
-                repoTreeItem = self._autodetectedRepoTreeItem(fileName)
-                self.loadRepoTreeItem(repoTreeItem, expand = True)
+                self.treeView.loadFile(fileName, expand = True)
             except Exception as ex:
                 if DEBUGGING:
                     raise
@@ -279,6 +233,7 @@ class MainWindow(QtGui.QMainWindow):
         """ Temporary function to add test data
         """
         import numpy as np
+        from libargos.repo.memoryrti import MappingRti
         myDict = {}
         myDict['name'] = 'Pac Man'
         myDict['age'] = 34
@@ -294,93 +249,6 @@ class MainWindow(QtGui.QMainWindow):
         selectionModel.setCurrentIndex(storeRootIndex, QtGui.QItemSelectionModel.ClearAndSelect)
         logger.debug("selected tree item: has selection: {}".format(selectionModel.hasSelection()))
         
-        
-    def _getSelectedItemIndex(self):
-        """ Returns the index of the selected item in the repository. 
-        """
-        selectionModel = self.treeView.selectionModel()
-        assert selectionModel.hasSelection(), "No selection"        
-        curIndex = selectionModel.currentIndex()
-        col0Index = curIndex.sibling(curIndex.row(), 0)
-        return col0Index
-
-
-    def _getSelectedItem(self):
-        """ Returns a tuple with the selected item, and its index, in the repository. 
-        """
-        selectedIndex = self._getSelectedItemIndex()
-        model = getCommonState().repository.treeModel
-        selectedItem = model.getItem(selectedIndex)
-        return selectedItem, selectedIndex
-
-    
-    def openSelectedFile(self):
-        """ Opens the selected file in the repository. The file must be closed beforehand.
-        """
-        logger.debug("openSelectedFile")
-        
-        selectedItem, selectedIndex = self._getSelectedItem()
-        if not isinstance(selectedItem, FileRtiMixin):
-            logger.warn("Cannot closed item of type (ignored): {}".format(type(selectedItem)))
-            return
-
-        model = getCommonState().repository.treeModel
-        openFileItem = self._autodetectedRepoTreeItem(selectedItem.fileName)
-        insertedIndex = model.replaceItemAtIndex(openFileItem, selectedIndex)
-        self.treeView.selectionModel().setCurrentIndex(insertedIndex, 
-                                                       QtGui.QItemSelectionModel.ClearAndSelect)
-        logger.debug("selectedFile opened")
-         
-
-    def closeSelectedFile(self):
-        """ Opens the selected file in the repository. The file must be closed beforehand.
-        """
-        logger.debug("closeSelectedFile")
-        
-        selectedItem, selectedIndex = self._getSelectedItem()
-        if not isinstance(selectedItem, FileRtiMixin):
-            logger.warn("Cannot closed item of type (ignored): {}".format(type(selectedItem)))
-            return
-        
-        selectedItem.closeFile()
-
-        model = getCommonState().repository.treeModel
-        openFileItem = UnknownFileRti(fileName=selectedItem.fileName, nodeName=selectedItem.nodeName)
-        insertedIndex = model.replaceItemAtIndex(openFileItem, selectedIndex)
-        self.treeView.selectionModel().setCurrentIndex(insertedIndex, 
-                                                       QtGui.QItemSelectionModel.ClearAndSelect)
-        logger.debug("selectedFile closed")
-        
-    @QtSlot()
-    def insertItem(self):
-        """ Temporary test method
-        """
-        import random
-        col0Index = self._getSelectedItemIndex()
-
-        value = random.randint(20, 99)
-        model = getCommonState().repository.treeModel
-        childIndex = model.insertItem(ScalarRti("new child", value), 
-                                      parentIndex = col0Index)
-        self.treeView.selectionModel().setCurrentIndex(childIndex, 
-                                                       QtGui.QItemSelectionModel.ClearAndSelect)
-        
-        newChildItem = model.getItem(childIndex, altItem=model.rootItem)
-        logger.debug("Added child: {} under {}".format(newChildItem, newChildItem.parentItem))
-
-        #self.updateActions() # TODO: needed?        
-        
-        
-    @QtSlot()    
-    def removeRow(self):
-        """ Temporary test method
-        """
-        logger.debug("RemoveRow()")
-        selectionModel = self.treeView.selectionModel()
-        assert selectionModel.hasSelection(), "No selection"
-        self.treeView.model().deleteItemByIndex(selectionModel.currentIndex()) # TODO: repository close
-        logger.debug("removeRow completed")        
-            
 
     def myTest(self):
         """ Function for testing """

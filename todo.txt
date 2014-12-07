@@ -26,9 +26,9 @@ Test:
 	Memory leaks
 
 TODO:
-	rename libargos -> argos
+	rename libargos -> argos?
 	open/close ncdf plugins
+	remove files from tree
 	path of items
 	icons
-	class for repotreeview
 	

@@ -36,7 +36,7 @@ class BaseRti(BaseTreeItem):
             :param nodeName: name of this node.
         """
         super(BaseRti, self).__init__()
-        check_class(nodeName, StringType, allow_none=True) # TODO: allow_none?
+        check_class(nodeName, StringType, allow_none=False) # TODO: allow_none?
         self._nodeName = str(nodeName)
 
     @property
