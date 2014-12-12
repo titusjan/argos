@@ -21,17 +21,20 @@
     See http://unidata.github.io/netcdf4-python/
 """
 
-import logging
+import logging, os
 from netCDF4 import Dataset, Variable
 
+from libargos.qt import QtGui
 from libargos.utils.cls import check_class, type_name
-from libargos.repo.treeitems import (BaseRti, LazyLoadRtiMixin, FileRtiMixin)
+from libargos.repo.treeitems import (ICONS_DIRECTORY, BaseRti, LazyLoadRtiMixin, FileRtiMixin)
 
 logger = logging.getLogger(__name__)
 
 
 class VariableRti(BaseRti):
 
+    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.svg'))
+    
     def __init__(self, ncVar, nodeName=None):
         """ Constructor
         """
@@ -57,6 +60,8 @@ class VariableRti(BaseRti):
 
 class DatasetRti(LazyLoadRtiMixin, BaseRti):
 
+    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-close.svg'))
+    
     def __init__(self, dataset, nodeName=None):
         """ Constructor
         """
@@ -89,6 +94,8 @@ class DatasetRti(LazyLoadRtiMixin, BaseRti):
 class NcdfFileRti(FileRtiMixin, DatasetRti):
     """ Repository tree item that stores a netCDF file.
     """
+    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file.svg'))
+        
     def __init__(self, fileName, nodeName=None):
         FileRtiMixin.__init__(self, fileName) 
         DatasetRti.__init__(self, Dataset(self._fileName), nodeName=nodeName)

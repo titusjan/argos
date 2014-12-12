@@ -45,8 +45,6 @@ import logging
 from libargos.qt import QtCore
 
 logger = logging.getLogger(__name__)
-
-
     
 # Placed TreeItem in the same module as BaseTreeModel since they are meant to be used together.
 
@@ -124,6 +122,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         strings that will be passed to views for use as horizontal header titles.
     """
     HEADERS = tuple() # override in descendants
+    COL_ICON = 0
     
     def __init__(self, parent=None):
         """ Constructor
@@ -183,11 +182,16 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         if not index.isValid():
             return None
 
-        if role != QtCore.Qt.DisplayRole and role != QtCore.Qt.EditRole:
-            return None
-
-        item = self.getItem(index, altItem=self.rootItem)
-        return self._itemValueForColumn(item, index.column())
+        if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
+            item = self.getItem(index, altItem=self.rootItem)
+            return self._itemValueForColumn(item, index.column())
+        
+        elif role == QtCore.Qt.DecorationRole:
+            if index.column() == self.COL_ICON:
+                item = self.getItem(index, altItem=self.rootItem)
+                return item.icon
+        
+        return None
 
 
     def flags(self, index):

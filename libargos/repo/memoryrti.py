@@ -17,12 +17,13 @@
 
 """ Store and Tree items for representing data that is stored in memory.
 """
-import logging
+import logging, os
 
 logger = logging.getLogger(__name__)
 
-from .treeitems import BaseRti, LazyLoadRtiMixin
+from .treeitems import ICONS_DIRECTORY, BaseRti, LazyLoadRtiMixin
 
+from libargos.qt import QtGui
 from libargos.utils.cls import (check_is_a_sequence, check_is_a_mapping, check_is_an_array,  
                                 is_a_sequence, is_a_mapping, is_an_array, type_name)
 
@@ -41,6 +42,8 @@ def _createFromObject(obj, nodeName):
 class ScalarRti(BaseRti):
     """ Stores a Python or numpy scalar
     """
+    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'asterisk.svg'))
+    
     def __init__(self, scalar, nodeName=None):
         super(ScalarRti, self).__init__(nodeName = nodeName)
         self._scalar = scalar 
@@ -55,6 +58,8 @@ class ScalarRti(BaseRti):
     
 
 class ArrayRti(BaseRti):
+
+    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.svg'))
     
     def __init__(self, array, nodeName=None):
         """ Constructor
@@ -78,6 +83,8 @@ class ArrayRti(BaseRti):
     
 
 class SequenceRti(LazyLoadRtiMixin, BaseRti):
+    
+    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.svg'))
     
     def __init__(self, sequence, nodeName=None):
         """ Constructor
@@ -112,6 +119,8 @@ class SequenceRti(LazyLoadRtiMixin, BaseRti):
 
 
 class MappingRti(LazyLoadRtiMixin, BaseRti):
+    
+    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-open.svg'))
     
     def __init__(self, dictionary, nodeName=None):
         """ Constructor

@@ -17,6 +17,10 @@ http://mirador.gsfc.nasa.gov/cgi-bin/mirador/granlist.pl?page=1&location=%28-90,
 http://www.census.gov/population/international/data/countryrank/rank.php
 
 
+
+rename libargos -> argos?
+
+
 Handle Exception:
 	Raise with old exception handler.
 	Quit button.
@@ -26,9 +30,14 @@ Test:
 	Memory leaks
 
 TODO:
-	rename libargos -> argos?
 	open/close ncdf plugins
+	'open as...'
 	remove files from tree
 	path of items
 	icons
+	
+	Multiple open windows.
+	
+	Plugin management window
+	
 	

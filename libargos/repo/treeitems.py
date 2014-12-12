@@ -20,8 +20,11 @@
 """
 import logging, os
 
+from libargos.info import program_directory
 from libargos.qt.editabletreemodel import BaseTreeItem
 from libargos.utils.cls import StringType, check_class
+
+ICONS_DIRECTORY = os.path.join(program_directory(), 'img/snipicons')
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +33,8 @@ class BaseRti(BaseTreeItem):
         Base node from which to derive the other types of nodes.
         Serves as an interface but can also be instantiated for debugging purposes.
     """
+    _icon = None # can be overridden by a QtGui.QIcon
+    
     def __init__(self, nodeName=None):
         """ Constructor
         
@@ -38,6 +43,10 @@ class BaseRti(BaseTreeItem):
         super(BaseRti, self).__init__()
         check_class(nodeName, StringType, allow_none=False) # TODO: allow_none?
         self._nodeName = str(nodeName)
+    
+    @property    
+    def icon(self):
+        return self._icon
 
     @property
     def nodeName(self): # TODO: to BaseTreeItem?

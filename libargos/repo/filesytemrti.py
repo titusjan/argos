@@ -19,16 +19,18 @@
 """
 
 import logging, os
-from .treeitems import (BaseRti, LazyLoadRtiMixin, FileRtiMixin)
+from .treeitems import (ICONS_DIRECTORY, BaseRti, LazyLoadRtiMixin, FileRtiMixin)
+from libargos.qt import QtGui
 
 logger = logging.getLogger(__name__)
-
 
 
 class UnknownFileRti(FileRtiMixin, BaseRti):
     """ A repository tree item that has a reference to a file of unknown type. 
         The file is not opened.
     """
+    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file.svg'))
+    
     def __init__(self, fileName, nodeName=None):
         """ Constructor 
         """
@@ -47,6 +49,8 @@ class UnknownFileRti(FileRtiMixin, BaseRti):
 class DirectoryRti(LazyLoadRtiMixin, FileRtiMixin, BaseRti):
     """ A repository tree item that has a reference to a file. 
     """
+    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-close.svg'))
+
     def __init__(self, fileName, nodeName=None):
         """ Constructor
         """

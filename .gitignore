@@ -42,3 +42,4 @@ output/*/index.html
 # Sphinx
 docs/_build
 org.eclipse.core.resources.prefs
+.DS_Store

@@ -20,9 +20,9 @@
 import logging
 from libargos.qt.editabletreemodel import BaseTreeModel
 from libargos.info import DEBUGGING
-from libargos.utils.cls import check_class, type_name
+from libargos.utils.cls import type_name
 
-from .treeitems import BaseRti, LazyLoadRtiMixin
+from .treeitems import LazyLoadRtiMixin
 
 
 logger = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ class RepositoryTreeModel(BaseTreeModel):
             return treeItem.nodeName
         elif column == self.COL_SHAPE:
             return " x ".join(str(elem) for elem in treeItem.arrayShape)
-        elif column == self.COL_RTI_TYPE: # repo tree item type
+        elif column == self.COL_RTI_TYPE:
             return type_name(treeItem)
         elif column == self.COL_TYPE:
             return treeItem.typeName

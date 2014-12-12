@@ -17,17 +17,20 @@
 
 """ Stores for representing data that is read from text files.
 """
-import logging
+import logging, os
 import numpy as np
-logger = logging.getLogger(__name__)
 
-
+from libargos.qt import QtGui
 from libargos.repo.memoryrti import ArrayRti
-from libargos.repo.treeitems import LazyLoadRtiMixin, FileRtiMixin
+from libargos.repo.treeitems import ICONS_DIRECTORY, LazyLoadRtiMixin, FileRtiMixin
+
+logger = logging.getLogger(__name__)
 
 class NumpyTextFileRti(LazyLoadRtiMixin, FileRtiMixin, ArrayRti):
     """ Store for representing data that is read from a simple text file.
     """
+    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file.svg'))
+        
     def __init__(self, fileName, nodeName=None):
         LazyLoadRtiMixin.__init__(self) 
         FileRtiMixin.__init__(self, fileName) 
