@@ -60,7 +60,8 @@ class VariableRti(BaseRti):
 
 class DatasetRti(LazyLoadRtiMixin, BaseRti):
 
-    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-close.svg'))
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-open.svg'))
+    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-close.svg'))
     
     def __init__(self, dataset, nodeName=None):
         """ Constructor
@@ -71,6 +72,15 @@ class DatasetRti(LazyLoadRtiMixin, BaseRti):
 
         self._dataset = dataset
         self._childrenFetched = False
+        
+        
+    @property
+    def icon(self):
+        "Icon displayed"
+        if self._childrenFetched:
+            return self._iconOpen
+        else:
+            return self._iconClosed
 
         
     def _fetchAllChildren(self):

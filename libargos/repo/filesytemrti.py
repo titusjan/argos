@@ -29,7 +29,9 @@ class UnknownFileRti(FileRtiMixin, BaseRti):
     """ A repository tree item that has a reference to a file of unknown type. 
         The file is not opened.
     """
-    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file.svg'))
+    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file-inverse.svg'))
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file.svg'))
+    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file-inverse.svg'))
     
     def __init__(self, fileName, nodeName=None):
         """ Constructor 
@@ -37,7 +39,7 @@ class UnknownFileRti(FileRtiMixin, BaseRti):
         FileRtiMixin.__init__(self, fileName) 
         BaseRti.__init__(self, nodeName=nodeName)
         assert os.path.isfile(self.fileName), "Not a regular file: {}".format(self.fileName)
-        
+
     
     def closeFile(self):
         """ Does nothing since the underlying file is not opened.
@@ -49,8 +51,9 @@ class UnknownFileRti(FileRtiMixin, BaseRti):
 class DirectoryRti(LazyLoadRtiMixin, FileRtiMixin, BaseRti):
     """ A repository tree item that has a reference to a file. 
     """
-    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-close.svg'))
-
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-open.svg'))
+    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-close.svg'))
+    
     def __init__(self, fileName, nodeName=None):
         """ Constructor
         """
@@ -59,7 +62,15 @@ class DirectoryRti(LazyLoadRtiMixin, FileRtiMixin, BaseRti):
         BaseRti.__init__(self, nodeName=nodeName)
         assert os.path.isdir(self.fileName), "Not a directory: {}".format(self.fileName)
         self._childrenFetched = False
-
+        
+    @property
+    def icon(self):
+        "Icon displayed"
+        if self._childrenFetched:
+            return self._iconOpen
+        else:
+            return self._iconClosed
+        
         
     def _fetchAllChildren(self):
         """ Gets all sub directories and files within the current directory.
