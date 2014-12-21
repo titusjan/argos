@@ -25,13 +25,14 @@ from libargos.qt import QtGui
 logger = logging.getLogger(__name__)
 
 
+_ICOLOR = '666666' # icons in dark gray
+
+
 class UnknownFileRti(FileRtiMixin, BaseRti):
     """ A repository tree item that has a reference to a file of unknown type. 
         The file is not opened.
     """
-    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file-inverse.svg'))
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file.svg'))
-    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file-inverse.svg'))
+    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file-inverse.{}.svg'.format(_ICOLOR)))
     
     def __init__(self, fileName, nodeName=None):
         """ Constructor 
@@ -51,8 +52,10 @@ class UnknownFileRti(FileRtiMixin, BaseRti):
 class DirectoryRti(LazyLoadRtiMixin, FileRtiMixin, BaseRti):
     """ A repository tree item that has a reference to a file. 
     """
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-open.svg'))
-    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-close.svg'))
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 
+                                         'folder-open.{}.svg'.format(_ICOLOR)))
+    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 
+                                           'folder-close.{}.svg'.format(_ICOLOR)))
     
     def __init__(self, fileName, nodeName=None):
         """ Constructor

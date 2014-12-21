@@ -24,7 +24,7 @@ from libargos.info import program_directory
 from libargos.qt.editabletreemodel import BaseTreeItem
 from libargos.utils.cls import StringType, check_class
 
-ICONS_DIRECTORY = os.path.join(program_directory(), 'img/snipicons')
+ICONS_DIRECTORY = os.path.join(program_directory(), 'img/icons')
 
 logger = logging.getLogger(__name__)
 

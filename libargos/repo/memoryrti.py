@@ -28,6 +28,9 @@ from libargos.utils.cls import (check_is_a_sequence, check_is_a_mapping, check_i
                                 is_a_sequence, is_a_mapping, is_an_array, type_name)
 
 
+_ICOLOR = 'FF0000' 
+
+
 def _createFromObject(obj, nodeName):
     if is_a_sequence(obj):
         return SequenceRti(obj, nodeName=nodeName)
@@ -42,7 +45,7 @@ def _createFromObject(obj, nodeName):
 class ScalarRti(BaseRti):
     """ Stores a Python or numpy scalar
     """
-    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'asterisk.svg'))
+    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'asterisk.{}.svg'.format(_ICOLOR)))
     
     def __init__(self, scalar, nodeName=None):
         super(ScalarRti, self).__init__(nodeName = nodeName)
@@ -59,7 +62,7 @@ class ScalarRti(BaseRti):
 
 class ArrayRti(BaseRti):
 
-    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.svg'))
+    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.{}.svg'.format(_ICOLOR)))
     
     def __init__(self, array, nodeName=None):
         """ Constructor
@@ -84,7 +87,7 @@ class ArrayRti(BaseRti):
 
 class SequenceRti(LazyLoadRtiMixin, BaseRti):
     
-    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.svg'))
+    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.{}.svg'.format(_ICOLOR)))
     
     def __init__(self, sequence, nodeName=None):
         """ Constructor
@@ -120,7 +123,7 @@ class SequenceRti(LazyLoadRtiMixin, BaseRti):
 
 class MappingRti(LazyLoadRtiMixin, BaseRti):
     
-    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-open.svg'))
+    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-open.{}.svg'.format(_ICOLOR)))
     
     def __init__(self, dictionary, nodeName=None):
         """ Constructor

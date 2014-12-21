@@ -26,10 +26,20 @@ from libargos.repo.treeitems import ICONS_DIRECTORY, LazyLoadRtiMixin, FileRtiMi
 
 logger = logging.getLogger(__name__)
 
-class NumpyTextFileRti(LazyLoadRtiMixin, FileRtiMixin, ArrayRti):
-    """ Store for representing data that is read from a simple text file.
+_ICOLOR = 'FF00FF' 
+
+
+
+class NumpyTextColumnRti(ArrayRti):
+    """ Represents a column from a simple text file, imported with numpy.loadtxt. 
     """
-    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file.svg'))
+    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.{}.svg'.format(_ICOLOR)))
+    
+
+class NumpyTextFileRti(LazyLoadRtiMixin, FileRtiMixin, ArrayRti):
+    """ Represents a 2D array from a simple text file, imported with numpy.loadtxt.
+    """
+    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file.{}.svg'.format(_ICOLOR)))
         
     def __init__(self, fileName, nodeName=None):
         LazyLoadRtiMixin.__init__(self) 
@@ -49,6 +59,6 @@ class NumpyTextFileRti(LazyLoadRtiMixin, FileRtiMixin, ArrayRti):
         childItems = []
         _nRows, nCols = self._array.shape
         for col in range(nCols):
-            colItem = ArrayRti(self._array[:, col], nodeName="column {}".format(col))
+            colItem = NumpyTextColumnRti(self._array[:, col], nodeName="column {}".format(col))
             childItems.append(colItem)
         return childItems
