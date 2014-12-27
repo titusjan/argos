@@ -30,6 +30,7 @@ Test:
 	Memory leaks
 
 TODO:
+	fits format
 	open/close ncdf plugins
 	'open as...'
 	remove files from tree
