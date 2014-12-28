@@ -21,7 +21,7 @@ import logging, os
 
 logger = logging.getLogger(__name__)
 
-from .treeitems import ICONS_DIRECTORY, BaseRti, LazyLoadRtiMixin
+from .treeitems import ICONS_DIRECTORY, BaseRti
 
 from libargos.qt import QtGui
 from libargos.utils.cls import (check_is_a_sequence, check_is_a_mapping, check_is_an_array,  
@@ -31,24 +31,25 @@ from libargos.utils.cls import (check_is_a_sequence, check_is_a_mapping, check_i
 _ICOLOR = 'FF0000' 
 
 
-def _createFromObject(obj, nodeName):
+def _createFromObject(obj, nodeName, fileName):
     if is_a_sequence(obj):
-        return SequenceRti(obj, nodeName=nodeName)
+        return SequenceRti(obj, nodeName=nodeName, fileName=fileName)
     elif is_a_mapping(obj):
-        return MappingRti(obj, nodeName=nodeName)
+        return MappingRti(obj, nodeName=nodeName, fileName=fileName)
     elif is_an_array(obj):
-        return ArrayRti(obj, nodeName=nodeName)
+        return ArrayRti(obj, nodeName=nodeName, fileName=fileName)
     else:
-        return ScalarRti(obj, nodeName=nodeName)
+        return ScalarRti(obj, nodeName=nodeName, fileName=fileName)
     
 
 class ScalarRti(BaseRti):
     """ Stores a Python or numpy scalar
     """
-    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'asterisk.{}.svg'.format(_ICOLOR)))
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'asterisk.{}.svg'.format(_ICOLOR)))
+    _iconClosed = _iconOpen      
     
-    def __init__(self, scalar, nodeName=None):
-        super(ScalarRti, self).__init__(nodeName = nodeName)
+    def __init__(self, scalar, nodeName='', fileName=''):
+        super(ScalarRti, self).__init__(nodeName = nodeName, fileName=fileName)
         self._scalar = scalar 
     
     @property
@@ -59,15 +60,20 @@ class ScalarRti(BaseRti):
     def elementTypeName(self):
         return self.typeName
     
+    def hasChildren(self):
+        """ Returns False. Leaf nodes never have children. """
+        return False
+    
 
 class ArrayRti(BaseRti):
 
-    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.{}.svg'.format(_ICOLOR)))
-    
-    def __init__(self, array, nodeName=None):
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.{}.svg'.format(_ICOLOR)))
+    _iconClosed = _iconOpen     
+
+    def __init__(self, array, nodeName='', fileName=''):
         """ Constructor
         """
-        super(ArrayRti, self).__init__(nodeName=nodeName)
+        super(ArrayRti, self).__init__(nodeName=nodeName, fileName=fileName)
         check_is_an_array(array)
         self._array = array
    
@@ -83,17 +89,22 @@ class ArrayRti(BaseRti):
     def elementTypeName(self):
         dtype =  self._array.dtype
         return '<compound>' if dtype.names else str(dtype)
+
+    def hasChildren(self):
+        """ Returns False. Leaf nodes never have children. """
+        return False
+    
     
 
-class SequenceRti(LazyLoadRtiMixin, BaseRti):
+class SequenceRti(BaseRti):
     
-    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.{}.svg'.format(_ICOLOR)))
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.{}.svg'.format(_ICOLOR)))
+    _iconClosed = _iconOpen     
     
-    def __init__(self, sequence, nodeName=None):
+    def __init__(self, sequence, nodeName='', fileName=''):
         """ Constructor
         """
-        LazyLoadRtiMixin.__init__(self)
-        BaseRti.__init__(self, nodeName=nodeName)
+        BaseRti.__init__(self, nodeName=nodeName, fileName=fileName)
         check_is_a_sequence(sequence)
         self._sequence = sequence
    
@@ -105,31 +116,31 @@ class SequenceRti(LazyLoadRtiMixin, BaseRti):
     def typeName(self):
         return type_name(self._sequence)
     
-    def hasChildren(self):
-        """ Returns True if the item has (fetched or unfetched) children 
-        """
-        return len(self._sequence) > 0
+#    def hasChildren(self):
+#        """ Returns True if the item has (fetched or unfetched) children 
+#        """
+#        return len(self._sequence) > 0
         
     def _fetchAllChildren(self):
         """ Adds a child item for each column 
         """
         childItems = []
         for nr, elem in enumerate(self._sequence):
-            childItems.append(_createFromObject(elem, nodeName="elem-{}".format(nr)))
-
+            childItems.append(_createFromObject(elem, nodeName="elem-{}".format(nr), 
+                                                fileName=self.fileName))
         return childItems
     
 
 
-class MappingRti(LazyLoadRtiMixin, BaseRti):
+class MappingRti(BaseRti):
     
-    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-open.{}.svg'.format(_ICOLOR)))
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-open.{}.svg'.format(_ICOLOR)))
+    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-close.{}.svg'.format(_ICOLOR)))
     
-    def __init__(self, dictionary, nodeName=None):
+    def __init__(self, dictionary, nodeName='', fileName=''):
         """ Constructor
         """
-        LazyLoadRtiMixin.__init__(self)
-        BaseRti.__init__(self, nodeName=nodeName)
+        BaseRti.__init__(self, nodeName=nodeName, fileName=fileName)
         check_is_a_mapping(dictionary)
         self._dictionary = dictionary
 
@@ -140,18 +151,19 @@ class MappingRti(LazyLoadRtiMixin, BaseRti):
     @property
     def typeName(self):
         return type_name(self._dictionary)
-    
-    def hasChildren(self):
-        """ Returns True if the item has (fetched or unfetched) children 
-        """
-        return len(self._dictionary) > 0
+
+#    def hasChildren(self):
+#        """ Returns True if the item has (fetched or unfetched) children 
+#        """
+#        return len(self._dictionary) > 0
         
     def _fetchAllChildren(self):
         """ Adds a child item for each item 
         """        
         childItems = []
+        logger.debug("{!r} _fetchAllChildren {!r}".format(self, self.fileName))
         for key, value in sorted(self._dictionary.items()):
-            childItems.append(_createFromObject(value, nodeName=str(key)))
+            childItems.append(_createFromObject(value, nodeName=str(key), fileName=self.fileName))
             
         return childItems
 

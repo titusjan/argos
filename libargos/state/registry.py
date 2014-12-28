@@ -18,7 +18,6 @@
 """
 
 import logging
-from libargos.repo.treeitems import FileRtiMixin
 from libargos.utils.cls import import_symbol, check_is_a_string
 from libargos.utils.misc import prepend_point_to_extension
 
@@ -95,9 +94,6 @@ class Registry(object):
         
         check_is_a_string(rtiFullName)
         rtiClass = import_symbol(rtiFullName)
-        
-        if not issubclass(rtiClass, FileRtiMixin):
-            raise TypeError("rtiClass must be a subtype of BaseRti".format(rtiClass))         
         
         regRti = _RegisteredRti(rtiFullName, rtiClass, extensions)
         self._registeredRtis.append(regRti)

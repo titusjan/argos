@@ -23,7 +23,6 @@ from libargos.qt import QtCore, QtGui, Qt, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
 
 from libargos.state.commonstate import getCommonState
-from libargos.repo.treeitems import FileRtiMixin
 from libargos.repo.memoryrti import ScalarRti
 from libargos.repo.filesytemrti import UnknownFileRti, DirectoryRti
 
@@ -102,44 +101,61 @@ class RepoTree(ToggleColumnTreeView):
         selectedItem = self.model().getItem(selectedIndex)
         return selectedItem, selectedIndex
 
+
     
-    def openSelectedFile(self):
+    def openSelectedItem(self):
         """ Opens the selected file in the repository. The file must be closed beforehand.
         """
-        logger.debug("openSelectedFile")
-        
-        selectedItem, selectedIndex = self._getSelectedItem()
-        if not isinstance(selectedItem, FileRtiMixin):
-            logger.warn("Cannot closed item of type (ignored): {}".format(type(selectedItem)))
-            return
-
-        openFileItem = self._autodetectedRepoTreeItem(selectedItem.fileName)
-        insertedIndex = self.model().replaceItemAtIndex(openFileItem, selectedIndex)
-        self.selectionModel().setCurrentIndex(insertedIndex, 
-                                                       QtGui.QItemSelectionModel.ClearAndSelect)
-        logger.debug("selectedFile opened")
+        selectedItem, _selectedIndex = self._getSelectedItem()
+        selectedItem.open()
          
 
-    def closeSelectedFile(self):
-        """ Opens the selected file in the repository. The file must be closed beforehand.
+    def closeSelectedItem(self):
+        """ Closes the selected file in the repository. The file must be closed beforehand.
         """
-        logger.debug("closeSelectedFile")
+        _selectedItem, selectedIndex = self._getSelectedItem()
+        self.model().removeAllChildrenAtIndex(selectedIndex)
+        self.collapse(selectedIndex) # otherwise the children will be fetched immediately
         
-        selectedItem, selectedIndex = self._getSelectedItem()
-        if not isinstance(selectedItem, FileRtiMixin):
-            logger.warn("Cannot closed item of type (ignored): {}".format(type(selectedItem)))
-            return
-        
-        selectedItem.closeFile()
-
-        openFileItem = UnknownFileRti(fileName=selectedItem.fileName, nodeName=selectedItem.nodeName)
-        insertedIndex = self.model().replaceItemAtIndex(openFileItem, selectedIndex)
-        self.selectionModel().setCurrentIndex(insertedIndex, 
-                                                       QtGui.QItemSelectionModel.ClearAndSelect)
-        logger.debug("selectedFile closed")
+    
+#    def openSelectedFile(self):
+#        """ Opens the selected item repository.
+#        """
+#        logger.debug("openSelectedFile")
+#        
+#        selectedItem, selectedIndex = self._getSelectedItem()
+#        if not isinstance(selectedItem, FileRtiMixin):
+#            logger.warn("Cannot open item of type (ignored): {}".format(type(selectedItem)))
+#            return
+#
+#        openFileItem = self._autodetectedRepoTreeItem(selectedItem.fileName)
+#        insertedIndex = self.model().replaceItemAtIndex(openFileItem, selectedIndex)
+#        self.selectionModel().setCurrentIndex(insertedIndex, 
+#                                              QtGui.QItemSelectionModel.ClearAndSelect)
+#        logger.debug("selectedFile opened")
+#         
+#
+#    def closeSelectedFile(self):
+#        """ Opens the selected file in the repository. The file must be closed beforehand.
+#        """
+#        logger.debug("closeSelectedFile")
+#        
+#        selectedItem, selectedIndex = self._getSelectedItem()
+#        if not isinstance(selectedItem, FileRtiMixin):
+#            logger.warn("Cannot close item of type (ignored): {}".format(type(selectedItem)))
+#            return
+#        
+#        #selectedItem.closeFile()
+#        selectedItem.finalize()
+#
+#        openFileItem = UnknownFileRti(fileName=selectedItem.fileName, nodeName=selectedItem.nodeName)
+#        insertedIndex = self.model().replaceItemAtIndex(openFileItem, selectedIndex)
+#        self.selectionModel().setCurrentIndex(insertedIndex, 
+#                                              QtGui.QItemSelectionModel.ClearAndSelect)
+#        logger.debug("selectedFile closed")
         
     @QtSlot()
-    def insertItem(self):
+    def insertItemAtSelection(self):
         """ Temporary test method
         """
         import random
@@ -150,7 +166,7 @@ class RepoTree(ToggleColumnTreeView):
         childIndex = model.insertItem(ScalarRti("new child", str(value)), 
                                       parentIndex = col0Index)
         self.selectionModel().setCurrentIndex(childIndex, 
-                                                       QtGui.QItemSelectionModel.ClearAndSelect)
+                                              QtGui.QItemSelectionModel.ClearAndSelect)
         
         newChildItem = model.getItem(childIndex, altItem=model.rootItem)
         logger.debug("Added child: {} under {}".format(newChildItem, newChildItem.parentItem))
@@ -159,13 +175,13 @@ class RepoTree(ToggleColumnTreeView):
         
         
     @QtSlot()    
-    def removeRow(self):
+    def removeSelectedRow(self):
         """ Temporary test method
         """
         logger.debug("RemoveRow()")
         selectionModel = self.selectionModel()
         assert selectionModel.hasSelection(), "No selection"
         self.model().deleteItemByIndex(selectionModel.currentIndex()) # TODO: repository close
-        logger.debug("removeRow completed")        
+        logger.debug("removeSelectedRow completed")        
             
         

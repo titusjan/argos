@@ -58,6 +58,13 @@ class BaseTreeItem(object):
     def __init__(self):
         self._parentItem = None
         self._childItems = [] # the fetched children
+
+    def finalize(self):
+        """ Can be used to cleanup resources. Should be called explicitly.
+            Finalizes its children before closing itself
+        """
+        for child in self.childItems:
+            child.finalize()
         
     def __repr__(self):
         return "<{}>".format(type(self).__name__)
@@ -108,7 +115,14 @@ class BaseTreeItem(object):
         assert 0 <= position <= len(self.childItems), \
             "position should be 0 < {} <= {}".format(position, len(self.childItems))
 
+        self.childItems[position].finalize()
         self.childItems.pop(position)
+
+    def removeAllChildren(self):
+        
+        for childItem in self.childItems:
+            childItem.finalize()
+        self._childItems = []
 
 
     
@@ -371,6 +385,30 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         assert childIndex.isValid(), "Sanity check failed: childIndex not valid"        
         return childIndex
     
+    
+    def removeAllChildrenAtIndex(self, parentIndex): 
+        """ Removes all children of the item at the parentIndex.
+        """
+        if not parentIndex.isValid():
+            logger.debug("No valid item selected for deletion (ignored).")
+            return
+        
+        parentItem = self.getItem(parentIndex, "<no item>")
+        logger.debug("Trying to remove children of {!r}".format(parentItem))
+        
+        #firstChildRow = self.index(0, 0, parentIndex).row()
+        #lastChildRow = self.index(parentItem.nChildren()-1, 0, parentIndex).row()
+        #logger.debug("Removing rows: {} to {}".format(firstChildRow, lastChildRow))
+        #self.beginRemoveRows(parentIndex, firstChildRow, lastChildRow)
+        
+        self.beginRemoveRows(parentIndex, 0, parentItem.nChildren()-1)
+        try:
+            parentItem.removeAllChildren()
+        finally:
+            self.endRemoveRows()
+            
+        logger.debug("removeAllChildrenAtIndex completed")
+            
     
     def deleteItemByIndex(self, itemIndex): 
         """ Removes the item at the itemIndex.

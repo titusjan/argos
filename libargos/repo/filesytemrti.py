@@ -19,7 +19,7 @@
 """
 
 import logging, os
-from .treeitems import (ICONS_DIRECTORY, BaseRti, LazyLoadRtiMixin, FileRtiMixin)
+from .treeitems import (ICONS_DIRECTORY, BaseRti)
 from libargos.qt import QtGui
 
 logger = logging.getLogger(__name__)
@@ -28,43 +28,38 @@ logger = logging.getLogger(__name__)
 _ICOLOR = '666666' # icons in dark gray
 
 
-class UnknownFileRti(FileRtiMixin, BaseRti):
+class UnknownFileRti(BaseRti):
     """ A repository tree item that has a reference to a file of unknown type. 
         The file is not opened.
     """
-    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file-inverse.{}.svg'.format(_ICOLOR)))
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file.{}.svg'.format(_ICOLOR)))
+    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file-inverse.{}.svg'.format(_ICOLOR)))    
     
-    def __init__(self, fileName, nodeName=None):
+    def __init__(self, nodeName='', fileName=''):
         """ Constructor 
         """
-        FileRtiMixin.__init__(self, fileName) 
-        BaseRti.__init__(self, nodeName=nodeName)
+        BaseRti.__init__(self, nodeName=nodeName, fileName=fileName)
         assert os.path.isfile(self.fileName), "Not a regular file: {}".format(self.fileName)
 
+    def hasChildren(self):
+        """ Returns False. Leaf nodes never have children. """
+        return False
     
-    def closeFile(self):
-        """ Does nothing since the underlying file is not opened.
-        """
-        pass
 
-
-
-class DirectoryRti(LazyLoadRtiMixin, FileRtiMixin, BaseRti):
+class DirectoryRti(BaseRti):
     """ A repository tree item that has a reference to a file. 
     """
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 
-                                         'folder-open.{}.svg'.format(_ICOLOR)))
-    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 
-                                           'folder-close.{}.svg'.format(_ICOLOR)))
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-open.{}.svg'.format(_ICOLOR)))
+    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-close.{}.svg'.format(_ICOLOR)))
     
-    def __init__(self, fileName, nodeName=None):
+    def __init__(self, nodeName='', fileName=''):
         """ Constructor
         """
-        LazyLoadRtiMixin.__init__(self)
-        FileRtiMixin.__init__(self, fileName) 
-        BaseRti.__init__(self, nodeName=nodeName)
-        assert os.path.isdir(self.fileName), "Not a directory: {}".format(self.fileName)
-        self._childrenFetched = False
+        BaseRti.__init__(self, nodeName=nodeName, fileName=fileName)
+        if fileName:
+            assert os.path.isdir(fileName), \
+                "Not a directory: {!r} {!r}".format(self.fileName, fileName)
+
         
     @property
     def icon(self):
@@ -86,12 +81,12 @@ class DirectoryRti(LazyLoadRtiMixin, FileRtiMixin, BaseRti):
         # Add subdirectories
         for fileName, absFileName in zip(fileNames, absFileNames):
             if os.path.isdir(absFileName) and not fileName.startswith('.'):
-                childItems.append(DirectoryRti(absFileName, nodeName=fileName))
+                childItems.append(DirectoryRti(fileName=absFileName, nodeName=fileName))
             
         # Add regular files
         for fileName, absFileName in zip(fileNames, absFileNames):
             if os.path.isfile(absFileName) and not fileName.startswith('.'):
-                childItems.append(UnknownFileRti(absFileName, nodeName=fileName))
+                childItems.append(UnknownFileRti(fileName=absFileName, nodeName=fileName))
                         
         return childItems
     

@@ -22,8 +22,6 @@ from libargos.qt.editabletreemodel import BaseTreeModel
 from libargos.info import DEBUGGING
 from libargos.utils.cls import type_name
 
-from .treeitems import LazyLoadRtiMixin
-
 
 logger = logging.getLogger(__name__)
 
@@ -96,11 +94,10 @@ class RepositoryTreeModel(BaseTreeModel):
         if not parentItem:
             return
         
-        if not isinstance(parentItem, LazyLoadRtiMixin):
-            return 
-        
         if not parentItem.canFetchChildren():
             return
+        
+        logger.debug("fetchMore, parentItem: {}".format(parentItem))
         
         # TODO: implement InsertItems to optimize?
         for childItem in parentItem.fetchChildren(): 

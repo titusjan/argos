@@ -30,14 +30,17 @@ Test:
 	Memory leaks
 
 TODO:
-	fits format
-	open/close ncdf plugins
-	'open as...'
-	remove files from tree
+	open/close ncdf plugins ???
 	path of items
-	icons
-	
 	Multiple open windows.
+
+
+TODO Long term or nice to have:
+	refresh	
+	'open as...'
+	different icon for sequence
+	example RTI using XML file.
+	fits format
 	
 	Plugin management window
 	

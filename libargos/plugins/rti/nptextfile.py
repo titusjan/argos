@@ -22,7 +22,7 @@ import numpy as np
 
 from libargos.qt import QtGui
 from libargos.repo.memoryrti import ArrayRti
-from libargos.repo.treeitems import ICONS_DIRECTORY, LazyLoadRtiMixin, FileRtiMixin
+from libargos.repo.treeitems import ICONS_DIRECTORY
 
 logger = logging.getLogger(__name__)
 
@@ -33,32 +33,34 @@ _ICOLOR = 'FF00FF'
 class NumpyTextColumnRti(ArrayRti):
     """ Represents a column from a simple text file, imported with numpy.loadtxt. 
     """
-    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.{}.svg'.format(_ICOLOR)))
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.{}.svg'.format(_ICOLOR)))
+    _iconClosed = _iconOpen     
     
 
-class NumpyTextFileRti(LazyLoadRtiMixin, FileRtiMixin, ArrayRti):
+class NumpyTextFileRti(ArrayRti):
     """ Represents a 2D array from a simple text file, imported with numpy.loadtxt.
     """
-    _icon = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file.{}.svg'.format(_ICOLOR)))
-        
-    def __init__(self, fileName, nodeName=None):
-        LazyLoadRtiMixin.__init__(self) 
-        FileRtiMixin.__init__(self, fileName) 
-        ArrayRti.__init__(self, np.loadtxt(self.fileName, ndmin=0), nodeName=nodeName)
-        
-    
-    def closeFile(self):
-        """ Does nothing since the underlying file is already closed during _fetchAllChildren
-        """
-        pass
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file.{}.svg'.format(_ICOLOR)))
+    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file-inverse.{}.svg'.format(_ICOLOR)))     
+
+    def __init__(self, nodeName='', fileName=''):
+
+        ArrayRti.__init__(self, np.loadtxt(fileName, ndmin=0), 
+                          nodeName=nodeName, fileName=fileName)
             
-        
+
+    def hasChildren(self):
+        """ Returns True to show expansion triangle. """
+        return True
+    
+            
     def _fetchAllChildren(self):
         """ Walks through all items and returns node to fill the repository
         """
         childItems = []
         _nRows, nCols = self._array.shape
         for col in range(nCols):
-            colItem = NumpyTextColumnRti(self._array[:, col], nodeName="column {}".format(col))
+            colItem = NumpyTextColumnRti(self._array[:, col], nodeName="column {}".format(col), 
+                                         fileName=self.fileName)
             childItems.append(colItem)
         return childItems

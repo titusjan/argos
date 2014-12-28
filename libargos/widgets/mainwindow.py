@@ -150,15 +150,15 @@ class MainWindow(QtGui.QMainWindow):
         centralLayout.addWidget(self.label2)        
         
         # Connect signals and slots 
-        self.insertChildAction.triggered.connect(self.treeView.insertItem)
-        self.deleteItemAction.triggered.connect(self.treeView.removeRow)
-        self.openFileAction.triggered.connect(self.treeView.openSelectedFile)
-        self.closeFileAction.triggered.connect(self.treeView.closeSelectedFile)
+        self.insertChildAction.triggered.connect(self.treeView.insertItemAtSelection)
+        self.deleteItemAction.triggered.connect(self.treeView.removeSelectedRow)
+        self.openFileAction.triggered.connect(self.treeView.openSelectedItem)
+        self.closeFileAction.triggered.connect(self.treeView.closeSelectedItem)
 
 
     # -- End of setup_methods --
 
-    def openFile(self, fileName=None): 
+    def openFile(self, fileName=''): 
         """ Lets the user select an Ascii file and opens it.
         """
         if not fileName:
@@ -240,7 +240,7 @@ class MainWindow(QtGui.QMainWindow):
         myDict['array'] = np.arange(24).reshape(3, 8)
         myDict['subDict'] = {'mean': np.ones(111), 'stddev': np.zeros(111, dtype=np.uint16)}
         
-        mappingRti = MappingRti(myDict, nodeName="myDict")
+        mappingRti = MappingRti(myDict, nodeName="myDict", fileName='')
         storeRootIndex = getCommonState().repositoryTreeModel.insertItem(mappingRti)
         self.treeView.setExpanded(storeRootIndex, True)
 
