@@ -72,6 +72,7 @@ class _FileRtiMixin(object):
     """
     def __init__(self, fileName):
         """ Constructor """
+        check_class(fileName, StringType, allow_none=True) 
         if fileName:
             fileName = os.path.realpath(fileName) 
             assert os.path.exists(fileName), "File not found: {}".format(fileName)
@@ -107,7 +108,6 @@ class BaseRti(_LazyLoadRtiMixin, _FileRtiMixin, BaseTreeItem):
         
             :param nodeName: name of this node.
         """
-        logger.debug("{!r} fileName: {!r}".format(self, fileName))
         _LazyLoadRtiMixin.__init__(self) 
         _FileRtiMixin.__init__(self, fileName) 
         BaseTreeItem.__init__(self)
