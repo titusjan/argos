@@ -43,3 +43,4 @@ output/*/index.html
 docs/_build
 org.eclipse.core.resources.prefs
 .DS_Store
+pylint.out
