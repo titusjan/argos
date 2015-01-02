@@ -90,7 +90,7 @@ class _FileRtiMixin(object):
         """ Creates a FileRtiMixin (or descendant), given a file name.
         """
         # See https://julien.danjou.info/blog/2013/guide-python-static-class-abstract-methods
-        logger.debug("Trying to create object of class: {!r}".format(cls))
+        #logger.debug("Trying to create object of class: {!r}".format(cls))
         return cls(nodeName=os.path.basename(fileName), fileName=fileName)
     
     

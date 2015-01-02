@@ -18,13 +18,12 @@
 """
 from __future__ import print_function
 
-import logging, os
+import logging
 from libargos.qt import QtCore, QtGui, Qt, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
 
 from libargos.repo.memoryrti import ScalarRti
-from libargos.repo.filesytemrti import UnknownFileRti, DirectoryRti
-from libargos.state.registry import getGlobalRegistry
+from libargos.repo.filesytemrti import autodetectedFileTreeItem
 
 
 logger = logging.getLogger(__name__)
@@ -47,7 +46,7 @@ class RepoTree(ToggleColumnTreeView):
         treeHeader = self.header()
         treeHeader.setMovable(True)
         treeHeader.setStretchLastSection(False)  
-        treeHeader.resizeSection(0, 200)
+        treeHeader.resizeSection(0, 300)
         headerNames = self.model().horizontalHeaders
         enabled = dict((name, True) for name in headerNames)
         enabled[headerNames[0]] = False # Fist column cannot be unchecked
@@ -65,23 +64,8 @@ class RepoTree(ToggleColumnTreeView):
     def loadFile(self, fileName, expand=False):
         """ Loads a file in the repository. Autodetects the RTI type needed
         """
-        repoTreeItem = self._autodetectedRepoTreeItem(fileName)
+        repoTreeItem = autodetectedFileTreeItem(fileName)
         self.loadRepoTreeItem(repoTreeItem, expand=expand)
-        
-                
-    def _autodetectedRepoTreeItem(self, fileName):
-        """ Determines the type of RepoTreeItem to use given a file name.
-            Temporary solution
-        """
-        _, extension = os.path.splitext(fileName)
-        if os.path.isdir(fileName):
-            cls = DirectoryRti
-        else:
-            try:
-                cls = getGlobalRegistry().getRtiByExtension(extension)
-            except KeyError:
-                cls = UnknownFileRti
-        return cls.createFromFileName(fileName)
         
         
     def _getSelectedItemIndex(self):

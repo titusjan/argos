@@ -21,6 +21,7 @@
 import logging, os
 from .treeitems import (ICONS_DIRECTORY, BaseRti)
 from libargos.qt import QtGui
+from libargos.state.registry import getGlobalRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -29,11 +30,28 @@ _ICOLOR = '666666' # icons in dark gray
 
 
 class UnknownFileRti(BaseRti):
-    """ A repository tree item that has a reference to a file of unknown type. 
+    """ A repository tree item that represents a file of unknown type.  
         The file is not opened.
     """
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file.{}.svg'.format(_ICOLOR)))
     _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file-inverse.{}.svg'.format(_ICOLOR)))    
+    
+    def __init__(self, nodeName='', fileName=''):
+        """ Constructor 
+        """
+        BaseRti.__init__(self, nodeName=nodeName, fileName=fileName)
+        assert os.path.isfile(self.fileName), "Not a regular file: {}".format(self.fileName)
+
+    def hasChildren(self):
+        """ Returns False. Leaf nodes never have children. """
+        return False
+    
+
+class UnableToOpenFileRti(BaseRti):
+    """ A repository tree item that represents a file that gave an error while opening.  
+    """
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file.{}.svg'.format('FF0000')))
+    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file-inverse.{}.svg'.format('FF0000')))    
     
     def __init__(self, nodeName='', fileName=''):
         """ Constructor 
@@ -86,8 +104,34 @@ class DirectoryRti(BaseRti):
         # Add regular files
         for fileName, absFileName in zip(fileNames, absFileNames):
             if os.path.isfile(absFileName) and not fileName.startswith('.'):
-                childItems.append(UnknownFileRti(fileName=absFileName, nodeName=fileName))
+                childItem = autodetectedFileTreeItem(absFileName)
+                childItems.append(childItem)
+                #childItems.append(UnknownFileRti(fileName=absFileName, nodeName=fileName))
                         
         return childItems
     
     
+def autodetectedFileTreeItem(fileName):
+    """ Determines the type of RepoTreeItem to use given a file name.
+        Uses a DirectoryRti for directories and an UnknownFileRti if the file
+        extension doesn't match one of the registered RTI extensions.
+    """
+    _, extension = os.path.splitext(fileName)
+    if os.path.isdir(fileName):
+        cls = DirectoryRti
+    else:
+        try:
+            cls = getGlobalRegistry().getRtiByExtension(extension)
+        except KeyError:
+            cls = UnknownFileRti
+            
+    try:
+        rti = cls.createFromFileName(fileName)
+    except Exception as ex:
+        logger.error("Unable open {} as {}".format(fileName, cls))
+        logger.error("Reason: {}".format(ex))
+        rti = UnableToOpenFileRti.createFromFileName(fileName)
+        
+    return rti
+
+
