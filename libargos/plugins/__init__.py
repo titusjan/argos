@@ -18,10 +18,10 @@
 """ Plugins package.
 """
 
-from libargos.state.commonstate import getCommonState
+from libargos.state.registry import getGlobalRegistry
 
 
-__registry = getCommonState().registry
+__registry = getGlobalRegistry()
 
 __registry.registerRti('libargos.plugins.rti.ncdf.NcdfFileRti', 
                        extensions=['nc', 'nc3', 'nc4'])

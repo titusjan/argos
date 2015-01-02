@@ -24,16 +24,20 @@ logger = logging.getLogger('libargos')
 logging.basicConfig(level='DEBUG', stream=sys.stderr,
                     format='%(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s')
 
-import libargos.plugins as plugins
+
 from libargos.qt import USE_PYQT
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION
 from libargos.widgets.mainwindow import browse
 from libargos.utils.misc import remove_process_serial_number
 
+# Import last. TODO: function call of some sorts.
+import libargos.plugins as plugins
+
 
 def main():
     """ Starts Argos main window
     """
+    
     about_str = "{} version: {}".format(PROJECT_NAME, VERSION)
     parser = argparse.ArgumentParser(description = about_str)
     parser.add_argument('fileNames', metavar='FILE', nargs='*', 

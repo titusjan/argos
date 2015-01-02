@@ -26,7 +26,8 @@ from __future__ import division
 import logging, platform
 
 from .repotree import RepoTree
-from libargos.state.commonstate import getCommonState
+from libargos.state.registry import getGlobalRegistry
+from libargos.repo.repository import getGlobalRepository
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
 from libargos.qt import executeApplication, QtCore, QtGui, USE_PYQT, QtSlot
 
@@ -143,7 +144,7 @@ class MainWindow(QtGui.QMainWindow):
         centralLayout = QtGui.QVBoxLayout()
         self.mainSplitter.setLayout(centralLayout)
         
-        self.treeView = RepoTree(getCommonState().repositoryTreeModel)
+        self.treeView = RepoTree(getGlobalRepository())
         centralLayout.addWidget(self.treeView)
         
         self.label2 = QtGui.QLabel("Hi there", parent=self)
@@ -164,7 +165,7 @@ class MainWindow(QtGui.QMainWindow):
         if not fileName:
             fileName = QtGui.QFileDialog.getOpenFileName(self, 
                 caption = "Choose a file", directory = '', 
-                filter=getCommonState().registry.getFileDialogFilter())
+                filter=getGlobalRegistry().getFileDialogFilter())
             if not USE_PYQT:
                 fileName = fileName[0] # PySide returns: (file, selectedFilter)
 
@@ -241,7 +242,7 @@ class MainWindow(QtGui.QMainWindow):
         myDict['subDict'] = {'mean': np.ones(111), 'stddev': np.zeros(111, dtype=np.uint16)}
         
         mappingRti = MappingRti(myDict, nodeName="myDict", fileName='')
-        storeRootIndex = getCommonState().repositoryTreeModel.insertItem(mappingRti)
+        storeRootIndex = getGlobalRepository().insertItem(mappingRti)
         self.treeView.setExpanded(storeRootIndex, True)
 
         selectionModel = self.treeView.selectionModel()

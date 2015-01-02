@@ -116,4 +116,21 @@ class Registry(object):
         for regRti in self._registeredRtis:
             filters.append(regRti.getFileDialogFilter())
         return ';;'.join(filters)
+    
+
+    
+def createGlobalRegistryFunction():
+    """ Closure to create the Registry singleton
+    """
+    globReg = Registry()
+    
+    def accessGlobalRegistry():
+        return globReg
+    
+    return accessGlobalRegistry
+
+getGlobalRegistry = createGlobalRegistryFunction()
+getGlobalRegistry.__doc__ = "Function that returns the Registry singleton common to all windows"
+
+
             

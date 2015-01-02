@@ -106,3 +106,19 @@ class RepositoryTreeModel(BaseTreeModel):
         # Check that Rti implementation correctly sets _canFetchChildren    
         assert not parentItem.canFetchChildren(), "not all children fetched: {}".format(parentItem)
 
+    
+
+    
+def createGlobalRepositoryFunction():
+    """ Closure to create the RepositoryTreeModel singleton
+    """
+    globRepo = RepositoryTreeModel()
+    
+    def accessGlobalRepo():
+        return globRepo
+    
+    return accessGlobalRepo
+
+getGlobalRepository = createGlobalRepositoryFunction()
+getGlobalRepository.__doc__ = "Function that returns the RepositoryTreeModel common to all windows"
+

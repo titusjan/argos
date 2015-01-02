@@ -22,9 +22,9 @@ import logging, os
 from libargos.qt import QtCore, QtGui, Qt, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
 
-from libargos.state.commonstate import getCommonState
 from libargos.repo.memoryrti import ScalarRti
 from libargos.repo.filesytemrti import UnknownFileRti, DirectoryRti
+from libargos.state.registry import getGlobalRegistry
 
 
 logger = logging.getLogger(__name__)
@@ -78,7 +78,7 @@ class RepoTree(ToggleColumnTreeView):
             cls = DirectoryRti
         else:
             try:
-                cls = getCommonState().registry.getRtiByExtension(extension)
+                cls = getGlobalRegistry().getRtiByExtension(extension)
             except KeyError:
                 cls = UnknownFileRti
         return cls.createFromFileName(fileName)
