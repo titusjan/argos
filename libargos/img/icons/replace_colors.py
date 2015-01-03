@@ -23,7 +23,8 @@ def main():
                 sys.stderr.write("Writing to: {}\n".format(fileNameOut))
                 with open(fileNameOut, 'w') as fileOut:
                     for lineIn in fileInput:
-                        lineOut = lineIn.replace(snipIconBlue0, newColor).replace(snipIconBlue1, newColor)
+                        lineOut = lineIn.replace(snipIconBlue0, newColor) \
+                                        .replace(snipIconBlue1, newColor)
                         fileOut.write(lineOut)
                         #print(lineOut)
 
