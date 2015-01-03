@@ -26,7 +26,7 @@ from libargos.repo.treeitems import ICONS_DIRECTORY
 
 logger = logging.getLogger(__name__)
 
-_ICOLOR = 'FF00FF' 
+_ICOLOR = '0000FF' 
 
 
 

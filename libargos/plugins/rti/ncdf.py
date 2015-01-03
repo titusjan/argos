@@ -30,7 +30,7 @@ from libargos.repo.treeitems import (ICONS_DIRECTORY, BaseRti)
 
 logger = logging.getLogger(__name__)
 
-_ICOLOR = '0000FF' 
+_ICOLOR = '00FFFF' 
 
 
 class VariableRti(BaseRti):

@@ -20,7 +20,8 @@
 """
 import logging, os
 
-from libargos.info import program_directory
+from libargos.info import program_directory, DEBUGGING
+from libargos.qt import QtGui
 from libargos.qt.editabletreemodel import AbstractLazyLoadTreeItem
 from libargos.utils.cls import StringType, check_class
 
@@ -37,6 +38,9 @@ class BaseRti(AbstractLazyLoadTreeItem):
     """
     _iconOpen = None   # can be overridden by a QtGui.QIcon
     _iconClosed = None # can be overridden by a QtGui.QIcon
+    #_iconError = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'warning-sign.FF0000.svg'))    
+    #_iconError = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'exclamation-sign.FF0000.svg'))    
+    _iconError = None
     
     def __init__(self, nodeName='', fileName=''):
         """ Constructor
@@ -49,12 +53,14 @@ class BaseRti(AbstractLazyLoadTreeItem):
         check_class(nodeName, StringType, allow_none=False) # TODO: allow_none?
         self._nodeName = str(nodeName)
         self._isOpen = False
+        self._exception = None # Any exception that may occur when opening this item. 
         
         check_class(fileName, StringType, allow_none=True) 
         if fileName:
             fileName = os.path.realpath(fileName) 
             assert os.path.exists(fileName), "File not found: {}".format(fileName)
         self._fileName = fileName
+    
                 
     @classmethod
     def createFromFileName(cls, fileName):
@@ -75,13 +81,13 @@ class BaseRti(AbstractLazyLoadTreeItem):
         "Returns True if the underlying resources are opened"
         return self._isOpen
     
-    
     def open(self):
         """ Opens underlying resources and sets isOpen flag. 
             It calls _openResources. Descendants should usually override the latter 
             function instead of this one.
         """
-        logger.debug("Opening {}".format(self))        
+        logger.debug("Opening {}".format(self))
+        self._forgetException()        
         if self._isOpen:
             logger.warn("Resources already open. Closing them first.")
             self.close()
@@ -111,6 +117,29 @@ class BaseRti(AbstractLazyLoadTreeItem):
             Is called by self.close
         """
         pass
+    
+    def _forgetException(self):
+        """ Forgets any stored exception to clear the possible error icon
+        """
+        self._exception = None    
+        
+    
+    def fetchChildren(self):
+        assert self.canFetchChildren(), "canFetchChildren must be True"
+        try:
+            childItems = self._fetchAllChildren()
+        except Exception as ex:
+            if DEBUGGING:
+                raise
+            # This can happen, for example, when an RTI tries to open the underlying file 
+            # when expanding and the underlying file is not of the expected format.
+            childItems = []
+            self._exception = ex
+            logger.error("Unable get children of {}".format(self))
+            logger.error("Reason: {}".format(ex))
+            
+        self._childrenFetched = True
+        return childItems    
 
     
     def _fetchAllChildren(self):
@@ -132,10 +161,12 @@ class BaseRti(AbstractLazyLoadTreeItem):
         """ The displayed icon.
          
             Shows open icon when node was visited (children are fetched). This allows users
-            for intance to collapse a directory node but still see that it was visited, whic
+            for instance to collapse a directory node but still see that it was visited, whic
             may be useful if there is a huge list of directories.
         """
-        if self._childrenFetched: # a bit of an experiment
+        if self._exception:
+            return self._iconError
+        elif self._childrenFetched:
             return self._iconOpen
         else:
             return self._iconClosed

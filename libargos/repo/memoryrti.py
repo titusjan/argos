@@ -28,7 +28,7 @@ from libargos.utils.cls import (check_is_a_sequence, check_is_a_mapping, check_i
                                 is_a_sequence, is_a_mapping, is_an_array, type_name)
 
 
-_ICOLOR = 'FF0000' 
+_ICOLOR = 'FF00FF' 
 
 
 def _createFromObject(obj, nodeName, fileName):
@@ -108,7 +108,7 @@ class ArrayRti(BaseRti):
 class SequenceRti(BaseRti):
     """ Represents a sequence (e.g. a list or a tuple)
     """
-    
+    #_iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'align-left.{}.svg'.format(_ICOLOR)))
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.{}.svg'.format(_ICOLOR)))
     _iconClosed = _iconOpen     
     
