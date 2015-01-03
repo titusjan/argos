@@ -20,6 +20,7 @@
 
 import logging, os
 from .treeitems import (ICONS_DIRECTORY, BaseRti)
+from libargos.info import DEBUGGING
 from libargos.qt import QtGui
 from libargos.state.registry import getGlobalRegistry
 
@@ -39,7 +40,7 @@ class UnknownFileRti(BaseRti):
     def __init__(self, nodeName='', fileName=''):
         """ Constructor 
         """
-        BaseRti.__init__(self, nodeName=nodeName, fileName=fileName)
+        super(UnknownFileRti, self).__init__(nodeName=nodeName, fileName=fileName)
         assert os.path.isfile(self.fileName), "Not a regular file: {}".format(self.fileName)
 
     def hasChildren(self):
@@ -56,7 +57,7 @@ class UnableToOpenFileRti(BaseRti):
     def __init__(self, nodeName='', fileName=''):
         """ Constructor 
         """
-        BaseRti.__init__(self, nodeName=nodeName, fileName=fileName)
+        super(UnableToOpenFileRti, self).__init__(nodeName=nodeName, fileName=fileName)
         assert os.path.isfile(self.fileName), "Not a regular file: {}".format(self.fileName)
 
     def hasChildren(self):
@@ -73,7 +74,7 @@ class DirectoryRti(BaseRti):
     def __init__(self, nodeName='', fileName=''):
         """ Constructor
         """
-        BaseRti.__init__(self, nodeName=nodeName, fileName=fileName)
+        super(DirectoryRti, self).__init__(nodeName=nodeName, fileName=fileName)
         if fileName:
             assert os.path.isdir(fileName), \
                 "Not a directory: {!r} {!r}".format(self.fileName, fileName)
@@ -128,6 +129,8 @@ def autodetectedFileTreeItem(fileName):
     try:
         rti = cls.createFromFileName(fileName)
     except Exception as ex:
+        if DEBUGGING:
+            raise
         logger.error("Unable open {} as {}".format(fileName, cls))
         logger.error("Reason: {}".format(ex))
         rti = UnableToOpenFileRti.createFromFileName(fileName)

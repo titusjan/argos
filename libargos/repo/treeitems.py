@@ -21,7 +21,7 @@
 import logging, os
 
 from libargos.info import program_directory
-from libargos.qt.editabletreemodel import BaseTreeItem
+from libargos.qt.editabletreemodel import AbstractLazyLoadTreeItem
 from libargos.utils.cls import StringType, check_class
 
 ICONS_DIRECTORY = os.path.join(program_directory(), 'img/icons')
@@ -29,76 +29,10 @@ ICONS_DIRECTORY = os.path.join(program_directory(), 'img/icons')
 logger = logging.getLogger(__name__)
 
 
-    
-class _LazyLoadRtiMixin(object):
-    """ Mixing for a tree item that can do lazy loading of children by implementing 
-        the fetchChildren method.
-    """
-    def __init__(self):
-        """ Constructor
-        """
-        self._childrenFetched = False
-        
-    def hasChildren(self):
-        """ Returns True if the item has (fetched or unfetched) children 
-        """
-        return True
-        #return not self._childrenFetched or len(self.childItems) > 0 TODO: use this? 
-        
-    def canFetchChildren(self):
-        return not self._childrenFetched
-        
-    def fetchChildren(self):
-        assert self.canFetchChildren(), "canFetchChildren must be True"
-        childItems = self._fetchAllChildren()
-        self._childrenFetched = True
-        return childItems
-    
-    def _fetchAllChildren(self):
-        """ The function that actually fetches the children.
-            The result must be a list of RepoTreeItems. Their parents must be None, 
-            it will be set by BaseTreeitem.insertItem()
-         
-            :rtype: list of BaseRti objects
-        """ 
-        raise NotImplementedError
-        
-    def setUnfetched(self):
-        self._childrenFetched = False
-        
-
-class _FileRtiMixin(object): 
-    """ A mixin for an Rti that opens a file and maintains a reference to it.
-        It defines the createFromFileName factory. 
-    """
-    def __init__(self, fileName):
-        """ Constructor """
-        check_class(fileName, StringType, allow_none=True) 
-        if fileName:
-            fileName = os.path.realpath(fileName) 
-            assert os.path.exists(fileName), "File not found: {}".format(fileName)
-        self._fileName = fileName
-        
-        
-    @property
-    def fileName(self):
-        """ Returns the name of the underlying the file. 
-        """
-        return self._fileName
-            
-    @classmethod
-    def createFromFileName(cls, fileName):
-        """ Creates a FileRtiMixin (or descendant), given a file name.
-        """
-        # See https://julien.danjou.info/blog/2013/guide-python-static-class-abstract-methods
-        #logger.debug("Trying to create object of class: {!r}".format(cls))
-        return cls(nodeName=os.path.basename(fileName), fileName=fileName)
-    
-    
-
-class BaseRti( _FileRtiMixin, _LazyLoadRtiMixin, BaseTreeItem):
+class BaseRti(AbstractLazyLoadTreeItem):
     """ TreeItem for use in a RepositoryTreeModel. (RTI = Repository TreeItem)
         Base node from which to derive the other types of nodes.
+
         Serves as an interface but can also be instantiated for debugging purposes.
     """
     _iconOpen = None   # can be overridden by a QtGui.QIcon
@@ -107,19 +41,35 @@ class BaseRti( _FileRtiMixin, _LazyLoadRtiMixin, BaseTreeItem):
     def __init__(self, nodeName='', fileName=''):
         """ Constructor
         
-            :param nodeName: name of this node.
+            :param nodeName: name of this node (used to construct the node path).
+            :param fileName: absolute path to the file where the data of this RTI originates.
         """
-        BaseTreeItem.__init__(self)
-        _LazyLoadRtiMixin.__init__(self) 
-        _FileRtiMixin.__init__(self, fileName) 
-        print (self._childItems)
-        #_LazyLoadRtiMixin.__init__(self) 
-        #_FileRtiMixin.__init__(self, fileName) 
-        #BaseTreeItem.__init__(self)
+        super(BaseRti, self).__init__()
+        
         check_class(nodeName, StringType, allow_none=False) # TODO: allow_none?
         self._nodeName = str(nodeName)
         self._isOpen = False
-
+        
+        check_class(fileName, StringType, allow_none=True) 
+        if fileName:
+            fileName = os.path.realpath(fileName) 
+            assert os.path.exists(fileName), "File not found: {}".format(fileName)
+        self._fileName = fileName
+                
+    @classmethod
+    def createFromFileName(cls, fileName):
+        """ Creates a BaseRti (or descendant), given a file name.
+        """
+        # See https://julien.danjou.info/blog/2013/guide-python-static-class-abstract-methods
+        #logger.debug("Trying to create object of class: {!r}".format(cls))
+        return cls(nodeName=os.path.basename(fileName), fileName=fileName)
+    
+    @property
+    def fileName(self):
+        """ Returns the name of the underlying the file. 
+        """
+        return self._fileName
+            
     @property
     def isOpen(self):
         "Returns True if the underlying resources are opened"
@@ -167,10 +117,7 @@ class BaseRti( _FileRtiMixin, _LazyLoadRtiMixin, BaseTreeItem):
         """ The function that actually fetches the children. Default returns no children.
         """ 
         return []
-    
-    def removeAllChildren(self):
-        BaseTreeItem.removeAllChildren(self)
-        self.setUnfetched()
+
         
     def finalize(self):
         """ Can be used to cleanup resources. Should be called explicitly.

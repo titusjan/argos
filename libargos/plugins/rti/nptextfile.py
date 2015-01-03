@@ -47,7 +47,6 @@ class NumpyTextFileRti(ArrayRti):
         """ Constructor. Initializes as an ArrayRTI with None as underlying array.
         """
         super(NumpyTextFileRti, self).__init__(None, nodeName=nodeName, fileName=fileName)
-        print (self._childItems)
             
     def hasChildren(self):
         """ Returns True if the item has (fetched or unfetched) children 
@@ -72,7 +71,7 @@ class NumpyTextFileRti(ArrayRti):
         childItems = []
         _nRows, nCols = self._array.shape
         for col in range(nCols):
-            colItem = NumpyTextColumnRti(self._array[:, col], nodeName="column {}".format(col), 
+            colItem = NumpyTextColumnRti(self._array[:, col], nodeName="column-{}".format(col), 
                                          fileName=self.fileName)
             childItems.append(colItem)
         return childItems

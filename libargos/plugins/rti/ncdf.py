@@ -76,7 +76,7 @@ class DatasetRti(BaseRti):
     def __init__(self, dataset, nodeName='', fileName=''):
         """ Constructor
         """
-        BaseRti.__init__(self, nodeName=nodeName, fileName=fileName)
+        super(DatasetRti, self).__init__(nodeName=nodeName, fileName=fileName)
         check_class(dataset, Dataset, allow_none=True)
 
         self._dataset = dataset
@@ -109,7 +109,9 @@ class NcdfFileRti(DatasetRti):
     _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file-inverse.{}.svg'.format(_ICOLOR)))
         
     def __init__(self, nodeName='', fileName=''):
-        DatasetRti.__init__(self, None, nodeName=nodeName, fileName=fileName)
+        """ Constructor
+        """
+        super(NcdfFileRti, self).__init__(None, nodeName=nodeName, fileName=fileName)
         assert self.fileName, "self.fileName undefined" # sanity check
     
     def _openResources(self):

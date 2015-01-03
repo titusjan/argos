@@ -117,7 +117,7 @@ class SequenceRti(BaseRti):
             :param sequence: the underlying sequence. May be undefined (None)
             :type array: None or a Python sequence (e.g. list or tuple)
         """
-        BaseRti.__init__(self, nodeName=nodeName, fileName=fileName)
+        super(SequenceRti, self).__init__(nodeName=nodeName, fileName=fileName)
         check_is_a_sequence(sequence, allow_none=True)
         self._sequence = sequence
    
@@ -152,7 +152,7 @@ class MappingRti(BaseRti):
     def __init__(self, dictionary, nodeName='', fileName=''):
         """ Constructor
         """
-        BaseRti.__init__(self, nodeName=nodeName, fileName=fileName)
+        super(MappingRti, self).__init__(nodeName=nodeName, fileName=fileName)
         check_is_a_mapping(dictionary)
         self._dictionary = dictionary
 

@@ -81,7 +81,7 @@ class BaseTreeItem(object):
         return self._childItems
 
     def hasChildren(self):
-        """ Returns True if the item has (fetched or unfetched) children 
+        """ Returns True if the item has children 
         """
         return len(self.childItems) > 0
 
@@ -127,6 +127,48 @@ class BaseTreeItem(object):
 
 
     
+class AbstractLazyLoadTreeItem(BaseTreeItem):
+    """ Abstract base class for a tree item that can do lazy loading of children.
+        Descendants should override the _fetchAllChildren
+    """
+    def __init__(self):
+        """ Constructor
+        """
+        super(AbstractLazyLoadTreeItem, self).__init__()
+        self._childrenFetched = False
+        
+    def hasChildren(self):
+        """ Returns True if the item has (fetched or unfetched) children 
+        """
+        return True
+        #return not self._childrenFetched or len(self.childItems) > 0 TODO: use this? 
+        
+    def canFetchChildren(self):
+        return not self._childrenFetched
+        
+    def fetchChildren(self):
+        assert self.canFetchChildren(), "canFetchChildren must be True"
+        childItems = self._fetchAllChildren()
+        self._childrenFetched = True
+        return childItems
+    
+    def _fetchAllChildren(self):
+        """ The function that actually fetches the children.
+        
+            The result must be a list of RepoTreeItems. Their parents must be None, 
+            as that attribute will be set by BaseTreeitem.insertItem()
+         
+            :rtype: list of BaseRti objects
+        """ 
+        raise NotImplementedError
+    
+    def removeAllChildren(self):
+        """ Removes all children """
+        super(AbstractLazyLoadTreeItem, self).removeAllChildren()
+        self._childrenFetched = False
+        
+
+    
 class BaseTreeModel(QtCore.QAbstractItemModel):
     """ Tree model from the editabletreemodel.py example.
     
@@ -137,7 +179,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         strings that will be passed to views for use as horizontal header titles.
     """
     HEADERS = tuple() # override in descendants
-    COL_ICON = 0
+    COL_ICON = 0      # Column number that contains the icon
     
     def __init__(self, parent=None):
         """ Constructor
