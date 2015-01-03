@@ -38,7 +38,7 @@ def type_name(var):
     return type(var).__name__
     
 
-def is_a_string(var):
+def is_a_string(var, allow_none=False):
     """ Returns True if var is a string (regular or unicode)
 
         :param var: variable of which we want to know if it is a string
@@ -46,55 +46,55 @@ def is_a_string(var):
         :returns: True if var is of type string
         :rtype: Boolean
     """
-    return isinstance(var, StringType)
+    return isinstance(var, StringType) or (var is None and allow_none)
 
 
-def is_a_sequence(var):
+def is_a_sequence(var, allow_none=False):
     """ Returns True if var is a list or a tuple (but not a string!)
     """
-    return (type(var) == list or type(var) == tuple)
+    return (type(var) == list or type(var) == tuple or (var is None and allow_none))
 
 
-def check_is_a_string(var):
+def check_is_a_string(var, allow_none=False):
     """ Calls is_a_sequence and raises a type error if the check fails.
     """
-    if not is_a_string(var):
+    if not is_a_string(var, allow_none=allow_none):
         raise TypeError("var must be a string, however type(var) is {}"
                         .format(type(var)))
     
 
-def check_is_a_sequence(var):
+def check_is_a_sequence(var, allow_none=False):
     """ Calls is_a_sequence and raises a type error if the check fails.
     """
-    if not is_a_sequence(var):
+    if not is_a_sequence(var, allow_none=allow_none):
         raise TypeError("var must be a list or tuple, however type(var) is {}"
                         .format(type(var)))
     
 
-def is_a_mapping(var):
+def is_a_mapping(var, allow_none=False):
     """ Returns True if var is a dictionary # TODO: ordered dict 
     """
-    return isinstance(var, dict)
+    return isinstance(var, dict) or (var is None and allow_none)
 
 
-def check_is_a_mapping(var):
+def check_is_a_mapping(var, allow_none=False):
     """ Calls is_a_mapping and raises a type error if the check fails.
     """
-    if not is_a_mapping(var):
+    if not is_a_mapping(var, allow_none=allow_none):
         raise TypeError("var must be a dict, however type(var) is {}"
                         .format(type(var)))
     
 
-def is_an_array(var):
+def is_an_array(var, allow_none=False):
     """ Returns True if var is a dictionary # TODO: ordered dict 
     """
-    return isinstance(var, np.ndarray)
+    return isinstance(var, np.ndarray) or (var is None and allow_none)
 
 
-def check_is_an_array(var):
+def check_is_an_array(var, allow_none=False):
     """ Calls is_a_mapping and raises a type error if the check fails.
     """
-    if not is_an_array(var):
+    if not is_an_array(var, allow_none=allow_none):
         raise TypeError("var must be a NumPy array, however type(var) is {}"
                         .format(type(var)))
     
