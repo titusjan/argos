@@ -119,7 +119,8 @@ class RepositoryTreeModel(BaseTreeModel):
                 self.insertItem(childItem, parentIndex=parentIndex)
         
             # Check that Rti implementation correctly sets _canFetchChildren    
-            assert not parentItem.canFetchChildren(), "not all children fetched: {}".format(parentItem)
+            assert not parentItem.canFetchChildren(), \
+                "not all children fetched: {}".format(parentItem)
 
     
 
@@ -133,6 +134,9 @@ def createGlobalRepositoryFunction():
         return globRepo
     
     return accessGlobalRepo
+
+# This is actually a function definition, not a constant
+#pylint: disable=C0103
 
 getGlobalRepository = createGlobalRepositoryFunction()
 getGlobalRepository.__doc__ = "Function that returns the RepositoryTreeModel common to all windows"

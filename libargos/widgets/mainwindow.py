@@ -25,11 +25,11 @@ from __future__ import division
 
 import logging, platform
 
-from .repotree import RepoTree
+from .repotree import RepoTreeView
 from libargos.state.registry import getGlobalRegistry
 from libargos.repo.repository import getGlobalRepository
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
-from libargos.qt import executeApplication, QtCore, QtGui, USE_PYQT, QtSlot
+from libargos.qt import executeApplication, QtCore, QtGui, USE_PYQT
 
 logger = logging.getLogger(__name__)
 
@@ -144,7 +144,7 @@ class MainWindow(QtGui.QMainWindow):
         centralLayout = QtGui.QVBoxLayout()
         self.mainSplitter.setLayout(centralLayout)
         
-        self.treeView = RepoTree(getGlobalRepository())
+        self.treeView = RepoTreeView(getGlobalRepository())
         centralLayout.addWidget(self.treeView)
         
         self.label2 = QtGui.QLabel("Hi there", parent=self)

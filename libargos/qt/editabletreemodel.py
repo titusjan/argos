@@ -74,6 +74,11 @@ class BaseTreeItem(object):
         """ The parent item """
         return self._parentItem
     
+    @parentItem.setter
+    def parentItem(self, value):
+        """ The parent item """
+        self._parentItem = value
+    
     @property
     def childItems(self):
         """ List of child items """
@@ -92,6 +97,8 @@ class BaseTreeItem(object):
         return len(self.childItems)
 
     def childNumber(self):
+        """ Gets the index of this node in its parent's list of childre
+        """
         if self.parentItem != None:
             return self.parentItem.childItems.index(self)
         return 0
@@ -107,7 +114,7 @@ class BaseTreeItem(object):
             
         assert childItem.parentItem is None, "childItem already has a parent: {}".format(childItem)
             
-        childItem._parentItem = self    
+        childItem.parentItem = self    
         self.childItems.insert(position, childItem)
 
 
@@ -436,8 +443,9 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             logger.debug("No valid item selected for deletion (ignored).")
             return
         
-        parentItem = self.getItem(parentIndex, "<no item>")
+        parentItem = self.getItem(parentIndex, None)
         logger.debug("Trying to remove children of {!r}".format(parentItem))
+        assert parentItem, "parentItem not found"
         
         #firstChildRow = self.index(0, 0, parentIndex).row()
         #lastChildRow = self.index(parentItem.nChildren()-1, 0, parentIndex).row()

@@ -41,13 +41,17 @@ load-plugins=
 # Ignoring 
 #   I0011: locally-disabled info
 #   W0511: fixme and TODOs
-#   R0201: Method could be a function
-#   R0904: too-many-public-methods (all Qt classes have this problem)
+#   W0703: broad-except. (Anything can go wrong in plugins so we often catch all exceptions)
 #   C0111: Temparary disabled missing doc string
 #   C0303: Trailing whitespace
 #   C0325: superfluous-parens
 #   C0326: No space allowed around keyword argument assignment
-disable=I0011, W0511, R0201, R0904, C0303, C0325, C0326, C0111
+#   R0201: Method could be a function
+#   R0904: too-many-public-methods (all Qt classes have this problem)
+#   R0921: abstract-class-not-used (gives warning when checking a single file)
+#   R0922: abstract-class-little-used (gives warning when checking a single file)
+#   R0923: interface-not-implemented (gives warning when checking a single file)
+disable=I0011, W0511, W0703, C0303, C0325, C0326, C0111, R0201, R0904, R0921, R0922, R0923
 
 
 [REPORTS]
@@ -122,7 +126,7 @@ class-attribute-rgx=([A-Za-z_][A-Za-z0-9_]{2,30}|(__.*__))$
 inlinevar-rgx=[A-Za-z_][A-Za-z0-9_]*$
 
 # Good variable names which should always be accepted, separated by a comma
-good-names=i,j,k,ex,Run,_,logger,pruts
+good-names=i,j,k,ex,Run,_,logger,pruts,nr
 
 # Bad variable names which should always be refused, separated by a comma
 bad-names=foo,bar,baz,toto,tutu,tata
@@ -133,7 +137,7 @@ no-docstring-rgx=__.*__
 
 # Minimum line length for functions/classes that require docstrings, shorter
 # ones are exempt.
-docstring-min-length=-1
+docstring-min-length=5
 
 
 [FORMAT]

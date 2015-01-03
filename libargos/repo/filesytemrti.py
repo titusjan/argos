@@ -134,7 +134,7 @@ def autodetectedFileTreeItem(fileName):
         logger.error("Unable open {} as {}".format(fileName, cls))
         logger.error("Reason: {}".format(ex))
         rti = UnableToOpenFileRti.createFromFileName(fileName)
-        
+    
     return rti
 
 

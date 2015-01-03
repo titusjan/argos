@@ -19,7 +19,7 @@
 from __future__ import print_function
 
 import logging
-from libargos.qt import QtCore, QtGui, Qt, QtSlot
+from libargos.qt import QtGui, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
 
 from libargos.repo.memoryrti import ScalarRti
@@ -28,13 +28,16 @@ from libargos.repo.filesytemrti import autodetectedFileTreeItem
 
 logger = logging.getLogger(__name__)
 
-class RepoTree(ToggleColumnTreeView):
+# Qt classes have many ancestors
+#pylint: disable=R0901
+
+class RepoTreeView(ToggleColumnTreeView):
     """ Tree widget for browsing the data repository.
     """
     def __init__(self, repoTreeModel):
         """ Constructor
         """
-        super(RepoTree, self).__init__()
+        super(RepoTreeView, self).__init__()
         self.setModel(repoTreeModel)
         self.setAlternatingRowColors(True)
         self.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems) # TODO: SelectRows
@@ -56,7 +59,7 @@ class RepoTree(ToggleColumnTreeView):
     def loadRepoTreeItem(self, repoTreeItem, expand=False):
         """ Loads a tree item in the repository and expands it.
         """
-        assert repoTreeItem._parentItem is None, "repoTreeItem {!r}".format(repoTreeItem)
+        assert repoTreeItem.parentItem is None, "repoTreeItem {!r}".format(repoTreeItem)
         storeRootIndex = self.model().insertItem(repoTreeItem)
         self.setExpanded(storeRootIndex, expand)
 
@@ -132,7 +135,8 @@ class RepoTree(ToggleColumnTreeView):
 #        #selectedItem.closeFile()
 #        selectedItem.finalize()
 #
-#        openFileItem = UnknownFileRti(fileName=selectedItem.fileName, nodeName=selectedItem.nodeName)
+#        openFileItem = UnknownFileRti(fileName=selectedItem.fileName, 
+#                                      nodeName=selectedItem.nodeName)
 #        insertedIndex = self.model().replaceItemAtIndex(openFileItem, selectedIndex)
 #        self.selectionModel().setCurrentIndex(insertedIndex, 
 #                                              QtGui.QItemSelectionModel.ClearAndSelect)

@@ -17,9 +17,6 @@
 
 """ Miscellaneous routines.
 """
-
-""" Routines that do type checking or create classes
-"""
 import logging, sys
 logger = logging.getLogger(__name__)
     
@@ -55,3 +52,5 @@ def prepend_point_to_extension(extension):
         return extension
     else:
         return '.' + extension
+    
+    

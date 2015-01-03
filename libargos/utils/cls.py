@@ -26,12 +26,16 @@ from .misc import python2
 
 logger = logging.getLogger(__name__)
     
+# This is actually a type definition, not a constant.
+# basestring is valid in Python 2
+#pylint: disable=C0103,E0602
 
 if python2():
     StringType = basestring
 else:
     StringType = str
-         
+    
+#pylint: enable=C0103         
 
 def type_name(var):
     """ Returns the name of the type of var"""

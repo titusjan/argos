@@ -129,6 +129,9 @@ def createGlobalRegistryFunction():
     
     return accessGlobalRegistry
 
+# This is actually a function definition, not a constant
+#pylint: disable=C0103
+
 getGlobalRegistry = createGlobalRegistryFunction()
 getGlobalRegistry.__doc__ = "Function that returns the Registry singleton common to all windows"
 
