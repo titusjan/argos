@@ -19,6 +19,7 @@
 """
 import logging
 from libargos.qt.editabletreemodel import BaseTreeModel
+from libargos.repo.filesytemrti import UnableToOpenFileRti
 from libargos.info import DEBUGGING
 from libargos.utils.cls import type_name
 
@@ -97,14 +98,24 @@ class RepositoryTreeModel(BaseTreeModel):
         if not parentItem.canFetchChildren():
             return
         
-        logger.debug("fetchMore, parentItem: {}".format(parentItem))
+        try:
+            childItems = parentItem.fetchChildren()
+        except Exception as ex:
+            # This can happen, for example, when an RTI tries to open the underlying file 
+            # when expanding and the underlying file is not of the expected format.
+            # We replace the parent item with an UnableToOpenFileRti object to give the 
+            # user some feedback. 
+            logger.error("Unable get children of {}".format(parentItem))
+            logger.error("Reason: {}".format(ex))
+            #rti = UnableToOpenFileRti.createFromFileName(parentItem.fileName)   
+            #_insertedIndex = self.replaceItemAtIndex(rti, parentIndex)
+        else:
+            # TODO: implement InsertItems to optimize?
+            for childItem in childItems: 
+                self.insertItem(childItem, parentIndex=parentIndex)
         
-        # TODO: implement InsertItems to optimize?
-        for childItem in parentItem.fetchChildren(): 
-            self.insertItem(childItem, parentIndex=parentIndex)
-        
-        # Check that Rti implementation correctly sets _canFetchChildren    
-        assert not parentItem.canFetchChildren(), "not all children fetched: {}".format(parentItem)
+            # Check that Rti implementation correctly sets _canFetchChildren    
+            assert not parentItem.canFetchChildren(), "not all children fetched: {}".format(parentItem)
 
     
 

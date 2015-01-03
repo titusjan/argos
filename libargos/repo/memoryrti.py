@@ -66,20 +66,26 @@ class ScalarRti(BaseRti):
     
 
 class ArrayRti(BaseRti):
-
+    """ Represents a numpy array (or None for undefined)
+    """
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.{}.svg'.format(_ICOLOR)))
     _iconClosed = _iconOpen     
 
     def __init__(self, array, nodeName='', fileName=''):
-        """ Constructor
+        """ Constructor. 
+            :param array: the underlying array. May be undefined (None)
+            :type array: numpy.ndarray or None
         """
         super(ArrayRti, self).__init__(nodeName=nodeName, fileName=fileName)
-        check_is_an_array(array)
+        check_is_an_array(array, allow_none=True) # TODO: what about masked arrays?
         self._array = array
    
     @property
     def arrayShape(self):
-        return self._array.shape
+        if self._array is None:
+            return super(ArrayRti, self).arrayShape 
+        else:
+            return self._array.shape
 
     @property
     def typeName(self):
@@ -87,8 +93,11 @@ class ArrayRti(BaseRti):
     
     @property
     def elementTypeName(self):
-        dtype =  self._array.dtype
-        return '<compound>' if dtype.names else str(dtype)
+        if self._array is None:
+            return super(ArrayRti, self).elementTypeName 
+        else:        
+            dtype =  self._array.dtype
+            return '<compound>' if dtype.names else str(dtype)
 
     def hasChildren(self):
         """ Returns False. Leaf nodes never have children. """
@@ -97,29 +106,32 @@ class ArrayRti(BaseRti):
     
 
 class SequenceRti(BaseRti):
+    """ Represents a sequence (e.g. a list or a tuple)
+    """
     
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.{}.svg'.format(_ICOLOR)))
     _iconClosed = _iconOpen     
     
     def __init__(self, sequence, nodeName='', fileName=''):
-        """ Constructor
+        """ Constructor. 
+            :param sequence: the underlying sequence. May be undefined (None)
+            :type array: None or a Python sequence (e.g. list or tuple)
         """
         BaseRti.__init__(self, nodeName=nodeName, fileName=fileName)
-        check_is_a_sequence(sequence)
+        check_is_a_sequence(sequence, allow_none=True)
         self._sequence = sequence
    
     @property
     def arrayShape(self):
-        return (len(self._sequence), )
+        if self._sequence is None:
+            return super(SequenceRti, self).arrayShape 
+        else:
+            return (len(self._sequence), )
 
     @property
     def typeName(self):
         return type_name(self._sequence)
     
-#    def hasChildren(self):
-#        """ Returns True if the item has (fetched or unfetched) children 
-#        """
-#        return len(self._sequence) > 0
         
     def _fetchAllChildren(self):
         """ Adds a child item for each column 
@@ -151,11 +163,6 @@ class MappingRti(BaseRti):
     @property
     def typeName(self):
         return type_name(self._dictionary)
-
-#    def hasChildren(self):
-#        """ Returns True if the item has (fetched or unfetched) children 
-#        """
-#        return len(self._dictionary) > 0
         
     def _fetchAllChildren(self):
         """ Adds a child item for each item 

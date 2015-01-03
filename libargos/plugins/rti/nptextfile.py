@@ -44,19 +44,31 @@ class NumpyTextFileRti(ArrayRti):
     _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file-inverse.{}.svg'.format(_ICOLOR)))     
 
     def __init__(self, nodeName='', fileName=''):
-
-        ArrayRti.__init__(self, np.loadtxt(fileName, ndmin=0), 
-                          nodeName=nodeName, fileName=fileName)
+        """ Constructor. Initializes as an ArrayRTI with None as underlying array.
+        """
+        super(NumpyTextFileRti, self).__init__(None, nodeName=nodeName, fileName=fileName)
+        print (self._childItems)
             
-
     def hasChildren(self):
-        """ Returns True to show expansion triangle. """
+        """ Returns True if the item has (fetched or unfetched) children 
+        """
         return True
-    
+                
+    def _openResources(self):
+        """ Uses numpy.loadtxt to open the underlying file
             
+            Remark: since loadtxt closes the file at exit, there is no need to 
+            override _closeResources
+        """
+        self._array = np.loadtxt(self._fileName, ndmin=0)
+    
+                        
     def _fetchAllChildren(self):
         """ Walks through all items and returns node to fill the repository
         """
+        if not self.isOpen:
+            self.open()  
+                    
         childItems = []
         _nRows, nCols = self._array.shape
         for col in range(nCols):

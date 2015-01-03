@@ -111,23 +111,17 @@ class NcdfFileRti(DatasetRti):
     def __init__(self, nodeName='', fileName=''):
         DatasetRti.__init__(self, None, nodeName=nodeName, fileName=fileName)
         assert self.fileName, "self.fileName undefined" # sanity check
-  
     
-    def open(self):
+    def _openResources(self):
         """ Opens the root Dataset.
         """
-        assert not self._isOpen, "file is already open"
         self._dataset = Dataset(self._fileName)
-        self._isOpen = True
     
-    
-    def close(self):
+    def _closeResources(self):
         """ Closes the root Dataset.
         """
-        assert self._isOpen, "file is already closed"
         self._dataset.close()
         self._dataset = None
-        self._isOpen = False
         
         
     def _fetchAllChildren(self):

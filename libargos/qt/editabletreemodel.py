@@ -77,6 +77,7 @@ class BaseTreeItem(object):
     @property
     def childItems(self):
         """ List of child items """
+        #logger.debug("childItems {!r}".format(self))
         return self._childItems
 
     def hasChildren(self):

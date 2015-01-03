@@ -41,8 +41,9 @@ class _LazyLoadRtiMixin(object):
         
     def hasChildren(self):
         """ Returns True if the item has (fetched or unfetched) children 
-        """ # TODO: always return True
-        return not self._childrenFetched or len(self.childItems) > 0 
+        """
+        return True
+        #return not self._childrenFetched or len(self.childItems) > 0 TODO: use this? 
         
     def canFetchChildren(self):
         return not self._childrenFetched
@@ -95,7 +96,7 @@ class _FileRtiMixin(object):
     
     
 
-class BaseRti(_LazyLoadRtiMixin, _FileRtiMixin, BaseTreeItem):
+class BaseRti( _FileRtiMixin, _LazyLoadRtiMixin, BaseTreeItem):
     """ TreeItem for use in a RepositoryTreeModel. (RTI = Repository TreeItem)
         Base node from which to derive the other types of nodes.
         Serves as an interface but can also be instantiated for debugging purposes.
@@ -108,9 +109,13 @@ class BaseRti(_LazyLoadRtiMixin, _FileRtiMixin, BaseTreeItem):
         
             :param nodeName: name of this node.
         """
+        BaseTreeItem.__init__(self)
         _LazyLoadRtiMixin.__init__(self) 
         _FileRtiMixin.__init__(self, fileName) 
-        BaseTreeItem.__init__(self)
+        print (self._childItems)
+        #_LazyLoadRtiMixin.__init__(self) 
+        #_FileRtiMixin.__init__(self, fileName) 
+        #BaseTreeItem.__init__(self)
         check_class(nodeName, StringType, allow_none=False) # TODO: allow_none?
         self._nodeName = str(nodeName)
         self._isOpen = False
@@ -120,15 +125,40 @@ class BaseRti(_LazyLoadRtiMixin, _FileRtiMixin, BaseTreeItem):
         "Returns True if the underlying resources are opened"
         return self._isOpen
     
+    
     def open(self):
+        """ Opens underlying resources and sets isOpen flag. 
+            It calls _openResources. Descendants should usually override the latter 
+            function instead of this one.
+        """
+        logger.debug("Opening {}".format(self))        
+        if self._isOpen:
+            logger.warn("Resources already open. Closing them first.")
+            self.close()
+        self._openResources()
+        self._isOpen = True
+        
+    def _openResources(self):
         """ Can be overridden to open the underlying resources. 
             The default implementation does nothing.
+            Is called by self.open
         """
         pass
     
     def close(self):
+        """ Opens underlying resources and unsets isOpen flag. 
+            It calls _closeResources. Descendants should usually override the latter 
+            function instead of this one.
+        """
+        logger.debug("Closing {}".format(self))        
+        if self._isOpen:
+            self._closeResources()
+        self._isOpen = False
+            
+    def _closeResources(self):
         """ Can be overridden to close the underlying resources. 
             The default implementation does nothing.
+            Is called by self.close
         """
         pass
 
@@ -167,12 +197,12 @@ class BaseRti(_LazyLoadRtiMixin, _FileRtiMixin, BaseTreeItem):
     def typeName(self):
         return ""
     
-    @property                  # TODO: move?
+    @property
     def elementTypeName(self):
         return ""
     
     @property
-    def arrayShape(self):      # TODO: move?
+    def arrayShape(self):
         return tuple()
     
 #    @property
