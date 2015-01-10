@@ -30,12 +30,10 @@ from libargos.repo.treeitems import (ICONS_DIRECTORY, BaseRti)
 
 logger = logging.getLogger(__name__)
 
-_ICOLOR = '00FFFF' 
-
 
 class VariableRti(BaseRti):
 
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.{}.svg'.format(_ICOLOR)))
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.variable.svg'))
     _iconClosed = _iconOpen 
     
     def __init__(self, ncVar, nodeName='', fileName=''):
@@ -70,8 +68,8 @@ class VariableRti(BaseRti):
 
 class DatasetRti(BaseRti):
 
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-open.{}.svg'.format(_ICOLOR)))
-    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-close.{}.svg'.format(_ICOLOR)))
+    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.group-closed.svg'))
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.group-open.svg'))
     
     def __init__(self, dataset, nodeName='', fileName=''):
         """ Constructor
@@ -105,8 +103,8 @@ class DatasetRti(BaseRti):
 class NcdfFileRti(DatasetRti):
     """ Repository tree item that stores a netCDF file.
     """
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file.{}.svg'.format(_ICOLOR)))
-    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file-inverse.{}.svg'.format(_ICOLOR)))
+    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.file-closed.svg'))
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.file-open.svg'))
         
     def __init__(self, nodeName='', fileName=''):
         """ Constructor

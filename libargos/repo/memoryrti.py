@@ -28,9 +28,6 @@ from libargos.utils.cls import (check_is_a_sequence, check_is_a_mapping, check_i
                                 is_a_sequence, is_a_mapping, is_an_array, type_name)
 
 
-_ICOLOR = 'FF00FF' 
-
-
 def _createFromObject(obj, nodeName, fileName):
     if is_a_sequence(obj):
         return SequenceRti(obj, nodeName=nodeName, fileName=fileName)
@@ -45,7 +42,7 @@ def _createFromObject(obj, nodeName, fileName):
 class ScalarRti(BaseRti):
     """ Stores a Python or numpy scalar
     """
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'asterisk.{}.svg'.format(_ICOLOR)))
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.scalar.svg'))
     _iconClosed = _iconOpen      
     
     def __init__(self, scalar, nodeName='', fileName=''):
@@ -68,7 +65,7 @@ class ScalarRti(BaseRti):
 class ArrayRti(BaseRti):
     """ Represents a numpy array (or None for undefined)
     """
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.{}.svg'.format(_ICOLOR)))
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.scalar.svg'))
     _iconClosed = _iconOpen     
 
     def __init__(self, array, nodeName='', fileName=''):
@@ -108,8 +105,7 @@ class ArrayRti(BaseRti):
 class SequenceRti(BaseRti):
     """ Represents a sequence (e.g. a list or a tuple)
     """
-    #_iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'align-left.{}.svg'.format(_ICOLOR)))
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.{}.svg'.format(_ICOLOR)))
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.sequence.svg'))
     _iconClosed = _iconOpen     
     
     def __init__(self, sequence, nodeName='', fileName=''):
@@ -146,8 +142,8 @@ class SequenceRti(BaseRti):
 
 class MappingRti(BaseRti):
     
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-open.{}.svg'.format(_ICOLOR)))
-    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-close.{}.svg'.format(_ICOLOR)))
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.folder-open.svg'))
+    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.folder-closed.svg'))
     
     def __init__(self, dictionary, nodeName='', fileName=''):
         """ Constructor

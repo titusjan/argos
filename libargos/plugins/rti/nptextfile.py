@@ -26,22 +26,19 @@ from libargos.repo.treeitems import ICONS_DIRECTORY
 
 logger = logging.getLogger(__name__)
 
-_ICOLOR = '0000FF' 
-
-
 
 class NumpyTextColumnRti(ArrayRti):
     """ Represents a column from a simple text file, imported with numpy.loadtxt. 
     """
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'th-large.{}.svg'.format(_ICOLOR)))
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'nptxt.column.svg'))
     _iconClosed = _iconOpen     
-    
+
 
 class NumpyTextFileRti(ArrayRti):
     """ Represents a 2D array from a simple text file, imported with numpy.loadtxt.
     """
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file.{}.svg'.format(_ICOLOR)))
-    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file-inverse.{}.svg'.format(_ICOLOR)))     
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'nptxt.file-open.svg'))
+    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'nptxt.file-closed.svg'))     
 
     def __init__(self, nodeName='', fileName=''):
         """ Constructor. Initializes as an ArrayRTI with None as underlying array.

@@ -21,7 +21,7 @@
 import logging, os
 
 from libargos.info import program_directory, DEBUGGING
-from libargos.qt import QtGui
+from libargos.qt import QtGui # TODO: get rid of dependency on QtGui
 from libargos.qt.editabletreemodel import AbstractLazyLoadTreeItem
 from libargos.utils.cls import StringType, check_class
 
@@ -38,9 +38,8 @@ class BaseRti(AbstractLazyLoadTreeItem):
     """
     _iconOpen = None   # can be overridden by a QtGui.QIcon
     _iconClosed = None # can be overridden by a QtGui.QIcon
-    #_iconError = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'warning-sign.FF0000.svg'))    
-    #_iconError = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'exclamation-sign.FF0000.svg'))    
-    _iconError = None
+    _iconError = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'err.warning.svg'))    
+    #_iconError = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'err.exclamation.svg'))    
     
     def __init__(self, nodeName='', fileName=''):
         """ Constructor

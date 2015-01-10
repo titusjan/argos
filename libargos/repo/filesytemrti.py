@@ -27,15 +27,12 @@ from libargos.state.registry import getGlobalRegistry
 logger = logging.getLogger(__name__)
 
 
-_ICOLOR = '666666' # icons in dark gray
-
-
 class UnknownFileRti(BaseRti):
     """ A repository tree item that represents a file of unknown type.  
         The file is not opened.
     """
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file.{}.svg'.format(_ICOLOR)))
-    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file-inverse.{}.svg'.format(_ICOLOR)))    
+    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'fs.file-closed.svg'))    
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'fs.file-open.svg'))
     
     def __init__(self, nodeName='', fileName=''):
         """ Constructor 
@@ -48,28 +45,12 @@ class UnknownFileRti(BaseRti):
         return False
     
 
-class UnableToOpenFileRti(BaseRti):
-    """ A repository tree item that represents a file that gave an error while opening.  
-    """
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file.{}.svg'.format('FF0000')))
-    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'file-inverse.{}.svg'.format('FF0000')))    
-    
-    def __init__(self, nodeName='', fileName=''):
-        """ Constructor 
-        """
-        super(UnableToOpenFileRti, self).__init__(nodeName=nodeName, fileName=fileName)
-        assert os.path.isfile(self.fileName), "Not a regular file: {}".format(self.fileName)
-
-    def hasChildren(self):
-        """ Returns False. Leaf nodes never have children. """
-        return False
-    
 
 class DirectoryRti(BaseRti):
     """ A repository tree item that has a reference to a file. 
     """
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-open.{}.svg'.format(_ICOLOR)))
-    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'folder-close.{}.svg'.format(_ICOLOR)))
+    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'fs.directory-closed.svg'))
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'fs.directory-open.svg'))
     
     def __init__(self, nodeName='', fileName=''):
         """ Constructor
@@ -79,15 +60,6 @@ class DirectoryRti(BaseRti):
             assert os.path.isdir(fileName), \
                 "Not a directory: {!r} {!r}".format(self.fileName, fileName)
 
-        
-    @property
-    def icon(self):
-        "Icon displayed"
-        if self._childrenFetched:
-            return self._iconOpen
-        else:
-            return self._iconClosed
-        
         
     def _fetchAllChildren(self):
         """ Gets all sub directories and files within the current directory.
