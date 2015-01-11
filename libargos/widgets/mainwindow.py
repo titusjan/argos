@@ -91,11 +91,11 @@ class MainWindow(QtGui.QMainWindow):
     def __setupActions(self):
         """ Creates the main window actions.
         """
-        self.openFileAction = QtGui.QAction("Open Item", self)
-        self.openFileAction.setShortcut("Ctrl+J") # TODO: remove shortcut
+        self.openItemAction = QtGui.QAction("Open Item", self)
+        self.openItemAction.setShortcut("Ctrl+J") # TODO: remove shortcut
         
-        self.closeFileAction = QtGui.QAction("Close Item", self)
-        self.closeFileAction.setShortcut("Ctrl+K") # TODO: remove shortcut
+        self.closeItemAction = QtGui.QAction("Close Item", self)
+        self.closeItemAction.setShortcut("Ctrl+K") # TODO: remove shortcut
                   
                               
     def __setupMenu(self):
@@ -106,17 +106,22 @@ class MainWindow(QtGui.QMainWindow):
         self.setMenuBar(menuBar)
 
         fileMenu = menuBar.addMenu("&File")
-        openAction = fileMenu.addAction("&Open...", self.openFiles)
-        openAction.setShortcut("Ctrl+O")
-        fileMenu.addAction("C&lose", self.closeWindow, "Ctrl+W")
+        openFileAction = fileMenu.addAction("&Open Files...", 
+            lambda: self.openFiles(fileMode = QtGui.QFileDialog.ExistingFiles))
+        openFileAction.setShortcut("Ctrl+O")
+
+        _openDirAction = fileMenu.addAction("Open Directory...", 
+            lambda: self.openFiles(fileMode = QtGui.QFileDialog.Directory))
+        
+        fileMenu.addAction("Close &Window", self.closeWindow, "Ctrl+W")
         fileMenu.addAction("E&xit", self.quitApplication, "Ctrl+Q")
         if True or DEBUGGING is True: # TODO: remove True clause
             fileMenu.addSeparator()
             fileMenu.addAction("&Test", self.myTest, "Ctrl+T")
         
         actionsMenu = menuBar.addMenu("&Actions")
-        actionsMenu.addAction(self.openFileAction)
-        actionsMenu.addAction(self.closeFileAction)
+        actionsMenu.addAction(self.openItemAction)
+        actionsMenu.addAction(self.closeItemAction)
                 
         menuBar.addSeparator()
         help_menu = menuBar.addMenu("&Help")
@@ -141,30 +146,37 @@ class MainWindow(QtGui.QMainWindow):
         centralLayout.addWidget(self.label2)        
         
         # Connect signals and slots 
-        self.openFileAction.triggered.connect(self.treeView.openSelectedItem)
-        self.closeFileAction.triggered.connect(self.treeView.closeSelectedItem)
+        self.openItemAction.triggered.connect(self.treeView.openSelectedItem)
+        self.closeItemAction.triggered.connect(self.treeView.closeSelectedItem)
 
 
     # -- End of setup_methods --
 
-    def openFiles(self, fileNames=None): 
-        """ Lets the user select a file and opens it.
+    def openFiles(self, fileNames=None, fileMode=None): 
+        """ Lets the user select on or more files and opens it.
+            
+            If fileNames is None an open-file dialog allows the user to select files.
+            The fileMode parameter must be a QtGui.QFileDialog.FileMode constant and is passed 
+            to the file dialog.
         """
         if fileNames is None:
             dialog = QtGui.QFileDialog(self)
-            dialog.setFileMode(QtGui.QFileDialog.ExistingFiles)
+            if fileMode:
+                dialog.setFileMode(fileMode)
+                
             if dialog.exec_() == QtGui.QFileDialog.Accepted:
                 fileNames = dialog.selectedFiles()
+            else:
+                fileNames = []
             
         for fileName in fileNames:
             logger.info("Loading data from: {!r}".format(fileName))
             try:
                 self.treeView.loadFile(fileName, expand = False)
-            except Exception as ex:
+            except Exception as ex: # TODO: still needed?
                 if DEBUGGING:
                     raise
                 else:
-                    # TODO: message box with retry / close old file.
                     logger.error("Error opening file: {}".format(ex))
                     QtGui.QMessageBox.warning(self, "Error opening file", str(ex))
     
