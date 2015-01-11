@@ -40,8 +40,7 @@ def createBrowser(fileNames = tuple(), **kwargs):
     """
     # Assumes qt.getQApplicationInstance() has been executed.
     browser = MainWindow(**kwargs)
-    for fileName in fileNames:
-        browser.openFile(fileName)
+    browser.openFiles(fileNames=fileNames)
     browser.show()
     if platform.system() == 'Darwin':
         browser.raise_()
@@ -107,7 +106,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setMenuBar(menuBar)
 
         fileMenu = menuBar.addMenu("&File")
-        openAction = fileMenu.addAction("&Open...", self.openFile)
+        openAction = fileMenu.addAction("&Open...", self.openFiles)
         openAction.setShortcut("Ctrl+O")
         fileMenu.addAction("C&lose", self.closeWindow, "Ctrl+W")
         fileMenu.addAction("E&xit", self.quitApplication, "Ctrl+Q")
@@ -148,17 +147,16 @@ class MainWindow(QtGui.QMainWindow):
 
     # -- End of setup_methods --
 
-    def openFile(self, fileName=''): 
-        """ Lets the user select an Ascii file and opens it.
+    def openFiles(self, fileNames=None): 
+        """ Lets the user select a file and opens it.
         """
-        if not fileName:
-            fileName = QtGui.QFileDialog.getOpenFileName(self, 
-                caption = "Choose a file", directory = '', 
-                filter=getGlobalRegistry().getFileDialogFilter())
-            if not USE_PYQT:
-                fileName = fileName[0] # PySide returns: (file, selectedFilter)
-
-        if fileName:
+        if fileNames is None:
+            dialog = QtGui.QFileDialog(self)
+            dialog.setFileMode(QtGui.QFileDialog.ExistingFiles)
+            if dialog.exec_() == QtGui.QFileDialog.Accepted:
+                fileNames = dialog.selectedFiles()
+            
+        for fileName in fileNames:
             logger.info("Loading data from: {!r}".format(fileName))
             try:
                 self.treeView.loadFile(fileName, expand = False)

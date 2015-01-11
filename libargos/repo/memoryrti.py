@@ -76,7 +76,7 @@ class ArrayRti(BaseRti):
         super(ArrayRti, self).__init__(nodeName=nodeName, fileName=fileName)
         check_is_an_array(array, allow_none=True) # TODO: what about masked arrays?
         self._array = array
-   
+           
     @property
     def arrayShape(self):
         if self._array is None:
