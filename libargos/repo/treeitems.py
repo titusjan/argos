@@ -85,13 +85,24 @@ class BaseRti(AbstractLazyLoadTreeItem):
             It calls _openResources. Descendants should usually override the latter 
             function instead of this one.
         """
-        logger.debug("Opening {}".format(self))
-        self._forgetException()        
-        if self._isOpen:
-            logger.warn("Resources already open. Closing them first.")
-            self.close()
-        self._openResources()
-        self._isOpen = True
+        try:
+            if self._isOpen:
+                logger.warn("Resources already open. Closing them first before opening.")
+                self._closeResources()
+                self._isOpen = False
+            
+            assert not self._isOpen, "Sanity check failed: _isOpen should be false"
+            logger.debug("Opening {}".format(self))
+            self._openResources()
+            self._isOpen = True
+            
+        except Exception as ex:
+            if DEBUGGING:
+                raise            
+            self._exception = ex
+        else:
+            self._forgetException()
+            
         
     def _openResources(self):
         """ Can be overridden to open the underlying resources. 
@@ -105,11 +116,20 @@ class BaseRti(AbstractLazyLoadTreeItem):
             It calls _closeResources. Descendants should usually override the latter 
             function instead of this one.
         """
-        logger.debug("Closing {}".format(self))        
-        if self._isOpen:
-            #self._forgetException()
-            self._closeResources()
-        self._isOpen = False
+        try: 
+            if self._isOpen:
+                logger.debug("Closing {}".format(self))        
+                self._closeResources()
+                self._isOpen = False 
+            else:
+                logger.debug("Resources already open (ignored): {}".format(self))
+        except Exception as ex:
+            if DEBUGGING:
+                raise            
+            self._exception = ex
+        else:
+            self._forgetException()
+
             
     def _closeResources(self):
         """ Can be overridden to close the underlying resources. 
@@ -129,14 +149,17 @@ class BaseRti(AbstractLazyLoadTreeItem):
         try:
             childItems = self._fetchAllChildren()
         except Exception as ex:
-            if DEBUGGING:
-                raise
-            # This can happen, for example, when an RTI tries to open the underlying file 
-            # when expanding and the underlying file is not of the expected format.
-            childItems = []
-            self._exception = ex
-            logger.error("Unable get children of {}".format(self))
-            logger.error("Reason: {}".format(ex))
+            # TODO: since we now catch exceptions in open, do we need it here?
+            raise BaseException("Exception in FetchChildren")
+        
+#            if DEBUGGING:
+#                raise
+#            # This can happen, for example, when an RTI tries to open the underlying file 
+#            # when expanding and the underlying file is not of the expected format.
+#            childItems = []
+#            self._exception = ex
+#            logger.error("Unable get children of {}".format(self))
+#            logger.error("Reason: {}".format(ex))
             
         self._childrenFetched = True
         return childItems    

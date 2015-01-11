@@ -172,7 +172,7 @@ class MainWindow(QtGui.QMainWindow):
         if fileName:
             logger.info("Loading data from: {!r}".format(fileName))
             try:
-                self.treeView.loadFile(fileName, expand = True)
+                self.treeView.loadFile(fileName, expand = False)
             except Exception as ex:
                 if DEBUGGING:
                     raise

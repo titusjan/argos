@@ -66,7 +66,7 @@ class NumpyTextFileRti(ArrayRti):
             self.open()  
                     
         childItems = []
-        _nRows, nCols = self._array.shape
+        _nRows, nCols = self._array.shape if self._array is not None else (0, 0)
         for col in range(nCols):
             colItem = NumpyTextColumnRti(self._array[:, col], nodeName="column-{}".format(col), 
                                          fileName=self.fileName)
