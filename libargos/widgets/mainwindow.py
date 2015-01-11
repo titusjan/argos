@@ -92,12 +92,6 @@ class MainWindow(QtGui.QMainWindow):
     def __setupActions(self):
         """ Creates the main window actions.
         """
-        self.insertChildAction = QtGui.QAction("Insert Child", self)
-        self.insertChildAction.setShortcut("Ctrl+N")
-
-        self.deleteItemAction = QtGui.QAction("Delete Item", self)
-        self.deleteItemAction.setShortcut("Ctrl+D")
-        
         self.openFileAction = QtGui.QAction("Open Item", self)
         self.openFileAction.setShortcut("Ctrl+J") # TODO: remove shortcut
         
@@ -122,9 +116,6 @@ class MainWindow(QtGui.QMainWindow):
             fileMenu.addAction("&Test", self.myTest, "Ctrl+T")
         
         actionsMenu = menuBar.addMenu("&Actions")
-        actionsMenu.addAction(self.insertChildAction)
-        actionsMenu.addAction(self.deleteItemAction)
-
         actionsMenu.addAction(self.openFileAction)
         actionsMenu.addAction(self.closeFileAction)
                 
@@ -151,8 +142,6 @@ class MainWindow(QtGui.QMainWindow):
         centralLayout.addWidget(self.label2)        
         
         # Connect signals and slots 
-        self.insertChildAction.triggered.connect(self.treeView.insertItemAtSelection)
-        self.deleteItemAction.triggered.connect(self.treeView.removeSelectedRow)
         self.openFileAction.triggered.connect(self.treeView.openSelectedItem)
         self.closeFileAction.triggered.connect(self.treeView.closeSelectedItem)
 

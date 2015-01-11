@@ -110,35 +110,4 @@ class RepoTreeView(ToggleColumnTreeView):
         selectedItem.close()
         self.collapse(selectedIndex) # otherwise the children will be fetched immediately
         
-        
-    @QtSlot()
-    def insertItemAtSelection(self):
-        """ Temporary test method
-        """
-        import random
-        col0Index = self._getSelectedItemIndex()
 
-        value = random.randint(20, 99)
-        model = self.model()
-        childIndex = model.insertItem(ScalarRti("new child", str(value)), 
-                                      parentIndex = col0Index)
-        self.selectionModel().setCurrentIndex(childIndex, 
-                                              QtGui.QItemSelectionModel.ClearAndSelect)
-        
-        newChildItem = model.getItem(childIndex, altItem=model.rootItem)
-        logger.debug("Added child: {} under {}".format(newChildItem, newChildItem.parentItem))
-
-        #self.updateActions() # TODO: needed?        
-        
-        
-    @QtSlot()    
-    def removeSelectedRow(self):
-        """ Temporary test method
-        """
-        logger.debug("RemoveRow()")
-        selectionModel = self.selectionModel()
-        assert selectionModel.hasSelection(), "No selection"
-        self.model().deleteItemByIndex(selectionModel.currentIndex()) # TODO: repository close
-        logger.debug("removeSelectedRow completed")        
-            
-        
