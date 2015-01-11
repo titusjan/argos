@@ -98,15 +98,17 @@ def autodetectedFileTreeItem(fileName):
         except KeyError:
             cls = UnknownFileRti
             
-    try:
-        rti = cls.createFromFileName(fileName)
-    except Exception as ex:
-        if DEBUGGING:
-            raise
-        logger.error("Unable open {} as {}".format(fileName, cls))
-        logger.error("Reason: {}".format(ex))
-        rti = UnableToOpenFileRti.createFromFileName(fileName)
-    
-    return rti
+    return cls.createFromFileName(fileName)
+
+#    try:
+#        rti = cls.createFromFileName(fileName)
+#    except Exception as ex:
+#        if DEBUGGING:
+#            raise
+#        logger.error("Unable open {} as {}".format(fileName, cls))
+#        logger.error("Reason: {}".format(ex))
+#        rti = UnableToOpenFileRti.createFromFileName(fileName)
+#    
+#    return rti
 
 

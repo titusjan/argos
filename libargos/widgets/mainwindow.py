@@ -99,10 +99,10 @@ class MainWindow(QtGui.QMainWindow):
         self.deleteItemAction.setShortcut("Ctrl+D")
         
         self.openFileAction = QtGui.QAction("Open Item", self)
-        self.openFileAction.setShortcut("Ctrl+O")
+        self.openFileAction.setShortcut("Ctrl+K") # TODO: remove shortcut
         
         self.closeFileAction = QtGui.QAction("Close Item", self)
-        self.closeFileAction.setShortcut("Ctrl+P") # TODO: remove shortcut
+        self.closeFileAction.setShortcut("Ctrl+L") # TODO: remove shortcut
                   
                               
     def __setupMenu(self):

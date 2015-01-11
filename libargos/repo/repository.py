@@ -19,7 +19,6 @@
 """
 import logging
 from libargos.qt.editabletreemodel import BaseTreeModel
-#from libargos.repo.filesytemrti import UnableToOpenFileRti
 from libargos.info import DEBUGGING
 from libargos.utils.cls import type_name
 

@@ -57,7 +57,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
         check_class(fileName, StringType, allow_none=True) 
         if fileName:
             fileName = os.path.realpath(fileName) 
-            assert os.path.exists(fileName), "File not found: {}".format(fileName)
+            #assert os.path.exists(fileName), "File not found: {}".format(fileName)
         self._fileName = fileName
     
                 
@@ -107,6 +107,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
         """
         logger.debug("Closing {}".format(self))        
         if self._isOpen:
+            #self._forgetException()
             self._closeResources()
         self._isOpen = False
             

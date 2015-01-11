@@ -88,20 +88,26 @@ class RepoTreeView(ToggleColumnTreeView):
         selectedItem = self.model().getItem(selectedIndex)
         return selectedItem, selectedIndex
 
-
     
     def openSelectedItem(self):
-        """ Opens the selected file in the repository. The file must be closed beforehand.
+        """ Opens the selected item in the repository.
         """
-        selectedItem, _selectedIndex = self._getSelectedItem()
+        logger.debug("openSelectedItem")
+        selectedItem, selectedIndex = self._getSelectedItem()
         selectedItem.open()
+        self.expand(selectedIndex) # to visit the children and thus show the 'open' icons
          
 
     def closeSelectedItem(self):
-        """ Closes the selected file in the repository. The file must be closed beforehand.
+        """ Closes the selected item in the repository. 
+            All its children will be unfetched and closed.
         """
-        _selectedItem, selectedIndex = self._getSelectedItem()
+        logger.debug("closeSelectedItem")
+        selectedItem, selectedIndex = self._getSelectedItem()
+        
+        # First we remove all the children, this will close them as well.
         self.model().removeAllChildrenAtIndex(selectedIndex)
+        selectedItem.close()
         self.collapse(selectedIndex) # otherwise the children will be fetched immediately
         
     
