@@ -54,11 +54,14 @@ class NumpyTextFileRti(ArrayRti):
                 
     def _openResources(self):
         """ Uses numpy.loadtxt to open the underlying file
-            
-            Remark: since loadtxt closes the file at exit, there is no need to 
-            override _closeResources
         """
         self._array = np.loadtxt(self._fileName, ndmin=0)
+    
+                
+    def _closeResources(self):
+        """ Closes the underlying resources
+        """
+        self._array = None
     
                         
     def _fetchAllChildren(self):
