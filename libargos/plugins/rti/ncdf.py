@@ -110,7 +110,8 @@ class NcdfFileRti(DatasetRti):
         """ Constructor
         """
         super(NcdfFileRti, self).__init__(None, nodeName=nodeName, fileName=fileName)
-        assert self.fileName, "self.fileName undefined" # sanity check
+        self._checkFileExists()
+
     
     def _openResources(self):
         """ Opens the root Dataset.
@@ -122,13 +123,3 @@ class NcdfFileRti(DatasetRti):
         """
         self._dataset.close()
         self._dataset = None
-        
-        
-    def _fetchAllChildren(self):
-        
-        if not self.isOpen:
-            self.open()        
-            
-        return DatasetRti._fetchAllChildren(self)
-            
-    

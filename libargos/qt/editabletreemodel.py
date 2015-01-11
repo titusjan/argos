@@ -151,10 +151,10 @@ class AbstractLazyLoadTreeItem(BaseTreeItem):
         #return not self._childrenFetched or len(self.childItems) > 0 TODO: use this? 
         
     def canFetchChildren(self):
-        return not bool(self._childrenFetched)
+        return not self._childrenFetched
         
     def fetchChildren(self):
-        assert self.canFetchChildren(), "canFetchChildren must be True"
+        assert not self._childrenFetched, "canFetchChildren must be True"
         childItems = self._fetchAllChildren()
         self._childrenFetched = True
         return childItems

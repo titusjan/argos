@@ -31,8 +31,8 @@ class RepositoryTreeModel(BaseTreeModel):
         Maintains a list of open files and offers a QAbstractItemModel for read-only access of
         the data with QTreeViews.
     """
-    HEADERS = ["name", "shape", "tree item", "type", "elem type", "file name"]
-    (COL_NODE_NAME, COL_SHAPE, 
+    HEADERS = ["name", "shape", "is open", "tree item", "type", "elem type", "file name"]
+    (COL_NODE_NAME, COL_SHAPE, COL_IS_OPEN, 
      COL_RTI_TYPE, COL_TYPE, COL_ELEM_TYPE, 
      COL_FILE_NAME) = range(len(HEADERS))
     
@@ -51,6 +51,8 @@ class RepositoryTreeModel(BaseTreeModel):
             return treeItem.nodeName
         elif column == self.COL_SHAPE:
             return " x ".join(str(elem) for elem in treeItem.arrayShape)
+        elif column == self.COL_IS_OPEN:
+            return str(treeItem.isOpen)
         elif column == self.COL_RTI_TYPE:
             return type_name(treeItem)
         elif column == self.COL_TYPE:

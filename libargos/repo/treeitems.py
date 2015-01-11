@@ -23,7 +23,7 @@ import logging, os
 from libargos.info import program_directory, DEBUGGING
 from libargos.qt import QtGui # TODO: get rid of dependency on QtGui
 from libargos.qt.editabletreemodel import AbstractLazyLoadTreeItem
-from libargos.utils.cls import StringType, check_class
+from libargos.utils.cls import StringType, check_class, is_a_sequence
 
 ICONS_DIRECTORY = os.path.join(program_directory(), 'img/icons')
 
@@ -57,7 +57,6 @@ class BaseRti(AbstractLazyLoadTreeItem):
         check_class(fileName, StringType, allow_none=True) 
         if fileName:
             fileName = os.path.realpath(fileName) 
-            #assert os.path.exists(fileName), "File not found: {}".format(fileName)
         self._fileName = fileName
     
                 
@@ -85,6 +84,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
             It calls _openResources. Descendants should usually override the latter 
             function instead of this one.
         """
+        self._clearException()
         try:
             if self._isOpen:
                 logger.warn("Resources already open. Closing them first before opening.")
@@ -99,9 +99,9 @@ class BaseRti(AbstractLazyLoadTreeItem):
         except Exception as ex:
             if DEBUGGING:
                 raise            
-            self._exception = ex
-        else:
-            self._forgetException()
+            logger.error("Error during tree item open: {}".format(ex))
+            self._setException(ex)
+
             
         
     def _openResources(self):
@@ -112,10 +112,11 @@ class BaseRti(AbstractLazyLoadTreeItem):
         pass
     
     def close(self):
-        """ Opens underlying resources and unsets isOpen flag. 
+        """ Opens underlying resources and un-sets isOpen flag. 
             It calls _closeResources. Descendants should usually override the latter 
             function instead of this one.
         """
+        self._clearException()
         try: 
             if self._isOpen:
                 logger.debug("Closing {}".format(self))        
@@ -125,10 +126,9 @@ class BaseRti(AbstractLazyLoadTreeItem):
                 logger.debug("Resources already open (ignored): {}".format(self))
         except Exception as ex:
             if DEBUGGING:
-                raise            
-            self._exception = ex
-        else:
-            self._forgetException()
+                raise
+            logger.error("Error during tree item close: {}".format(ex))
+            self._setException(ex)
 
             
     def _closeResources(self):
@@ -138,30 +138,62 @@ class BaseRti(AbstractLazyLoadTreeItem):
         """
         pass
     
-    def _forgetException(self):
+    
+    def _checkFileExists(self):
+        """ Verifies that the underlying file exists and sets the _exception attribute if not
+            Returns True if the file exists.
+            If self._fileName is None, nothing is checked and True is returned.
+        """
+        if self._fileName and not os.path.exists(self._fileName):
+            msg = "File not found: {}".format(self._fileName)
+            logger.error(msg)
+            self._setException(IOError(msg))
+            return False
+        else:
+            return True
+        
+        
+    def _setException(self, ex):
+        """ Sets the exception attribute
+        """
+        self._exception = ex
+
+        
+    def _clearException(self):
         """ Forgets any stored exception to clear the possible error icon
         """
         self._exception = None    
         
     
     def fetchChildren(self):
-        assert self.canFetchChildren(), "canFetchChildren must be True"
+        """ Creates child items and returns them. 
+            Opens the tree item first if it's not yet open.
+        """
+        assert not self._childrenFetched, "canFetchChildren must be True"
+        self._clearException()
+
+        if not self.isOpen:
+            self.open()
+        
+        if not self.isOpen:
+            logger.warn("Opening item failed during fetch (aborted)")
+            self._childrenFetched = True
+            return [] # no need to continue if opening failed.
+        
+        childItems = []
         try:
             childItems = self._fetchAllChildren()
-        except Exception as ex:
-            # TODO: since we now catch exceptions in open, do we need it here?
-            raise BaseException("Exception in FetchChildren")
-        
-#            if DEBUGGING:
-#                raise
-#            # This can happen, for example, when an RTI tries to open the underlying file 
-#            # when expanding and the underlying file is not of the expected format.
-#            childItems = []
-#            self._exception = ex
-#            logger.error("Unable get children of {}".format(self))
-#            logger.error("Reason: {}".format(ex))
+            assert is_a_sequence(childItems), "ChildItems must be a sequence"    
+            self._childrenFetched = True
             
-        self._childrenFetched = True
+        except Exception as ex:
+            # This can happen, for example, when a NCDF/HDF5 file contains data types that
+            # are not supported by the Python library that is used to read them.
+            if DEBUGGING:
+                raise
+            logger.error("Unable fetch tree item children: {}".format(ex))
+            self.set_exception(ex)
+        
         return childItems    
 
     

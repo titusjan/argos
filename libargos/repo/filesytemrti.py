@@ -38,7 +38,8 @@ class UnknownFileRti(BaseRti):
         """ Constructor 
         """
         super(UnknownFileRti, self).__init__(nodeName=nodeName, fileName=fileName)
-        assert os.path.isfile(self.fileName), "Not a regular file: {}".format(self.fileName)
+        self._checkFileExists()
+
 
     def hasChildren(self):
         """ Returns False. Leaf nodes never have children. """
@@ -56,9 +57,7 @@ class DirectoryRti(BaseRti):
         """ Constructor
         """
         super(DirectoryRti, self).__init__(nodeName=nodeName, fileName=fileName)
-        if fileName:
-            assert os.path.isdir(fileName), \
-                "Not a directory: {!r} {!r}".format(self.fileName, fileName)
+        self._checkFileExists() # TODO: check for directory?
 
         
     def _fetchAllChildren(self):
@@ -79,7 +78,6 @@ class DirectoryRti(BaseRti):
             if os.path.isfile(absFileName) and not fileName.startswith('.'):
                 childItem = autodetectedFileTreeItem(absFileName)
                 childItems.append(childItem)
-                #childItems.append(UnknownFileRti(fileName=absFileName, nodeName=fileName))
                         
         return childItems
     
@@ -99,16 +97,4 @@ def autodetectedFileTreeItem(fileName):
             cls = UnknownFileRti
             
     return cls.createFromFileName(fileName)
-
-#    try:
-#        rti = cls.createFromFileName(fileName)
-#    except Exception as ex:
-#        if DEBUGGING:
-#            raise
-#        logger.error("Unable open {} as {}".format(fileName, cls))
-#        logger.error("Reason: {}".format(ex))
-#        rti = UnableToOpenFileRti.createFromFileName(fileName)
-#    
-#    return rti
-
 

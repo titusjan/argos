@@ -44,6 +44,8 @@ class NumpyTextFileRti(ArrayRti):
         """ Constructor. Initializes as an ArrayRTI with None as underlying array.
         """
         super(NumpyTextFileRti, self).__init__(None, nodeName=nodeName, fileName=fileName)
+        self._checkFileExists()
+
             
     def hasChildren(self):
         """ Returns True if the item has (fetched or unfetched) children 
@@ -62,9 +64,6 @@ class NumpyTextFileRti(ArrayRti):
     def _fetchAllChildren(self):
         """ Walks through all items and returns node to fill the repository
         """
-        if not self.isOpen:
-            self.open()  
-                    
         childItems = []
         _nRows, nCols = self._array.shape if self._array is not None else (0, 0)
         for col in range(nCols):
