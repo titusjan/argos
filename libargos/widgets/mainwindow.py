@@ -29,7 +29,7 @@ from .repotree import RepoTreeView
 from libargos.state.registry import getGlobalRegistry
 from libargos.repo.repository import getGlobalRepository
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
-from libargos.qt import executeApplication, QtCore, QtGui, USE_PYQT
+from libargos.qt import executeApplication, QtCore, QtGui
 
 logger = logging.getLogger(__name__)
 
@@ -74,9 +74,8 @@ class MainWindow(QtGui.QMainWindow):
         MainWindow._nInstances += 1
         self._InstanceNr = self._nInstances        
         
-        self.__setupActions()
-        self.__setupMenu()
         self.__setupViews()
+        self.__setupMenu()
         
         self.setWindowTitle("{}".format(PROJECT_NAME))
         app = QtGui.QApplication.instance()
@@ -87,46 +86,6 @@ class MainWindow(QtGui.QMainWindow):
         # Update model 
         self.__addTestData()
 
-
-    def __setupActions(self):
-        """ Creates the main window actions.
-        """
-        self.openItemAction = QtGui.QAction("Open Item", self)
-        self.openItemAction.setShortcut("Ctrl+J") # TODO: remove shortcut
-        
-        self.closeItemAction = QtGui.QAction("Close Item", self)
-        self.closeItemAction.setShortcut("Ctrl+K") # TODO: remove shortcut
-                  
-                              
-    def __setupMenu(self):
-        """ Sets up the main menu.
-        """
-        # Don't use self.menuBar(), on OS-X this is not shared across windows.
-        menuBar = QtGui.QMenuBar() # Make a menu without parent.
-        self.setMenuBar(menuBar)
-
-        fileMenu = menuBar.addMenu("&File")
-        openFileAction = fileMenu.addAction("&Open Files...", 
-            lambda: self.openFiles(fileMode = QtGui.QFileDialog.ExistingFiles))
-        openFileAction.setShortcut("Ctrl+O")
-
-        _openDirAction = fileMenu.addAction("Open Directory...", 
-            lambda: self.openFiles(fileMode = QtGui.QFileDialog.Directory))
-        
-        fileMenu.addAction("Close &Window", self.closeWindow, "Ctrl+W")
-        fileMenu.addAction("E&xit", self.quitApplication, "Ctrl+Q")
-        if True or DEBUGGING is True: # TODO: remove True clause
-            fileMenu.addSeparator()
-            fileMenu.addAction("&Test", self.myTest, "Ctrl+T")
-        
-        actionsMenu = menuBar.addMenu("&Actions")
-        actionsMenu.addAction(self.openItemAction)
-        actionsMenu.addAction(self.closeItemAction)
-                
-        menuBar.addSeparator()
-        help_menu = menuBar.addMenu("&Help")
-        help_menu.addAction('&About', self.about)
-        
 
     def __setupViews(self):
         """ Creates the UI widgets. 
@@ -143,12 +102,51 @@ class MainWindow(QtGui.QMainWindow):
         centralLayout.addWidget(self.treeView)
         
         self.label2 = QtGui.QLabel("Hi there", parent=self)
-        centralLayout.addWidget(self.label2)        
+        centralLayout.addWidget(self.label2)    
         
-        # Connect signals and slots 
-        self.openItemAction.triggered.connect(self.treeView.openSelectedItem)
-        self.closeItemAction.triggered.connect(self.treeView.closeSelectedItem)
+                              
+    def __setupMenu(self):
+        """ Sets up the main menu.
+        """
+        # Don't use self.menuBar(), on OS-X this is not shared across windows.
+        menuBar = QtGui.QMenuBar() # Make a menu without parent.
+        self.setMenuBar(menuBar)
 
+        ### File Menu ###
+
+        fileMenu = menuBar.addMenu("&File")
+        openFileAction = fileMenu.addAction("&Open Files...", 
+            lambda: self.openFiles(fileMode = QtGui.QFileDialog.ExistingFiles))
+        openFileAction.setShortcut("Ctrl+O, F")
+
+        openDirAction = fileMenu.addAction("Open Directory...", 
+            lambda: self.openFiles(fileMode = QtGui.QFileDialog.Directory))
+        openDirAction.setShortcut("Ctrl+O, D")
+        
+        fileMenu.addAction("Close &Window", self.closeWindow, "Ctrl+W")
+        fileMenu.addAction("E&xit", self.quitApplication, "Ctrl+Q")
+        if DEBUGGING is True:
+            fileMenu.addSeparator()
+            fileMenu.addAction("&Test", self.myTest, "Ctrl+T")
+        
+        ### Actions Menu ###
+                
+        openItemAction = QtGui.QAction("Open Item", self, shortcut="Ctrl+J")
+        closeItemAction = QtGui.QAction("Close Item", self, shortcut="Ctrl+K")
+
+        actionsMenu = menuBar.addMenu("&Actions")
+        actionsMenu.addAction(openItemAction)
+        actionsMenu.addAction(closeItemAction)
+        
+        openItemAction.triggered.connect(self.treeView.openSelectedItem)
+        closeItemAction.triggered.connect(self.treeView.closeSelectedItem)
+
+        ### Help Menu ###
+                
+        menuBar.addSeparator()
+        helpMenu = menuBar.addMenu("&Help")
+        helpMenu.addAction('&About', self.about)
+        
 
     # -- End of setup_methods --
 
