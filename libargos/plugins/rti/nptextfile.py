@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 class NumpyTextColumnRti(ArrayRti):
     """ Represents a column from a simple text file, imported with numpy.loadtxt. 
     """
+    _label = "Numpy Text File Column"
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'nptxt.column.svg'))
     _iconClosed = _iconOpen     
 
@@ -37,6 +38,7 @@ class NumpyTextColumnRti(ArrayRti):
 class NumpyTextFileRti(ArrayRti):
     """ Represents a 2D array from a simple text file, imported with numpy.loadtxt.
     """
+    _label = "Numpy Text File"
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'nptxt.file-open.svg'))
     _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'nptxt.file-closed.svg'))     
 

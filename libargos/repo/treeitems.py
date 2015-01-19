@@ -36,6 +36,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
 
         Serves as an interface but can also be instantiated for debugging purposes.
     """
+    _label = "Unknown Item"
     _iconOpen = None   # can be overridden by a QtGui.QIcon
     _iconClosed = None # can be overridden by a QtGui.QIcon
     _iconError = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'err.warning.svg'))    
@@ -67,6 +68,12 @@ class BaseRti(AbstractLazyLoadTreeItem):
         # See https://julien.danjou.info/blog/2013/guide-python-static-class-abstract-methods
         #logger.debug("Trying to create object of class: {!r}".format(cls))
         return cls(nodeName=os.path.basename(fileName), fileName=fileName)
+
+    @classmethod
+    def getLabel(self):
+        """ Returns a short string that describes this item. Used in menus, headers, etc. 
+        """
+        return self._label
     
     @property
     def fileName(self):

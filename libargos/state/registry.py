@@ -34,6 +34,7 @@ class _RegisteredRti(object):
         self.rtiFullName = rtiFullName
         self.rtiClass = rtiClass
         self.extensions = extensions
+        # TODO: register shortcuts?
         
         
     def __repr__(self):

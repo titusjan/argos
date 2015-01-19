@@ -23,7 +23,7 @@ from libargos.qt import QtGui, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
 
 from libargos.repo.memoryrti import ScalarRti
-from libargos.repo.filesytemrti import autodetectedFileTreeItem
+from libargos.repo.filesytemrti import detectRtiFromFileName
 
 
 logger = logging.getLogger(__name__)
@@ -64,10 +64,12 @@ class RepoTreeView(ToggleColumnTreeView):
         self.setExpanded(storeRootIndex, expand)
 
 
-    def loadFile(self, fileName, expand=False):
-        """ Loads a file in the repository. Autodetects the RTI type needed
+    def loadFile(self, fileName, expand=False, rtiClass=None):
+        """ Loads a file in the repository. Autodetects the RTI type if needed.
         """
-        repoTreeItem = autodetectedFileTreeItem(fileName)
+        if rtiClass is None:
+            rtiClass = detectRtiFromFileName(fileName)
+        repoTreeItem = rtiClass.createFromFileName(fileName)
         self.loadRepoTreeItem(repoTreeItem, expand=expand)
         
         

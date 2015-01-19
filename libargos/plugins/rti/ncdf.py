@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 class VariableRti(BaseRti):
 
+    _label = "NCDF Variable"
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.variable.svg'))
     _iconClosed = _iconOpen 
     
@@ -68,6 +69,7 @@ class VariableRti(BaseRti):
 
 class DatasetRti(BaseRti):
 
+    _label = "NCDF Group"
     _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.group-closed.svg'))
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.group-open.svg'))
     
@@ -103,6 +105,7 @@ class DatasetRti(BaseRti):
 class NcdfFileRti(DatasetRti):
     """ Repository tree item that stores a netCDF file.
     """
+    _label = "NCDF File"
     _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.file-closed.svg'))
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.file-open.svg'))
         

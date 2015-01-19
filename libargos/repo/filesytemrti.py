@@ -31,6 +31,7 @@ class UnknownFileRti(BaseRti):
     """ A repository tree item that represents a file of unknown type.  
         The file is not opened.
     """
+    _label = "Unknown File"
     _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'fs.file-closed.svg'))    
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'fs.file-open.svg'))
     
@@ -50,6 +51,7 @@ class UnknownFileRti(BaseRti):
 class DirectoryRti(BaseRti):
     """ A repository tree item that has a reference to a file. 
     """
+    _label = "Directory"
     _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'fs.directory-closed.svg'))
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'fs.directory-open.svg'))
     
@@ -76,13 +78,13 @@ class DirectoryRti(BaseRti):
         # Add regular files
         for fileName, absFileName in zip(fileNames, absFileNames):
             if os.path.isfile(absFileName) and not fileName.startswith('.'):
-                childItem = autodetectedFileTreeItem(absFileName)
+                childItem = createRtiFromFileName(absFileName)
                 childItems.append(childItem)
                         
         return childItems
     
     
-def autodetectedFileTreeItem(fileName):
+def detectRtiFromFileName(fileName):
     """ Determines the type of RepoTreeItem to use given a file name.
         Uses a DirectoryRti for directories and an UnknownFileRti if the file
         extension doesn't match one of the registered RTI extensions.
@@ -96,5 +98,14 @@ def autodetectedFileTreeItem(fileName):
         except KeyError:
             cls = UnknownFileRti
             
+    return cls
+
+
+def createRtiFromFileName(fileName):
+    """ Determines the type of RepoTreeItem to use given a file name and creates it.
+        Uses a DirectoryRti for directories and an UnknownFileRti if the file
+        extension doesn't match one of the registered RTI extensions.
+    """
+    cls = detectRtiFromFileName(fileName)
     return cls.createFromFileName(fileName)
 

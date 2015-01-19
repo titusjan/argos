@@ -123,6 +123,15 @@ class MainWindow(QtGui.QMainWindow):
             lambda: self.openFiles(fileMode = QtGui.QFileDialog.Directory))
         openDirAction.setShortcut("Ctrl+O, D")
         
+        openAsMenu = fileMenu.addMenu("Open As")
+        for regRti in getGlobalRegistry().registeredRtis:
+            rtiClass = regRti.rtiClass
+            action = QtGui.QAction(rtiClass.getLabel(), openAsMenu,
+                triggered=lambda: self.openFiles(rtiClass=rtiClass, 
+                                                 fileMode = QtGui.QFileDialog.ExistingFiles, 
+                                                 caption="Open {}".format(rtiClass.getLabel())))
+            openAsMenu.addAction(action)
+        
         fileMenu.addAction("Close &Window", self.closeWindow, "Ctrl+W")
         fileMenu.addAction("E&xit", self.quitApplication, "Ctrl+Q")
         if DEBUGGING is True:
@@ -150,15 +159,18 @@ class MainWindow(QtGui.QMainWindow):
 
     # -- End of setup_methods --
 
-    def openFiles(self, fileNames=None, fileMode=None): 
+    def openFiles(self, fileNames=None, rtiClass=None, caption=None, fileMode=None): 
         """ Lets the user select on or more files and opens it.
-            
-            If fileNames is None an open-file dialog allows the user to select files.
-            The fileMode parameter must be a QtGui.QFileDialog.FileMode constant and is passed 
-            to the file dialog.
+
+            :param fileNames: If None an open-file dialog allows the user to select files,
+                otherwise the files are opened directly.
+            :param rtiClass: Open the files as this type of repository tree item. None=autodetect.
+            :param caption: Optional caption for the file dialog.
+            :param fileMode: is passed to the file dialog.
+            :rtype fileMode: QtGui.QFileDialog.FileMode constant 
         """
         if fileNames is None:
-            dialog = QtGui.QFileDialog(self)
+            dialog = QtGui.QFileDialog(self, caption=caption)
             if fileMode:
                 dialog.setFileMode(fileMode)
                 
@@ -170,7 +182,7 @@ class MainWindow(QtGui.QMainWindow):
         for fileName in fileNames:
             logger.info("Loading data from: {!r}".format(fileName))
             try:
-                self.treeView.loadFile(fileName, expand = False)
+                self.treeView.loadFile(fileName, expand = False, rtiClass=rtiClass)
             except Exception as ex: # TODO: still needed?
                 if DEBUGGING:
                     raise
