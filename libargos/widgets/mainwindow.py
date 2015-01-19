@@ -29,7 +29,7 @@ from .repotree import RepoTreeView
 from libargos.state.registry import getGlobalRegistry
 from libargos.repo.repository import getGlobalRepository
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
-from libargos.qt import executeApplication, QtCore, QtGui
+from libargos.qt import executeApplication, QtCore, QtGui, QtSlot
 
 logger = logging.getLogger(__name__)
 
@@ -159,6 +159,7 @@ class MainWindow(QtGui.QMainWindow):
 
     # -- End of setup_methods --
 
+    @QtSlot()
     def openFiles(self, fileNames=None, rtiClass=None, caption=None, fileMode=None): 
         """ Lets the user select on or more files and opens it.
 

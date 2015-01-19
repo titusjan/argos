@@ -22,7 +22,6 @@ import logging
 from libargos.qt import QtGui, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
 
-from libargos.repo.memoryrti import ScalarRti
 from libargos.repo.filesytemrti import detectRtiFromFileName
 
 
@@ -91,6 +90,7 @@ class RepoTreeView(ToggleColumnTreeView):
         return selectedItem, selectedIndex
 
     
+    @QtSlot()
     def openSelectedItem(self):
         """ Opens the selected item in the repository.
         """
@@ -98,8 +98,9 @@ class RepoTreeView(ToggleColumnTreeView):
         selectedItem, selectedIndex = self._getSelectedItem()
         selectedItem.open()
         self.expand(selectedIndex) # to visit the children and thus show the 'open' icons
+    
          
-
+    @QtSlot()
     def closeSelectedItem(self):
         """ Closes the selected item in the repository. 
             All its children will be unfetched and closed.
