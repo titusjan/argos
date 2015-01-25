@@ -119,10 +119,12 @@ class NcdfFileRti(DatasetRti):
     def _openResources(self):
         """ Opens the root Dataset.
         """
+        logger.info("Opening: {}".format(self._fileName))
         self._dataset = Dataset(self._fileName)
     
     def _closeResources(self):
         """ Closes the root Dataset.
         """
+        logger.info("Closing: {}".format(self._fileName))
         self._dataset.close()
         self._dataset = None
