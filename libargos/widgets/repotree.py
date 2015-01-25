@@ -71,8 +71,8 @@ class RepoTreeView(ToggleColumnTreeView):
         repoTreeItem = rtiClass.createFromFileName(fileName)
         self.loadRepoTreeItem(repoTreeItem, expand=expand)
         
-        
-    def _getSelectedItemIndex(self):
+
+    def _getSelectedIndex(self):
         """ Returns the index of the selected item in the repository. 
         """
         selectionModel = self.selectionModel()
@@ -83,9 +83,10 @@ class RepoTreeView(ToggleColumnTreeView):
 
 
     def _getSelectedItem(self):
-        """ Returns a tuple with the selected item, and its index, in the repository. 
+        """ Find the selected root tree item (and the selected index while we're at it)
+            Returns a tuple with the selected item, and its index.
         """
-        selectedIndex = self._getSelectedItemIndex()
+        selectedIndex = self._getSelectedIndex()
         selectedItem = self.model().getItem(selectedIndex)
         return selectedItem, selectedIndex
 
@@ -98,8 +99,8 @@ class RepoTreeView(ToggleColumnTreeView):
         selectedItem, selectedIndex = self._getSelectedItem()
         selectedItem.open()
         self.expand(selectedIndex) # to visit the children and thus show the 'open' icons
-    
          
+        
     @QtSlot()
     def closeSelectedItem(self):
         """ Closes the selected item in the repository. 
@@ -112,5 +113,17 @@ class RepoTreeView(ToggleColumnTreeView):
         self.model().removeAllChildrenAtIndex(selectedIndex)
         selectedItem.close()
         self.collapse(selectedIndex) # otherwise the children will be fetched immediately
-        
 
+        
+    @QtSlot()
+    def removeSelectedFile(self):
+        """ Finds the root of of the selected item, which represents a file, 
+            and removes it from the list.
+        """
+        logger.debug("removeSelectedFile")
+        selectedIndex = self._getSelectedIndex()
+        topLevelIndex = self.model().findTopLevelItemIndex(selectedIndex)
+        topLevelItem = self.model().getItem(topLevelIndex)
+        self.model().deleteItemByIndex(topLevelIndex) # this will close the items resources.
+        
+        

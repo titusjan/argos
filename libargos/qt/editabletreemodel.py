@@ -97,7 +97,7 @@ class BaseTreeItem(object):
         return len(self.childItems)
 
     def childNumber(self):
-        """ Gets the index of this node in its parent's list of childre
+        """ Gets the index (nr) of this node in its parent's list of children
         """
         if self.parentItem != None:
             return self.parentItem.childItems.index(self)
@@ -119,15 +119,20 @@ class BaseTreeItem(object):
 
 
     def removeChild(self, position):
-        
+        """ Removes the child at the position 'position'
+            Calls the child item finalize to close its resources before removing it.
+        """
         assert 0 <= position <= len(self.childItems), \
             "position should be 0 < {} <= {}".format(position, len(self.childItems))
 
         self.childItems[position].finalize()
         self.childItems.pop(position)
 
+
     def removeAllChildren(self):
-        
+        """ Removes the all children of this node.
+            Calls the child items finalize to close their resources before removing them.
+        """
         for childItem in self.childItems:
             childItem.finalize()
         self._childItems = []
@@ -438,13 +443,15 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
     
     def removeAllChildrenAtIndex(self, parentIndex): 
         """ Removes all children of the item at the parentIndex.
+            The the children's finalize method is closed before removing them to give a
+            chance to close their resources
         """
         if not parentIndex.isValid():
             logger.debug("No valid item selected for deletion (ignored).")
             return
         
         parentItem = self.getItem(parentIndex, None)
-        logger.debug("Trying to remove children of {!r}".format(parentItem))
+        logger.debug("Removing children of {!r}".format(parentItem))
         assert parentItem, "parentItem not found"
         
         #firstChildRow = self.index(0, 0, parentIndex).row()
@@ -463,17 +470,17 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
     
     def deleteItemByIndex(self, itemIndex): 
         """ Removes the item at the itemIndex.
+            The item's finalize method is called before removing so it can close its resources. 
         """
         if not itemIndex.isValid():
             logger.debug("No valid item selected for deletion (ignored).")
             return
         
         item = self.getItem(itemIndex, "<no item>")
-        logger.debug("Trying to remove {!r}".format(item))
+        logger.debug("deleteItemByIndex: removing {!r}".format(item))
         
         parentIndex = itemIndex.parent()
         parentItem = self.getItem(parentIndex, altItem=self.rootItem)
-        #parentItem = self.getItem(parentIndex)
         row = itemIndex.row()
         self.beginRemoveRows(parentIndex, row, row)
         try:
@@ -482,7 +489,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             self.endRemoveRows()
             
         logger.debug("deleteItemByIndex completed")
-            
+  
 
     def replaceItemAtIndex(self, newItem, oldItemIndex): 
         """ Removes the item at the itemIndex and insert a new item instead.
@@ -493,4 +500,16 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         self.deleteItemByIndex(oldItemIndex)
         insertedIndex = self.insertItem(newItem, position=childNumber, parentIndex=parentIndex)
         return insertedIndex
-        
+
+
+    def findTopLevelItemIndex(self, childIndex):
+        """ Traverses the tree upwards from childItem until its top level ancestor item is found. 
+            Top level items are items that are direct children of the (invisible) root item.
+            This function therefore raises an exception when called with the root item.
+        """        
+        if childIndex.parent().isValid():
+            return self.findTopLevelItemIndex(childIndex.parent())
+        else:
+            return childIndex
+            
+

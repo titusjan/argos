@@ -126,12 +126,17 @@ class MainWindow(QtGui.QMainWindow):
         openAsMenu = fileMenu.addMenu("Open As")
         for regRti in getGlobalRegistry().registeredRtis:
             rtiClass = regRti.rtiClass
-            action = QtGui.QAction(rtiClass.getLabel(), openAsMenu,
+            action = QtGui.QAction(rtiClass.getLabel(), self,
                 triggered=lambda: self.openFiles(rtiClass=rtiClass, 
                                                  fileMode = QtGui.QFileDialog.ExistingFiles, 
                                                  caption="Open {}".format(rtiClass.getLabel())))
             openAsMenu.addAction(action)
-        
+
+        removeFileAction = QtGui.QAction("Remove File...", self, shortcut="Ctrl+Shift+R",  
+                                         triggered=lambda: self.treeView.removeSelectedFile())
+        fileMenu.addAction(removeFileAction)
+
+        fileMenu.addSeparator()
         fileMenu.addAction("Close &Window", self.closeWindow, "Ctrl+W")
         fileMenu.addAction("E&xit", self.quitApplication, "Ctrl+Q")
         if DEBUGGING is True:
@@ -159,8 +164,8 @@ class MainWindow(QtGui.QMainWindow):
 
     # -- End of setup_methods --
 
-    @QtSlot()
-    def openFiles(self, fileNames=None, rtiClass=None, caption=None, fileMode=None): 
+    @QtSlot() 
+    def openFiles(self, fileNames=None, rtiClass=None, caption=None, fileMode=None): # TODO: to repotree? 
         """ Lets the user select on or more files and opens it.
 
             :param fileNames: If None an open-file dialog allows the user to select files,

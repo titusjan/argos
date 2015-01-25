@@ -130,7 +130,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
                 self._closeResources()
                 self._isOpen = False 
             else:
-                logger.debug("Resources already open (ignored): {}".format(self))
+                logger.debug("Resources already closed (ignored): {}".format(self))
         except Exception as ex:
             if DEBUGGING:
                 raise
