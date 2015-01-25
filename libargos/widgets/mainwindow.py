@@ -133,7 +133,7 @@ class MainWindow(QtGui.QMainWindow):
             openAsMenu.addAction(action)
 
         removeFileAction = QtGui.QAction("Remove File...", self, shortcut="Ctrl+Shift+R",  
-                                         triggered=lambda: self.treeView.removeSelectedFile())
+                                         triggered=self.treeView.removeSelectedFile)
         fileMenu.addAction(removeFileAction)
 
         fileMenu.addSeparator()
@@ -144,17 +144,15 @@ class MainWindow(QtGui.QMainWindow):
             fileMenu.addAction("&Test", self.myTest, "Ctrl+T")
         
         ### Actions Menu ###
-                
-        openItemAction = QtGui.QAction("Open Item", self, shortcut="Ctrl+J")
-        closeItemAction = QtGui.QAction("Close Item", self, shortcut="Ctrl+K")
-
         actionsMenu = menuBar.addMenu("&Actions")
+        openItemAction = QtGui.QAction("Open Item", self, shortcut="Ctrl+J", 
+                                       triggered=self.treeView.openSelectedItem)
         actionsMenu.addAction(openItemAction)
+        
+        closeItemAction = QtGui.QAction("Close Item", self, shortcut="Ctrl+K", 
+                                        triggered=self.treeView.closeSelectedItem)
         actionsMenu.addAction(closeItemAction)
         
-        openItemAction.triggered.connect(self.treeView.openSelectedItem)
-        closeItemAction.triggered.connect(self.treeView.closeSelectedItem)
-
         ### Help Menu ###
                 
         menuBar.addSeparator()
