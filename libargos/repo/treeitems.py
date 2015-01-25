@@ -119,7 +119,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
         pass
     
     def close(self):
-        """ Opens underlying resources and un-sets isOpen flag. 
+        """ Closes underlying resources and un-sets isOpen flag. 
             It calls _closeResources. Descendants should usually override the latter 
             function instead of this one.
         """
