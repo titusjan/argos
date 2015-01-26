@@ -67,7 +67,7 @@ class ArrayRti(BaseRti):
     """ Represents a numpy array (or None for undefined)
     """
     _label = "NumPy Array"
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.scalar.svg'))
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.array.svg'))
     _iconClosed = _iconOpen     
 
     def __init__(self, array, nodeName='', fileName=''):
