@@ -19,9 +19,10 @@
 from __future__ import print_function
 
 import logging
-from libargos.qt import QtGui, QtSlot
+from libargos.qt import QtGui, QtCore, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
 
+from libargos.repo.repository import RepositoryTreeModel
 from libargos.repo.filesytemrti import detectRtiFromFileName
 
 
@@ -48,31 +49,46 @@ class RepoTreeView(ToggleColumnTreeView):
         treeHeader = self.header()
         treeHeader.setMovable(True)
         treeHeader.setStretchLastSection(False)  
-        treeHeader.resizeSection(0, 300)
+        treeHeader.resizeSection(RepositoryTreeModel.COL_NODE_NAME, 300)
+        treeHeader.resizeSection(RepositoryTreeModel.COL_FILE_NAME, 500)
         headerNames = self.model().horizontalHeaders
         enabled = dict((name, True) for name in headerNames)
         enabled[headerNames[0]] = False # Fist column cannot be unchecked
         self.addHeaderContextMenu(enabled=enabled, checkable={})
 
         
-    def loadRepoTreeItem(self, repoTreeItem, expand=False):
+    def loadRepoTreeItem(self, repoTreeItem, expand=False, 
+                         position=None, parentIndex=QtCore.QModelIndex()):
         """ Loads a tree item in the repository and expands it.
+            If position is None the child will be appended as the last child of the parent.
+            Returns the index of the newly inserted RTI.
         """
         assert repoTreeItem.parentItem is None, "repoTreeItem {!r}".format(repoTreeItem)
-        storeRootIndex = self.model().insertItem(repoTreeItem)
+        storeRootIndex = self.model().insertItem(repoTreeItem, position=position, 
+                                                 parentIndex=parentIndex)
         self.setExpanded(storeRootIndex, expand)
+        return storeRootIndex
 
 
     def loadFile(self, fileName, expand=False, rtiClass=None):
         """ Loads a file in the repository. Autodetects the RTI type if needed.
+            Returns the index of the newly inserted RTI
         """
         if rtiClass is None:
             rtiClass = detectRtiFromFileName(fileName)
         repoTreeItem = rtiClass.createFromFileName(fileName)
-        self.loadRepoTreeItem(repoTreeItem, expand=expand)
-        
+        return self.loadRepoTreeItem(repoTreeItem, expand=expand)
+    
+    
+    def selectByIndex(self, selectionIndex):
+        """ Selects the node with index selection index
+        """
+        selectionModel = self.selectionModel()
+        selectionModel.setCurrentIndex(selectionIndex, QtGui.QItemSelectionModel.ClearAndSelect)    
+        logger.debug("selected tree item: has selection: {}".format(selectionModel.hasSelection()))
 
-    def _getSelectedIndex(self):
+
+    def _getSelectedIndex(self): # TODO: public?
         """ Returns the index of the selected item in the repository. 
         """
         selectionModel = self.selectionModel()
@@ -123,7 +139,31 @@ class RepoTreeView(ToggleColumnTreeView):
         logger.debug("removeSelectedFile")
         selectedIndex = self._getSelectedIndex()
         topLevelIndex = self.model().findTopLevelItemIndex(selectedIndex)
-        topLevelItem = self.model().getItem(topLevelIndex)
         self.model().deleteItemByIndex(topLevelIndex) # this will close the items resources.
         
         
+    @QtSlot()
+    def reloadFileOfSelectedItem(self):
+        """ Finds the repo tree item that holds the file of the item that was selected, 
+            and reloads.
+            Reloading is done by removing the repo tree item and inserting a new one.
+        """
+        logger.debug("reloadFileOfSelectedItem")
+        selectedIndex = self._getSelectedIndex()
+        fileRtiIndex = self.model().findFileRtiIndex(selectedIndex)
+        fileRtiParentIndex = fileRtiIndex.parent()
+        fileRti = self.model().getItem(fileRtiIndex)
+        fileName = fileRti.fileName
+        rtiClass = type(fileRti)
+        position = fileRti.childNumber()
+        
+        # Delete old RTI
+        self.model().deleteItemByIndex(fileRtiIndex) # this will close the items resources.
+        
+        # Insert a new one instead.
+        newRti = rtiClass.createFromFileName(fileName)
+        newRtiIndex = self.loadRepoTreeItem(newRti, expand=True, position=position,  
+                                            parentIndex=fileRtiParentIndex)
+        self.selectByIndex(newRtiIndex)
+        return newRtiIndex
+     

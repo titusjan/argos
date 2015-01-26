@@ -107,7 +107,21 @@ class RepositoryTreeModel(BaseTreeModel):
         assert not parentItem.canFetchChildren(), \
             "not all children fetched: {}".format(parentItem)
 
-    
+
+    def findFileRtiIndex(self, childIndex):
+        """ Traverses the tree upwards from the item at childIndex until the tree 
+            item is found that represents the file the item at childIndex 
+        """        
+        parentIndex = childIndex.parent()
+        if not parentIndex.isValid():
+            return childIndex
+        else:
+            parentItem = self.getItem(parentIndex)
+            childItem = self.getItem(childIndex)
+            if parentItem.fileName == childItem.fileName:
+                return self.findFileRtiIndex(parentIndex)
+            else:
+                return childIndex
 
     
 def createGlobalRepositoryFunction():

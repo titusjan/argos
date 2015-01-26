@@ -132,9 +132,13 @@ class MainWindow(QtGui.QMainWindow):
                                                  caption="Open {}".format(rtiClass.getLabel())))
             openAsMenu.addAction(action)
 
-        removeFileAction = QtGui.QAction("Remove File...", self, shortcut="Ctrl+Shift+R",  
+        removeFileAction = QtGui.QAction("Remove File", self, shortcut="Ctrl+Shift+R",  
                                          triggered=self.treeView.removeSelectedFile)
         fileMenu.addAction(removeFileAction)
+        
+        reloadFileAction = QtGui.QAction("Reload File", self, shortcut="Ctrl+R",  
+                                         triggered=self.treeView.reloadFileOfSelectedItem)
+        fileMenu.addAction(reloadFileAction)
 
         fileMenu.addSeparator()
         fileMenu.addAction("Close &Window", self.closeWindow, "Ctrl+W")
@@ -186,7 +190,7 @@ class MainWindow(QtGui.QMainWindow):
         for fileName in fileNames:
             logger.info("Loading data from: {!r}".format(fileName))
             try:
-                self.treeView.loadFile(fileName, expand = False, rtiClass=rtiClass)
+                self.treeView.loadFile(fileName, expand = True, rtiClass=rtiClass)
             except Exception as ex: # TODO: still needed?
                 if DEBUGGING:
                     raise
@@ -257,10 +261,7 @@ class MainWindow(QtGui.QMainWindow):
         mappingRti = MappingRti(myDict, nodeName="myDict", fileName='')
         storeRootIndex = getGlobalRepository().insertItem(mappingRti)
         self.treeView.setExpanded(storeRootIndex, True)
-
-        selectionModel = self.treeView.selectionModel()
-        selectionModel.setCurrentIndex(storeRootIndex, QtGui.QItemSelectionModel.ClearAndSelect)
-        logger.debug("selected tree item: has selection: {}".format(selectionModel.hasSelection()))
+        self.treeView.selectByIndex(storeRootIndex)
         
 
     def myTest(self):
