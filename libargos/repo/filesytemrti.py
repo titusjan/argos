@@ -22,7 +22,7 @@ import logging, os
 from .treeitems import (ICONS_DIRECTORY, BaseRti)
 from libargos.info import DEBUGGING
 from libargos.qt import QtGui
-from libargos.state.registry import getGlobalRegistry
+from libargos.repo.registry import getGlobalRegistry
 
 logger = logging.getLogger(__name__)
 

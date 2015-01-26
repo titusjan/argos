@@ -18,13 +18,13 @@
 """ Plugins package.
 """
 
-from libargos.state.registry import getGlobalRegistry
+from libargos.repo.registry import getGlobalRegistry
 
 
 __registry = getGlobalRegistry()
 
-__registry.registerRti('libargos.plugins.rti.ncdf.NcdfFileRti', 
+__registry.registerRti('libargos.repo.rtiplugins.ncdf.NcdfFileRti', 
                        extensions=['nc', 'nc3', 'nc4'])
-__registry.registerRti('libargos.plugins.rti.nptextfile.NumpyTextFileRti', 
+__registry.registerRti('libargos.repo.rtiplugins.nptextfile.NumpyTextFileRti', 
                        extensions=['txt', 'text'])
 

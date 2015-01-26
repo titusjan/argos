@@ -31,7 +31,7 @@ from libargos.widgets.mainwindow import browse
 from libargos.utils.misc import remove_process_serial_number
 
 # Import last. TODO: function call of some sorts.
-import libargos.plugins as plugins
+import libargos.repo.rtiplugins as plugins
 
 
 def main():
