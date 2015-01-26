@@ -166,8 +166,9 @@ class MainWindow(QtGui.QMainWindow):
 
     # -- End of setup_methods --
 
+    # TODO: to repotreemodel?
     @QtSlot() 
-    def openFiles(self, fileNames=None, rtiClass=None, caption=None, fileMode=None): # TODO: to repotree? 
+    def openFiles(self, fileNames=None, rtiClass=None, caption=None, fileMode=None):
         """ Lets the user select on or more files and opens it.
 
             :param fileNames: If None an open-file dialog allows the user to select files,
