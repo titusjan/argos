@@ -24,15 +24,17 @@ from __future__ import print_function
 from __future__ import division
 
 import logging, platform
+import numpy as np
+from netCDF4 import Dataset 
 
 from .repotreeview import RepoTreeView
 from libargos.repo.registry import getRtiRegistry
 from libargos.repo.repotreemodel import getGlobalRepository
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
 from libargos.qt import executeApplication, QtCore, QtGui, QtSlot
+#from libargos.widgets.gcmonitor import createGcMonitor
 
 logger = logging.getLogger(__name__)
-
 
 
 def createBrowser(fileNames = tuple(), **kwargs):
@@ -50,7 +52,9 @@ def createBrowser(fileNames = tuple(), **kwargs):
 def browse(fileNames = None, **kwargs):
     """ Opens and executes a main window
     """
-    _object_browser = createBrowser(fileNames = fileNames, **kwargs)
+    _browser = createBrowser(fileNames = fileNames, **kwargs)
+    if False and DEBUGGING: # TODO temporary
+        _gcMon = createGcMonitor()
     exit_code = executeApplication()
     return exit_code
 
@@ -143,9 +147,10 @@ class MainWindow(QtGui.QMainWindow):
         fileMenu.addSeparator()
         fileMenu.addAction("Close &Window", self.closeWindow, "Ctrl+W")
         fileMenu.addAction("E&xit", self.quitApplication, "Ctrl+Q")
-        if DEBUGGING is True:
+        if DEBUGGING:
             fileMenu.addSeparator()
             fileMenu.addAction("&Test", self.myTest, "Ctrl+T")
+            
         
         ### Actions Menu ###
         actionsMenu = menuBar.addMenu("&Actions")
@@ -261,16 +266,20 @@ class MainWindow(QtGui.QMainWindow):
         
         mappingRti = MappingRti(myDict, nodeName="myDict", fileName='')
         storeRootIndex = getGlobalRepository().insertItem(mappingRti)
-        self.treeView.setExpanded(storeRootIndex, True)
+        self.treeView.setExpanded(storeRootIndex, False)
         self.treeView.selectByIndex(storeRootIndex)
         
 
     def myTest(self):
         """ Function for testing """
-        logger.debug("myTest")
-        selectionModel = self.treeView.selectionModel()
-        logger.debug("selected tree item: has selection: {}".format(selectionModel.hasSelection()))
-        raise AssertionError("False positive")
+        #logger.debug("myTest")
+        arr = np.loadtxt('/Users/titusjan/Data/argos/fel_nist/pruts3.txt')
+        logger.debug("Array shape: {}".format(arr.shape))
+        del arr
+        
+        #ds = Dataset('/Users/titusjan/Data/argos/fel_nist/test.nc', 'r', format='NETCDF4')
+        #logger.debug("ds: {}".format(ds))
+        
         
     def about(self):
         """ Shows the about message window. """
