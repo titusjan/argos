@@ -30,18 +30,22 @@ Test:
 	Memory leaks
 
 TODO:
-	open/close ncdf plugins ???
 	path of items
 	Multiple open windows.
-
+		
 
 TODO Long term or nice to have:
-	refresh	
-	'open as...'
-	different icon for sequence
 	example RTI using XML file.
 	fits format
 	
 	Plugin management window
 	
+THINK:
+	createFromFileName does not work with memory RTI. Options:
+		1) Implement resource attribute.
+			Cons: where to set the fileName = os.path.realpath(resource) (in a setter?) 
+		2) Implement createFromResource method. Don't check file names in children? How?
+		3) Separate fileName and resource attributes (which is a bit of a duplicated effort)
+		
+
 	
