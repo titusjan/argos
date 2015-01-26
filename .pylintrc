@@ -47,11 +47,13 @@ load-plugins=
 #   C0325: superfluous-parens
 #   C0326: No space allowed around keyword argument assignment
 #   R0201: Method could be a function
+
 #   R0904: too-many-public-methods (all Qt classes have this problem)
+#   R0911: too-many-return-statements (I don't see the problem with many return statements)
 #   R0921: abstract-class-not-used (gives warning when checking a single file)
 #   R0922: abstract-class-little-used (gives warning when checking a single file)
 #   R0923: interface-not-implemented (gives warning when checking a single file)
-disable=I0011, W0511, W0703, C0303, C0325, C0326, C0111, R0201, R0904, R0921, R0922, R0923
+disable=I0011, W0511, W0703, C0303, C0325, C0326, C0111, R0201, R0904, R0911, R0921, R0922, R0923
 
 
 [REPORTS]

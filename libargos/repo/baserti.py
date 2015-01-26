@@ -70,10 +70,10 @@ class BaseRti(AbstractLazyLoadTreeItem):
         return cls(nodeName=os.path.basename(fileName), fileName=fileName)
 
     @classmethod
-    def getLabel(self):
+    def getLabel(cls):
         """ Returns a short string that describes this item. Used in menus, headers, etc. 
         """
-        return self._label
+        return cls._label
     
     @property
     def fileName(self):
@@ -199,7 +199,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
             if DEBUGGING:
                 raise
             logger.error("Unable fetch tree item children: {}".format(ex))
-            self.set_exception(ex)
+            self._setException(ex)
         
         return childItems    
 
