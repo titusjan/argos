@@ -22,7 +22,7 @@ import logging, os
 from .treeitems import (ICONS_DIRECTORY, BaseRti)
 from libargos.info import DEBUGGING
 from libargos.qt import QtGui
-from libargos.repo.registry import getGlobalRegistry
+from libargos.repo.registry import getRtiRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +94,7 @@ def detectRtiFromFileName(fileName):
         cls = DirectoryRti
     else:
         try:
-            cls = getGlobalRegistry().getRtiByExtension(extension)
+            cls = getRtiRegistry().getRtiByExtension(extension)
         except KeyError:
             cls = UnknownFileRti
             

@@ -26,7 +26,7 @@ from __future__ import division
 import logging, platform
 
 from .repotree import RepoTreeView
-from libargos.repo.registry import getGlobalRegistry
+from libargos.repo.registry import getRtiRegistry
 from libargos.repo.repository import getGlobalRepository
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
 from libargos.qt import executeApplication, QtCore, QtGui, QtSlot
@@ -124,7 +124,7 @@ class MainWindow(QtGui.QMainWindow):
         openDirAction.setShortcut("Ctrl+O, D")
         
         openAsMenu = fileMenu.addMenu("Open As")
-        for regRti in getGlobalRegistry().registeredRtis:
+        for regRti in getRtiRegistry().registeredRtis:
             rtiClass = regRti.rtiClass
             action = QtGui.QAction(rtiClass.getLabel(), self,
                 triggered=lambda: self.openFiles(rtiClass=rtiClass, 

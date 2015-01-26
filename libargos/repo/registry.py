@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Classes to register plugins, data formats, etc
+""" Defines a global RTI registry to register repository tree item plugins.
 """
 
 import logging
@@ -56,8 +56,8 @@ class _RegisteredRti(object):
         return '{} ({})'.format(self.rtiShortName, extStr)
     
 
-class Registry(object):
-    """ Class that can be used to register plug-ins, data formats, etc.
+class RtiRegistry(object):
+    """ Class that can be used to register repository tree items (RTIs)
     """
     def __init__(self):
         """ Constructor
@@ -121,9 +121,9 @@ class Registry(object):
 
     
 def createGlobalRegistryFunction():
-    """ Closure to create the Registry singleton
+    """ Closure to create the RtiRegistry singleton
     """
-    globReg = Registry()
+    globReg = RtiRegistry()
     
     def accessGlobalRegistry():
         return globReg
@@ -133,8 +133,8 @@ def createGlobalRegistryFunction():
 # This is actually a function definition, not a constant
 #pylint: disable=C0103
 
-getGlobalRegistry = createGlobalRegistryFunction()
-getGlobalRegistry.__doc__ = "Function that returns the Registry singleton common to all windows"
+getRtiRegistry = createGlobalRegistryFunction()
+getRtiRegistry.__doc__ = "Function that returns the RtiRegistry singleton common to all windows"
 
 
             
