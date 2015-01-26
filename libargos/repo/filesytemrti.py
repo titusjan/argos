@@ -19,7 +19,7 @@
 """
 
 import logging, os
-from .treeitems import (ICONS_DIRECTORY, BaseRti)
+from .baserti import (ICONS_DIRECTORY, BaseRti)
 from libargos.info import DEBUGGING
 from libargos.qt import QtGui
 from libargos.repo.registry import getRtiRegistry

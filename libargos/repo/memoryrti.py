@@ -21,7 +21,7 @@ import logging, os
 
 logger = logging.getLogger(__name__)
 
-from .treeitems import ICONS_DIRECTORY, BaseRti
+from .baserti import ICONS_DIRECTORY, BaseRti
 
 from libargos.qt import QtGui
 from libargos.utils.cls import (check_is_a_sequence, check_is_a_mapping, check_is_an_array,  

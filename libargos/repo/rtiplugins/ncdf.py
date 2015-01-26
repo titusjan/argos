@@ -26,7 +26,7 @@ from netCDF4 import Dataset, Variable
 
 from libargos.qt import QtGui
 from libargos.utils.cls import check_class, type_name
-from libargos.repo.treeitems import (ICONS_DIRECTORY, BaseRti)
+from libargos.repo.baserti import (ICONS_DIRECTORY, BaseRti)
 
 logger = logging.getLogger(__name__)
 

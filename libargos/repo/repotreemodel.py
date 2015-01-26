@@ -25,7 +25,7 @@ from libargos.utils.cls import type_name
 
 logger = logging.getLogger(__name__)
 
-class RepositoryTreeModel(BaseTreeModel):
+class RepoTreeModel(BaseTreeModel):
     """ The main entry point of all the data
     
         Maintains a list of open files and offers a QAbstractItemModel for read-only access of
@@ -39,7 +39,7 @@ class RepositoryTreeModel(BaseTreeModel):
     def __init__(self, parent=None):
         """ Constructor
         """
-        super(RepositoryTreeModel, self).__init__(parent=parent)
+        super(RepoTreeModel, self).__init__(parent=parent)
         self._isEditable = False
 
     
@@ -125,9 +125,9 @@ class RepositoryTreeModel(BaseTreeModel):
 
     
 def createGlobalRepositoryFunction():
-    """ Closure to create the RepositoryTreeModel singleton
+    """ Closure to create the RepoTreeModel singleton
     """
-    globRepo = RepositoryTreeModel()
+    globRepo = RepoTreeModel()
     
     def accessGlobalRepo():
         return globRepo
@@ -138,5 +138,5 @@ def createGlobalRepositoryFunction():
 #pylint: disable=C0103
 
 getGlobalRepository = createGlobalRepositoryFunction()
-getGlobalRepository.__doc__ = "Function that returns the RepositoryTreeModel common to all windows"
+getGlobalRepository.__doc__ = "Function that returns the RepoTreeModel common to all windows"
 

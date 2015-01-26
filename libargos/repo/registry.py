@@ -85,7 +85,7 @@ class RtiRegistry(object):
                 
             :param rtiFullName: full name of the repo tree item. 
                 E.g.: 'libargos.plugins.rti.ncdf.NcdfFileRti'
-                The rti should be a descendant of libargos.repo.treeitems.FileRtiMixin
+                The rti should be a descendant of libargos.repo.baserti.FileRtiMixin
             :param extensions: optional list of extensions that will be linked to this RTI
                 a point will be prepended to the extensions if not already present.
         """

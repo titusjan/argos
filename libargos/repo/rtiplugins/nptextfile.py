@@ -22,7 +22,7 @@ import numpy as np
 
 from libargos.qt import QtGui
 from libargos.repo.memoryrti import ArrayRti
-from libargos.repo.treeitems import ICONS_DIRECTORY
+from libargos.repo.baserti import ICONS_DIRECTORY
 
 logger = logging.getLogger(__name__)
 

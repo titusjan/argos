@@ -22,7 +22,7 @@ import logging
 from libargos.qt import QtGui, QtCore, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
 
-from libargos.repo.repository import RepositoryTreeModel
+from libargos.repo.repotreemodel import RepoTreeModel
 from libargos.repo.filesytemrti import detectRtiFromFileName
 
 
@@ -49,8 +49,8 @@ class RepoTreeView(ToggleColumnTreeView):
         treeHeader = self.header()
         treeHeader.setMovable(True)
         treeHeader.setStretchLastSection(False)  
-        treeHeader.resizeSection(RepositoryTreeModel.COL_NODE_NAME, 300)
-        treeHeader.resizeSection(RepositoryTreeModel.COL_FILE_NAME, 500)
+        treeHeader.resizeSection(RepoTreeModel.COL_NODE_NAME, 300)
+        treeHeader.resizeSection(RepoTreeModel.COL_FILE_NAME, 500)
         headerNames = self.model().horizontalHeaders
         enabled = dict((name, True) for name in headerNames)
         enabled[headerNames[0]] = False # Fist column cannot be unchecked

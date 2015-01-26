@@ -25,9 +25,9 @@ from __future__ import division
 
 import logging, platform
 
-from .repotree import RepoTreeView
+from .repotreeview import RepoTreeView
 from libargos.repo.registry import getRtiRegistry
-from libargos.repo.repository import getGlobalRepository
+from libargos.repo.repotreemodel import getGlobalRepository
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
 from libargos.qt import executeApplication, QtCore, QtGui, QtSlot
 
