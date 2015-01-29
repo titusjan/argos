@@ -35,6 +35,7 @@ TODO:
 		
 
 TODO Long term or nice to have:
+	let repo tree view work with multile items selected
 	example RTI using XML file.
 	fits format
 	

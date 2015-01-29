@@ -137,11 +137,11 @@ class MainWindow(QtGui.QMainWindow):
             openAsMenu.addAction(action)
 
         removeFileAction = QtGui.QAction("Remove File", self, shortcut="Ctrl+Shift+R",  
-                                         triggered=self.treeView.removeSelectedFile)
+                                         triggered=self.treeView.removeCurrentFile)
         fileMenu.addAction(removeFileAction)
         
         reloadFileAction = QtGui.QAction("Reload File", self, shortcut="Ctrl+R",  
-                                         triggered=self.treeView.reloadFileOfSelectedItem)
+                                         triggered=self.treeView.reloadFileOfCurrentItem)
         fileMenu.addAction(reloadFileAction)
 
         fileMenu.addSeparator()
@@ -155,11 +155,11 @@ class MainWindow(QtGui.QMainWindow):
         ### Actions Menu ###
         actionsMenu = menuBar.addMenu("&Actions")
         openItemAction = QtGui.QAction("Open Item", self, shortcut="Ctrl+J", 
-                                       triggered=self.treeView.openSelectedItem)
+                                       triggered=self.treeView.openCurrentItem)
         actionsMenu.addAction(openItemAction)
         
         closeItemAction = QtGui.QAction("Close Item", self, shortcut="Ctrl+K", 
-                                        triggered=self.treeView.closeSelectedItem)
+                                        triggered=self.treeView.closeCurrentItem)
         actionsMenu.addAction(closeItemAction)
         
         ### Help Menu ###
@@ -267,7 +267,7 @@ class MainWindow(QtGui.QMainWindow):
         mappingRti = MappingRti(myDict, nodeName="myDict", fileName='')
         storeRootIndex = getGlobalRepository().insertItem(mappingRti)
         self.treeView.setExpanded(storeRootIndex, False)
-        self.treeView.selectByIndex(storeRootIndex)
+        self.treeView.setCurrentIndex(storeRootIndex)
         
 
     def myTest(self):

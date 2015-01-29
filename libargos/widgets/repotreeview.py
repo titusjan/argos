@@ -15,6 +15,33 @@
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
 """ Repository tree.
+
+    Currently it supports only selecting one item. That is, the current item is always the 
+    selected item. 
+    
+    The difference between the current item and the selected item(s) is as follows:
+    (from: http://doc.qt.digia.com/4.6/model-view-selection.html)
+    
+    In a view, there is always a current item and a selected item - two independent states. 
+    An item can be the current item and selected at the same time. The view is responsible for 
+    ensuring that there is always a current item as keyboard navigation, for example, requires 
+    a current item.
+            
+    Current Item:
+        There can only be one current item.    
+        The current item will be changed with key navigation or mouse button clicks.    
+        The current item will be edited if the edit key, F2, is pressed or the item is 
+            double-clicked (provided that editing is enabled).    
+        The current item is indicated by the focus rectangle.    
+
+    Selected Items:
+        There can be multiple selected items.
+        The selected state of items is set or unset, depending on several pre-defined modes 
+            (e.g., single selection, multiple selection, etc.) when the user interacts with the 
+            items.
+        The current item can be used together with an anchor to specify a range that should be 
+            selected or deselected (or a combination of the two).
+        The selected items are indicated with the selection rectangle.
 """
 from __future__ import print_function
 
@@ -40,7 +67,7 @@ class RepoTreeView(ToggleColumnTreeView):
         super(RepoTreeView, self).__init__()
         self.setModel(repoTreeModel)
         self.setAlternatingRowColors(True)
-        self.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems) # TODO: SelectRows
+        self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.setAnimated(True)
@@ -80,77 +107,75 @@ class RepoTreeView(ToggleColumnTreeView):
         return self.loadRepoTreeItem(repoTreeItem, expand=expand)
     
     
-    def selectByIndex(self, selectionIndex):
-        """ Selects the node with index selection index
+    def setCurrentIndex(self, currentIndex):
+        """ Sets the current item to be the item at currentIndex.
         """
         selectionModel = self.selectionModel()
-        selectionModel.setCurrentIndex(selectionIndex, QtGui.QItemSelectionModel.ClearAndSelect)    
-        logger.debug("selected tree item: has selection: {}".format(selectionModel.hasSelection()))
+        selectionModel.setCurrentIndex(currentIndex, QtGui.QItemSelectionModel.ClearAndSelect)    
 
 
-    def _getSelectedIndex(self): # TODO: public?
-        """ Returns the index of the selected item in the repository. 
+    def _getCurrentIndex(self): # TODO: public?
+        """ Returns the index of column 0 of the current item in the repository. 
         """
         selectionModel = self.selectionModel()
-        assert selectionModel.hasSelection(), "No selection"        
+        #assert selectionModel.hasSelection(), "No selection"        
         curIndex = selectionModel.currentIndex()
         col0Index = curIndex.sibling(curIndex.row(), 0)
         return col0Index
 
 
-    def _getSelectedItem(self):
-        """ Find the selected root tree item (and the selected index while we're at it)
-            Returns a tuple with the selected item, and its index.
+    def _getCurrentItem(self):
+        """ Find the current repo tree item (and the current index while we're at it)
+            Returns a tuple with the current item, and its index.
         """
-        selectedIndex = self._getSelectedIndex()
-        selectedItem = self.model().getItem(selectedIndex)
-        return selectedItem, selectedIndex
+        currentIndex = self._getCurrentIndex()
+        currentItem = self.model().getItem(currentIndex)
+        return currentItem, currentIndex
 
     
     @QtSlot()
-    def openSelectedItem(self):
-        """ Opens the selected item in the repository.
+    def openCurrentItem(self):
+        """ Opens the current item in the repository.
         """
-        logger.debug("openSelectedItem")
-        selectedItem, selectedIndex = self._getSelectedItem()
-        selectedItem.open()
-        self.expand(selectedIndex) # to visit the children and thus show the 'open' icons
+        logger.debug("openCurrentItem")
+        currentItem, currentIndex = self._getCurrentItem()
+        currentItem.open()
+        self.expand(currentIndex) # to visit the children and thus show the 'open' icons
          
         
     @QtSlot()
-    def closeSelectedItem(self):
-        """ Closes the selected item in the repository. 
+    def closeCurrentItem(self):
+        """ Closes the current item in the repository. 
             All its children will be unfetched and closed.
         """
-        logger.debug("closeSelectedItem")
-        selectedItem, selectedIndex = self._getSelectedItem()
+        logger.debug("closeCurrentItem")
+        currentItem, currentIndex = self._getCurrentItem()
         
         # First we remove all the children, this will close them as well.
-        self.model().removeAllChildrenAtIndex(selectedIndex)
-        selectedItem.close()
-        self.collapse(selectedIndex) # otherwise the children will be fetched immediately
+        self.model().removeAllChildrenAtIndex(currentIndex)
+        currentItem.close()
+        self.collapse(currentIndex) # otherwise the children will be fetched immediately
 
         
     @QtSlot()
-    def removeSelectedFile(self):
-        """ Finds the root of of the selected item, which represents a file, 
+    def removeCurrentFile(self):
+        """ Finds the root of of the current item, which represents a file, 
             and removes it from the list.
         """
-        logger.debug("removeSelectedFile")
-        selectedIndex = self._getSelectedIndex()
-        topLevelIndex = self.model().findTopLevelItemIndex(selectedIndex)
+        logger.debug("removeCurrentFile")
+        currentIndex = self._getCurrentIndex()
+        topLevelIndex = self.model().findTopLevelItemIndex(currentIndex)
         self.model().deleteItemByIndex(topLevelIndex) # this will close the items resources.
         
         
     @QtSlot()
-    def reloadFileOfSelectedItem(self):
-        """ Finds the repo tree item that holds the file of the item that was selected, 
-            and reloads.
+    def reloadFileOfCurrentItem(self):
+        """ Finds the repo tree item that holds the file of the current item and reloads it.
             Reloading is done by removing the repo tree item and inserting a new one.
         """
-        logger.debug("reloadFileOfSelectedItem")
-        selectedIndex = self._getSelectedIndex()
-        fileRtiIndex = self.model().findFileRtiIndex(selectedIndex)
+        logger.debug("reloadFileOfCurrentItem")
+        currentIndex = self._getCurrentIndex()
+        fileRtiIndex = self.model().findFileRtiIndex(currentIndex)
         fileRtiParentIndex = fileRtiIndex.parent()
         fileRti = self.model().getItem(fileRtiIndex)
         fileName = fileRti.fileName
@@ -164,6 +189,6 @@ class RepoTreeView(ToggleColumnTreeView):
         newRti = rtiClass.createFromFileName(fileName)
         newRtiIndex = self.loadRepoTreeItem(newRti, expand=True, position=position,  
                                             parentIndex=fileRtiParentIndex)
-        self.selectByIndex(newRtiIndex)
+        self.setCurrentIndex(newRtiIndex)
         return newRtiIndex
      
