@@ -24,8 +24,7 @@ from __future__ import print_function
 from __future__ import division
 
 import logging, platform
-import numpy as np
-from netCDF4 import Dataset 
+
 
 from .repotreeview import RepoTreeView
 from libargos.repo.registry import getRtiRegistry
@@ -53,8 +52,8 @@ def browse(fileNames = None, **kwargs):
     """ Opens and executes a main window
     """
     _browser = createBrowser(fileNames = fileNames, **kwargs)
-    if False and DEBUGGING: # TODO temporary
-        _gcMon = createGcMonitor()
+    #if DEBUGGING: # TODO temporary
+    #    _gcMon = createGcMonitor()
     exit_code = executeApplication()
     return exit_code
 
@@ -84,8 +83,8 @@ class MainWindow(QtGui.QMainWindow):
         self.__setupMenu()
         
         # Connect signals
-        self.treeView.selectionModel().selectionChanged.connect(self.updateActions)
-        #self.fileMenu.aboutToShow.connect(self.updateActions) # TODO: needed?
+        self.treeView.selectionModel().currentChanged.connect(self.updateCurrentItemActions)
+        #self.fileMenu.aboutToShow.connect(self.updateCurrentItemActions) # TODO: needed?
         
         
         self.setWindowTitle("{}".format(PROJECT_NAME))
@@ -163,16 +162,13 @@ class MainWindow(QtGui.QMainWindow):
         fileMenu.addAction(closeItemAction)
         self._currentItemActions.append(closeItemAction)
 
-
         fileMenu.addSeparator()
         fileMenu.addAction("Close &Window", self.closeWindow, "Ctrl+W")
         fileMenu.addAction("E&xit", self.quitApplication, "Ctrl+Q")
         if DEBUGGING:
             fileMenu.addSeparator()
             fileMenu.addAction("&Test", self.myTest, "Ctrl+T")
-            
-        
-        
+                 
         ### Help Menu ###
                 
         menuBar.addSeparator()
@@ -182,10 +178,13 @@ class MainWindow(QtGui.QMainWindow):
 
     # -- End of setup_methods --
     
-    def updateActions(self):
-        """ Enables/disables actions
-        """
+    # TODO: move to treeview?
+    def updateCurrentItemActions(self):
+        """ Enables/disables actions when a new item is the current item in the tree view.
+        """ 
         currentIndex = self.treeView.selectionModel().currentIndex()
+        
+        # When the model is empty the current index may be invalid.
         hasCurrent = currentIndex.isValid()
         for action in self._currentItemActions:
             action.setEnabled(hasCurrent)
@@ -193,11 +192,9 @@ class MainWindow(QtGui.QMainWindow):
         isTopLevel = hasCurrent and self.treeView.model().isTopLevelIndex(currentIndex)
         for action in self._topLevelItemActions:
             action.setEnabled(isTopLevel)
-        
-        logger.debug("updateActions: isTopLevel = {}".format(isTopLevel))
  
 
-    # TODO: to repotreemodel?
+    # TODO: to repotreemodel? Note that the functionality will be common to selectors.
     @QtSlot() 
     def openFiles(self, fileNames=None, rtiClass=None, caption=None, fileMode=None):
         """ Lets the user select on or more files and opens it.
@@ -300,8 +297,14 @@ class MainWindow(QtGui.QMainWindow):
         """ Function for testing """
         logger.debug("myTest")
         
-        self.treeView.selectionModel().clearSelection()
+        selectionModel = self.treeView.selectionModel()
+        hasCurrent = selectionModel.currentIndex().isValid()
+        logger.debug("hasCurrent: {}, hasSelection: {}"
+                     .format(hasCurrent, selectionModel.hasSelection()))
+        selectionModel.clearSelection()
         
+        #import numpy as np
+        #from netCDF4 import Dataset 
         #arr = np.loadtxt('/Users/titusjan/Data/argos/fel_nist/pruts3.txt')
         #logger.debug("Array shape: {}".format(arr.shape))
         #del arr

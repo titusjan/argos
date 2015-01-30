@@ -109,9 +109,12 @@ class RepoTreeView(ToggleColumnTreeView):
     
     def setCurrentIndex(self, currentIndex):
         """ Sets the current item to be the item at currentIndex.
+            Also select the row as to give consistent user feedback.
         """
         selectionModel = self.selectionModel()
-        selectionModel.setCurrentIndex(currentIndex, QtGui.QItemSelectionModel.ClearAndSelect)    
+        selectionFlags = (QtGui.QItemSelectionModel.ClearAndSelect | 
+                          QtGui.QItemSelectionModel.Rows)
+        selectionModel.setCurrentIndex(currentIndex, selectionFlags)  
 
 
     def _getCurrentIndex(self): # TODO: public?

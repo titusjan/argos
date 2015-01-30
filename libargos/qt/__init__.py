@@ -19,7 +19,7 @@
 """
 
 # Abstracts away the differences between PySide and PyQt
-USE_PYQT = True # Use PySide if False
+USE_PYQT = True # PySide is used when False
 
 if USE_PYQT:
     # This is only needed for Python v2 but is harmless for Python v3.
