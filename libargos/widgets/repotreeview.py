@@ -46,7 +46,7 @@
 from __future__ import print_function
 
 import logging
-from libargos.qt import QtGui, QtCore, QtSlot
+from libargos.qt import Qt, QtGui, QtCore, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
 
 from libargos.repo.repotreemodel import RepoTreeModel
@@ -82,6 +82,42 @@ class RepoTreeView(ToggleColumnTreeView):
         enabled = dict((name, True) for name in headerNames)
         enabled[headerNames[0]] = False # Fist column cannot be unchecked
         self.addHeaderContextMenu(enabled=enabled, checkable={})
+        
+        self.setContextMenuPolicy(Qt.ActionsContextMenu)
+
+        # Add actions
+        #self._currentItemActions = [] # list of actions expecting a currentItem. 
+        #self._topLevelItemActions = [] # list of actions expecting (current) a top level item.
+        
+        self.topLevelItemActionGroup = QtGui.QActionGroup(self)
+        self.topLevelItemActionGroup.setExclusive(False)
+        self.currentItemActionGroup = QtGui.QActionGroup(self)
+        self.currentItemActionGroup.setExclusive(False)
+        
+        removeFileAction = QtGui.QAction("Remove File", self.topLevelItemActionGroup, 
+                                         shortcut="Ctrl+Shift+R",  
+                                         triggered=self.removeCurrentFile)
+        self.addAction(removeFileAction)
+        
+        reloadFileAction = QtGui.QAction("Reload File", self.currentItemActionGroup, 
+                                         shortcut="Ctrl+R",  
+                                         triggered=self.reloadFileOfCurrentItem)
+        self.addAction(reloadFileAction)
+        
+        openItemAction = QtGui.QAction("Open Item", self.currentItemActionGroup, 
+                                       shortcut="Ctrl+J", 
+                                       triggered=self.openCurrentItem)
+        self.addAction(openItemAction)
+        
+        closeItemAction = QtGui.QAction("Close Item", self.currentItemActionGroup, 
+                                        shortcut="Ctrl+K", 
+                                        triggered=self.closeCurrentItem)
+        self.addAction(closeItemAction)
+        
+        # Connect signals
+        selectionModel = self.selectionModel() # need to store to prevent crash in PySide
+        selectionModel.currentChanged.connect(self.updateCurrentItemActions)
+
 
         
     def loadRepoTreeItem(self, repoTreeItem, expand=False, 
@@ -105,6 +141,21 @@ class RepoTreeView(ToggleColumnTreeView):
             rtiClass = detectRtiFromFileName(fileName)
         repoTreeItem = rtiClass.createFromFileName(fileName)
         return self.loadRepoTreeItem(repoTreeItem, expand=expand)
+    
+ 
+    def updateCurrentItemActions(self):
+        """ Enables/disables actions when a new item is the current item in the tree view.
+        """ 
+        currentIndex = self.selectionModel().currentIndex()
+        
+        # When the model is empty the current index may be invalid.
+        hasCurrent = currentIndex.isValid()
+        for action in self.currentItemActionGroup.actions():
+            action.setEnabled(hasCurrent)
+
+        isTopLevel = hasCurrent and self.model().isTopLevelIndex(currentIndex)
+        for action in self.topLevelItemActionGroup.actions():
+            action.setEnabled(isTopLevel)
     
     
     def setCurrentIndex(self, currentIndex):

@@ -77,15 +77,11 @@ class MainWindow(QtGui.QMainWindow):
         MainWindow._nInstances += 1
         self._InstanceNr = self._nInstances        
         
-        self._currentItemActions = [] # list of actions expecting a currentItem. 
-        self._topLevelItemActions = [] # list of actions expecting (current) a top level item.
         self.__setupViews()
         self.__setupMenu()
         
         # Connect signals
-        selectionModel = self.treeView.selectionModel() # need to store to prevent crash in PySide
-        selectionModel.currentChanged.connect(self.updateCurrentItemActions)
-        #self.fileMenu.aboutToShow.connect(self.updateCurrentItemActions) # TODO: needed?
+        #self.fileMenu.aboutToShow.connect(self.treeView.updateCurrentItemActions) # TODO: needed?
         
         self.setWindowTitle("{}".format(PROJECT_NAME))
         app = QtGui.QApplication.instance()
@@ -142,25 +138,12 @@ class MainWindow(QtGui.QMainWindow):
                                                  caption="Open {}".format(rtiClass.getLabel())))
             openAsMenu.addAction(action)
 
-        removeFileAction = QtGui.QAction("Remove File", self, shortcut="Ctrl+Shift+R",  
-                                         triggered=self.treeView.removeCurrentFile)
-        fileMenu.addAction(removeFileAction)
-        self._topLevelItemActions.append(removeFileAction)
-        
-        reloadFileAction = QtGui.QAction("Reload File", self, shortcut="Ctrl+R",  
-                                         triggered=self.treeView.reloadFileOfCurrentItem)
-        fileMenu.addAction(reloadFileAction)
-        self._currentItemActions.append(reloadFileAction)
+        for action in self.treeView.currentItemActionGroup.actions():
+            fileMenu.addAction(action)
 
-        openItemAction = QtGui.QAction("Open Item", self, shortcut="Ctrl+J", 
-                                       triggered=self.treeView.openCurrentItem)
-        fileMenu.addAction(openItemAction)
-        self._currentItemActions.append(openItemAction)
-        
-        closeItemAction = QtGui.QAction("Close Item", self, shortcut="Ctrl+K", 
-                                        triggered=self.treeView.closeCurrentItem)
-        fileMenu.addAction(closeItemAction)
-        self._currentItemActions.append(closeItemAction)
+        for action in self.treeView.topLevelItemActionGroup.actions():
+            fileMenu.addAction(action)
+
 
         fileMenu.addSeparator()
         fileMenu.addAction("Close &Window", self.closeWindow, "Ctrl+W")
@@ -178,21 +161,7 @@ class MainWindow(QtGui.QMainWindow):
 
     # -- End of setup_methods --
     
-    # TODO: move to treeview?
-    def updateCurrentItemActions(self):
-        """ Enables/disables actions when a new item is the current item in the tree view.
-        """ 
-        currentIndex = self.treeView.selectionModel().currentIndex()
-        
-        # When the model is empty the current index may be invalid.
-        hasCurrent = currentIndex.isValid()
-        for action in self._currentItemActions:
-            action.setEnabled(hasCurrent)
 
-        isTopLevel = hasCurrent and self.treeView.model().isTopLevelIndex(currentIndex)
-        for action in self._topLevelItemActions:
-            action.setEnabled(isTopLevel)
- 
 
     # TODO: to repotreemodel? Note that the functionality will be common to selectors.
     @QtSlot() 
