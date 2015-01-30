@@ -150,12 +150,10 @@ class RepoTreeView(ToggleColumnTreeView):
         
         # When the model is empty the current index may be invalid.
         hasCurrent = currentIndex.isValid()
-        for action in self.currentItemActionGroup.actions():
-            action.setEnabled(hasCurrent)
+        self.currentItemActionGroup.setEnabled(hasCurrent)
 
         isTopLevel = hasCurrent and self.model().isTopLevelIndex(currentIndex)
-        for action in self.topLevelItemActionGroup.actions():
-            action.setEnabled(isTopLevel)
+        self.topLevelItemActionGroup.setEnabled(isTopLevel)
     
     
     def setCurrentIndex(self, currentIndex):
@@ -195,6 +193,9 @@ class RepoTreeView(ToggleColumnTreeView):
         """
         logger.debug("openCurrentItem")
         currentItem, currentIndex = self._getCurrentItem()
+        if not currentIndex.isValid():
+            return
+
         currentItem.open()
         self.expand(currentIndex) # to visit the children and thus show the 'open' icons
          
@@ -206,7 +207,9 @@ class RepoTreeView(ToggleColumnTreeView):
         """
         logger.debug("closeCurrentItem")
         currentItem, currentIndex = self._getCurrentItem()
-        
+        if not currentIndex.isValid():
+            return
+
         # First we remove all the children, this will close them as well.
         self.model().removeAllChildrenAtIndex(currentIndex)
         currentItem.close()
@@ -220,6 +223,9 @@ class RepoTreeView(ToggleColumnTreeView):
         """
         logger.debug("removeCurrentFile")
         currentIndex = self._getCurrentIndex()
+        if not currentIndex.isValid():
+            return
+
         topLevelIndex = self.model().findTopLevelItemIndex(currentIndex)
         self.model().deleteItemByIndex(topLevelIndex) # this will close the items resources.
         
@@ -231,6 +237,9 @@ class RepoTreeView(ToggleColumnTreeView):
         """
         logger.debug("reloadFileOfCurrentItem")
         currentIndex = self._getCurrentIndex()
+        if not currentIndex.isValid():
+            return
+        
         fileRtiIndex = self.model().findFileRtiIndex(currentIndex)
         fileRtiParentIndex = fileRtiIndex.parent()
         fileRti = self.model().getItem(fileRtiIndex)

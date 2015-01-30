@@ -144,7 +144,6 @@ class MainWindow(QtGui.QMainWindow):
         for action in self.treeView.topLevelItemActionGroup.actions():
             fileMenu.addAction(action)
 
-
         fileMenu.addSeparator()
         fileMenu.addAction("Close &Window", self.closeWindow, "Ctrl+W")
         fileMenu.addAction("E&xit", self.quitApplication, "Ctrl+Q")
@@ -157,11 +156,8 @@ class MainWindow(QtGui.QMainWindow):
         menuBar.addSeparator()
         helpMenu = menuBar.addMenu("&Help")
         helpMenu.addAction('&About', self.about)
-        
 
     # -- End of setup_methods --
-    
-
 
     # TODO: to repotreemodel? Note that the functionality will be common to selectors.
     @QtSlot() 
