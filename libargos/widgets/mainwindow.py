@@ -78,8 +78,15 @@ class MainWindow(QtGui.QMainWindow):
         MainWindow._nInstances += 1
         self._InstanceNr = self._nInstances        
         
+        self._currentItemActions = [] # list of actions expecting a currentItem. 
+        self._topLevelItemActions = [] # list of actions expecting (current) a top level item.
         self.__setupViews()
         self.__setupMenu()
+        
+        # Connect signals
+        self.treeView.selectionModel().selectionChanged.connect(self.updateActions)
+        #self.fileMenu.aboutToShow.connect(self.updateActions) # TODO: needed?
+        
         
         self.setWindowTitle("{}".format(PROJECT_NAME))
         app = QtGui.QApplication.instance()
@@ -139,10 +146,23 @@ class MainWindow(QtGui.QMainWindow):
         removeFileAction = QtGui.QAction("Remove File", self, shortcut="Ctrl+Shift+R",  
                                          triggered=self.treeView.removeCurrentFile)
         fileMenu.addAction(removeFileAction)
+        self._topLevelItemActions.append(removeFileAction)
         
         reloadFileAction = QtGui.QAction("Reload File", self, shortcut="Ctrl+R",  
                                          triggered=self.treeView.reloadFileOfCurrentItem)
         fileMenu.addAction(reloadFileAction)
+        self._currentItemActions.append(reloadFileAction)
+
+        openItemAction = QtGui.QAction("Open Item", self, shortcut="Ctrl+J", 
+                                       triggered=self.treeView.openCurrentItem)
+        fileMenu.addAction(openItemAction)
+        self._currentItemActions.append(openItemAction)
+        
+        closeItemAction = QtGui.QAction("Close Item", self, shortcut="Ctrl+K", 
+                                        triggered=self.treeView.closeCurrentItem)
+        fileMenu.addAction(closeItemAction)
+        self._currentItemActions.append(closeItemAction)
+
 
         fileMenu.addSeparator()
         fileMenu.addAction("Close &Window", self.closeWindow, "Ctrl+W")
@@ -152,15 +172,6 @@ class MainWindow(QtGui.QMainWindow):
             fileMenu.addAction("&Test", self.myTest, "Ctrl+T")
             
         
-        ### Actions Menu ###
-        actionsMenu = menuBar.addMenu("&Actions")
-        openItemAction = QtGui.QAction("Open Item", self, shortcut="Ctrl+J", 
-                                       triggered=self.treeView.openCurrentItem)
-        actionsMenu.addAction(openItemAction)
-        
-        closeItemAction = QtGui.QAction("Close Item", self, shortcut="Ctrl+K", 
-                                        triggered=self.treeView.closeCurrentItem)
-        actionsMenu.addAction(closeItemAction)
         
         ### Help Menu ###
                 
@@ -170,6 +181,21 @@ class MainWindow(QtGui.QMainWindow):
         
 
     # -- End of setup_methods --
+    
+    def updateActions(self):
+        """ Enables/disables actions
+        """
+        currentIndex = self.treeView.selectionModel().currentIndex()
+        hasCurrent = currentIndex.isValid()
+        for action in self._currentItemActions:
+            action.setEnabled(hasCurrent)
+
+        isTopLevel = hasCurrent and self.treeView.model().isTopLevelIndex(currentIndex)
+        for action in self._topLevelItemActions:
+            action.setEnabled(isTopLevel)
+        
+        logger.debug("updateActions: isTopLevel = {}".format(isTopLevel))
+ 
 
     # TODO: to repotreemodel?
     @QtSlot() 
@@ -272,10 +298,13 @@ class MainWindow(QtGui.QMainWindow):
 
     def myTest(self):
         """ Function for testing """
-        #logger.debug("myTest")
-        arr = np.loadtxt('/Users/titusjan/Data/argos/fel_nist/pruts3.txt')
-        logger.debug("Array shape: {}".format(arr.shape))
-        del arr
+        logger.debug("myTest")
+        
+        self.treeView.selectionModel().clearSelection()
+        
+        #arr = np.loadtxt('/Users/titusjan/Data/argos/fel_nist/pruts3.txt')
+        #logger.debug("Array shape: {}".format(arr.shape))
+        #del arr
         
         #ds = Dataset('/Users/titusjan/Data/argos/fel_nist/test.nc', 'r', format='NETCDF4')
         #logger.debug("ds: {}".format(ds))

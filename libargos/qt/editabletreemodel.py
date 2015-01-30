@@ -502,14 +502,21 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         return insertedIndex
 
 
+    def isTopLevelIndex(self, itemIndex):
+        """ Returns true if the index is a direct child of the invisible root item
+            Will raise an exception when itemIndex _is_ the invisible root.
+        """
+        return not itemIndex.parent().isValid()
+    
+
     def findTopLevelItemIndex(self, childIndex):
         """ Traverses the tree upwards from childItem until its top level ancestor item is found. 
             Top level items are items that are direct children of the (invisible) root item.
             This function therefore raises an exception when called with the root item.
         """        
-        if childIndex.parent().isValid():
-            return self.findTopLevelItemIndex(childIndex.parent())
-        else:
+        if self.isTopLevelIndex(childIndex):
             return childIndex
+        else:
+            return self.findTopLevelItemIndex(childIndex.parent())
             
 

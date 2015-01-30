@@ -116,6 +116,7 @@ class RepoTreeView(ToggleColumnTreeView):
 
     def _getCurrentIndex(self): # TODO: public?
         """ Returns the index of column 0 of the current item in the repository. 
+            See also the notes at the top of this module on current item vs selected item(s).
         """
         selectionModel = self.selectionModel()
         #assert selectionModel.hasSelection(), "No selection"        
@@ -127,6 +128,7 @@ class RepoTreeView(ToggleColumnTreeView):
     def _getCurrentItem(self):
         """ Find the current repo tree item (and the current index while we're at it)
             Returns a tuple with the current item, and its index.
+            See also the notes at the top of this module on current item vs selected item(s).
         """
         currentIndex = self._getCurrentIndex()
         currentItem = self.model().getItem(currentIndex)
