@@ -83,9 +83,9 @@ class MainWindow(QtGui.QMainWindow):
         self.__setupMenu()
         
         # Connect signals
-        self.treeView.selectionModel().currentChanged.connect(self.updateCurrentItemActions)
+        selectionModel = self.treeView.selectionModel() # need to store to prevent crash in PySide
+        selectionModel.currentChanged.connect(self.updateCurrentItemActions)
         #self.fileMenu.aboutToShow.connect(self.updateCurrentItemActions) # TODO: needed?
-        
         
         self.setWindowTitle("{}".format(PROJECT_NAME))
         app = QtGui.QApplication.instance()
