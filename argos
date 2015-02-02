@@ -24,10 +24,9 @@ logger = logging.getLogger('libargos')
 logging.basicConfig(level='DEBUG', stream=sys.stderr,
                     format='%(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s')
 
-
+from libargos import browse
 from libargos.qt import USE_PYQT
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION
-from libargos.widgets.mainwindow import browse
 from libargos.utils.misc import remove_process_serial_number
 
 # Import last. TODO: function call of some sorts.
@@ -65,6 +64,7 @@ def main():
         print(about_str)
         sys.exit(0)
 
+    # Browse will create an ArgosApplication with one MainWindow
     browse(fileNames = args.fileNames, reset=args.reset)
     logger.info('Done {}'.format(PROJECT_NAME))
   

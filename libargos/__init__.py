@@ -22,3 +22,15 @@
 """
 
 from .info import VERSION as __version__
+from .application import getArgosApplication
+
+def browse(fileNames = None, **kwargs):
+    """ Opens and executes a main window
+    """
+    #if DEBUGGING: # TODO temporary
+    #    _gcMon = createGcMonitor()
+    argosApp = getArgosApplication()
+    argosApp.createMainWindow(fileNames = fileNames, **kwargs)
+    exitCode = argosApp.execute()
+    return exitCode
+

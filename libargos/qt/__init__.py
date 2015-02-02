@@ -113,19 +113,6 @@ def getQApplicationInstance():
     
     return app
 
-# Keep a reference so that we canRun once so that we can call libpepeye.browse without 
-# having to call getQApplicationInstance them selves (lets see if this is a good idea)
-APPLICATION_INSTANCE = getQApplicationInstance()
-
-
-def executeApplication():
-    """ Executes all browsers by starting the Qt main application
-    """  
-    logger.info("Starting the browser(s)...")
-    app = APPLICATION_INSTANCE
-    exit_code = app.exec_()
-    logger.info("Browser(s) done...")
-    return exit_code
 
 
 def handleException(exc_type, exc_value, exc_traceback):

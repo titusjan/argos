@@ -23,40 +23,15 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
 
-import logging, platform
-
+import logging
 
 from .repotreeview import RepoTreeView
 from libargos.repo.registry import getRtiRegistry
 from libargos.repo.repotreemodel import getGlobalRepository
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
-from libargos.qt import executeApplication, QtCore, QtGui, QtSlot
-#from libargos.widgets.gcmonitor import createGcMonitor
+from libargos.qt import QtCore, QtGui, QtSlot
 
 logger = logging.getLogger(__name__)
-
-
-def createBrowser(fileNames = tuple(), **kwargs):
-    """ Opens an MainWindow window
-    """
-    # Assumes qt.getQApplicationInstance() has been executed.
-    browser = MainWindow(**kwargs)
-    browser.openFiles(fileNames=fileNames)
-    browser.show()
-    if platform.system() == 'Darwin':
-        browser.raise_()
-    return browser
-        
-
-def browse(fileNames = None, **kwargs):
-    """ Opens and executes a main window
-    """
-    _browser = createBrowser(fileNames = fileNames, **kwargs)
-    #if DEBUGGING: # TODO temporary
-    #    _gcMon = createGcMonitor()
-    exit_code = executeApplication()
-    return exit_code
-
         
 # The main window inherits from a Qt class, therefore it has many 
 # ancestors public methods and attributes.
