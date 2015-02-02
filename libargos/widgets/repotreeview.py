@@ -96,12 +96,12 @@ class RepoTreeView(ToggleColumnTreeView):
         self.currentItemActionGroup.setExclusive(False)
         
         removeFileAction = QtGui.QAction("Remove File", self.topLevelItemActionGroup, 
-                                         shortcut="Ctrl+Shift+R",  
+                                         shortcut=QtGui.QKeySequence.Delete,  
                                          triggered=self.removeCurrentFile)
         self.addAction(removeFileAction)
         
         reloadFileAction = QtGui.QAction("Reload File", self.currentItemActionGroup, 
-                                         shortcut="Ctrl+R",  
+                                         shortcut=QtGui.QKeySequence.Refresh,   #"Ctrl+R",  
                                          triggered=self.reloadFileOfCurrentItem)
         self.addAction(reloadFileAction)
         
@@ -110,7 +110,7 @@ class RepoTreeView(ToggleColumnTreeView):
                                        triggered=self.openCurrentItem)
         self.addAction(openItemAction)
         
-        closeItemAction = QtGui.QAction("Un-visit Item", self.currentItemActionGroup, 
+        closeItemAction = QtGui.QAction("Unvisit Item", self.currentItemActionGroup, 
                                         shortcut="Ctrl+U", 
                                         triggered=self.closeCurrentItem)
         self.addAction(closeItemAction)

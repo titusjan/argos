@@ -123,11 +123,11 @@ class MainWindow(QtGui.QMainWindow):
         fileMenu = menuBar.addMenu("&File")
         openFileAction = fileMenu.addAction("&Open Files...", 
             lambda: self.openFiles(fileMode = QtGui.QFileDialog.ExistingFiles))
-        openFileAction.setShortcut("Ctrl+O, F")
+        openFileAction.setShortcut(QtGui.QKeySequence("Ctrl+O, F"))
 
         openDirAction = fileMenu.addAction("Open Directory...", 
             lambda: self.openFiles(fileMode = QtGui.QFileDialog.Directory))
-        openDirAction.setShortcut("Ctrl+O, D")
+        openDirAction.setShortcut(QtGui.QKeySequence("Ctrl+O, D"))
         
         openAsMenu = fileMenu.addMenu("Open As")
         for regRti in getRtiRegistry().registeredRtis:
@@ -138,15 +138,15 @@ class MainWindow(QtGui.QMainWindow):
                                                  caption="Open {}".format(rtiClass.getLabel())))
             openAsMenu.addAction(action)
 
+        for action in self.treeView.topLevelItemActionGroup.actions():
+            fileMenu.addAction(action)
+            
         for action in self.treeView.currentItemActionGroup.actions():
             fileMenu.addAction(action)
 
-        for action in self.treeView.topLevelItemActionGroup.actions():
-            fileMenu.addAction(action)
-
         fileMenu.addSeparator()
-        fileMenu.addAction("Close &Window", self.closeWindow, "Ctrl+W")
-        fileMenu.addAction("E&xit", self.quitApplication, "Ctrl+Q")
+        fileMenu.addAction("Close &Window", self.closeWindow, QtGui.QKeySequence.Close)
+        fileMenu.addAction("E&xit", self.quitApplication, QtGui.QKeySequence.Quit)
         if DEBUGGING:
             fileMenu.addSeparator()
             fileMenu.addAction("&Test", self.myTest, "Ctrl+T")
