@@ -97,24 +97,24 @@ class ToggleColumnMixIn(object):
         return show_column   
     
     
-    def readViewSettings(self, key, settings=None, reset=False):
+    def readViewSettings(self, key, settings=None):
         """ Reads the persistent program settings
         
             :param reset: If True, the program resets to its default settings
             :returns: True if the header state was restored, otherwise returns False
         """ 
         logger.debug("Reading view settings for: {}".format(key))
-        header_restored = False
-        if not reset:
-            if settings is None:
-                settings = QtCore.QSettings()
-            horizontal_header = self._horizontalHeader()
-            header_restored = horizontal_header.restoreState(settings.value(key))
-            
-            # update actions
-            for col, action in enumerate(horizontal_header.actions()):
-                is_checked = not horizontal_header.isSectionHidden(col)
-                action.setChecked(is_checked)
+        
+        if settings is None:
+            settings = QtCore.QSettings()
+    
+        horizontal_header = self._horizontalHeader()
+        header_restored = horizontal_header.restoreState(settings.value(key))
+        
+        # update actions
+        for col, action in enumerate(horizontal_header.actions()):
+            is_checked = not horizontal_header.isSectionHidden(col)
+            action.setChecked(is_checked)
                 
         return header_restored
 

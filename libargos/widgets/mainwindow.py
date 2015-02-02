@@ -74,8 +74,8 @@ class MainWindow(QtGui.QMainWindow):
         """
         super(MainWindow, self).__init__()
 
+        self._instanceNr = self._nInstances        
         MainWindow._nInstances += 1
-        self._InstanceNr = self._nInstances        
         
         self.__setupViews()
         self.__setupMenu()
@@ -193,11 +193,10 @@ class MainWindow(QtGui.QMainWindow):
                     QtGui.QMessageBox.warning(self, "Error opening file", str(ex))
     
     
-    def _settingsGroupName(self, prefix):
+    def _settingsGroupName(self, prefix=''):
         """ Creates a setting group name based on the prefix and instance number
         """
-        settingsGroup = "window{:02d}-{}".format(self._InstanceNr, prefix)
-        logger.debug("  settings group is: {!r}".format(settingsGroup))
+        settingsGroup = "window-{:02d}{}".format(self._instanceNr, prefix)
         return settingsGroup    
         
     
@@ -206,37 +205,37 @@ class MainWindow(QtGui.QMainWindow):
         
             :param reset: If True, the program resets to its default settings
         """ 
-        pos = QtCore.QPoint(20 * self._InstanceNr, 20 * self._InstanceNr)
-        windowSize = QtCore.QSize(1024, 700)
-        
+        settings = QtCore.QSettings()
         if reset:
-            logger.debug("Resetting persistent view settings")
-        else:
-            logger.debug("Reading view settings for window: {:d}".format(self._InstanceNr))
-            settings = QtCore.QSettings()
-            settings.beginGroup(self._settingsGroupName('view'))
-            pos = settings.value("main_window/pos", pos)
-            windowSize = settings.value("main_window/size", windowSize)
-            splitterState = settings.value("main_splitter/state")
-            if splitterState:
-                self.mainSplitter.restoreState(splitterState)
-            settings.endGroup()
+            logger.debug("Resetting persistent settings for window: {:d}".format(self._instanceNr))
+            settings.remove(self._settingsGroupName())
             
-        logger.debug("windowSize: {!r}".format(windowSize))
-        self.resize(windowSize)
-        self.move(pos)
-
+        logger.debug("Reading settings for window: {:d}".format(self._instanceNr))
+        settings.beginGroup(self._settingsGroupName())
+        
+        self.resize(settings.value("window_size", QtCore.QSize(1024, 700)))
+        self.move(settings.value("window_pos", 
+                                 QtCore.QPoint(20 * self._instanceNr, 20 * self._instanceNr)))
+        
+        splitterState = settings.value("main_splitter/state")
+        if splitterState:
+            self.mainSplitter.restoreState(splitterState)
+        self.treeView.readViewSettings('repo_tree/header_state', settings)
+        settings.endGroup()
+        
 
     def _writeViewSettings(self):
         """ Writes the view settings to the persistent store
         """         
-        logger.debug("Writing view settings for window: {:d}".format(self._InstanceNr))
+        #logger.debug("Writing settings: {}".format(settings.fileName()))
+        logger.debug("Writing persistent settings for window: {:d}".format(self._instanceNr))
         
         settings = QtCore.QSettings()
-        settings.beginGroup(self._settingsGroupName('view'))
+        settings.beginGroup(self._settingsGroupName())
+        self.treeView.writeViewSettings("repo_tree/header_state", settings)
         settings.setValue("main_splitter/state", self.mainSplitter.saveState())        
-        settings.setValue("main_window/pos", self.pos())
-        settings.setValue("main_window/size", self.size())
+        settings.setValue("window_pos", self.pos())
+        settings.setValue("window_size", self.size())
         settings.endGroup()
             
 
@@ -262,12 +261,14 @@ class MainWindow(QtGui.QMainWindow):
         """ Function for testing """
         logger.debug("myTest")
         
-        selectionModel = self.treeView.selectionModel()
-        hasCurrent = selectionModel.currentIndex().isValid()
-        logger.debug("hasCurrent: {}, hasSelection: {}"
-                     .format(hasCurrent, selectionModel.hasSelection()))
-        selectionModel.clearSelection()
+        self._logViewSettings()
         
+#        selectionModel = self.treeView.selectionModel()
+#        hasCurrent = selectionModel.currentIndex().isValid()
+#        logger.debug("hasCurrent: {}, hasSelection: {}"
+#                     .format(hasCurrent, selectionModel.hasSelection()))
+#        selectionModel.clearSelection()
+#        
         #import numpy as np
         #from netCDF4 import Dataset 
         #arr = np.loadtxt('/Users/titusjan/Data/argos/fel_nist/pruts3.txt')

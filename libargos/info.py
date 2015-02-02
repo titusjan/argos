@@ -31,7 +31,7 @@ PROJECT_URL = "https://github.com/titusjan/argos"
 AUTOR = "Pepijn Kenter"
 EMAIL = "titusjan@gmail.com"
 ORGANIZATION_NAME = "titusjan"
-ORGANIZATION_DOMAIN = "titusjan"
+ORGANIZATION_DOMAIN = "titusjan.nl"
 
 def program_directory():
     """ Returns the program directory where this program is installed

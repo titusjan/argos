@@ -75,12 +75,13 @@ class RepoTreeView(ToggleColumnTreeView):
 
         treeHeader = self.header()
         treeHeader.setMovable(True)
-        treeHeader.setStretchLastSection(False)  
+        treeHeader.setStretchLastSection(False)
         treeHeader.resizeSection(RepoTreeModel.COL_NODE_NAME, 300)
-        treeHeader.resizeSection(RepoTreeModel.COL_FILE_NAME, 500)
+        treeHeader.resizeSection(RepoTreeModel.COL_FILE_NAME, 500)  
+
         headerNames = self.model().horizontalHeaders
         enabled = dict((name, True) for name in headerNames)
-        enabled[headerNames[0]] = False # Fist column cannot be unchecked
+        enabled[headerNames[0]] = False # First column cannot be unchecked
         self.addHeaderContextMenu(enabled=enabled, checkable={})
         
         self.setContextMenuPolicy(Qt.ActionsContextMenu)
@@ -104,20 +105,19 @@ class RepoTreeView(ToggleColumnTreeView):
                                          triggered=self.reloadFileOfCurrentItem)
         self.addAction(reloadFileAction)
         
-        openItemAction = QtGui.QAction("Open Item", self.currentItemActionGroup, 
-                                       shortcut="Ctrl+J", 
+        openItemAction = QtGui.QAction("Visit Item", self.currentItemActionGroup, 
+                                       shortcut="Ctrl+Shift+U", 
                                        triggered=self.openCurrentItem)
         self.addAction(openItemAction)
         
-        closeItemAction = QtGui.QAction("Close Item", self.currentItemActionGroup, 
-                                        shortcut="Ctrl+K", 
+        closeItemAction = QtGui.QAction("Un-visit Item", self.currentItemActionGroup, 
+                                        shortcut="Ctrl+U", 
                                         triggered=self.closeCurrentItem)
         self.addAction(closeItemAction)
         
         # Connect signals
         selectionModel = self.selectionModel() # need to store to prevent crash in PySide
         selectionModel.currentChanged.connect(self.updateCurrentItemActions)
-
 
         
     def loadRepoTreeItem(self, repoTreeItem, expand=False, 
