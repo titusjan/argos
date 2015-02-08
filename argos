@@ -41,7 +41,7 @@ def main():
     parser = argparse.ArgumentParser(description = about_str)
     parser.add_argument('fileNames', metavar='FILE', nargs='*', 
                         help='Input files')
-    parser.add_argument('--reset', action = 'store_true',  
+    parser.add_argument('--reset', '--reset-profile', action = 'store_true',  
                         help="If set, the size and shapes of the Qt widgets will be reset to their defaults.")
     parser.add_argument('-V', '--version', action = 'store_true',  
                         help="Prints the program version")    
@@ -65,7 +65,7 @@ def main():
         sys.exit(0)
 
     # Browse will create an ArgosApplication with one MainWindow
-    browse(fileNames = args.fileNames, reset=args.reset)
+    browse(fileNames = args.fileNames, resetProfile=args.reset)
     logger.info('Done {}'.format(PROJECT_NAME))
   
 if __name__ == "__main__":

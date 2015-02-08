@@ -20,17 +20,23 @@
     This is the top level module and should not be imported by sub modules.
     The only way is up in that respect.
 """
-
+import logging
 from .info import VERSION as __version__
 from .application import getArgosApplication
 
-def browse(fileNames = None, **kwargs):
-    """ Opens and executes a main window
+logger = logging.getLogger(__name__)
+
+def browse(fileNames = None, resetProfile=False): 
+    """ Opens a main window and executes the application
     """
     #if DEBUGGING: # TODO temporary
     #    _gcMon = createGcMonitor()
     argosApp = getArgosApplication()
-    argosApp.createMainWindow(fileNames = fileNames, **kwargs)
+    argosApp.readViewSettings(reset=resetProfile)
+    if argosApp.nMainWindows == 0:
+        logger.warn("No open windows in profile. Creating one.")
+        argosApp.createMainWindow(fileNames = fileNames) # TODO: filenames should be part of the app
     exitCode = argosApp.execute()
+    logger.debug("Event loop finished.")
     return exitCode
 

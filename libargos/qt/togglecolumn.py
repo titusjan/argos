@@ -99,12 +99,12 @@ class ToggleColumnMixIn(object):
     
     def readViewSettings(self, key, settings=None):
         """ Reads the persistent program settings
-        
-            :param reset: If True, the program resets to its default settings
+            
+            :param key: key where the setting will be read from
+            :param settings: optional QSettings object which can have a group already opened.
             :returns: True if the header state was restored, otherwise returns False
         """ 
-        logger.debug("Reading view settings for: {}".format(key))
-        
+        #logger.debug("Reading view settings for: {}".format(key))
         if settings is None:
             settings = QtCore.QSettings()
     
@@ -120,9 +120,10 @@ class ToggleColumnMixIn(object):
 
     def writeViewSettings(self, key, settings=None):
         """ Writes the view settings to the persistent store
+            :param key: key where the setting will be read from
+            :param settings: optional QSettings object which can have a group already opened.        
         """         
-        logger.debug("Writing view settings for: {}".format(key))
-        
+        #logger.debug("Writing view settings for: {}".format(key))
         if settings is None:
             settings = QtCore.QSettings()
         settings.setValue(key, self._horizontalHeader().saveState())

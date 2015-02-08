@@ -52,5 +52,27 @@ def prepend_point_to_extension(extension):
         return extension
     else:
         return '.' + extension
+
+    
+
+def string_to_identifier(s):
+    """ Takes a string and makes it suitable for use as an identifier
+    
+        Translates to lower case
+        Replaces spaces by underscores.
+        Removes whitespace and punctuation.
+    """
+    import re
+    s = s.lower()
+    s = re.sub(r"\s+", "_", s) # replace whitespace with underscores
+    s = re.sub(r"-", "_", s) # replace hyphens with underscores
+    s = re.sub(r"[^A-Za-z0-9_]", "", s) # remove everything that's not a character, a digit or a _
+    return s
+    
+    
+if __name__ == "__main__":
+    print (string_to_identifier("Pea\nsdf-43q45,.!@#%&@&@@24n  pijn  Kenter, hallo$"))
+    
+    
     
     

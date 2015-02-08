@@ -55,6 +55,21 @@ from libargos.utils.cls import check_class
 logger = logging.getLogger(__name__)
 
 
+def printChildren(obj, indent=""):
+    """ Recursively prints the children of a QObject. Useful for debugging.
+    """
+    children=obj.children()
+    if children==None:
+        return
+    for child in children:
+        try:
+            childName = child.name()
+        except AttributeError:
+            childName = "<no-name>"
+            
+        print ("{}{:10s}: {}".format(indent, childName, child.__class__))
+        printChildren(child, indent + "  ")
+
 
 def __check_slot_function_result(f):
     """ Aux function that wraps QtSlot in a function that halts in case of an exception

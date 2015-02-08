@@ -41,16 +41,13 @@ logger = logging.getLogger(__name__)
 class MainWindow(QtGui.QMainWindow):
     """ Main application window.
     """
-    _nInstances = 0
-    
-    def __init__(self, reset = False):
+    def __init__(self, argosApplication):
         """ Constructor
             :param reset: If true the persistent settings, such as column widths, are reset. 
         """
         super(MainWindow, self).__init__()
-
-        self._instanceNr = self._nInstances        
-        MainWindow._nInstances += 1
+        
+        self._argosApplication = argosApplication
         
         self.__setupViews()
         self.__setupMenu()
@@ -58,14 +55,20 @@ class MainWindow(QtGui.QMainWindow):
         # Connect signals
         #self.fileMenu.aboutToShow.connect(self.treeView.updateCurrentItemActions) # TODO: needed?
         
-        self.setWindowTitle("{}".format(PROJECT_NAME))
-        app = QtGui.QApplication.instance()
-        app.lastWindowClosed.connect(app.quit) 
-
-        self._readViewSettings(reset = reset)
+        self.setWindowTitle("{}-{}".format(PROJECT_NAME, self.argosApplication.profile))
+        
+        self.resize(QtCore.QSize(1024, 700))
+        
 
         # Update model 
         self.__addTestData()
+
+    
+    @property
+    def argosApplication(self):
+        """ The ArgosApplication to which this window belongs.
+        """
+        return self._argosApplication
 
 
     def __setupViews(self):
@@ -120,8 +123,8 @@ class MainWindow(QtGui.QMainWindow):
             fileMenu.addAction(action)
 
         fileMenu.addSeparator()
-        fileMenu.addAction("Close &Window", self.closeWindow, QtGui.QKeySequence.Close)
-        fileMenu.addAction("E&xit", self.quitApplication, QtGui.QKeySequence.Quit)
+        fileMenu.addAction("Close &Window", self.close, QtGui.QKeySequence.Close)
+        fileMenu.addAction("E&xit", self.argosApplication.closeAllWindows, QtGui.QKeySequence.Quit)
         if DEBUGGING:
             fileMenu.addSeparator()
             fileMenu.addAction("&Test", self.myTest, "Ctrl+T")
@@ -168,50 +171,42 @@ class MainWindow(QtGui.QMainWindow):
                     QtGui.QMessageBox.warning(self, "Error opening file", str(ex))
     
     
-    def _settingsGroupName(self, prefix=''):
-        """ Creates a setting group name based on the prefix and instance number
-        """
-        settingsGroup = "window-{:02d}{}".format(self._instanceNr, prefix)
-        return settingsGroup    
-        
-    
-    def _readViewSettings(self, reset=False):
+    def readViewSettings(self, settings=None):
         """ Reads the persistent program settings
-        
-            :param reset: If True, the program resets to its default settings
-        """ 
-        settings = QtCore.QSettings()
-        if reset:
-            logger.debug("Resetting persistent settings for window: {:d}".format(self._instanceNr))
-            settings.remove(self._settingsGroupName())
             
-        logger.debug("Reading settings for window: {:d}".format(self._instanceNr))
-        settings.beginGroup(self._settingsGroupName())
+            :param settings: optional QSettings object which can have a group already opened.
+            :returns: True if the header state was restored, otherwise returns False
+        """ 
+        if settings is None:
+            settings = QtCore.QSettings()  
+        logger.debug("Reading settings from: {}".format(settings.group()))
         
-        self.resize(settings.value("window_size", QtCore.QSize(1024, 700)))
-        self.move(settings.value("window_pos", 
-                                 QtCore.QPoint(20 * self._instanceNr, 20 * self._instanceNr)))
+        windowSize = settings.value("window_size", None)
+        if windowSize:
+            self.resize(windowSize)
+            
+        windowPos = settings.value("window_pos", None)
+        if windowPos:
+            self.move(windowPos) 
+                                 
         
         splitterState = settings.value("main_splitter/state")
         if splitterState:
             self.mainSplitter.restoreState(splitterState)
         self.treeView.readViewSettings('repo_tree/header_state', settings)
-        settings.endGroup()
         
 
-    def _writeViewSettings(self):
+    def writeViewSettings(self, settings=None):
         """ Writes the view settings to the persistent store
         """         
-        #logger.debug("Writing settings: {}".format(settings.fileName()))
-        logger.debug("Writing persistent settings for window: {:d}".format(self._instanceNr))
+        if settings is None:
+            settings = QtCore.QSettings()  
+        logger.debug("Writing settings to: {}".format(settings.group()))
         
-        settings = QtCore.QSettings()
-        settings.beginGroup(self._settingsGroupName())
         self.treeView.writeViewSettings("repo_tree/header_state", settings)
         settings.setValue("main_splitter/state", self.mainSplitter.saveState())        
         settings.setValue("window_pos", self.pos())
         settings.setValue("window_size", self.size())
-        settings.endGroup()
             
 
     def __addTestData(self):
@@ -236,7 +231,11 @@ class MainWindow(QtGui.QMainWindow):
         """ Function for testing """
         logger.debug("myTest")
         
-        self._logViewSettings()
+        
+        from libargos.qt import printChildren
+        printChildren(self.argosApplication._qApplication)
+        
+        self.argosApplication.printAllWidgets()
         
 #        selectionModel = self.treeView.selectionModel()
 #        hasCurrent = selectionModel.currentIndex().isValid()
@@ -254,25 +253,32 @@ class MainWindow(QtGui.QMainWindow):
         #logger.debug("ds: {}".format(ds))
         
         
-    def about(self):
+    def about(self): # TODO: to application
         """ Shows the about message window. """
         message = "{} version {}\n\n{}".format(PROJECT_NAME, VERSION, PROJECT_URL)
         QtGui.QMessageBox.about(self, "About {}".format(PROJECT_NAME), message)
 
-    def closeWindow(self):
-        """ Closes the window """
-        self.close()
-        
-    def quitApplication(self):
-        """ Closes all windows """
-        app = QtGui.QApplication.instance()
-        app.closeAllWindows()
 
+    #def close(self):
+    #    """ Closes the window """
+    #   logger.debug("Called closeWindow")
+    #    self.close()
+    #    return True
+        
+ 
     def closeEvent(self, event):
         """ Called when closing all windows.
         """
         logger.debug("closeEvent")
-        self._writeViewSettings()
-        self.close()
+        if not self.argosApplication._settingsSaved and len(self.argosApplication._mainWindows) <= 1:
+            self.argosApplication.writeViewSettings()
+        self.argosApplication.removeMainWindow(self)
         event.accept()
             
+    @QtSlot()            
+    def destroy(self, *args, **kwargs):
+        """ Frees up window system resources. Overridden to be able to log this. 
+            This function is usually called from the QWidget destructor.
+        """
+        logger.debug("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&{}.destroy({}, {}): {}".format(self, *args, **kwargs))
+        super(MainWindow, self).destroy(*args, **kwargs)
