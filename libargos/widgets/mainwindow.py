@@ -54,15 +54,13 @@ class MainWindow(QtGui.QMainWindow):
         
         # Connect signals
         #self.fileMenu.aboutToShow.connect(self.treeView.updateCurrentItemActions) # TODO: needed?
-        self.destroyed.connect(self.byebye)
+        self.destroyed.connect(self.byebye) # TODO: remove
         
         self.setWindowTitle("{}-{}".format(PROJECT_NAME, self.argosApplication.profile))
-        
         self.resize(QtCore.QSize(1024, 700))
         
-
-        # Update model 
-        self.__addTestData()
+        if DEBUGGING:
+            self.__addTestData()
 
     
     @property
@@ -169,16 +167,10 @@ class MainWindow(QtGui.QMainWindow):
             else:
                 fileNames = []
             
+        repo = getGlobalRepository()
         for fileName in fileNames:
-            logger.info("Loading data from: {!r}".format(fileName))
-            try:
-                self.treeView.loadFile(fileName, expand = True, rtiClass=rtiClass)
-            except Exception as ex: # TODO: still needed?
-                if DEBUGGING:
-                    raise
-                else:
-                    logger.error("Error opening file: {}".format(ex))
-                    QtGui.QMessageBox.warning(self, "Error opening file", str(ex))
+            storeRootIndex = repo.loadFile(fileName, rtiClass=rtiClass)
+            self.treeView.setExpanded(storeRootIndex, True)
     
     
     def readViewSettings(self, settings=None):
@@ -199,7 +191,6 @@ class MainWindow(QtGui.QMainWindow):
         if windowPos:
             self.move(windowPos) 
                                  
-        
         splitterState = settings.value("main_splitter/state")
         if splitterState:
             self.mainSplitter.restoreState(splitterState)
@@ -243,29 +234,13 @@ class MainWindow(QtGui.QMainWindow):
         import gc
         
         from libargos.qt import printChildren, printAllWidgets
-        #printChildren(self.argosApplication._qApplication)
         printAllWidgets(self._argosApplication._qApplication, ofType=MainWindow)
 
         logger.debug("forcing garbage collection")
         gc.collect()
-
         printAllWidgets(self._argosApplication._qApplication, ofType=MainWindow)
         
-#        selectionModel = self.treeView.selectionModel()
-#        hasCurrent = selectionModel.currentIndex().isValid()
-#        logger.debug("hasCurrent: {}, hasSelection: {}"
-#                     .format(hasCurrent, selectionModel.hasSelection()))
-#        selectionModel.clearSelection()
-#        
-        #import numpy as np
-        #from netCDF4 import Dataset 
-        #arr = np.loadtxt('/Users/titusjan/Data/argos/fel_nist/pruts3.txt')
-        #logger.debug("Array shape: {}".format(arr.shape))
-        #del arr
-        
-        #ds = Dataset('/Users/titusjan/Data/argos/fel_nist/test.nc', 'r', format='NETCDF4')
-        #logger.debug("ds: {}".format(ds))
-        
+      
         
     def about(self): # TODO: to application
         """ Shows the about message window. """
@@ -281,7 +256,7 @@ class MainWindow(QtGui.QMainWindow):
         
  
     def closeEvent(self, event):
-        """ Called when closing all windows.
+        """ Called when closing this window.
         """
         logger.debug("closeEvent")
         self.argosApplication.writeViewSettingsIfNeeded()
@@ -291,7 +266,7 @@ class MainWindow(QtGui.QMainWindow):
             
             
     @QtSlot()            
-    def destroy(self, *args, **kwargs):
+    def destroy(self, *args, **kwargs): # TODO: remove
         """ Frees up window system resources. Overridden to be able to log this. 
             This function is usually called from the QWidget destructor.
         """
@@ -300,7 +275,7 @@ class MainWindow(QtGui.QMainWindow):
         super(MainWindow, self).destroy(*args, **kwargs)
 
     @QtSlot()            
-    def byebye(self, obj):
+    def byebye(self, obj): # TODO: remove
         """ Called when qobject is destroyed
         """
         logger.debug("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\n\n")

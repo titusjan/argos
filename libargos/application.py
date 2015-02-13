@@ -19,7 +19,8 @@
 """
 import logging, platform
 
-from libargos.qt import getQApplicationInstance, QtCore, QtGui, printAllWidgets
+from libargos.qt import getQApplicationInstance, QtCore, printAllWidgets
+from libargos.repo.repotreemodel import getGlobalRepository
 from libargos.utils.misc import string_to_identifier
 from libargos.widgets.mainwindow import MainWindow
 
@@ -41,7 +42,6 @@ class ArgosApplication(object):
         self._qApplication = getQApplicationInstance()
         
         #self.readViewSettings(reset=resetSettings)
-        
         self.qApplication.lastWindowClosed.connect(self.quit) 
 
         
@@ -53,13 +53,6 @@ class ArgosApplication(object):
 
         
     @property
-    def mainWindows(self):
-        """ Returns the number of MainWindows. For read-only purposes only.
-        """
-        return self._mainWindows
-
-    
-    @property
     def profile(self):
         """ Persistent settings are associated to a profile. This allows users to save the
             program state for several usage profiles.
@@ -68,10 +61,20 @@ class ArgosApplication(object):
         return self._profile
     
         
-    def _groupNameForWindow(self, windowNr):
-        """ Returns the group name (for use in the QSettings) given a window number.
+    @property
+    def mainWindows(self):
+        """ Returns the number of MainWindows. For read-only purposes only.
         """
-        return "window-{:02d}".format(windowNr)
+        return self._mainWindows
+
+    
+    def loadFiles(self, fileNames, rtiClass=None):
+        """ Loads files into the repository as repo tree items of class rtiClass.
+            Auto-detects using the extensions when rtiClass is None
+        """
+        repo = getGlobalRepository()
+        for fileName in fileNames:
+            repo.loadFile(fileName, rtiClass=rtiClass)
 
 
     def readViewSettings(self, reset=False): # TODO: read profile?
@@ -120,8 +123,7 @@ class ArgosApplication(object):
         settings.beginGroup(profileGroupName)
         try:
             for winNr, mainWindow in enumerate(self.mainWindows):
-                windowGroupName = self._groupNameForWindow(winNr)
-                settings.beginGroup(windowGroupName)
+                settings.beginGroup("window-{:02d}".format(winNr))
                 try:
                     mainWindow.writeViewSettings(settings)
                 finally:
@@ -139,16 +141,11 @@ class ArgosApplication(object):
             self.writeViewSettings()
             
             
-    def createMainWindow(self, fileNames = tuple()):
+    def createMainWindow(self):
         """ Creates and shows a new MainWindow.
-            All fileNames in the fileNames list are opened
-            The **kwargs are passed on to the MainWindow constructor.
         """
-        # Assumes qt.getQApplicationInstance() has been executed.
         mainWindow = MainWindow(self)
         self.mainWindows.append(mainWindow)
-        
-        mainWindow.openFiles(fileNames=fileNames) # TODO: make possible without main window
         
         mainWindow.show()
         if platform.system() == 'Darwin':
@@ -160,7 +157,7 @@ class ArgosApplication(object):
         """ Removes the mainWindow from the list of windows. Saves the settings
         """
         logger.debug("removeMainWindow called")
-        self.mainWindows.remove(mainWindow)  # TODO: enable
+        self.mainWindows.remove(mainWindow)
 
     
     def closeAllWindows(self):
@@ -171,7 +168,6 @@ class ArgosApplication(object):
         logger.debug("quitApplication: Closing all windows")
         self.qApplication.closeAllWindows()
         
-
             
     def quit(self):
         """ Called when the application quits (when the last window is closed)
@@ -179,11 +175,8 @@ class ArgosApplication(object):
         """
         logger.debug("ArgosApplication.quit called")
         
-        #assert len(self.mainWindows) == 0, \
-        #    "Still {} windows present at application quit!".format(len(self.mainWindows))
-            
-        app = QtGui.QApplication.instance() # TODO: use _qApplication
-        assert app is self.qApplication, "sanity check"
+        assert len(self.mainWindows) == 0, \
+            "Bug: still {} windows present at application quit!".format(len(self.mainWindows))
         
         from libargos.qt import printChildren
         printChildren(self.qApplication)        
@@ -201,10 +194,6 @@ class ArgosApplication(object):
         return exitCode
     
             
-
-
-        
-        
     
 def createArgosApplicationFunction():
     """ Closure to create the ArgosApplication singleton

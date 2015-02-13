@@ -21,6 +21,7 @@ import logging
 from libargos.qt.editabletreemodel import BaseTreeModel
 from libargos.info import DEBUGGING
 from libargos.utils.cls import type_name
+from libargos.repo.filesytemrti import detectRtiFromFileName
 
 
 logger = logging.getLogger(__name__)
@@ -42,6 +43,20 @@ class RepoTreeModel(BaseTreeModel):
         super(RepoTreeModel, self).__init__(parent=parent)
         self._isEditable = False
 
+
+    def loadFile(self, fileName, rtiClass=None):
+        """ Loads a file in the repository as a repo tree item of class rtiClass. 
+            Autodetects the RTI type if rtiClass is None.
+            Returns the index of the newly inserted RTI
+        """
+        logger.info("Loading data from: {!r}".format(fileName))
+        if rtiClass is None:
+            rtiClass = detectRtiFromFileName(fileName)
+        repoTreeItem = rtiClass.createFromFileName(fileName)
+        assert repoTreeItem.parentItem is None, "repoTreeItem {!r}".format(repoTreeItem)
+        storeRootIndex = self.insertItem(repoTreeItem)
+        return storeRootIndex
+        
     
     def _itemValueForColumn(self, treeItem, column):
         """ Returns the value of the item given the column number.

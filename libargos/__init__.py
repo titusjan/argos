@@ -32,10 +32,13 @@ def browse(fileNames = None, resetProfile=False):
     #if DEBUGGING: # TODO temporary
     #    _gcMon = createGcMonitor()
     argosApp = getArgosApplication()
+    argosApp.loadFiles(fileNames)
+    
     argosApp.readViewSettings(reset=resetProfile)
-    if True or len(argosApp.mainWindows) == 0:
+    if True or len(argosApp.mainWindows) == 0: # TODO: to readViewSettings?
         logger.warn("No open windows in profile. Creating one.")
-        argosApp.createMainWindow(fileNames = fileNames) # TODO: filenames should be part of the app
+        argosApp.createMainWindow() # TODO: filenames should be part of the app
+        
     exitCode = argosApp.execute()
     logger.debug("Event loop finished.")
     return exitCode

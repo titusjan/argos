@@ -50,8 +50,6 @@ from libargos.qt import Qt, QtGui, QtCore, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
 
 from libargos.repo.repotreemodel import RepoTreeModel
-from libargos.repo.filesytemrti import detectRtiFromFileName
-
 
 logger = logging.getLogger(__name__)
 
@@ -120,9 +118,9 @@ class RepoTreeView(ToggleColumnTreeView):
         selectionModel.currentChanged.connect(self.updateCurrentItemActions)
 
         
-    def loadRepoTreeItem(self, repoTreeItem, expand=False, 
-                         position=None, parentIndex=QtCore.QModelIndex()):
-        """ Loads a tree item in the repository and expands it.
+    def _insertRepoTreeItem(self, repoTreeItem, expand=False, 
+                           position=None, parentIndex=QtCore.QModelIndex()):
+        """ Inserts a tree item in the repository and expands it.
             If position is None the child will be appended as the last child of the parent.
             Returns the index of the newly inserted RTI.
         """
@@ -133,14 +131,13 @@ class RepoTreeView(ToggleColumnTreeView):
         return storeRootIndex
 
 
-    def loadFile(self, fileName, expand=False, rtiClass=None):
-        """ Loads a file in the repository. Autodetects the RTI type if needed.
+    def __obsolete__loadFile(self, fileName, expand=False, rtiClass=None):
+        """ Loads a file in the repository. Autodetects the RTI type if rtiClass is None.
             Returns the index of the newly inserted RTI
         """
-        if rtiClass is None:
-            rtiClass = detectRtiFromFileName(fileName)
-        repoTreeItem = rtiClass.createFromFileName(fileName)
-        return self.loadRepoTreeItem(repoTreeItem, expand=expand)
+        storeRootIndex = self.model().loadFile(fileName, rtiClass=rtiClass)
+        self.setExpanded(storeRootIndex, expand)
+        return storeRootIndex
     
  
     def updateCurrentItemActions(self):
@@ -240,6 +237,7 @@ class RepoTreeView(ToggleColumnTreeView):
         if not currentIndex.isValid():
             return
         
+        # TODO: move this part to repo tree model
         fileRtiIndex = self.model().findFileRtiIndex(currentIndex)
         fileRtiParentIndex = fileRtiIndex.parent()
         fileRti = self.model().getItem(fileRtiIndex)
@@ -252,8 +250,8 @@ class RepoTreeView(ToggleColumnTreeView):
         
         # Insert a new one instead.
         newRti = rtiClass.createFromFileName(fileName)
-        newRtiIndex = self.loadRepoTreeItem(newRti, expand=True, position=position,  
-                                            parentIndex=fileRtiParentIndex)
+        newRtiIndex = self._insertRepoTreeItem(newRti, expand=True, position=position,  
+                                               parentIndex=fileRtiParentIndex)
         self.setCurrentIndex(newRtiIndex)
         return newRtiIndex
      
