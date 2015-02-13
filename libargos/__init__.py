@@ -33,7 +33,7 @@ def browse(fileNames = None, resetProfile=False):
     #    _gcMon = createGcMonitor()
     argosApp = getArgosApplication()
     argosApp.readViewSettings(reset=resetProfile)
-    if argosApp.nMainWindows == 0:
+    if True or len(argosApp.mainWindows) == 0:
         logger.warn("No open windows in profile. Creating one.")
         argosApp.createMainWindow(fileNames = fileNames) # TODO: filenames should be part of the app
     exitCode = argosApp.execute()

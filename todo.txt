@@ -1,3 +1,5 @@
+http://www.reddit.com/r/Python/comments/2vn1yz/what_is_the_best_way_to_create_deb_package_from/
+
 http://www.kdnuggets.com/datasets/index.html
 http://pds.jpl.nasa.gov/tools/data-search/search.jsp?q=temperature&start=50
 
@@ -38,6 +40,7 @@ TODO Long term or nice to have:
 	let repo tree view work with multile items selected
 	example RTI using XML file.
 	fits format
+	use decorators in RTI?
 	
 	Plugin management window
 	

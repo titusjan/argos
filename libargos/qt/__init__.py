@@ -19,7 +19,7 @@
 """
 
 # Abstracts away the differences between PySide and PyQt
-USE_PYQT = False # PySide is used when False
+USE_PYQT = True # PySide is used when False
 
 if USE_PYQT:
     # This is only needed for Python v2 but is harmless for Python v3.
@@ -70,6 +70,15 @@ def printChildren(obj, indent=""):
         print ("{}{:10s}: {}".format(indent, childName, child.__class__))
         printChildren(child, indent + "  ")
 
+            
+def printAllWidgets(qApplication, ofType=None):
+    """ Prints list of all widgets to stdout (for debugging)
+    """
+    print ("Application's widgets {}".format(('of type: ' + str(ofType)) if ofType else ''))
+    for widget in qApplication.allWidgets():
+        if ofType is None or isinstance(widget, ofType):
+            print ("  {!r}".format(widget))
+            
 
 def __check_slot_function_result(f):
     """ Aux function that wraps QtSlot in a function that halts in case of an exception

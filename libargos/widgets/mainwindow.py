@@ -46,7 +46,7 @@ class MainWindow(QtGui.QMainWindow):
             :param reset: If true the persistent settings, such as column widths, are reset. 
         """
         super(MainWindow, self).__init__()
-        
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self._argosApplication = argosApplication
         
         self.__setupViews()
@@ -54,6 +54,7 @@ class MainWindow(QtGui.QMainWindow):
         
         # Connect signals
         #self.fileMenu.aboutToShow.connect(self.treeView.updateCurrentItemActions) # TODO: needed?
+        self.destroyed.connect(self.byebye)
         
         self.setWindowTitle("{}-{}".format(PROJECT_NAME, self.argosApplication.profile))
         
@@ -92,13 +93,22 @@ class MainWindow(QtGui.QMainWindow):
     def __setupMenu(self):
         """ Sets up the main menu.
         """
-        # Don't use self.menuBar(), on OS-X this is not shared across windows.
-        menuBar = QtGui.QMenuBar() # Make a menu without parent.
-        self.setMenuBar(menuBar)
+        if 0: # TODO: 1???
+            # Don't use self.menuBar(), on OS-X this is not shared across windows.
+            # See: http://qt-project.org/doc/qt-4.8/qmenubar.html#details
+            # And:http://qt-project.org/doc/qt-4.8/qmainwindow.html#menuBar
+            menuBar = QtGui.QMenuBar() # Make a menu without parent.
+            self.setMenuBar(menuBar)
+        else:
+            menuBar = self.menuBar()  
 
         ### File Menu ###
 
         fileMenu = menuBar.addMenu("&File")
+        openFileAction = fileMenu.addAction("&New Inspector Window", 
+            self.argosApplication.createMainWindow) # does create a loop
+        openFileAction.setShortcut(QtGui.QKeySequence.New)
+        
         openFileAction = fileMenu.addAction("&Open Files...", 
             lambda: self.openFiles(fileMode = QtGui.QFileDialog.ExistingFiles))
         openFileAction.setShortcut(QtGui.QKeySequence("Ctrl+O, F"))
@@ -230,12 +240,16 @@ class MainWindow(QtGui.QMainWindow):
     def myTest(self):
         """ Function for testing """
         logger.debug("myTest")
+        import gc
         
-        
-        from libargos.qt import printChildren
-        printChildren(self.argosApplication._qApplication)
-        
-        self.argosApplication.printAllWidgets()
+        from libargos.qt import printChildren, printAllWidgets
+        #printChildren(self.argosApplication._qApplication)
+        printAllWidgets(self._argosApplication._qApplication, ofType=MainWindow)
+
+        logger.debug("forcing garbage collection")
+        gc.collect()
+
+        printAllWidgets(self._argosApplication._qApplication, ofType=MainWindow)
         
 #        selectionModel = self.treeView.selectionModel()
 #        hasCurrent = selectionModel.currentIndex().isValid()
@@ -270,15 +284,24 @@ class MainWindow(QtGui.QMainWindow):
         """ Called when closing all windows.
         """
         logger.debug("closeEvent")
-        if not self.argosApplication._settingsSaved and len(self.argosApplication._mainWindows) <= 1:
-            self.argosApplication.writeViewSettings()
+        self.argosApplication.writeViewSettingsIfNeeded()
         self.argosApplication.removeMainWindow(self)
         event.accept()
+        logger.debug("closeEvent accepted")
+            
             
     @QtSlot()            
     def destroy(self, *args, **kwargs):
         """ Frees up window system resources. Overridden to be able to log this. 
             This function is usually called from the QWidget destructor.
         """
-        logger.debug("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&{}.destroy({}, {}): {}".format(self, *args, **kwargs))
+        logger.debug("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\n\n")
+        logger.debug("{}.destroy({}, {}): {}".format(self, *args, **kwargs))
         super(MainWindow, self).destroy(*args, **kwargs)
+
+    @QtSlot()            
+    def byebye(self, obj):
+        """ Called when qobject is destroyed
+        """
+        logger.debug("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\n\n")
+        logger.debug("{}.byebye: {}".format(self, obj))

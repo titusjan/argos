@@ -19,7 +19,7 @@
 """
 import logging, platform
 
-from libargos.qt import getQApplicationInstance, QtCore, QtGui
+from libargos.qt import getQApplicationInstance, QtCore, QtGui, printAllWidgets
 from libargos.utils.misc import string_to_identifier
 from libargos.widgets.mainwindow import MainWindow
 
@@ -39,18 +39,24 @@ class ArgosApplication(object):
         # Call getQApplicationInstance() so that the users can call libargos.browse without 
         # having to call it themselves.
         self._qApplication = getQApplicationInstance()
-        self.printAllWidgets()
         
         #self.readViewSettings(reset=resetSettings)
         
-        self._qApplication.lastWindowClosed.connect(self.quit) 
+        self.qApplication.lastWindowClosed.connect(self.quit) 
 
         
     @property
-    def nMainWindows(self):
-        """ Returns the number of MainWindows
+    def qApplication(self):
+        """ Returns the QApplication object
         """
-        return len(self._mainWindows)
+        return self._qApplication
+
+        
+    @property
+    def mainWindows(self):
+        """ Returns the number of MainWindows. For read-only purposes only.
+        """
+        return self._mainWindows
 
     
     @property
@@ -71,6 +77,7 @@ class ArgosApplication(object):
     def readViewSettings(self, reset=False): # TODO: read profile?
         """ Reads the persistent program settings
         """ 
+        return False # TODO remove
         settings = QtCore.QSettings()
         logger.debug("Reading settings from: {}".format(settings.fileName()))
         
@@ -99,6 +106,7 @@ class ArgosApplication(object):
     def writeViewSettings(self):
         """ Writes the view settings to the persistent store
         """
+        return False # TODO remove
         assert self._settingsSaved == False, "settings already saved"
         self._settingsSaved = True                        
                  
@@ -108,10 +116,10 @@ class ArgosApplication(object):
         profileGroupName = string_to_identifier(self.profile)
         settings.remove(profileGroupName) # start with a clean slate
 
-        assert self._mainWindows, "no main windows found"
+        assert self.mainWindows, "no main windows found"
         settings.beginGroup(profileGroupName)
         try:
-            for winNr, mainWindow in enumerate(self._mainWindows):
+            for winNr, mainWindow in enumerate(self.mainWindows):
                 windowGroupName = self._groupNameForWindow(winNr)
                 settings.beginGroup(windowGroupName)
                 try:
@@ -121,6 +129,15 @@ class ArgosApplication(object):
         finally:
             settings.endGroup()
                         
+                        
+    def writeViewSettingsIfNeeded(self):
+        """ Writes the persistent settings of this profile is this is the last window and
+            the settings have not yet been saved.
+        """
+        return False
+        if not self._settingsSaved and len(self.mainWindows) <= 1:
+            self.writeViewSettings()
+            
             
     def createMainWindow(self, fileNames = tuple()):
         """ Creates and shows a new MainWindow.
@@ -129,8 +146,7 @@ class ArgosApplication(object):
         """
         # Assumes qt.getQApplicationInstance() has been executed.
         mainWindow = MainWindow(self)
-
-        self._mainWindows.append(mainWindow)
+        self.mainWindows.append(mainWindow)
         
         mainWindow.openFiles(fileNames=fileNames) # TODO: make possible without main window
         
@@ -144,7 +160,7 @@ class ArgosApplication(object):
         """ Removes the mainWindow from the list of windows. Saves the settings
         """
         logger.debug("removeMainWindow called")
-        self._mainWindows.remove(mainWindow)
+        self.mainWindows.remove(mainWindow)  # TODO: enable
 
     
     def closeAllWindows(self):
@@ -152,19 +168,10 @@ class ArgosApplication(object):
         """
         self.writeViewSettings()
         
-        # We make the
-        app = QtGui.QApplication.instance() # TODO: use _qApplication
         logger.debug("quitApplication: Closing all windows")
-        app.closeAllWindows()
+        self.qApplication.closeAllWindows()
         
-            
-    def printAllWidgets(self):
-        """ Prints list of all widgets to stdout (for debugging)
-        """
-        print ("Application widgets")
-        for widget in self._qApplication.allWidgets():
-            print ("  {!r}".format(widget))
-            
+
             
     def quit(self):
         """ Called when the application quits (when the last window is closed)
@@ -172,24 +179,25 @@ class ArgosApplication(object):
         """
         logger.debug("ArgosApplication.quit called")
         
-        assert len(self._mainWindows) == 0, \
-            "Still {} windows present at application quit!".format(len(self._mainWindows))
+        #assert len(self.mainWindows) == 0, \
+        #    "Still {} windows present at application quit!".format(len(self.mainWindows))
             
         app = QtGui.QApplication.instance() # TODO: use _qApplication
-        assert app is self._qApplication, "sanity check"
+        assert app is self.qApplication, "sanity check"
         
         from libargos.qt import printChildren
-        printChildren(self._qApplication)        
-        self.printAllWidgets()
-        self._qApplication.quit()
+        printChildren(self.qApplication)        
+        printAllWidgets(self.qApplication, ofType=MainWindow)
+        self.qApplication.quit()
 
 
     def execute(self):
         """ Executes all main windows by starting the Qt main application
         """  
         logger.info("Starting Argos...")
-        exitCode = self._qApplication.exec_()
+        exitCode = self.qApplication.exec_()
         logger.info("Argos finished with exit code: {}".format(exitCode))
+        printAllWidgets(self.qApplication)
         return exitCode
     
             
