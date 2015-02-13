@@ -117,28 +117,6 @@ class RepoTreeView(ToggleColumnTreeView):
         selectionModel = self.selectionModel() # need to store to prevent crash in PySide
         selectionModel.currentChanged.connect(self.updateCurrentItemActions)
 
-        
-    def _insertRepoTreeItem(self, repoTreeItem, expand=False, 
-                           position=None, parentIndex=QtCore.QModelIndex()):
-        """ Inserts a tree item in the repository and expands it.
-            If position is None the child will be appended as the last child of the parent.
-            Returns the index of the newly inserted RTI.
-        """
-        assert repoTreeItem.parentItem is None, "repoTreeItem {!r}".format(repoTreeItem)
-        storeRootIndex = self.model().insertItem(repoTreeItem, position=position, 
-                                                 parentIndex=parentIndex)
-        self.setExpanded(storeRootIndex, expand)
-        return storeRootIndex
-
-
-    def __obsolete__loadFile(self, fileName, expand=False, rtiClass=None):
-        """ Loads a file in the repository. Autodetects the RTI type if rtiClass is None.
-            Returns the index of the newly inserted RTI
-        """
-        storeRootIndex = self.model().loadFile(fileName, rtiClass=rtiClass)
-        self.setExpanded(storeRootIndex, expand)
-        return storeRootIndex
-    
  
     def updateCurrentItemActions(self):
         """ Enables/disables actions when a new item is the current item in the tree view.
@@ -194,6 +172,7 @@ class RepoTreeView(ToggleColumnTreeView):
             return
 
         currentItem.open()
+        self.dataChanged(currentIndex, currentIndex)
         self.expand(currentIndex) # to visit the children and thus show the 'open' icons
          
         
@@ -210,8 +189,10 @@ class RepoTreeView(ToggleColumnTreeView):
         # First we remove all the children, this will close them as well.
         self.model().removeAllChildrenAtIndex(currentIndex)
         currentItem.close()
+        self.dataChanged(currentIndex, currentIndex)
         self.collapse(currentIndex) # otherwise the children will be fetched immediately
-
+                                    # Note that this will happen anyway if the item is e in
+                                    # in another view (TODO: what to do about this?)
         
     @QtSlot()
     def removeCurrentFile(self):
@@ -225,8 +206,8 @@ class RepoTreeView(ToggleColumnTreeView):
 
         topLevelIndex = self.model().findTopLevelItemIndex(currentIndex)
         self.model().deleteItemByIndex(topLevelIndex) # this will close the items resources.
-        
-        
+
+    
     @QtSlot()
     def reloadFileOfCurrentItem(self):
         """ Finds the repo tree item that holds the file of the current item and reloads it.
@@ -237,21 +218,11 @@ class RepoTreeView(ToggleColumnTreeView):
         if not currentIndex.isValid():
             return
         
-        # TODO: move this part to repo tree model
         fileRtiIndex = self.model().findFileRtiIndex(currentIndex)
-        fileRtiParentIndex = fileRtiIndex.parent()
-        fileRti = self.model().getItem(fileRtiIndex)
-        fileName = fileRti.fileName
-        rtiClass = type(fileRti)
-        position = fileRti.childNumber()
+        isExpanded = self.isExpanded(fileRtiIndex)
         
-        # Delete old RTI
-        self.model().deleteItemByIndex(fileRtiIndex) # this will close the items resources.
-        
-        # Insert a new one instead.
-        newRti = rtiClass.createFromFileName(fileName)
-        newRtiIndex = self._insertRepoTreeItem(newRti, expand=True, position=position,  
-                                               parentIndex=fileRtiParentIndex)
+        newRtiIndex = self.model().reloadFileAtIndex(fileRtiIndex)
+        self.setExpanded(newRtiIndex, isExpanded)
         self.setCurrentIndex(newRtiIndex)
         return newRtiIndex
-     
+

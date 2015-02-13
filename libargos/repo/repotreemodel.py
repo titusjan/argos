@@ -18,6 +18,7 @@
 """ Data repository functionality
 """
 import logging
+from libargos.qt import QtCore
 from libargos.qt.editabletreemodel import BaseTreeModel
 from libargos.info import DEBUGGING
 from libargos.utils.cls import type_name
@@ -42,20 +43,6 @@ class RepoTreeModel(BaseTreeModel):
         """
         super(RepoTreeModel, self).__init__(parent=parent)
         self._isEditable = False
-
-
-    def loadFile(self, fileName, rtiClass=None):
-        """ Loads a file in the repository as a repo tree item of class rtiClass. 
-            Autodetects the RTI type if rtiClass is None.
-            Returns the index of the newly inserted RTI
-        """
-        logger.info("Loading data from: {!r}".format(fileName))
-        if rtiClass is None:
-            rtiClass = detectRtiFromFileName(fileName)
-        repoTreeItem = rtiClass.createFromFileName(fileName)
-        assert repoTreeItem.parentItem is None, "repoTreeItem {!r}".format(repoTreeItem)
-        storeRootIndex = self.insertItem(repoTreeItem)
-        return storeRootIndex
         
     
     def _itemValueForColumn(self, treeItem, column):
@@ -121,7 +108,7 @@ class RepoTreeModel(BaseTreeModel):
         # Check that Rti implementation correctly sets _canFetchChildren    
         assert not parentItem.canFetchChildren(), \
             "not all children fetched: {}".format(parentItem)
-
+    
 
     def findFileRtiIndex(self, childIndex):
         """ Traverses the tree upwards from the item at childIndex until the tree 
@@ -138,6 +125,37 @@ class RepoTreeModel(BaseTreeModel):
             else:
                 return childIndex
 
+        
+    def reloadFileAtIndex(self, itemIndex):
+        """ Finds the repo tree item that holds the file of the current item and reloads it.
+            Reloading is done by removing the repo tree item and inserting a new one.
+        """        
+        fileRtiParentIndex = itemIndex.parent()
+        fileRti = self.getItem(itemIndex)
+        fileName = fileRti.fileName
+        rtiClass = type(fileRti)
+        position = fileRti.childNumber()
+        
+        # Delete old RTI and Insert a new one instead.
+        self.deleteItemByIndex(itemIndex) # this will close the items resources.
+        return self.loadFile(fileName, rtiClass, position=position, parentIndex=fileRtiParentIndex)
+
+
+    def loadFile(self, fileName, rtiClass=None, 
+                 position=None, parentIndex=QtCore.QModelIndex()):
+        """ Loads a file in the repository as a repo tree item of class rtiClass. 
+            Autodetects the RTI type if rtiClass is None.
+            If position is None the child will be appended as the last child of the parent.
+            Returns the index of the newly inserted RTI
+        """
+        logger.info("Loading data from: {!r}".format(fileName))
+        if rtiClass is None:
+            rtiClass = detectRtiFromFileName(fileName)
+            
+        repoTreeItem = rtiClass.createFromFileName(fileName)
+        assert repoTreeItem.parentItem is None, "repoTreeItem {!r}".format(repoTreeItem)
+        return self.insertItem(repoTreeItem, position=position, parentIndex=parentIndex)
+    
     
 def createGlobalRepositoryFunction():
     """ Closure to create the RepoTreeModel singleton
