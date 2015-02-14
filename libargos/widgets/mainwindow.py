@@ -26,10 +26,12 @@ from __future__ import division
 import logging
 
 from .repotreeview import RepoTreeView
+from .aboutdialog import AboutDialog
+from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
 from libargos.repo.registry import getRtiRegistry
 from libargos.repo.repotreemodel import getGlobalRepository
-from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
 from libargos.qt import QtCore, QtGui, QtSlot
+
 
 logger = logging.getLogger(__name__)
         
@@ -219,6 +221,14 @@ class MainWindow(QtGui.QMainWindow):
         logger.debug("closeEvent accepted")
         
         
+    def about(self):
+        """ Shows the about message window. 
+        """
+        aboutDialog = AboutDialog(parent=self)
+        aboutDialog.show()
+        aboutDialog.addDependencyInfo()
+
+        
     def myTest(self):
         """ Function for testing """
         logger.debug("myTest for window: {}".format(self._instanceNr))
@@ -233,12 +243,7 @@ class MainWindow(QtGui.QMainWindow):
         print("forcing garbage collection")
         gc.collect()
         printAllWidgets(self._argosApplication._qApplication, ofType=MainWindow)
-      
-        
-    def about(self): # TODO: to application
-        """ Shows the about message window. """
-        message = "{} version {}\n\n{}".format(PROJECT_NAME, VERSION, PROJECT_URL)
-        QtGui.QMessageBox.about(self, "About {}".format(PROJECT_NAME), message)
+
 
             
             
