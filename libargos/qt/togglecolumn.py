@@ -118,7 +118,7 @@ class ToggleColumnMixIn(object):
                 
         return header_restored
 
-    def writeViewSettings(self, key, settings=None):
+    def writeProfile(self, key, settings=None):
         """ Writes the view settings to the persistent store
             :param key: key where the setting will be read from
             :param settings: optional QSettings object which can have a group already opened.        

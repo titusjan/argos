@@ -203,14 +203,14 @@ class MainWindow(QtGui.QMainWindow):
         self.treeView.readViewSettings('repo_tree/header_state', settings)
         
 
-    def writeViewSettings(self, settings=None):
+    def writeProfile(self, settings=None):
         """ Writes the view settings to the persistent store
         """         
         if settings is None:
             settings = QtCore.QSettings()  
         logger.debug("Writing settings to: {}".format(settings.group()))
         
-        self.treeView.writeViewSettings("repo_tree/header_state", settings)
+        self.treeView.writeProfile("repo_tree/header_state", settings)
         settings.setValue("main_splitter/state", self.mainSplitter.saveState())        
         settings.setValue("window_pos", self.pos())
         settings.setValue("window_size", self.size())
@@ -269,7 +269,7 @@ class MainWindow(QtGui.QMainWindow):
         """ Called when closing this window.
         """
         logger.debug("closeEvent")
-        self.argosApplication.writeViewSettingsIfNeeded()
+        self.argosApplication.writeProfileIfNeeded()
         self.argosApplication.removeMainWindow(self)
         event.accept()
         logger.debug("closeEvent accepted")
