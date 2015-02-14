@@ -57,18 +57,11 @@ class MainWindow(QtGui.QMainWindow):
         self.__setupViews()
         self.__setupMenu()
         
-        # Connect signals
-        #self.fileMenu.aboutToShow.connect(self.treeView.updateCurrentItemActions) # TODO: needed?
-        self.destroyed.connect(self.byebye) # TODO: remove
-        
+        self.resize(QtCore.QSize(1024, 700))
         self.setWindowTitle("{}-{} (#{})".format(PROJECT_NAME, self.argosApplication.profile, 
                                                  self._instanceNr))
-        self.resize(QtCore.QSize(1024, 700))
-        
-        if DEBUGGING:
-            self.__addTestData()
 
-    
+
     @property
     def argosApplication(self):
         """ The ArgosApplication to which this window belongs.
@@ -97,7 +90,7 @@ class MainWindow(QtGui.QMainWindow):
     def __setupMenu(self):
         """ Sets up the main menu.
         """
-        if 1: # TODO: 0/1???
+        if True: 
             # Don't use self.menuBar(), on OS-X this is not shared across windows.
             # See: http://qt-project.org/doc/qt-4.8/qmenubar.html#details
             # And:http://qt-project.org/doc/qt-4.8/qmainwindow.html#menuBar
@@ -214,27 +207,18 @@ class MainWindow(QtGui.QMainWindow):
         settings.setValue("main_splitter/state", self.mainSplitter.saveState())        
         settings.setValue("window_pos", self.pos())
         settings.setValue("window_size", self.size())
-            
 
-    def __addTestData(self):
-        """ Temporary function to add test data
+ 
+    def closeEvent(self, event):
+        """ Called when closing this window.
         """
-        import numpy as np
-        from libargos.repo.memoryrti import MappingRti
-        myDict = {}
-        myDict['name'] = 'Pac Man'
-        myDict['age'] = 34
-        myDict['ghosts'] = ['Inky', 'Blinky', 'Pinky', 'Clyde']
-        myDict['array'] = np.arange(24).reshape(3, 8)
-        myDict['subDict'] = {'mean': np.ones(111), 'stddev': np.zeros(111, dtype=np.uint16)}
+        logger.debug("closeEvent")
+        self.argosApplication.writeProfileIfNeeded()
+        self.argosApplication.removeMainWindow(self)
+        event.accept()
+        logger.debug("closeEvent accepted")
         
-        mappingRti = MappingRti(myDict, nodeName="myDict", fileName='')
-        storeRootIndex = getGlobalRepository().insertItem(mappingRti)
-        self.treeView.setExpanded(storeRootIndex, False)
-        self.treeView.setCurrentIndex(storeRootIndex)
-
-
-
+        
     def myTest(self):
         """ Function for testing """
         logger.debug("myTest for window: {}".format(self._instanceNr))
@@ -246,10 +230,9 @@ class MainWindow(QtGui.QMainWindow):
         from libargos.qt import printAllWidgets
         printAllWidgets(self._argosApplication._qApplication, ofType=MainWindow)
 
-        logger.debug("forcing garbage collection")
+        print("forcing garbage collection")
         gc.collect()
         printAllWidgets(self._argosApplication._qApplication, ofType=MainWindow)
-        
       
         
     def about(self): # TODO: to application
@@ -257,36 +240,5 @@ class MainWindow(QtGui.QMainWindow):
         message = "{} version {}\n\n{}".format(PROJECT_NAME, VERSION, PROJECT_URL)
         QtGui.QMessageBox.about(self, "About {}".format(PROJECT_NAME), message)
 
-
-    #def close(self):
-    #    """ Closes the window """
-    #   logger.debug("Called closeWindow")
-    #    self.close()
-    #    return True
-        
- 
-    def closeEvent(self, event):
-        """ Called when closing this window.
-        """
-        logger.debug("closeEvent")
-        self.argosApplication.writeProfileIfNeeded()
-        self.argosApplication.removeMainWindow(self)
-        event.accept()
-        logger.debug("closeEvent accepted")
             
             
-    @QtSlot()            
-    def destroy(self, *args, **kwargs): # TODO: remove
-        """ Frees up window system resources. Overridden to be able to log this. 
-            This function is usually called from the QWidget destructor.
-        """
-        logger.debug("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\n\n")
-        logger.debug("{}.destroy({}, {}): {}".format(self, *args, **kwargs))
-        super(MainWindow, self).destroy(*args, **kwargs)
-
-    @QtSlot()            
-    def byebye(self, obj): # TODO: remove
-        """ Called when qobject is destroyed
-        """
-        logger.debug("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\n\n")
-        logger.debug("{}.byebye: {}".format(self, obj))

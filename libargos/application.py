@@ -19,7 +19,7 @@
 """
 import logging, platform
 
-from libargos.qt import getQApplicationInstance, QtCore, printAllWidgets
+from libargos.qt import getQApplicationInstance, QtCore
 from libargos.repo.repotreemodel import getGlobalRepository
 from libargos.utils.misc import string_to_identifier
 from libargos.widgets.mainwindow import MainWindow
@@ -63,6 +63,13 @@ class ArgosApplication(object):
         """ Returns the QApplication object
         """
         return self._qApplication
+
+        
+    @property
+    def repo(self):
+        """ Returns the global repository
+        """
+        return getGlobalRepository()
 
         
     @property
@@ -194,35 +201,28 @@ class ArgosApplication(object):
         """ Closes all windows. Save windows state to persistent settings before closing them.
         """
         self.writeProfile()
-        
-        logger.debug("quitApplication: Closing all windows")
+        logger.debug("ArgosApplication: Closing all windows")
         self.qApplication.closeAllWindows()
         
             
     def quit(self):
-        """ Called when the application quits (when the last window is closed)
-            Saves persistent settings when this wasn't done already.
+        """ Quits the application (called when the last window is closed)
         """
         logger.debug("ArgosApplication.quit called")
-        
         assert len(self.mainWindows) == 0, \
             "Bug: still {} windows present at application quit!".format(len(self.mainWindows))
-        
-        from libargos.qt import printChildren
-        printChildren(self.qApplication)        
-        printAllWidgets(self.qApplication, ofType=MainWindow)
         self.qApplication.quit()
 
 
     def execute(self):
         """ Executes all main windows by starting the Qt main application
         """  
-        logger.info("Starting Argos...")
+        logger.info("Starting Argos event loop...")
         exitCode = self.qApplication.exec_()
-        logger.info("Argos finished with exit code: {}".format(exitCode))
-        printAllWidgets(self.qApplication)
+        logger.info("Argos event loop finished with exit code: {}".format(exitCode))
         return exitCode
     
+            
             
     
 def createArgosApplicationFunction():
