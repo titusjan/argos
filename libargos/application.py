@@ -19,6 +19,7 @@
 """
 import logging, platform
 
+from libargos.info import DEBUGGING
 from libargos.qt import getQApplicationInstance, QtCore
 from libargos.repo.repotreemodel import getGlobalRepository
 from libargos.utils.misc import string_to_identifier
@@ -35,7 +36,7 @@ class ArgosApplication(object):
         """
         self._profile = ''
         self._mainWindows = []
-        self._settingsSaved = False  # boolean to prevent saving settings twice
+        self._profileSaved = False  # boolean to prevent saving settings twice
         
         # Call getQApplicationInstance() so that the users can call libargos.browse without 
         # having to call it themselves.
@@ -97,21 +98,44 @@ class ArgosApplication(object):
             repo.loadFile(fileName, rtiClass=rtiClass)
 
 
-    def loadProfile(self, profile, reset=False):
+    def _profileGroupName(self, profile):
+        """ Returns the name of the QSetting group for this profile.
+            Converts to lower case and removes whitespace, interpuction, etc.
+            Prepends __debugging__ if the debugging flag is set 
+        """
+        profGroupName = '__debugging__' if DEBUGGING else '' 
+        profGroupName += string_to_identifier(profile)
+        return profGroupName
+        
+
+    def deleteProfile(self, profile):
+        """ Removes a profile from the persistent settings
+        """
+        profGroupName = self._profileGroupName(profile)                
+        logger.debug("Resetting profile settings: {}".format(profGroupName))
+        settings = QtCore.QSettings()
+        settings.remove(profGroupName)
+        
+
+    def deleteAllProfiles(self):
+        """ Returns a list of all profiles
+        """
+        settings = QtCore.QSettings()
+        for profGroupName in QtCore.QSettings().childGroups():
+            settings.remove(profGroupName)
+        
+        
+    def loadProfile(self, profile):
         """ Reads the persistent program settings
         """ 
         settings = QtCore.QSettings()
         logger.info("Reading profile {!r} from: {}".format(profile, settings.fileName()))
         
         self._profile = profile
-        profileGroupName = string_to_identifier(self.profile)
-        
-        if reset:
-            logger.debug("Resetting profile settings: {}".format(profileGroupName))
-            settings.remove(profileGroupName)
+        profGroupName = self._profileGroupName(profile)
     
         # Instantiate windows from groups            
-        settings.beginGroup(profileGroupName)
+        settings.beginGroup(profGroupName)
         try:
             for windowGroupName in settings.childGroups():
                 if windowGroupName.startswith('window'):
@@ -135,17 +159,16 @@ class ArgosApplication(object):
             logger.warning("No profile defined (no settings saved)")
             return
 
-        assert self._settingsSaved == False, "settings already saved"
-        self._settingsSaved = True                        
+        self._profileSaved = True                        
                  
         settings = QtCore.QSettings()  
         logger.debug("Writing settings to: {}".format(settings.fileName()))
 
-        profileGroupName = string_to_identifier(self.profile)
-        settings.remove(profileGroupName) # start with a clean slate
+        profGroupName = self._profileGroupName(self.profile)
+        settings.remove(profGroupName) # start with a clean slate
 
         assert self.mainWindows, "no main windows found"
-        settings.beginGroup(profileGroupName)
+        settings.beginGroup(profGroupName)
         try:
             for winNr, mainWindow in enumerate(self.mainWindows):
                 settings.beginGroup("window-{:02d}".format(winNr))
@@ -161,7 +184,7 @@ class ArgosApplication(object):
         """ Writes the persistent settings of this profile is this is the last window and
             the settings have not yet been saved.
         """
-        if not self._settingsSaved and len(self.mainWindows) <= 1:
+        if not self._profileSaved and len(self.mainWindows) <= 1:
             self.saveProfile()
             
             
@@ -190,7 +213,6 @@ class ArgosApplication(object):
         """
         logger.debug("removeMainWindow called")
         self.mainWindows.remove(mainWindow)
-
         
 
     def raiseAllWindows(self):

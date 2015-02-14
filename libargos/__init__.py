@@ -27,7 +27,10 @@ from .application import getArgosApplication
 
 logger = logging.getLogger(__name__)
 
-def browse(fileNames = None, profile=DEFAULT_PROFILE, resetProfile=False): 
+def browse(fileNames = None, 
+           profile=DEFAULT_PROFILE, 
+           resetProfile=False, 
+           resetAllProfiles=False): 
     """ Opens a main window and executes the application
     """
     #if DEBUGGING: # TODO temporary
@@ -36,7 +39,11 @@ def browse(fileNames = None, profile=DEFAULT_PROFILE, resetProfile=False):
     if DEBUGGING:
         __addTestData(argosApp)
     argosApp.loadFiles(fileNames)
-    argosApp.loadProfile(profile=profile, reset=resetProfile)
+    if resetProfile:
+        argosApp.deleteProfile(profile)
+    if resetAllProfiles:
+        argosApp.deleteAllProfiles()
+    argosApp.loadProfile(profile=profile)
     return argosApp.execute()
 
 

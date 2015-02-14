@@ -48,6 +48,10 @@ def main():
     parser.add_argument('--reset', '--reset-profile', dest='reset_profile', action = 'store_true',  
         help="If set, persistent settings will be reset for the current profile")
     
+    parser.add_argument('--reset-all', '--reset-all-profiles', 
+        dest='reset_all_profiles', action = 'store_true',  
+        help="If set, persistent settings will be reset for the all profiles")
+    
     parser.add_argument('-V', '--version', action = 'store_true',  
         help="Prints the program version")    
         
@@ -69,13 +73,12 @@ def main():
     if args.version:
         print(about_str)
         sys.exit(0)
-        
-    print (args)
 
     # Browse will create an ArgosApplication with one MainWindow
     browse(fileNames = args.fileNames,
            profile=args.profile,  
-           resetProfile=args.reset_profile)
+           resetProfile=args.reset_profile, 
+           resetAllProfiles=args.reset_all_profiles)
     logger.info('Done {}'.format(PROJECT_NAME))
   
 if __name__ == "__main__":
