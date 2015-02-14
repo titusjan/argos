@@ -41,11 +41,16 @@ logger = logging.getLogger(__name__)
 class MainWindow(QtGui.QMainWindow):
     """ Main application window.
     """
+    __numInstances = 0
+    
     def __init__(self, argosApplication):
         """ Constructor
             :param reset: If true the persistent settings, such as column widths, are reset. 
         """
         super(MainWindow, self).__init__()
+        self._instanceNr = MainWindow.__numInstances # Used only for debugging
+        MainWindow.__numInstances += 1
+
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self._argosApplication = argosApplication
         
@@ -91,7 +96,7 @@ class MainWindow(QtGui.QMainWindow):
     def __setupMenu(self):
         """ Sets up the main menu.
         """
-        if 0: # TODO: 1???
+        if 1: # TODO: 0/1???
             # Don't use self.menuBar(), on OS-X this is not shared across windows.
             # See: http://qt-project.org/doc/qt-4.8/qmenubar.html#details
             # And:http://qt-project.org/doc/qt-4.8/qmainwindow.html#menuBar
@@ -135,7 +140,7 @@ class MainWindow(QtGui.QMainWindow):
         fileMenu.addAction("E&xit", self.argosApplication.closeAllWindows, QtGui.QKeySequence.Quit)
         if DEBUGGING:
             fileMenu.addSeparator()
-            fileMenu.addAction("&Test", self.myTest, "Ctrl+T")
+            fileMenu.addAction("&Test-{}".format(self._instanceNr), self.myTest, "Ctrl+T")
                  
         ### Help Menu ###
                 
@@ -230,7 +235,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def myTest(self):
         """ Function for testing """
-        logger.debug("myTest")
+        logger.debug("myTest for window: {}".format(self._instanceNr))
         import gc
         
         from libargos.qt import printChildren, printAllWidgets
