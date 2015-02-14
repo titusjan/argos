@@ -109,7 +109,7 @@ class MainWindow(QtGui.QMainWindow):
 
         fileMenu = menuBar.addMenu("&File")
         openFileAction = fileMenu.addAction("&New Inspector Window", 
-            self.argosApplication.createMainWindow) # does create a loop
+            self.argosApplication.addNewMainWindow)
         openFileAction.setShortcut(QtGui.QKeySequence.New)
         
         openFileAction = fileMenu.addAction("&Open Files...", 
@@ -231,11 +231,15 @@ class MainWindow(QtGui.QMainWindow):
         storeRootIndex = getGlobalRepository().insertItem(mappingRti)
         self.treeView.setExpanded(storeRootIndex, False)
         self.treeView.setCurrentIndex(storeRootIndex)
-        
+
+
 
     def myTest(self):
         """ Function for testing """
         logger.debug("myTest for window: {}".format(self._instanceNr))
+        
+        self.argosApplication.raiseAllWindows()
+        
         import gc
         
         from libargos.qt import printChildren, printAllWidgets

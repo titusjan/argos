@@ -80,7 +80,6 @@ class ArgosApplication(object):
     def readViewSettings(self, reset=False): # TODO: read profile?
         """ Reads the persistent program settings
         """ 
-        return False # TODO remove
         settings = QtCore.QSettings()
         logger.debug("Reading settings from: {}".format(settings.fileName()))
         
@@ -97,9 +96,7 @@ class ArgosApplication(object):
                 if windowGroupName.startswith('window'):
                     settings.beginGroup(windowGroupName)
                     try:
-                        mainWindow = self.createMainWindow()
-                        mainWindow.readViewSettings(settings)
-                        #QtCore.QPoint(20 * self._instanceNr, 20 * self._instanceNr)))
+                        self.addNewMainWindow(settings=settings)
                     finally:
                         settings.endGroup()
         finally:
@@ -109,7 +106,6 @@ class ArgosApplication(object):
     def writeViewSettings(self):
         """ Writes the view settings to the persistent store
         """
-        return False # TODO remove
         assert self._settingsSaved == False, "settings already saved"
         self._settingsSaved = True                        
                  
@@ -136,16 +132,18 @@ class ArgosApplication(object):
         """ Writes the persistent settings of this profile is this is the last window and
             the settings have not yet been saved.
         """
-        return False
         if not self._settingsSaved and len(self.mainWindows) <= 1:
             self.writeViewSettings()
             
             
-    def createMainWindow(self):
+    def addNewMainWindow(self, settings=None):
         """ Creates and shows a new MainWindow.
         """
         mainWindow = MainWindow(self)
         self.mainWindows.append(mainWindow)
+        
+        if settings:
+            mainWindow.readViewSettings(settings)
         
         mainWindow.show()
         if platform.system() == 'Darwin':
@@ -159,6 +157,16 @@ class ArgosApplication(object):
         logger.debug("removeMainWindow called")
         self.mainWindows.remove(mainWindow)
 
+        
+
+    def raiseAllWindows(self):
+        """ Raises all application windows.
+        """
+        logger.debug("raiseAllWindows called")
+        for mainWindow in self.mainWindows:
+            logger.debug("Raising {}".format(mainWindow._instanceNr))
+            mainWindow.raise_()
+            
     
     def closeAllWindows(self):
         """ Closes all windows. Save windows state to persistent settings before closing them.
