@@ -43,7 +43,20 @@ class ArgosApplication(object):
         
         #self.readViewSettings(reset=resetSettings)
         self.qApplication.lastWindowClosed.connect(self.quit) 
+        
+        # Call setup when the event loop starts.
+        QtCore.QTimer.singleShot(0, self.setup)
 
+
+    def setup(self):
+        """ Called once directly after the eventloop starts. 
+        """
+        logger.debug("ArgosApplication.setup called")
+        
+        # Raising all window because in OS-X window 0 is not shown.
+        #self.raiseAllWindows()
+        self.mainWindows[0].activateWindow() # also solves the issue
+        
         
     @property
     def qApplication(self):
@@ -151,7 +164,7 @@ class ArgosApplication(object):
             # that was added. Therefore we also call activeWindow. However, this may not
             # always be desirable. TODO: make optional? 
             mainWindow.raise_()
-            mainWindow.activateWindow() 
+            pass
             
         return mainWindow
     

@@ -61,7 +61,8 @@ class MainWindow(QtGui.QMainWindow):
         #self.fileMenu.aboutToShow.connect(self.treeView.updateCurrentItemActions) # TODO: needed?
         self.destroyed.connect(self.byebye) # TODO: remove
         
-        self.setWindowTitle("{}-{}".format(PROJECT_NAME, self.argosApplication.profile))
+        self.setWindowTitle("{}-{} (#{})".format(PROJECT_NAME, self.argosApplication.profile, 
+                                                 self._instanceNr))
         self.resize(QtCore.QSize(1024, 700))
         
         if DEBUGGING:
@@ -242,7 +243,7 @@ class MainWindow(QtGui.QMainWindow):
         
         import gc
         
-        from libargos.qt import printChildren, printAllWidgets
+        from libargos.qt import printAllWidgets
         printAllWidgets(self._argosApplication._qApplication, ofType=MainWindow)
 
         logger.debug("forcing garbage collection")
