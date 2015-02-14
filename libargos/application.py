@@ -147,7 +147,12 @@ class ArgosApplication(object):
         
         mainWindow.show()
         if platform.system() == 'Darwin':
+            # Calling raise when before the QApplication.exec_ only shows the last window
+            # that was added. Therefore we also call activeWindow. However, this may not
+            # always be desirable. TODO: make optional? 
             mainWindow.raise_()
+            mainWindow.activateWindow() 
+            
         return mainWindow
     
     
