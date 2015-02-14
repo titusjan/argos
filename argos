@@ -26,7 +26,7 @@ logging.basicConfig(level='DEBUG', stream=sys.stderr,
 
 from libargos import browse
 from libargos.qt import USE_PYQT
-from libargos.info import DEBUGGING, PROJECT_NAME, VERSION
+from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, DEFAULT_PROFILE
 from libargos.utils.misc import remove_process_serial_number
 
 # Import last. TODO: function call of some sorts.
@@ -39,16 +39,22 @@ def main():
     
     about_str = "{} version: {}".format(PROJECT_NAME, VERSION)
     parser = argparse.ArgumentParser(description = about_str)
-    parser.add_argument('fileNames', metavar='FILE', nargs='*', 
-                        help='Input files')
-    parser.add_argument('--reset', '--reset-profile', action = 'store_true',  
-                        help="If set, the size and shapes of the Qt widgets will be reset to their defaults.")
+    
+    parser.add_argument('fileNames', metavar='FILE', nargs='*', help='Input files')
+    
+    parser.add_argument('-p', '--profile', dest='profile', default=DEFAULT_PROFILE, 
+        help="Can be used to have different persistent settings for different use cases.")
+    
+    parser.add_argument('--reset', '--reset-profile', dest='reset_profile', action = 'store_true',  
+        help="If set, persistent settings will be reset for the current profile")
+    
     parser.add_argument('-V', '--version', action = 'store_true',  
-                        help="Prints the program version")    
+        help="Prints the program version")    
         
     parser.add_argument('-L', '--log-level', dest='log_level', default='warn',
-                        help="Log level. Only log messages with a level higher or equal than this will be printed. "
-                        "Default: 'warn'", choices=('debug', 'info', 'warn', 'error', 'critical'))
+        help="Log level. Only log messages with a level higher or equal than this will be printed. "
+        "Default: 'warn'", choices=('debug', 'info', 'warn', 'error', 'critical'))
+    
     args = parser.parse_args(remove_process_serial_number(sys.argv[1:]))
 
     logger.info("Setting log level to: {}".format(args.log_level.upper()))
@@ -63,9 +69,13 @@ def main():
     if args.version:
         print(about_str)
         sys.exit(0)
+        
+    print (args)
 
     # Browse will create an ArgosApplication with one MainWindow
-    browse(fileNames = args.fileNames, resetProfile=args.reset)
+    browse(fileNames = args.fileNames,
+           profile=args.profile,  
+           resetProfile=args.reset_profile)
     logger.info('Done {}'.format(PROJECT_NAME))
   
 if __name__ == "__main__":

@@ -22,12 +22,12 @@
 """
 import logging
 from .info import VERSION as __version__
-from .info import DEBUGGING
+from .info import DEBUGGING, DEFAULT_PROFILE
 from .application import getArgosApplication
 
 logger = logging.getLogger(__name__)
 
-def browse(fileNames = None, resetProfile=False): 
+def browse(fileNames = None, profile=DEFAULT_PROFILE, resetProfile=False): 
     """ Opens a main window and executes the application
     """
     #if DEBUGGING: # TODO temporary
@@ -36,7 +36,7 @@ def browse(fileNames = None, resetProfile=False):
     if DEBUGGING:
         __addTestData(argosApp)
     argosApp.loadFiles(fileNames)
-    argosApp.readProfile(reset=resetProfile)
+    argosApp.loadProfile(profile=profile, reset=resetProfile)
     return argosApp.execute()
 
 

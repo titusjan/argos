@@ -37,11 +37,12 @@ TODO:
 		
 
 TODO Long term or nice to have:
-	let repo tree view work with multile items selected
+	let repo tree view work with multile selected items
 	example RTI using XML file.
 	fits format
 	use decorators in RTI?
 	
+	Change profile from menu?
 	Plugin management window
 	
 THINK:

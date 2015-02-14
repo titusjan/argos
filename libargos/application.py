@@ -33,7 +33,7 @@ class ArgosApplication(object):
     def __init__(self):
         """ Constructor
         """
-        self._profile = "Panoptes"
+        self._profile = ''
         self._mainWindows = []
         self._settingsSaved = False  # boolean to prevent saving settings twice
         
@@ -41,7 +41,7 @@ class ArgosApplication(object):
         # having to call it themselves.
         self._qApplication = getQApplicationInstance()
         
-        #self.readProfile(reset=resetSettings)
+        #self.loadProfile(reset=resetSettings)
         self.qApplication.lastWindowClosed.connect(self.quit) 
         
         # Call setup when the event loop starts.
@@ -97,12 +97,13 @@ class ArgosApplication(object):
             repo.loadFile(fileName, rtiClass=rtiClass)
 
 
-    def readProfile(self, reset=False): # TODO: read profile?
+    def loadProfile(self, profile, reset=False):
         """ Reads the persistent program settings
         """ 
         settings = QtCore.QSettings()
-        logger.debug("Reading settings from: {}".format(settings.fileName()))
+        logger.info("Reading profile {!r} from: {}".format(profile, settings.fileName()))
         
+        self._profile = profile
         profileGroupName = string_to_identifier(self.profile)
         
         if reset:
@@ -122,14 +123,18 @@ class ArgosApplication(object):
         finally:
             settings.endGroup()
             
-        if len(self.mainWindows) == 0: # TODO: to readProfile?
-            logger.warn("No open windows in profile. Creating one.")
-            self.addNewMainWindow() # TODO: filenames should be part of the app
+        if len(self.mainWindows) == 0:
+            logger.warn("No open windows in profile (creating one.)")
+            self.addNewMainWindow()
         
 
-    def writeProfile(self):
+    def saveProfile(self):
         """ Writes the view settings to the persistent store
         """
+        if not self.profile:
+            logger.warning("No profile defined (no settings saved)")
+            return
+
         assert self._settingsSaved == False, "settings already saved"
         self._settingsSaved = True                        
                  
@@ -145,19 +150,19 @@ class ArgosApplication(object):
             for winNr, mainWindow in enumerate(self.mainWindows):
                 settings.beginGroup("window-{:02d}".format(winNr))
                 try:
-                    mainWindow.writeProfile(settings)
+                    mainWindow.saveProfile(settings)
                 finally:
                     settings.endGroup()
         finally:
             settings.endGroup()
                         
                         
-    def writeProfileIfNeeded(self):
+    def saveProfileIfNeeded(self):
         """ Writes the persistent settings of this profile is this is the last window and
             the settings have not yet been saved.
         """
         if not self._settingsSaved and len(self.mainWindows) <= 1:
-            self.writeProfile()
+            self.saveProfile()
             
             
     def addNewMainWindow(self, settings=None):
@@ -200,7 +205,7 @@ class ArgosApplication(object):
     def closeAllWindows(self):
         """ Closes all windows. Save windows state to persistent settings before closing them.
         """
-        self.writeProfile()
+        self.saveProfile()
         logger.debug("ArgosApplication: Closing all windows")
         self.qApplication.closeAllWindows()
         

@@ -26,12 +26,14 @@ REPO_NAME = "argos"
 SCRIPT_NAME = "argos"
 PACKAGE_NAME = "libargos"
 PROJECT_NAME = "Argos"
+DEFAULT_PROFILE = 'Panoptes'
 SHORT_DESCRIPTION = "Argos Panoptes HDF/NCDF/array data inspector."
 PROJECT_URL = "https://github.com/titusjan/argos"
 AUTOR = "Pepijn Kenter"
 EMAIL = "titusjan@gmail.com"
 ORGANIZATION_NAME = "titusjan"
 ORGANIZATION_DOMAIN = "titusjan.nl"
+
 
 def program_directory():
     """ Returns the program directory where this program is installed
