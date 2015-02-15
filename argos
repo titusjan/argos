@@ -29,9 +29,6 @@ from libargos.qt import USE_PYQT
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, DEFAULT_PROFILE
 from libargos.utils.misc import remove_process_serial_number
 
-# Import last. TODO: function call of some sorts.
-import libargos.repo.rtiplugins as plugins
-
 
 def main():
     """ Starts Argos main window

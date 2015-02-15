@@ -22,6 +22,7 @@ import logging, platform
 from libargos.info import DEBUGGING
 from libargos.qt import getQApplicationInstance, QtCore
 from libargos.repo.repotreemodel import getGlobalRepository
+from libargos.repo.rtiplugins import registerDefaultRtiPlugins
 from libargos.utils.misc import string_to_identifier
 from libargos.widgets.mainwindow import MainWindow
 
@@ -41,6 +42,9 @@ class ArgosApplication(object):
         # Call getQApplicationInstance() so that the users can call libargos.browse without 
         # having to call it themselves.
         self._qApplication = getQApplicationInstance()
+        
+        # Register plugins (TODO: in QSettings)
+        registerDefaultRtiPlugins()
         
         #self.loadProfile(reset=resetSettings)
         self.qApplication.lastWindowClosed.connect(self.quit) 

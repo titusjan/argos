@@ -15,16 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Plugins package.
+""" Repository Tree Items (RTI) plugins package.
 """
 
 from libargos.repo.registry import getRtiRegistry
 
 
-__registry = getRtiRegistry()
-
-__registry.registerRti('libargos.repo.rtiplugins.ncdf.NcdfFileRti', 
-                       extensions=['nc', 'nc3', 'nc4'])
-__registry.registerRti('libargos.repo.rtiplugins.nptextfile.NumpyTextFileRti', 
-                       extensions=['txt', 'text'])
-
+def registerDefaultRtiPlugins():
+    """ Registers the default RTI plugins for Argos
+    """
+    registry = getRtiRegistry()
+    registry.registerRti('libargos.repo.rtiplugins.ncdf.NcdfFileRti', 
+                         extensions=['nc', 'nc3', 'nc4'])
+    registry.registerRti('libargos.repo.rtiplugins.nptextfile.NumpyTextFileRti', 
+                         extensions=['txt', 'text'])
+    
