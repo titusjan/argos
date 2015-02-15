@@ -8,7 +8,7 @@ from __future__ import division
 
 import logging
 
-from libargos import moduleinfo as mi
+from libargos.utils import moduleinfo as mi
 from libargos.info import PROJECT_NAME, VERSION
 from libargos.qt import QtCore, QtGui
 
