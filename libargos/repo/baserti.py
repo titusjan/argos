@@ -22,7 +22,7 @@ import logging, os
 
 from libargos.info import program_directory, DEBUGGING
 from libargos.qt import QtGui # TODO: get rid of dependency on QtGui
-from libargos.qt.editabletreemodel import AbstractLazyLoadTreeItem
+from libargos.qt.treeitems import AbstractLazyLoadTreeItem
 from libargos.utils.cls import StringType, check_class, is_a_sequence
 
 ICONS_DIRECTORY = os.path.join(program_directory(), 'img/icons')
