@@ -148,7 +148,7 @@ class ArgosApplication(object):
             settings.endGroup()
             
         if len(self.mainWindows) == 0:
-            logger.warn("No open windows in profile (creating one.)")
+            logger.warn("No open windows in profile (creating one).")
             self.addNewMainWindow()
         
 

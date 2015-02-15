@@ -1,6 +1,7 @@
 
 import logging
 
+from libargos.utils.cls import StringType, check_class
 
 logger = logging.getLogger(__name__)
 
@@ -11,9 +12,17 @@ class BaseTreeItem(object):
         The tree items have no notion of which field is stored in which column. This is implemented
         in BaseTreeModel._itemValueForColumn
     """
-    def __init__(self):
+    def __init__(self, nodeName=''):
+        """ Constructor
+        
+            :param nodeName: short name describing this node. Is used to construct the nodePath.
+                Currently we don't check for uniqueness in the children but this may change.
+        """
+        check_class(nodeName, StringType, allow_none=False)
+        self._nodeName = str(nodeName)
         self._parentItem = None
         self._childItems = [] # the fetched children
+        self._nodePath = self._constructNodePath()        
 
     def finalize(self):
         """ Can be used to cleanup resources. Should be called explicitly.
@@ -23,7 +32,30 @@ class BaseTreeItem(object):
             child.finalize()
         
     def __repr__(self):
-        return "<{}>".format(type(self).__name__)
+        return "<{}: {}>".format(type(self).__name__, self.nodePath)
+    
+    @property
+    def nodeName(self):
+        """ The node name. Is used to construct the nodePath"""
+        return self._nodeName
+
+    @nodeName.setter
+    def nodeName(self, value):
+        """ The node name. Is used to construct the nodePath"""
+        self._nodeName = value
+        self._nodePath = self._constructNodePath()
+
+    def _constructNodePath(self):
+        """ Recursively prepends the parents nodeName to the path until the root node is reached."""
+        if self.parentItem is None:
+            return '' # invisible root node; is not included in the path
+        else:
+            return self.parentItem.nodePath + '/' + self.nodeName
+    
+    @property
+    def nodePath(self):
+        """ The sequence of nodeNames from the root to this node. Separated by slashes."""
+        return self._nodePath
     
     @property
     def parentItem(self):
@@ -34,6 +66,7 @@ class BaseTreeItem(object):
     def parentItem(self, value):
         """ The parent item """
         self._parentItem = value
+        self._nodePath = self._constructNodePath()
     
     @property
     def childItems(self):
@@ -99,10 +132,10 @@ class AbstractLazyLoadTreeItem(BaseTreeItem):
     """ Abstract base class for a tree item that can do lazy loading of children.
         Descendants should override the _fetchAllChildren
     """
-    def __init__(self):
+    def __init__(self, nodeName=''):
         """ Constructor
         """
-        super(AbstractLazyLoadTreeItem, self).__init__()
+        super(AbstractLazyLoadTreeItem, self).__init__(nodeName=nodeName)
         self._childrenFetched = False
         
     def hasChildren(self):

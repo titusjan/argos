@@ -30,7 +30,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         # The root item also is returned by getItem in case of an invalid index. 
         # Finally, it is used to store the header data.
         #self._horizontalHeaders = [header for header in headers]
-        self._rootItem = BaseTreeItem()
+        self._rootItem = BaseTreeItem(nodeName='<invisible-root>')
         
         # To easy turn-on off editing flags without having to override the flags() member
         self._isEditable = True 

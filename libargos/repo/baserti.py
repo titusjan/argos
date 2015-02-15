@@ -21,7 +21,7 @@
 import logging, os
 
 from libargos.info import program_directory, DEBUGGING
-from libargos.qt import QtGui # TODO: get rid of dependency on QtGui
+from libargos.qt import QtGui # TODO: get rid of dependency on QtGui?
 from libargos.qt.treeitems import AbstractLazyLoadTreeItem
 from libargos.utils.cls import StringType, check_class, is_a_sequence
 
@@ -48,10 +48,8 @@ class BaseRti(AbstractLazyLoadTreeItem):
             :param nodeName: name of this node (used to construct the node path).
             :param fileName: absolute path to the file where the data of this RTI originates.
         """
-        super(BaseRti, self).__init__()
-        
-        check_class(nodeName, StringType, allow_none=False) # TODO: allow_none?
-        self._nodeName = str(nodeName)
+        super(BaseRti, self).__init__(nodeName=nodeName)
+
         self._isOpen = False
         self._exception = None # Any exception that may occur when opening this item. 
         
@@ -108,7 +106,6 @@ class BaseRti(AbstractLazyLoadTreeItem):
                 raise            
             logger.error("Error during tree item open: {}".format(ex))
             self._setException(ex)
-
             
         
     def _openResources(self):
@@ -117,6 +114,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
             Is called by self.open
         """
         pass
+    
     
     def close(self):
         """ Closes underlying resources and un-sets isOpen flag. 
@@ -232,11 +230,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
             return self._iconOpen
         else:
             return self._iconClosed
-            
-    @property
-    def nodeName(self): # TODO: to BaseTreeItem?
-        """ The node name."""
-        return self._nodeName
+
         
     @property
     def typeName(self):

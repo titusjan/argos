@@ -40,7 +40,7 @@ TODO Long term or nice to have:
 	let repo tree view work with multile selected items
 	example RTI using XML file.
 	fits format
-	use decorators in RTI?
+	use decorators in AbstractLazyLoadTreeItem?
 	
 	Change profile from menu?
 	Plugin management window
