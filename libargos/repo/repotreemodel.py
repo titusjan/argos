@@ -153,25 +153,8 @@ class RepoTreeModel(BaseTreeModel):
         logger.info("Loading data from: {!r}".format(fileName))
         if rtiClass is None:
             rtiClass = detectRtiFromFileName(fileName)
-            
         repoTreeItem = rtiClass.createFromFileName(fileName)
         assert repoTreeItem.parentItem is None, "repoTreeItem {!r}".format(repoTreeItem)
         return self.insertItem(repoTreeItem, position=position, parentIndex=parentIndex)
     
     
-def createGlobalRepositoryFunction():
-    """ Closure to create the RepoTreeModel singleton
-    """
-    globRepo = RepoTreeModel()
-    
-    def accessGlobalRepo():
-        return globRepo
-    
-    return accessGlobalRepo
-
-# This is actually a function definition, not a constant
-#pylint: disable=C0103
-
-getGlobalRepository = createGlobalRepositoryFunction()
-getGlobalRepository.__doc__ = "Function that returns the RepoTreeModel common to all windows"
-

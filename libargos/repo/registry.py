@@ -18,7 +18,7 @@
 """
 
 import logging
-from libargos.utils.cls import import_symbol, check_is_a_string
+from libargos.utils.cls import import_symbol, check_is_a_string, check_class
 from libargos.utils.misc import prepend_point_to_extension
 
 
@@ -57,7 +57,9 @@ class _RegisteredRti(object):
     
 
 class RtiRegistry(object):
-    """ Class that can be used to register repository tree items (RTIs)
+    """ Class that can be used to register repository tree items (RTIs).
+    
+        Maintains a name to RtiClass mapping and an extension to RtiClass mapping. 
     """
     def __init__(self):
         """ Constructor
@@ -85,7 +87,7 @@ class RtiRegistry(object):
                 
             :param rtiFullName: full name of the repo tree item. 
                 E.g.: 'libargos.plugins.rti.ncdf.NcdfFileRti'
-                The rti should be a descendant of libargos.repo.baserti.FileRtiMixin
+                The rti should be a descendant of BaseRti
             :param extensions: optional list of extensions that will be linked to this RTI
                 a point will be prepended to the extensions if not already present.
         """
@@ -94,7 +96,7 @@ class RtiRegistry(object):
         logger.info("Registering {} for extensions: {}".format(rtiFullName, extensions))
         
         check_is_a_string(rtiFullName)
-        rtiClass = import_symbol(rtiFullName)
+        rtiClass = import_symbol(rtiFullName) # TODO: check class? 
         
         regRti = _RegisteredRti(rtiFullName, rtiClass, extensions)
         self._registeredRtis.append(regRti)
@@ -119,7 +121,9 @@ class RtiRegistry(object):
         return ';;'.join(filters)
     
 
-    
+# The RTI registry is implemented as a singleton. This is necessary because
+# in DirectoryRti._fetchAllChildren we need access to the registry. 
+# TODO: think of an elegant way to access the ArgosApplication.registry from there.    
 def createGlobalRegistryFunction():
     """ Closure to create the RtiRegistry singleton
     """
@@ -133,8 +137,8 @@ def createGlobalRegistryFunction():
 # This is actually a function definition, not a constant
 #pylint: disable=C0103
 
-getRtiRegistry = createGlobalRegistryFunction()
-getRtiRegistry.__doc__ = "Function that returns the RtiRegistry singleton common to all windows"
+globalRtiRegistry = createGlobalRegistryFunction()
+globalRtiRegistry.__doc__ = "Function that returns the RtiRegistry singleton common to all windows"
 
 
             

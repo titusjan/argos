@@ -27,9 +27,8 @@ import logging
 
 from .repotreeview import RepoTreeView
 from .aboutdialog import AboutDialog
-from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, PROJECT_URL
-from libargos.repo.registry import getRtiRegistry
-from libargos.repo.repotreemodel import getGlobalRepository
+from libargos.info import DEBUGGING, PROJECT_NAME
+from libargos.repo.registry import globalRtiRegistry
 from libargos.qt import QtCore, QtGui, QtSlot
 
 
@@ -82,7 +81,7 @@ class MainWindow(QtGui.QMainWindow):
         centralLayout = QtGui.QVBoxLayout()
         self.mainSplitter.setLayout(centralLayout)
         
-        self.treeView = RepoTreeView(getGlobalRepository())
+        self.treeView = RepoTreeView(self.argosApplication.repo)
         centralLayout.addWidget(self.treeView)
         
         self.label2 = QtGui.QLabel("Hi there", parent=self)
@@ -117,7 +116,7 @@ class MainWindow(QtGui.QMainWindow):
         openDirAction.setShortcut(QtGui.QKeySequence("Ctrl+O, D"))
         
         openAsMenu = fileMenu.addMenu("Open As")
-        for regRti in getRtiRegistry().registeredRtis:
+        for regRti in self.argosApplication.rtiRegistry.registeredRtis:
             rtiClass = regRti.rtiClass
             action = QtGui.QAction(rtiClass.getLabel(), self,
                 triggered=lambda: self.openFiles(rtiClass=rtiClass, 
@@ -168,9 +167,8 @@ class MainWindow(QtGui.QMainWindow):
             else:
                 fileNames = []
             
-        repo = getGlobalRepository()
         for fileName in fileNames:
-            storeRootIndex = repo.loadFile(fileName, rtiClass=rtiClass)
+            storeRootIndex = self.repo.loadFile(fileName, rtiClass=rtiClass)
             self.treeView.setExpanded(storeRootIndex, True)
     
     

@@ -21,7 +21,8 @@ import logging, platform
 
 from libargos.info import DEBUGGING
 from libargos.qt import getQApplicationInstance, QtCore
-from libargos.repo.repotreemodel import getGlobalRepository
+from libargos.repo.repotreemodel import RepoTreeModel
+from libargos.repo.registry import globalRtiRegistry
 from libargos.repo.rtiplugins import registerDefaultRtiPlugins
 from libargos.utils.misc import string_to_identifier
 from libargos.widgets.mainwindow import MainWindow
@@ -29,22 +30,24 @@ from libargos.widgets.mainwindow import MainWindow
 
 logger = logging.getLogger(__name__)
 
+
 class ArgosApplication(object):
     """ The application singleton which holds global stat
     """
     def __init__(self):
         """ Constructor
         """
-        self._profile = ''
-        self._mainWindows = []
-        self._profileSaved = False  # boolean to prevent saving settings twice
-        
         # Call getQApplicationInstance() so that the users can call libargos.browse without 
         # having to call it themselves.
         self._qApplication = getQApplicationInstance()
         
-        # Register plugins (TODO: in QSettings)
-        registerDefaultRtiPlugins()
+        self._repo = RepoTreeModel()
+        self._rtiRegistry = globalRtiRegistry()
+        registerDefaultRtiPlugins(self._rtiRegistry) # TODO: better solution
+        
+        self._profile = ''
+        self._mainWindows = []
+        self._profileSaved = False  # boolean to prevent saving settings twice
         
         #self.loadProfile(reset=resetSettings)
         self.qApplication.lastWindowClosed.connect(self.quit) 
@@ -69,13 +72,17 @@ class ArgosApplication(object):
         """
         return self._qApplication
 
-        
     @property
     def repo(self):
         """ Returns the global repository
         """
-        return getGlobalRepository()
+        return self._repo
 
+    @property
+    def rtiRegistry(self):
+        """ Returns the repository tree item (rti) registry
+        """
+        return self._rtiRegistry
         
     @property
     def profile(self):
@@ -97,10 +104,9 @@ class ArgosApplication(object):
         """ Loads files into the repository as repo tree items of class rtiClass.
             Auto-detects using the extensions when rtiClass is None
         """
-        repo = getGlobalRepository()
         for fileName in fileNames:
-            repo.loadFile(fileName, rtiClass=rtiClass)
-
+            self.repo.loadFile(fileName, rtiClass=rtiClass)
+                
 
     def _profileGroupName(self, profile):
         """ Returns the name of the QSetting group for this profile.
@@ -254,22 +260,20 @@ class ArgosApplication(object):
         return exitCode
     
             
-            
-    
-def createArgosApplicationFunction():
-    """ Closure to create the ArgosApplication singleton
-    """
-    globApp = ArgosApplication()
-    
-    def accessArgosApplication():
-        return globApp
-    
-    return accessArgosApplication
-
-# This is actually a function definition, not a constant
-#pylint: disable=C0103
-
-getArgosApplication = createArgosApplicationFunction()
-getArgosApplication.__doc__ = "Function that returns the ArgosApplication singleton"
+#def createArgosApplicationFunction():
+#    """ Closure to create the ArgosApplication singleton
+#    """
+#    globApp = ArgosApplication()
+#    
+#    def accessArgosApplication():
+#        return globApp
+#    
+#    return accessArgosApplication
+#
+## This is actually a function definition, not a constant
+##pylint: disable=C0103
+#
+#getArgosApplication = createArgosApplicationFunction()
+#getArgosApplication.__doc__ = "Function that returns the ArgosApplication singleton"
 
 

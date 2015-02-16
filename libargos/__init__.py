@@ -23,7 +23,7 @@
 import logging
 from .info import VERSION as __version__
 from .info import DEBUGGING, DEFAULT_PROFILE
-from .application import getArgosApplication
+from .application import ArgosApplication
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ def browse(fileNames = None,
     """
     #if DEBUGGING: # TODO temporary
     #    _gcMon = createGcMonitor()
-    argosApp = getArgosApplication()
+    argosApp = ArgosApplication()
     if DEBUGGING:
         __addTestData(argosApp)
     argosApp.loadFiles(fileNames)

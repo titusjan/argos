@@ -21,7 +21,7 @@
 import logging, os
 from .baserti import (ICONS_DIRECTORY, BaseRti)
 from libargos.qt import QtGui
-from libargos.repo.registry import getRtiRegistry
+from libargos.repo.registry import globalRtiRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +94,7 @@ def detectRtiFromFileName(fileName):
         cls = DirectoryRti
     else:
         try:
-            cls = getRtiRegistry().getRtiByExtension(extension)
+            cls = globalRtiRegistry().getRtiByExtension(extension)
         except KeyError:
             cls = UnknownFileRti
             
