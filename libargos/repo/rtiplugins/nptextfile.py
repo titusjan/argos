@@ -21,7 +21,7 @@ import logging, os
 import numpy as np
 
 from libargos.qt import QtGui
-from libargos.repo.memoryrti import ArrayRti
+from libargos.repo.memoryrtis import ArrayRti
 from libargos.repo.baserti import ICONS_DIRECTORY
 
 logger = logging.getLogger(__name__)

@@ -22,7 +22,7 @@ from libargos.qt import QtCore
 from libargos.qt.treemodels import BaseTreeModel
 from libargos.info import DEBUGGING
 from libargos.utils.cls import type_name
-from libargos.repo.filesytemrti import detectRtiFromFileName
+from libargos.repo.filesytemrtis import detectRtiFromFileName
 
 
 logger = logging.getLogger(__name__)

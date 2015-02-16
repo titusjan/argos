@@ -51,7 +51,7 @@ def __addTestData(argosApp):
     """ Temporary function to add test data
     """
     import numpy as np
-    from libargos.repo.memoryrti import MappingRti
+    from libargos.repo.memoryrtis import MappingRti
     myDict = {}
     myDict['name'] = 'Pac Man'
     myDict['age'] = 34
