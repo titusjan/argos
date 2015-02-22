@@ -68,8 +68,8 @@ class BaseRti(AbstractLazyLoadTreeItem):
         return cls(nodeName=os.path.basename(fileName), fileName=fileName)
 
     @classmethod
-    def getLabel(cls):
-        """ Returns a short string that describes this item. Used in menus, headers, etc. 
+    def classLabel(cls):
+        """ Returns a short string that describes this class. For use in menus, headers, etc. 
         """
         return cls._label
     

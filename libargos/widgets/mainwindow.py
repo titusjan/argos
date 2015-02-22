@@ -27,8 +27,9 @@ import logging
 
 from .repotreeview import RepoTreeView
 from .aboutdialog import AboutDialog
+from libargos.config.configtreemodel import ConfigTreeModel
+from libargos.widgets.configtreeview import ConfigTreeView
 from libargos.info import DEBUGGING, PROJECT_NAME
-from libargos.repo.registry import globalRtiRegistry
 from libargos.qt import QtCore, QtGui, QtSlot
 
 
@@ -54,6 +55,9 @@ class MainWindow(QtGui.QMainWindow):
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self._argosApplication = argosApplication
+        
+        self._config = ConfigTreeModel()
+        self.__addTestData()
         
         self.__setupViews()
         self.__setupMenu()
@@ -84,8 +88,11 @@ class MainWindow(QtGui.QMainWindow):
         self.treeView = RepoTreeView(self.argosApplication.repo)
         centralLayout.addWidget(self.treeView)
         
-        self.label2 = QtGui.QLabel("Hi there", parent=self)
-        centralLayout.addWidget(self.label2)    
+        self.configTreeView = ConfigTreeView(self._config)
+        centralLayout.addWidget(self.configTreeView)
+        
+        #self.label2 = QtGui.QLabel("Hi there", parent=self)
+        #centralLayout.addWidget(self.label2)    
         
                               
     def __setupMenu(self):
@@ -118,10 +125,10 @@ class MainWindow(QtGui.QMainWindow):
         openAsMenu = fileMenu.addMenu("Open As")
         for regRti in self.argosApplication.rtiRegistry.registeredRtis:
             rtiClass = regRti.rtiClass
-            action = QtGui.QAction(rtiClass.getLabel(), self,
+            action = QtGui.QAction(rtiClass.classLabel(), self,
                 triggered=lambda: self.openFiles(rtiClass=rtiClass, 
                                                  fileMode = QtGui.QFileDialog.ExistingFiles, 
-                                                 caption="Open {}".format(rtiClass.getLabel())))
+                                                 caption="Open {}".format(rtiClass.classLabel())))
             openAsMenu.addAction(action)
 
         for action in self.treeView.topLevelItemActionGroup.actions():
@@ -243,5 +250,11 @@ class MainWindow(QtGui.QMainWindow):
         printAllWidgets(self._argosApplication._qApplication, ofType=MainWindow)
 
 
-            
+
+    def __addTestData(self):
+        """ Temporary function to add test data
+        """
+        from libargos.config.basecti import BaseCti
+        self._config.insertItem(BaseCti(nodeName='test', value=123))
+                    
             

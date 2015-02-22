@@ -20,7 +20,13 @@ http://www.census.gov/population/international/data/countryrank/rank.php
 
 
 
-rename libargos -> argos?
+
+TODO:
+	config table select only individual cells
+	confirm on error when editing cell
+	read/write config to yaml, QSettings. test large configs.
+	
+			
 
 
 Handle Exception:
@@ -31,21 +37,17 @@ Handle Exception:
 Test:
 	Memory leaks
 
-TODO:
-	path of items
-	Multiple open windows.
-		
-
 TODO Long term or nice to have:
+	thinks how to stretch last line when toggling columns on/off (recalc column size?)
 	let repo tree view work with multile selected items
 	example RTI using XML file.
 	fits format
-	use decorators in AbstractLazyLoadTreeItem?
 	
 	Change profile from menu?
 	Plugin management window
 	
 THINK:
+	use decorators in AbstractLazyLoadTreeItem?
 	createFromFileName does not work with memory RTI. Options:
 		1) Implement resource attribute.
 			Cons: where to set the fileName = os.path.realpath(resource) (in a setter?) 

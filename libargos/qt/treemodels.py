@@ -18,7 +18,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         strings that will be passed to views for use as horizontal header titles.
     """
     HEADERS = tuple() # override in descendants
-    COL_ICON = 0      # Column number that contains the icon
+    COL_ICON = None   # Column number that contains the icon. None for no icons
     
     def __init__(self, parent=None):
         """ Constructor
@@ -32,9 +32,6 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         #self._horizontalHeaders = [header for header in headers]
         self._rootItem = BaseTreeItem(nodeName='<invisible-root>')
         
-        # To easy turn-on off editing flags without having to override the flags() member
-        self._isEditable = True 
-
 
     @property
     def rootItem(self):
@@ -98,9 +95,6 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         """
         if not index.isValid():
             return 0
-        
-        if self._isEditable:
-            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable
         else:
             return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
 

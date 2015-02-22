@@ -28,10 +28,9 @@ from libargos.repo.filesytemrtis import detectRtiFromFileName
 logger = logging.getLogger(__name__)
 
 class RepoTreeModel(BaseTreeModel):
-    """ The main entry point of all the data
-    
-        Maintains a list of open files and offers a QAbstractItemModel for read-only access of
-        the data with QTreeViews.
+    """ An implementation QAbstractItemModel that offers read-only access of the application data 
+        for QTreeViews. The underlying data is stored as repository tree items (BaseRti 
+        descendants).
     """
     HEADERS = ["name", "path", "shape", "is open", "tree item", "type", "elem type", "file name"]
     (COL_NODE_NAME, COL_NODE_PATH, COL_SHAPE, COL_IS_OPEN, 
@@ -93,7 +92,7 @@ class RepoTreeModel(BaseTreeModel):
         return parentItem.canFetchChildren()
         
         
-    def fetchMore(self, parentIndex):
+    def fetchMore(self, parentIndex):  # TODO: Make LazyLoadRepoTreeModel?
         """ Fetches any available data for the items with the parent specified by the parent index.
         """
         parentItem = self.getItem(parentIndex)

@@ -56,7 +56,7 @@ logger = logging.getLogger(__name__)
 # Qt classes have many ancestors
 #pylint: disable=R0901
 
-class RepoTreeView(ToggleColumnTreeView):
+class RepoTreeView(ToggleColumnTreeView): # TODO: from ArgosTreeView
     """ Tree widget for browsing the data repository.
     """
     def __init__(self, repoTreeModel):
