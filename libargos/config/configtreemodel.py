@@ -79,9 +79,8 @@ class ConfigTreeModel(BaseTreeModel):
             return False
         try:
             treeItem.value = value
-        except Exception as ex:
-            logger.warn("Unable to set value to {!r}: {}".format(value, ex))
-            return False
+        except Exception:
+            raise
         else:
             return True
         
