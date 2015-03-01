@@ -18,18 +18,25 @@
 """ Repository TreeItem (RTI) classes
     Tree items for use in the RepositoryTreeModel
 """
-import logging, os, json
-from json import JSONEncoder, JSONDecoder
+import logging, os
+from json import JSONEncoder, JSONDecoder, dumps
 
 from libargos.info import program_directory, DEBUGGING
-from libargos.qt import QtGui 
 from libargos.qt.treeitems import BaseTreeItem
 from libargos.utils.cls import get_full_class_name, import_symbol
 
-ICONS_DIRECTORY = os.path.join(program_directory(), 'img/icons')
+
 
 logger = logging.getLogger(__name__)
 
+
+class DefaultValue(object):
+    """ Class for DEFAULT_VALUE constant. 
+    """
+    pass
+    
+DEFAULT_VALUE = DefaultValue()
+    
 
 class BaseCti(BaseTreeItem):
     """ TreeItem for use in a ConfigTreeModel. (RTI = Config TreeItem)
@@ -37,23 +44,35 @@ class BaseCti(BaseTreeItem):
 
         Serves as an interface but can also be instantiated for debugging purposes.
     """
-    def __init__(self, nodeName='', value=None, defaultValue=None): # TODO: mandatory (default)value?
+    def __init__(self, nodeName='', value=DEFAULT_VALUE, defaultValue=None):
         """ Constructor
-        
             :param nodeName: name of this node (used to construct the node path).
-            :param fileName: absolute path to the file where the data of this RTI originates.
+            :param value: the configuration value. If omitted the defaultValue will be used.
+            :param defaultValue: default value to which the value can be reset or initialized
+                if ommited  from the constructor
         """
         super(BaseCti, self).__init__(nodeName=nodeName)
 
-        self._value = value
         self._defaultValue = defaultValue
-        
+        self._value = DEFAULT_VALUE # to make pylint happy
+        self.value = value
+         
     
     def __eq__(self, other): 
-        return (type(self) == type(other) and 
-                self.nodeName == other.nodeName and
-                self.value == other.value and
-                self.defaultValue == other.defaultValue)
+        """ Returns true if self == other. 
+        """
+        result = (type(self) == type(other) and 
+                  self.nodeName == other.nodeName and
+                  self.value == other.value and
+                  self.defaultValue == other.defaultValue and
+                  self.childItems == other.childItems)
+        return result
+
+    def __ne__(self, other): 
+        """ Returns true if self != other. 
+        """
+        return not self.__eq__(other)
+
 
     @classmethod        
     def createFromJsonDict(cls, dct):
@@ -78,7 +97,57 @@ class BaseCti(BaseTreeItem):
         return {'_class_': get_full_class_name(self),
                 'nodeName': self.nodeName, 'value': self.value, 
                 'defaultValue': self.defaultValue, 'childItems': self.childItems}
+        
 
+    def getNonDefaultsDict(self):
+        """ Recursively retrieves values as a dictionary to be used for persistence.
+            Does not save defaultValue and other properties.
+            Only stores values if they differ from the defaultValue. If the CTI and none of its 
+            children differ from their default, a completely empty dictionary is returned. 
+        """
+        dct = {}
+        if self.value != self.defaultValue:
+            dct['value'] = self.value
+            
+        childList = []
+        for childCti in self.childItems:
+            childDct = childCti.getNonDefaultsDict()
+            if childDct:
+                childList.append(childDct)
+        if childList:
+            dct['childItems'] = childList
+        
+        if dct:
+            dct['nodeName'] = self.nodeName
+            
+        return dct
+                
+
+    def setValuesFromDict(self, dct):
+        """ Recursively sets values from a dictionary created by getNonDefaultsDict.
+         
+            Does not raise exceptions (only logs warnings) so that we can remove/rename node
+            names in new Argos versions (or remove them) without breaking the application.
+        """
+        if 'nodeName' not in dct:
+            return
+        
+        nodeName = dct['nodeName']
+        if nodeName != self.nodeName:
+            msg = "nodeName mismatch: expected {!r}, got {!r}".format(self.nodeName, nodeName)
+            if DEBUGGING:
+                raise ValueError(msg)
+            else:
+                logger.warn(msg)
+                return
+            
+        if 'value' in dct:
+            self.value = dct['value']
+        
+        for childDct in dct.get('childItems', []):
+            childCti = self.childByNodeName(childDct['nodeName'])
+            childCti.setValuesFromDict(childDct)
+         
     
     @property
     def value(self):
@@ -90,7 +159,10 @@ class BaseCti(BaseTreeItem):
     def value(self, value):
         """ Sets the value of this item. 
         """
-        self._value = value
+        if value is DEFAULT_VALUE:
+            self._value = self.defaultValue
+        else:
+            self._value = value
             
     @property
     def defaultValue(self):
@@ -104,16 +176,26 @@ class BaseCti(BaseTreeItem):
         """
         return '<to be implemented?'
         #return self._type
-    
-    
+        
+        
+
+#################
+# JSON encoding #    
+#################
+
+def ctiDumps(obj, sort_keys=True, indent=4):
+    """ Dumps cti as JSON string """
+    return dumps(obj, sort_keys=sort_keys, cls=CtiEncoder, indent=indent)
+
+
 class CtiEncoder(JSONEncoder):
-    
+    """ JSON encoder that knows how to encode BaseCti objects
+    """
     def default(self, obj):
         if isinstance(obj, BaseCti):
             return obj.asJsonDict()
         else:
             return JSONEncoder.default(self, obj)
-
 
 
 def jsonAsCti(dct): 
@@ -132,52 +214,12 @@ def jsonAsCti(dct):
 class CtiDecoder(JSONDecoder):
     """ Config tree item JSON decoder class. Not strictly necessary, you can use the
         jsonAsCti function as object_hook directly in loads, but since we also have an 
-        encoder class it feels right to have a decorer as well.
+        encoder class it feels right to have a decoder as well.
     """
     def __init__(self, *args, **kwargs):
         # The object_hook must be given to the parent constructor since that makes 
         # an internal scanner.
         super(CtiDecoder, self).__init__(*args, object_hook = jsonAsCti, **kwargs)
 
-        
-if __name__ == "__main__":
-    import sys
-    logging.basicConfig(level='DEBUG', stream=sys.stderr,
-                        format='%(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s')    
-    
-    def mydumps(obj):
-        return json.dumps(obj, sort_keys=True, cls=CtiEncoder, indent=4)
-    
-    
-    def main1():
-        rootItem = BaseCti(nodeName='<invisible-root>', value=0.123456789012345678901234567890)
-        rootItem.insertChild(BaseCti(nodeName='kinders', value=-7))
-        
-        # encoding
-        jstr = mydumps(rootItem)
-        
-        print(jstr)
-        
-        #testItem = json.loads(jstr, object_hook=jsonAsCti) # decoding
-        testItem = json.loads(jstr, cls=CtiDecoder) # decoding
-        
-        print("rootItem: {!r}".format(rootItem))
-        print("testItem: {!r}".format(testItem))
 
-        print(mydumps(testItem))    
-        print(type(rootItem))
-        print(type(testItem))
-        print(type(testItem) == type(rootItem))
-        assert (testItem == rootItem), "FAIL"
-        
-    def main2():
-        
-        a = {5: 'five', 6:'six'}
-        b = {5: 'five', 6:'six'}
-        
-        print (a==b)
-        
-        
-if __name__ == "__main__":
-    main1()
         

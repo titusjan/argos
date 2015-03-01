@@ -21,7 +21,7 @@ class BaseTreeItem(object):
         check_class(nodeName, StringType, allow_none=False)
         self._nodeName = str(nodeName)
         self._parentItem = None
-        self._childItems = [] # the fetched children
+        self._childItems = [] # the fetched children  (TODO: rename to _children)
         self._nodePath = self._constructNodePath()        
 
     def finalize(self):
@@ -45,9 +45,10 @@ class BaseTreeItem(object):
         return self._nodeName
 
     @nodeName.setter
-    def nodeName(self, value):
+    def nodeName(self, nodeName):
         """ The node name. Is used to construct the nodePath"""
-        self._nodeName = value
+        assert '/' not in nodeName, "nodeName may not contain slashes"
+        self._nodeName = nodeName
         self._nodePath = self._constructNodePath()
 
     def _constructNodePath(self):
@@ -84,11 +85,26 @@ class BaseTreeItem(object):
         """
         return len(self.childItems) > 0
 
+    def nChildren(self): # TODO: numChildren
+        """ Returns the number of children 
+        """
+        return len(self.childItems)
+
     def child(self, row):
+        """ Gets the child given its row number 
+        """
         return self.childItems[row]
 
-    def nChildren(self):
-        return len(self.childItems)
+
+    def childByNodeName(self, nodeName):
+        """ Gets first child that has the nodeName.
+        """
+        assert '/' not in nodeName, "nodeName can not contain slashes"
+        for child in self.childItems:
+            if child.nodeName == nodeName:
+                return child
+        raise ValueError("No child item found having nodeName: {}".format(nodeName))
+
 
     def childNumber(self):
         """ Gets the index (nr) of this node in its parent's list of children
