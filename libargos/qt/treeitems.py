@@ -12,7 +12,7 @@ class BaseTreeItem(object):
         The tree items have no notion of which field is stored in which column. This is implemented
         in BaseTreeModel._itemValueForColumn
     """
-    def __init__(self, nodeName=''):
+    def __init__(self, nodeName=''):# TODO: make nodeName mandatory?
         """ Constructor
         
             :param nodeName: short name describing this node. Is used to construct the nodePath.
@@ -30,10 +30,15 @@ class BaseTreeItem(object):
         """
         for child in self.childItems:
             child.finalize()
+    
+    def __str__(self):
+        return "<{}: {}>".format(type(self).__name__, self.nodePath)
         
     def __repr__(self):
-        return "<{}: {}>".format(type(self).__name__, self.nodePath)
-    
+        return ("<{}: {!r}, children:[{}]>".
+                format(type(self).__name__, self.nodePath, 
+                       ', '.join([repr(child) for child in self.childItems])))
+        
     @property
     def nodeName(self):
         """ The node name. Is used to construct the nodePath"""
@@ -167,4 +172,3 @@ class AbstractLazyLoadTreeItem(BaseTreeItem):
         """ Removes all children """
         super(AbstractLazyLoadTreeItem, self).removeAllChildren()
         self._childrenFetched = False
-     

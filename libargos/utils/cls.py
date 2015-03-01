@@ -126,6 +126,14 @@ def get_class_name(obj):
     return obj.__class__.__name__
 
 
+def get_full_class_name(obj):
+    """ Returns the full class name of an object. This includes packages and module names.
+
+        It depends on where the class is imported so only use for testing and debugging!
+    """
+    return "{}.{}".format(obj.__class__.__module__, obj.__class__.__name__)
+
+
 def import_symbol(full_symbol_name):
     """ Imports a symbol (e.g. class, variable, etc) from a dot separated name.
         Can be used to create a class whose type is only known at run-time. 

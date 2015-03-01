@@ -2,6 +2,7 @@
 import logging
 
 from .treeitems import BaseTreeItem
+from libargos.info import DEBUGGING
 from libargos.qt import QtCore, QtGui
 
 logger = logging.getLogger(__name__)
@@ -215,6 +216,8 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             result = self._setItemValueForColumn(treeItem, index.column(), value)
         except Exception as ex:
             logger.warn("Unable to set data: {}".format(ex))
+            if DEBUGGING:
+                raise
             result = False
 #            msg = "{}\nDo you want to try again?".format(ex)
 #            buttonPressed = QtGui.QMessageBox.question(None, "Confirm", msg, 

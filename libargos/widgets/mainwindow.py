@@ -57,7 +57,6 @@ class MainWindow(QtGui.QMainWindow):
         self._argosApplication = argosApplication
         
         self._config = ConfigTreeModel()
-        self.__addTestData()
         
         self.__setupViews()
         self.__setupMenu()
@@ -65,6 +64,7 @@ class MainWindow(QtGui.QMainWindow):
         self.resize(QtCore.QSize(1024, 700))
         self.setWindowTitle("{}-{} (#{})".format(PROJECT_NAME, self.argosApplication.profile, 
                                                  self._instanceNr))
+        self.__addTestData()
 
 
     @property
@@ -255,6 +255,8 @@ class MainWindow(QtGui.QMainWindow):
         """ Temporary function to add test data
         """
         from libargos.config.basecti import BaseCti
-        self._config.insertItem(BaseCti(nodeName='test', value=123))
-                    
+        rootItem = BaseCti(nodeName='line color', value=123)
+        rootItem.insertChild(BaseCti(nodeName='line-1 color', value=-7))
+        rootIndex = self._config.insertItem(rootItem)
+        self.treeView.setExpanded(rootIndex, True)
             
