@@ -28,10 +28,10 @@ logger = logging.getLogger(__name__)
 
 class ConfigTreeModel(BaseTreeModel):
     """ An implementation QAbstractItemModel that offers access to configuration data for QTreeViews. 
-        The underlying data is stored as repository tree items (BaseRti descendants)
+        The underlying data is stored as config tree items (BaseCti descendants)
     """    
-    HEADERS = ["name", "path", "value", "default value", "type"]
-    (COL_NODE_NAME, COL_NODE_PATH, COL_VALUE, COL_DEF_VALUE, COL_TYPE) = range(len(HEADERS))
+    HEADERS = ["name", "path", "value", "default value", "tree item"]
+    (COL_NODE_NAME, COL_NODE_PATH, COL_VALUE, COL_DEF_VALUE, COL_CTI_TYPE) = range(len(HEADERS))
     
     def __init__(self, parent=None):
         """ Constructor
@@ -65,8 +65,8 @@ class ConfigTreeModel(BaseTreeModel):
             return str(treeItem.value)
         elif column == self.COL_DEF_VALUE:
             return str(treeItem.defaultValue)
-        elif column == self.COL_TYPE:
-            return treeItem.type if treeItem.type is not None else '<unknown>'
+        elif column == self.COL_CTI_TYPE:
+            return type_name(treeItem)
         else:
             raise ValueError("Invalid column: {}".format(column))
             

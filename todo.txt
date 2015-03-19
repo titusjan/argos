@@ -24,7 +24,7 @@ http://www.census.gov/population/international/data/countryrank/rank.php
 TODO:
 	config table select only individual cells
 	confirm on error when editing cell
-	read/write config to yaml, QSettings. test large configs.
+	read/write config to yaml, QSettings. 
 	
 			
 

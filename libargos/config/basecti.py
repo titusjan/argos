@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Repository TreeItem (RTI) classes
-    Tree items for use in the RepositoryTreeModel
+""" Configuratin TreeItem (CTI) classes
+    Tree items for use in the ConfigTreeModel
 """
 import logging, os
 from json import JSONEncoder, JSONDecoder, dumps
@@ -49,7 +49,7 @@ class BaseCti(BaseTreeItem):
             :param nodeName: name of this node (used to construct the node path).
             :param value: the configuration value. If omitted the defaultValue will be used.
             :param defaultValue: default value to which the value can be reset or initialized
-                if ommited  from the constructor
+                if omitted  from the constructor
         """
         super(BaseCti, self).__init__(nodeName=nodeName)
 

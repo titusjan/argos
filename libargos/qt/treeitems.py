@@ -21,7 +21,7 @@ class BaseTreeItem(object):
         check_class(nodeName, StringType, allow_none=False)
         self._nodeName = str(nodeName)
         self._parentItem = None
-        self._childItems = [] # the fetched children  (TODO: rename to _children)
+        self._childItems = [] # the fetched children
         self._nodePath = self._constructNodePath()        
 
     def finalize(self):
