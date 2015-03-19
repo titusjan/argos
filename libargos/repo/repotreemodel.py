@@ -36,6 +36,9 @@ class RepoTreeModel(BaseTreeModel):
     (COL_NODE_NAME, COL_NODE_PATH, COL_SHAPE, COL_IS_OPEN, 
      COL_RTI_TYPE, COL_TYPE, COL_ELEM_TYPE, 
      COL_FILE_NAME) = range(len(HEADERS))
+     
+    COL_ICON = 0   # Column number that contains the icon. None for no icons
+    
     
     def __init__(self, parent=None):
         """ Constructor
