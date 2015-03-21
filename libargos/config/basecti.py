@@ -22,6 +22,7 @@ import logging, os
 from json import JSONEncoder, JSONDecoder, dumps
 
 from libargos.info import program_directory, DEBUGGING
+from libargos.qt import QtGui
 from libargos.qt.treeitems import BaseTreeItem
 from libargos.utils.cls import get_full_class_name, import_symbol
 
@@ -169,14 +170,42 @@ class BaseCti(BaseTreeItem):
         """ Returns the default value of this item. 
         """
         return self._defaultValue
-            
-    @property
-    def type(self):
-        """ Returns type of the value of this item. 
+
+    ## The following methods are called by the ConfigItemDelegate class
+    
+    def createEditor(self, _option):
+        """ Creates an editor (QWidget) for editing. 
+            It's parent will be set by the ConfigItemDelegate class
+            :param option: describes the parameters used to draw an item in a view widget.
+            :type option: QStyleOptionViewItem
         """
-        return '<to be implemented?'
-        #return self._type
+        editor = QtGui.QSpinBox()
+        logger.debug("createEditor, value={!r}".format(self.value))
+        editor.setValue(self.value)
+        editor.setMinimum(-1000)
+        editor.setMaximum(1000)
+
+        return editor
         
+        
+    def setEditorValue(self, editor):
+        """ Provides the editor widget with a value to manipulate.
+            :type editor: QWidget
+        """
+        intValue = int(self.value) # TODO: necessary?
+        editor.setValue(intValue)
+        
+        
+    def getEditorValue(self, editor):
+        """ Gets data from the editor widget.
+            
+            :type editor: QWidget
+        """
+        spinBox = editor
+        spinBox.interpretText()
+        value = spinBox.value()
+        return value
+
         
 
 #################

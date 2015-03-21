@@ -30,15 +30,6 @@ logger = logging.getLogger(__name__)
 # Qt classes have many ancestors
 #pylint: disable=R0901
 
-"""
-It is possible for a custom delegate to provide editors without the use of an editor item factory. In this case, the following virtual functions must be reimplemented:
-
-createEditor() returns the widget used to change data from the model and can be reimplemented to customize editing behavior.
-setEditorData() provides the widget with data to manipulate.
-updateEditorGeometry() ensures that the editor is displayed correctly with respect to the item view.
-setModelData() returns updated data to the model.
-
-"""
 
 class ConfigItemDelegate(QtGui.QStyledItemDelegate):
     """ Provides editing facilities for config tree items.
@@ -54,26 +45,37 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         """ Returns the widget used to change data from the model and can be reimplemented to 
             customize editing behavior.
         """
-        editor = QtGui.QSpinBox(parent)
-        editor.setMinimum(0)
-        editor.setMaximum(100)
-
+        assert index.isValid(), "sanity check failed: invalid index"
+        
+        cti = index.model().getItem(index)
+        editor = cti.createEditor(option)
+        editor.setParent(parent)
         return editor
     
 
-    def setEditorData(self, spinBox, index):
+    def setEditorData(self, editor, index):
         """ Provides the widget with data to manipulate.
+            Calls the setEditorValue of the config tree item at the index. 
+        
+            :type editor: QWidget
+            :type index: QModelIndex
         """
-        value = int(index.model().data(index, QtCore.Qt.EditRole))
-        spinBox.setValue(value)
+        cti = index.model().getItem(index)
+        cti.setEditorValue(editor)
+        #value = int(index.model().data(index, QtCore.Qt.EditRole)) # TODO: use for consistency?
+        #editor.setValue(value)
 
 
-    def setModelData(self, spinBox, model, index):
-        """ Ensures that the editor is displayed correctly with respect to the item view.
+    def setModelData(self, editor, model, index):
+        """ Gets data from the editor widget and stores it in the specified model at the item index.
+            Does this by caling setModelData of the config tree item at the index.
+            
+            :type editor: QWidget
+            :type model: ConfigTreeModel
+            :type index: QModelIndex
         """
-        spinBox.interpretText()
-        value = spinBox.value()
-
+        cti = model.getItem(index)
+        value = cti.getEditorValue(editor)
         model.setData(index, value, QtCore.Qt.EditRole)
 
 
