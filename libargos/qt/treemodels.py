@@ -60,7 +60,14 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         return len(self.horizontalHeaders)
 
 
-    def _itemValueForColumn(self, treeItem, column):
+    def _displayValueForColumn(self, treeItem, column):
+        """ Descendants should override this function to return the value of the item 
+            for the given column number.
+        """
+        raise NotImplementedError("Abstract class.")
+
+
+    def _editValueForColumn(self, treeItem, column):
         """ Descendants should override this function to return the value of the item 
             for the given column number.
         """
@@ -76,9 +83,13 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         if not index.isValid():
             return None
 
-        if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
+        if role == QtCore.Qt.DisplayRole:
             item = self.getItem(index, altItem=self.rootItem)
-            return self._itemValueForColumn(item, index.column())
+            return self._displayValueForColumn(item, index.column())
+
+        if role == QtCore.Qt.EditRole:
+            item = self.getItem(index, altItem=self.rootItem)
+            return self._editValueForColumn(item, index.column())
         
         elif role == QtCore.Qt.DecorationRole:
             if index.column() == self.COL_ICON:
@@ -194,7 +205,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         
 
 
-    def _setItemValueForColumn(self, treeItem, column, value):
+    def _setEditValueForColumn(self, treeItem, column, value):
         """ Descendants should override this function to set the value corresponding
             to the column number in treeItem.
             It should return True for success, otherwise False.
@@ -213,7 +224,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
 
         treeItem = self.getItem(index, altItem=self.rootItem)
         try:
-            result = self._setItemValueForColumn(treeItem, index.column(), value)
+            result = self._setEditValueForColumn(treeItem, index.column(), value)
         except Exception as ex:
             logger.warn("Unable to set data: {}".format(ex))
             if DEBUGGING:

@@ -60,11 +60,11 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
             :type editor: QWidget
             :type index: QModelIndex
         """
+        # We take the value via the model to be consisten with setModelData
+        value = index.model().data(index, QtCore.Qt.EditRole) 
         cti = index.model().getItem(index)
-        cti.setEditorValue(editor)
-        #value = int(index.model().data(index, QtCore.Qt.EditRole)) # TODO: use for consistency?
-        #editor.setValue(value)
-
+        cti.setEditorValue(editor, value)
+        
 
     def setModelData(self, editor, model, index):
         """ Gets data from the editor widget and stores it in the specified model at the item index.
@@ -76,6 +76,7 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         """
         cti = model.getItem(index)
         value = cti.getEditorValue(editor)
+        # The value is set via the model so that signals are emitted
         model.setData(index, value, QtCore.Qt.EditRole)
 
 

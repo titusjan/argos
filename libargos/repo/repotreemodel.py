@@ -47,7 +47,7 @@ class RepoTreeModel(BaseTreeModel):
         self._isEditable = False
         
     
-    def _itemValueForColumn(self, treeItem, column):
+    def _displayValueForColumn(self, treeItem, column):
         """ Returns the value of the item given the column number.
             :rtype: string
         """
@@ -70,20 +70,6 @@ class RepoTreeModel(BaseTreeModel):
         else:
             raise ValueError("Invalid column: {}".format(column))
             
-
-    def _setItemValueForColumn(self, treeItem, column, value):
-        """ Sets the value in the item, of the item given the column number.
-            It returns True for success, otherwise False.
-        """
-        assert False, "not operational"
-        if column == 1:
-            treeItem.value = value
-            return True
-        else:
-            if DEBUGGING:
-                raise IndexError("Invalid column number: {}".format(column))
-            return False
-        
         
     def canFetchMore(self, parentIndex):
         """ Returns true if there is more data available for parent; otherwise returns false.

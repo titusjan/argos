@@ -51,10 +51,9 @@ class ConfigTreeModel(BaseTreeModel):
             result |= QtCore.Qt.ItemIsEditable
         return result
         
-        
     
-    def _itemValueForColumn(self, treeItem, column):
-        """ Returns the value of the item given the column number.
+    def _displayValueForColumn(self, treeItem, column):
+        """ Returns the display value of the item given the column number.
             :rtype: string
         """
         if column == self.COL_NODE_NAME:
@@ -69,9 +68,19 @@ class ConfigTreeModel(BaseTreeModel):
             return type_name(treeItem)
         else:
             raise ValueError("Invalid column: {}".format(column))
+        
+    
+    def _editValueForColumn(self, treeItem, column):
+        """ Returns the value for editing of the item given the column number.
+            :rtype: string
+        """
+        if column == self.COL_VALUE:
+            return treeItem.value
+        else:
+            raise ValueError("Invalid column: {}".format(column))
             
 
-    def _setItemValueForColumn(self, treeItem, column, value):
+    def _setEditValueForColumn(self, treeItem, column, value):
         """ Sets the value in the item, of the item given the column number.
             It returns True for success, otherwise False.
         """

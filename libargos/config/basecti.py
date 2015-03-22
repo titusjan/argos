@@ -188,12 +188,16 @@ class BaseCti(BaseTreeItem):
         return editor
         
         
-    def setEditorValue(self, editor):
+    def setEditorValue(self, editor, value):
         """ Provides the editor widget with a value to manipulate.
+            
+            The value parameter could be replaced by self.value but the caller 
+            (ConfigItemelegate.getModelData) retrieves it via the model to be consistent 
+            with setModelData.
+             
             :type editor: QWidget
         """
-        intValue = int(self.value) # TODO: necessary?
-        editor.setValue(intValue)
+        editor.setValue(value)
         
         
     def getEditorValue(self, editor):
