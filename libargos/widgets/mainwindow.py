@@ -113,14 +113,14 @@ class MainWindow(QtGui.QMainWindow):
         openFileAction = fileMenu.addAction("&New Inspector Window", 
             self.argosApplication.addNewMainWindow)
         openFileAction.setShortcut(QtGui.QKeySequence.New)
+
+        openDirAction = fileMenu.addAction("Browse Directory...", 
+            lambda: self.openFiles(fileMode = QtGui.QFileDialog.Directory))
+        openDirAction.setShortcut(QtGui.QKeySequence("Ctrl+B"))
         
         openFileAction = fileMenu.addAction("&Open Files...", 
             lambda: self.openFiles(fileMode = QtGui.QFileDialog.ExistingFiles))
-        openFileAction.setShortcut(QtGui.QKeySequence("Ctrl+O, F"))
-
-        openDirAction = fileMenu.addAction("Open Directory...", 
-            lambda: self.openFiles(fileMode = QtGui.QFileDialog.Directory))
-        openDirAction.setShortcut(QtGui.QKeySequence("Ctrl+O, D"))
+        openFileAction.setShortcut(QtGui.QKeySequence("Ctrl+O"))
         
         openAsMenu = fileMenu.addMenu("Open As")
         for regRti in self.argosApplication.rtiRegistry.registeredRtis:
@@ -175,7 +175,7 @@ class MainWindow(QtGui.QMainWindow):
                 fileNames = []
             
         for fileName in fileNames:
-            storeRootIndex = self.repo.loadFile(fileName, rtiClass=rtiClass)
+            storeRootIndex = self.argosApplication.repo.loadFile(fileName, rtiClass=rtiClass)
             self.treeView.setExpanded(storeRootIndex, True)
     
     

@@ -27,6 +27,8 @@ TODO:
 	read/write config to yaml, QSettings. 
 	
 			
+Collectors:
+	test with Evoss sciamachy products
 
 
 Handle Exception:
