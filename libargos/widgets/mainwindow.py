@@ -261,7 +261,7 @@ class MainWindow(QtGui.QMainWindow):
         rootItem.insertChild(IntegerCti(nodeName='line-1 color', value=-7, minValue = -5, stepSize=2))
         rootIndex = self._config.insertItem(rootItem)
         
-        self._config.insertItem(StringCti(nodeName='letter', value='aa', maxLength = 1))
+        self._config.insertItem(StringCti(nodeName='letter', defaultValue='aa', maxLength = 1))
 
         
         self.configTreeView.setExpanded(rootIndex, True)

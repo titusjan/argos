@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 class UseDefaultValue(object):
     """ Class for USE_DEFAULT_VALUE constant.
-        Is used so that a BaseCti can have a default value of None.
+        Is used so that a BaseCti can have a value of None and still use the default value.
     """
     pass
     
@@ -56,7 +56,7 @@ class BaseCti(BaseTreeItem):
         super(BaseCti, self).__init__(nodeName=nodeName)
 
         self._value = None # keep pylint happy
-        self._defaultValue = defaultValue
+        self._defaultValue = self._convertValueType(defaultValue)
                 
         if value is USE_DEFAULT_VALUE:
             value = self.defaultValue
@@ -183,7 +183,7 @@ class BaseCti(BaseTreeItem):
     
     def _convertValueType(self, value):
         """ Converts value to the type of this CTI.
-            Used by the setter to ensure that the value has the correct type 
+            Used by the setter to ensure that the value and defaultValue have the correct type 
             The default implementation does nothing; should be overridden by descendants.
         """
         return value
@@ -195,6 +195,7 @@ class BaseCti(BaseTreeItem):
         """
         return self._defaultValue
 
+
     ## The following methods are called by the ConfigItemDelegate class
     
     def createEditor(self, _option):
@@ -204,6 +205,7 @@ class BaseCti(BaseTreeItem):
             :type option: QStyleOptionViewItem
         """
         editor = QtGui.QLineEdit()
+        editor.setText(str(self.value)) # not necessary, it will be done by setEditorValue
         return editor
         
         

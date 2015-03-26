@@ -57,7 +57,7 @@ THINK:
 		3) Separate fileName and resource attributes (which is a bit of a duplicated effort)
 		
 USE CASES:
-	Select 3 lines of a tropomi wavelenth map (at 0 and extreme swath angles), 
+	Select 3 lines of a wavelength map (at 0 and extreme swath angles), 
 	then select another detector.
 
 	
