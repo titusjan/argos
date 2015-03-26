@@ -56,5 +56,8 @@ THINK:
 		2) Implement createFromResource method. Don't check file names in children? How?
 		3) Separate fileName and resource attributes (which is a bit of a duplicated effort)
 		
+USE CASES:
+	Select 3 lines of a tropomi wavelenth map (at 0 and extreme swath angles), 
+	then select another detector.
 
 	

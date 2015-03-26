@@ -21,7 +21,7 @@
 import logging, os
 from json import JSONEncoder, JSONDecoder, dumps
 
-from libargos.info import program_directory, DEBUGGING
+from libargos.info import DEBUGGING
 from libargos.qt import QtGui
 from libargos.qt.treeitems import BaseTreeItem
 from libargos.utils.cls import get_full_class_name, import_symbol
@@ -31,12 +31,13 @@ from libargos.utils.cls import get_full_class_name, import_symbol
 logger = logging.getLogger(__name__)
 
 
-class DefaultValue(object):
-    """ Class for DEFAULT_VALUE constant. 
+class UseDefaultValue(object):
+    """ Class for USE_DEFAULT_VALUE constant.
+        Is used so that a BaseCti can have a default value of None.
     """
     pass
     
-DEFAULT_VALUE = DefaultValue()
+USE_DEFAULT_VALUE = UseDefaultValue()
     
 
 class BaseCti(BaseTreeItem):
@@ -45,7 +46,7 @@ class BaseCti(BaseTreeItem):
 
         Serves as an interface but can also be instantiated for debugging purposes.
     """
-    def __init__(self, nodeName='', value=DEFAULT_VALUE, defaultValue=None):
+    def __init__(self, nodeName='', value=USE_DEFAULT_VALUE, defaultValue=None):
         """ Constructor
             :param nodeName: name of this node (used to construct the node path).
             :param value: the configuration value. If omitted the defaultValue will be used.
@@ -54,8 +55,12 @@ class BaseCti(BaseTreeItem):
         """
         super(BaseCti, self).__init__(nodeName=nodeName)
 
+        self._value = None # keep pylint happy
         self._defaultValue = defaultValue
-        self._value = DEFAULT_VALUE # to make pylint happy
+                
+        if value is USE_DEFAULT_VALUE:
+            value = self.defaultValue
+
         self.value = value
          
     
@@ -148,7 +153,18 @@ class BaseCti(BaseTreeItem):
         for childDct in dct.get('childItems', []):
             childCti = self.childByNodeName(childDct['nodeName'])
             childCti.setValuesFromDict(childDct)
-         
+    
+    @property
+    def debugInfo(self):
+        """ Returns the string with debugging information
+        """
+        return ""
+    
+    @property
+    def displayValue(self):
+        """ Returns the string representation of value for use in the tree view. 
+        """
+        return str(self._value)
     
     @property
     def value(self):
@@ -159,11 +175,19 @@ class BaseCti(BaseTreeItem):
     @value.setter
     def value(self, value):
         """ Sets the value of this item. 
+            Does type conversion to ensure value is always of the correct type.
         """
-        if value is DEFAULT_VALUE:
-            self._value = self.defaultValue
-        else:
-            self._value = value
+        # Descendants should convert the value to the desired type here
+        self._value = self._convertValueType(value)
+        
+    
+    def _convertValueType(self, value):
+        """ Converts value to the type of this CTI.
+            Used by the setter to ensure that the value has the correct type 
+            The default implementation does nothing; should be overridden by descendants.
+        """
+        return value
+    
             
     @property
     def defaultValue(self):
@@ -179,12 +203,7 @@ class BaseCti(BaseTreeItem):
             :param option: describes the parameters used to draw an item in a view widget.
             :type option: QStyleOptionViewItem
         """
-        editor = QtGui.QSpinBox()
-        logger.debug("createEditor, value={!r}".format(self.value))
-        editor.setValue(self.value)
-        editor.setMinimum(-1000)
-        editor.setMaximum(1000)
-
+        editor = QtGui.QLineEdit()
         return editor
         
         
@@ -197,7 +216,8 @@ class BaseCti(BaseTreeItem):
              
             :type editor: QWidget
         """
-        editor.setValue(value)
+        lineEditor = editor
+        lineEditor.setText(str(value))
         
         
     def getEditorValue(self, editor):
@@ -205,10 +225,8 @@ class BaseCti(BaseTreeItem):
             
             :type editor: QWidget
         """
-        spinBox = editor
-        spinBox.interpretText()
-        value = spinBox.value()
-        return value
+        lineEditor = editor
+        return lineEditor.text()
 
         
 
