@@ -184,8 +184,8 @@ class BoolCti(BaseCti):
         """ Creates a QSpinBox for editing. 
             :type option: QStyleOptionViewItem        
         """
-        #checkBox = QtGui.QCheckBox(parent)
-        checkBox = QtGui.QCheckBox() # Works correct in separate window
+        checkBox = QtGui.QCheckBox(parent)
+        #checkBox = QtGui.QCheckBox() # Works correct in separate window
         return checkBox
 
         
@@ -203,7 +203,7 @@ class BoolCti(BaseCti):
         
     def __paintDisplayValue(self, painter, option, value):
         """ Paints a check box on the painter.
-        """        
+        """
         checkBox = QtGui.QStyleOptionButton()
         
         checkBox.state = QtGui.QStyle.State_Enabled
