@@ -49,6 +49,7 @@ TODO Long term or nice to have:
 	Plugin management window
 	
 THINK:
+	use QObject.blockSignals
 	use decorators in AbstractLazyLoadTreeItem?
 	createFromFileName does not work with memory RTI. Options:
 		1) Implement resource attribute.

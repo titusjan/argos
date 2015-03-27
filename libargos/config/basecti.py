@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Configuratin TreeItem (CTI) classes
+""" Configuration TreeItem (CTI) classes
     Tree items for use in the ConfigTreeModel
 """
 import logging, os
@@ -205,7 +205,7 @@ class BaseCti(BaseTreeItem):
             :type option: QStyleOptionViewItem
         """
         editor = QtGui.QLineEdit()
-        editor.setText(str(self.value)) # not necessary, it will be done by setEditorValue
+        #editor.setText(str(self.value)) # not necessary, it will be done by setEditorValue
         return editor
         
         
@@ -230,7 +230,14 @@ class BaseCti(BaseTreeItem):
         lineEditor = editor
         return lineEditor.text()
 
-        
+
+    def paintDisplayValue(self, painter, option, value):
+        """ Can be overridden to paint a widget in display mode.
+            Should return True, otherwise the displayValue property is written in the cell.
+            The default implementation returns False.
+        """
+        return False
+                
 
 #################
 # JSON encoding #    

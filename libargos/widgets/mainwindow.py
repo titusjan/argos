@@ -255,13 +255,14 @@ class MainWindow(QtGui.QMainWindow):
         """ Temporary function to add test data
         """
         from libargos.config.basecti import BaseCti
-        from libargos.config.simplectis import IntegerCti, StringCti
+        from libargos.config.simplectis import IntegerCti, StringCti, BoolCti
         
         rootItem = BaseCti(nodeName='line color', value=123)
         rootItem.insertChild(IntegerCti(nodeName='line-1 color', value=-7, minValue = -5, stepSize=2))
         rootIndex = self._config.insertItem(rootItem)
         
         self._config.insertItem(StringCti(nodeName='letter', defaultValue='aa', maxLength = 1))
+        self._config.insertItem(BoolCti(nodeName='grid', defaultValue=True))
 
         
         self.configTreeView.setExpanded(rootIndex, True)

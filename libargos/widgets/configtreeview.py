@@ -39,7 +39,20 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         QVariant. We then would have to make a new UserType QVariant for (each?) CTIs.
         This is cumbersome and possibly unPyQTtonic :-)
     """
+    def paint(self, painter, option, index):
 
+        painted = False
+                
+        if index.column() == ConfigTreeModel.COL_VALUE:
+
+            # We take the value via the model to be consistent with setModelData
+            value = index.model().data(index, QtCore.Qt.DisplayRole) 
+            cti = index.model().getItem(index)
+            painted = cti.paintDisplayValue(painter, option, value)
+        
+        if not painted:
+            super(ConfigItemDelegate, self).paint(painter, option, index)
+        
     
     def createEditor(self, parent, option, index):
         """ Returns the widget used to change data from the model and can be reimplemented to 
@@ -48,8 +61,7 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         assert index.isValid(), "sanity check failed: invalid index"
         
         cti = index.model().getItem(index)
-        editor = cti.createEditor(option)
-        editor.setParent(parent)
+        editor = cti.createEditor(parent, option)
         return editor
     
 
@@ -60,7 +72,8 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
             :type editor: QWidget
             :type index: QModelIndex
         """
-        # We take the value via the model to be consisten with setModelData
+        logger.debug("setEditorData: ({}, {}), editor = {!r}".format(index.row(), index.column(), editor))
+        # We take the value via the model to be consistent with setModelData
         value = index.model().data(index, QtCore.Qt.EditRole) 
         cti = index.model().getItem(index)
         cti.setEditorValue(editor, value)
@@ -74,6 +87,7 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
             :type model: ConfigTreeModel
             :type index: QModelIndex
         """
+        logger.debug("setModelData: ({}, {}), editor = {!r}".format(index.row(), index.column(), editor))
         cti = model.getItem(index)
         value = cti.getEditorValue(editor)
         # The value is set via the model so that signals are emitted
@@ -108,9 +122,12 @@ class ConfigTreeView(ArgosTreeView):
         self.addHeaderContextMenu(enabled=enabled, checkable={})
 
         self.setItemDelegate(ConfigItemDelegate())
-        self.setEditTriggers(QtGui.QAbstractItemView.DoubleClicked |
-                             QtGui.QAbstractItemView.EditKeyPressed | 
-                             QtGui.QAbstractItemView.AnyKeyPressed | 
-                             QtGui.QAbstractItemView.SelectedClicked)
-        
+        self.setEditTriggers(QtGui.QAbstractItemView.EditKeyPressed) 
 
+        #self.setEditTriggers(QtGui.QAbstractItemView.DoubleClicked |
+        #                     QtGui.QAbstractItemView.EditKeyPressed | 
+        #                     QtGui.QAbstractItemView.AnyKeyPressed | 
+        #                     QtGui.QAbstractItemView.SelectedClicked)
+        
+        
+        

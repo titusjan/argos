@@ -21,28 +21,33 @@ import logging
 import numpy as np
 
 from .basecti import BaseCti, USE_DEFAULT_VALUE
-from libargos.qt import QtGui
+from libargos.qt import QtGui, getQApplicationInstance, Qt
 
 
 logger = logging.getLogger(__name__)
 
+# Use setIndexWidget()?
         
-    
+# TODO: QCompleter? See demos/spreadsheet/spreadsheetdelegate.py
 # TODO: FloatCti using QDoubleSpinBox
+# TODO: Nullable bool with tri-state checkbox
 # TODO: Bool and CombiBox  
-# TODO: Color selector
-
-# TODO: what about None's
+# TODO: Date selector.
+# TODO: Color selector. Font selector?
 
 
 class StringCti(BaseCti):
-    """ Config Tree Item to store a string. It can be edited with a QLineEdit
+    """ Config Tree Item to store a string. It can be edited with a QLineEdit.
         The string can have an optional maximum length.
+
     """
     def __init__(self, nodeName='', value=USE_DEFAULT_VALUE, defaultValue='', 
                  maxLength=None):
-        """ Constructor
+        """ Constructor. 
+        
             :param maxLength: maximum length of the string
+            
+            For the other parameters see the BaseCti constructor documentation.
         """
         super(StringCti, self).__init__(nodeName=nodeName, value=value, defaultValue=defaultValue)
         
@@ -64,13 +69,11 @@ class StringCti(BaseCti):
         return "maxLength = {}".format(self.maxLength)
     
     
-    def createEditor(self, _option):
-        """ Creates an editor (QWidget) for editing. 
-            It's parent will be set by the ConfigItemDelegate class
-            :param option: describes the parameters used to draw an item in a view widget.
-            :type option: QStyleOptionViewItem
+    def createEditor(self, parent, _option):
+        """ Creates a QSpinBox for editing. 
+            :type option: QStyleOptionViewItem        
         """
-        editor = QtGui.QLineEdit()
+        editor = QtGui.QLineEdit(parent)
         if self.maxLength is not None:
             editor.setMaxLength(self.maxLength)
         return editor
@@ -78,12 +81,6 @@ class StringCti(BaseCti):
         
     def setEditorValue(self, editor, value):
         """ Provides the editor widget with a value to manipulate.
-            
-            The value parameter could be replaced by self.value but the caller 
-            (ConfigItemelegate.getModelData) retrieves it via the model to be consistent 
-            with setModelData.
-             
-            :type editor: QWidget
         """
         lineEditor = editor
         lineEditor.setText(value)
@@ -91,8 +88,6 @@ class StringCti(BaseCti):
         
     def getEditorValue(self, editor):
         """ Gets data from the editor widget.
-            
-            :type editor: QWidget
         """
         lineEditor = editor
         return lineEditor.text()
@@ -105,10 +100,12 @@ class IntegerCti(BaseCti):
     def __init__(self, nodeName='', value=USE_DEFAULT_VALUE, defaultValue=0, 
                  minValue = None, maxValue = None, stepSize = 1):
         """ Constructor
-            :param nodeName: name of this node (used to construct the node path).
-            :param value: the configuration value. If omitted the defaultValue will be used.
-            :param defaultValue: default value to which the value can be reset or initialized
-                if omitted  from the constructor
+            
+            :param minValue: minimum value allowed when editing (use None for no minimum)
+            :param maxValue: maximum value allowed when editing (use None for no maximum)
+            :param stepSize: steps between values when ediging (default = 1)
+                    
+            For the other parameters see the BaseCti constructor documentation.
         """
         super(IntegerCti, self).__init__(nodeName=nodeName, value=value, defaultValue=defaultValue)
         
@@ -130,11 +127,11 @@ class IntegerCti(BaseCti):
         return "min = {}, max = {}, step = {}".format(self.minValue, self.maxValue, self.stepSize)
     
     
-    def createEditor(self, _option):
-        """ Creates a spinbox for editing. 
+    def createEditor(self, parent, _option):
+        """ Creates a QSpinBox for editing. 
             :type option: QStyleOptionViewItem
         """
-        spinBox = QtGui.QSpinBox()
+        spinBox = QtGui.QSpinBox(parent)
 
         if self.minValue is None:
             spinBox.setMinimum(np.iinfo('i').min)
@@ -151,15 +148,13 @@ class IntegerCti(BaseCti):
         
         
     def setEditorValue(self, spinBox, value):
-        """ Provides the spinBox editor widget with a value to manipulate.
+        """ Provides the spin box editor widget with a value to manipulate.
         """
         spinBox.setValue(value)
         
         
     def getEditorValue(self, spinBox):
-        """ Gets data from the spinbox editor widget.
-            
-            :type editor: QWidget
+        """ Gets data from the spin box editor widget.
         """
         spinBox.interpretText()
         value = spinBox.value()
@@ -171,66 +166,56 @@ class IntegerCti(BaseCti):
 class BoolCti(BaseCti):
     """ Config Tree Item to store an integer. It can be edited using a QSinBox.
     """
-    def __init__(self, nodeName='', value=USE_DEFAULT_VALUE, defaultValue=None):
+    def __init__(self, nodeName='', value=USE_DEFAULT_VALUE, defaultValue=False):
         """ Constructor
-            :param nodeName: name of this node (used to construct the node path).
-            :param value: the configuration value. If omitted the defaultValue will be used.
-            :param defaultValue: default value to which the value can be reset or initialized
-                if omitted  from the constructor
+
+            For the parameters see the BaseCti constructor documentation.
         """
-        super(IntegerCti, self).__init__(nodeName=nodeName, value=value, defaultValue=defaultValue)
-        
-        self.minValue = minValue
-        self.maxValue = maxValue
-        self.stepSize = stepSize
+        super(BoolCti, self).__init__(nodeName=nodeName, value=value, defaultValue=defaultValue)
 
     
     def _convertValueType(self, value):
-        """ Converts to int so that self.value always is of that type.
+        """ Converts to bool so that self.value always is of that type.
         """
-        return int(value)
+        return bool(value)
         
+
+    def createEditor(self, parent, _option):
+        """ Creates a QSpinBox for editing. 
+            :type option: QStyleOptionViewItem        
+        """
+        #checkBox = QtGui.QCheckBox(parent)
+        checkBox = QtGui.QCheckBox() # Works correct in separate window
+        return checkBox
+
+        
+    def setEditorValue(self, checkBox, value):
+        """ Provides the check box editor widget with a value to manipulate.
+        """
+        checkBox.setChecked(value)
+        
+        
+    def getEditorValue(self, checkBox):
+        """ Gets data from the check box editor widget.
+        """
+        return checkBox.isChecked()
+
+        
+    def __paintDisplayValue(self, painter, option, value):
+        """ Paints a check box on the painter.
+        """        
+        checkBox = QtGui.QStyleOptionButton()
+        
+        checkBox.state = QtGui.QStyle.State_Enabled
+        checkBox.rect = option.rect
+        
+        if value:
+            checkBox.state = QtGui.QStyle.State_On | QtGui.QStyle.State_Enabled
+        else:
+            checkBox.state = QtGui.QStyle.State_Off | QtGui.QStyle.State_Enabled
+
+        qApp = getQApplicationInstance()
+        qApp.style().drawControl(QtGui.QStyle.CE_CheckBox, checkBox, painter)
+        return True
     
-    @property
-    def debugInfo(self):
-        """ Returns the string with debugging information
-        """
-        return "min = {}, max = {}, step = {}".format(self.minValue, self.maxValue, self.stepSize)
-    
-    
-    def createEditor(self, _option):
-        """ Creates a spinbox for editing. 
-            :type option: QStyleOptionViewItem
-        """
-        spinBox = QtGui.QSpinBox()
-
-        if self.minValue is None:
-            spinBox.setMinimum(np.iinfo('i').min)
-        else: 
-            spinBox.setMinimum(self.minValue) 
-
-        if self.maxValue is None:
-            spinBox.setMaximum(np.iinfo('i').max)
-        else: 
-            spinBox.setMaximum(self.maxValue) 
-
-        spinBox.setSingleStep(self.stepSize)
-        return spinBox
-        
-        
-    def setEditorValue(self, spinBox, value):
-        """ Provides the spinBox editor widget with a value to manipulate.
-        """
-        spinBox.setValue(value)
-        
-        
-    def getEditorValue(self, spinBox):
-        """ Gets data from the spinbox editor widget.
-            
-            :type editor: QWidget
-        """
-        spinBox.interpretText()
-        value = spinBox.value()
-        return value
-
-        
+                
