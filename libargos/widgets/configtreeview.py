@@ -20,7 +20,7 @@
 from __future__ import print_function
 
 import logging
-from libargos.qt import QtCore, QtGui
+from libargos.qt import QtCore, QtGui, QtSlot
 from libargos.widgets.argostreeview import ArgosTreeView
 
 from libargos.config.configtreemodel import ConfigTreeModel
@@ -61,7 +61,7 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         assert index.isValid(), "sanity check failed: invalid index"
         
         cti = index.model().getItem(index)
-        editor = cti.createEditor(parent, option)
+        editor = cti.createEditor(self, parent, option)
         return editor
     
 
@@ -99,6 +99,15 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         """ Ensures that the editor is displayed correctly with respect to the item view.
         """
         editor.setGeometry(option.rect)
+        
+    @QtSlot()
+    def commitAndCloseEditor(self, *args, **kwargs):
+        """ Calls the signals to commit the data and close the editor
+        """
+        #logger.debug("commitAndCloseEditor: {} {}".format(args, kwargs))
+        editor = self.sender() # TODO somehow make parameter?
+        self.commitData.emit(editor)
+        self.closeEditor.emit(editor, QtGui.QAbstractItemDelegate.NoHint)        
 
 
 

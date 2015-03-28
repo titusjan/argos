@@ -198,13 +198,17 @@ class BaseCti(BaseTreeItem):
 
     ## The following methods are called by the ConfigItemDelegate class
     
-    def createEditor(self, _option):
+    def createEditor(self, delegate, parent, option):
         """ Creates an editor (QWidget) for editing. 
             It's parent will be set by the ConfigItemDelegate class
+            :param delegate: the delegate that called this function
+            :type  delegate: ConfigItemDelegate
+            :param parent: The parent widget for the editor
+            :type  parent: QWidget
             :param option: describes the parameters used to draw an item in a view widget.
-            :type option: QStyleOptionViewItem
+            :type  option: QStyleOptionViewItem
         """
-        editor = QtGui.QLineEdit()
+        editor = QtGui.QLineEdit(parent)
         #editor.setText(str(self.value)) # not necessary, it will be done by setEditorValue
         return editor
         

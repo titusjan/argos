@@ -69,7 +69,7 @@ class StringCti(BaseCti):
         return "maxLength = {}".format(self.maxLength)
     
     
-    def createEditor(self, parent, _option):
+    def createEditor(self, delegate, parent, _option):
         """ Creates a QSpinBox for editing. 
             :type option: QStyleOptionViewItem        
         """
@@ -127,7 +127,7 @@ class IntegerCti(BaseCti):
         return "min = {}, max = {}, step = {}".format(self.minValue, self.maxValue, self.stepSize)
     
     
-    def createEditor(self, parent, _option):
+    def createEditor(self, delegate, parent, _option):
         """ Creates a QSpinBox for editing. 
             :type option: QStyleOptionViewItem
         """
@@ -160,8 +160,7 @@ class IntegerCti(BaseCti):
         value = spinBox.value()
         return value
 
-
-
+        
 
 class BoolCti(BaseCti):
     """ Config Tree Item to store an integer. It can be edited using a QSinBox.
@@ -180,12 +179,13 @@ class BoolCti(BaseCti):
         return bool(value)
         
 
-    def createEditor(self, parent, _option):
+    def createEditor(self, delegate, parent, _option):
         """ Creates a QSpinBox for editing. 
             :type option: QStyleOptionViewItem        
         """
         checkBox = QtGui.QCheckBox(parent)
-        #checkBox = QtGui.QCheckBox() # Works correct in separate window
+        checkBox.setFocusPolicy(Qt.StrongFocus) # See QAbstractItemDelegate.createEditor docs
+        checkBox.clicked.connect(delegate.commitAndCloseEditor)
         return checkBox
 
         
@@ -201,7 +201,7 @@ class BoolCti(BaseCti):
         return checkBox.isChecked()
 
         
-    def __paintDisplayValue(self, painter, option, value):
+    def paintDisplayValue(self, painter, option, value):
         """ Paints a check box on the painter.
         """
         checkBox = QtGui.QStyleOptionButton()
