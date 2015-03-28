@@ -49,7 +49,7 @@ class BaseTreeItem(object):
         """ The node name. Is used to construct the nodePath"""
         assert '/' not in nodeName, "nodeName may not contain slashes"
         self._nodeName = nodeName
-        self._nodePath = self._constructNodePath()
+        self._recursiveSetNodePath(self._constructNodePath())
 
     def _constructNodePath(self):
         """ Recursively prepends the parents nodeName to the path until the root node is reached."""
@@ -62,7 +62,14 @@ class BaseTreeItem(object):
     def nodePath(self):
         """ The sequence of nodeNames from the root to this node. Separated by slashes."""
         return self._nodePath
-    
+
+    def _recursiveSetNodePath(self, nodePath):
+        """ Sets the nodePath property and updates it for all children.
+        """
+        self._nodePath = nodePath
+        for childItem in self.childItems:
+            childItem._recursiveSetNodePath(nodePath + '/' + childItem.nodeName)
+
     @property
     def parentItem(self):
         """ The parent item """
@@ -72,7 +79,7 @@ class BaseTreeItem(object):
     def parentItem(self, value):
         """ The parent item """
         self._parentItem = value
-        self._nodePath = self._constructNodePath()
+        self._recursiveSetNodePath(self._constructNodePath())
     
     @property
     def childItems(self):
@@ -114,8 +121,10 @@ class BaseTreeItem(object):
         return 0
 
 
-    def insertChild(self, childItem, position=None): 
-        
+    def insertChild(self, childItem, position=None):
+        """ Inserts a child item to the current item.
+            The childItem may not yet have a parent.
+        """ 
         if position is None:
             position = self.nChildren()
             
