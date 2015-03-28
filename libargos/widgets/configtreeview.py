@@ -74,7 +74,6 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         """
         # We take the value via the model to be consistent with setModelData
         value = index.model().data(index, QtCore.Qt.EditRole)
-        logger.debug("setEditorData: ({}, {}) to {}, editor = {!r}".format(index.row(), index.column(), value, editor))
         cti = index.model().getItem(index)
         cti.setEditorValue(editor, value)
         
@@ -89,7 +88,6 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         """
         cti = model.getItem(index)
         value = cti.getEditorValue(editor)
-        logger.debug("setModelData: ({}, {}) to {}, editor = {!r}".format(index.row(), index.column(), value, editor))
         
         # The value is set via the model so that signals are emitted
         model.setData(index, value, QtCore.Qt.EditRole)
@@ -132,12 +130,12 @@ class ConfigTreeView(ArgosTreeView):
         self.addHeaderContextMenu(enabled=enabled, checkable={})
 
         self.setItemDelegate(ConfigItemDelegate())
-        #self.setEditTriggers(QtGui.QAbstractItemView.EditKeyPressed) 
+        self.setEditTriggers(QtGui.QAbstractItemView.AllEditTriggers) 
 
-        self.setEditTriggers(QtGui.QAbstractItemView.DoubleClicked |
-                             QtGui.QAbstractItemView.EditKeyPressed | 
+        #self.setEditTriggers(QtGui.QAbstractItemView.DoubleClicked |
+        #                     QtGui.QAbstractItemView.EditKeyPressed | 
         #                     QtGui.QAbstractItemView.AnyKeyPressed | 
-                             QtGui.QAbstractItemView.SelectedClicked)
+        #                     QtGui.QAbstractItemView.SelectedClicked)
         
         
         

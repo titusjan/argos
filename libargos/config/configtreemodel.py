@@ -18,7 +18,7 @@
 """ Data repository functionality
 """
 import logging
-from libargos.qt import QtCore
+from libargos.qt import QtCore, QtSlot
 from libargos.qt.treemodels import BaseTreeModel
 from libargos.info import DEBUGGING
 from libargos.utils.cls import type_name
@@ -39,6 +39,21 @@ class ConfigTreeModel(BaseTreeModel):
         """ Constructor
         """
         super(ConfigTreeModel, self).__init__(parent=parent)
+        
+        self.dataChanged.connect(self.debug)
+
+
+    @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
+    def debug(self, topLeftIndex, bottomRightIndex):
+        """ Temporary debug to test the dataChanged signal
+        """
+        topRow = topLeftIndex.row()
+        bottomRow = bottomRightIndex.row()
+        
+        for row in range(topRow, bottomRow + 1):
+            index = topLeftIndex.sibling(row, 0)
+            childItem = self.getItem(index)
+            logger.debug("Data changed in: {}".format(childItem.nodePath))
 
         
     def flags(self, index):
