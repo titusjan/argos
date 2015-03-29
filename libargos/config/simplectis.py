@@ -34,6 +34,8 @@ logger = logging.getLogger(__name__)
 # TODO: Bool and CombiBox  
 # TODO: Date selector.
 # TODO: Color selector. Font selector?
+# TODO: reset button
+# TODO: None takes value of parent
 
 
 class StringCti(BaseCti):
