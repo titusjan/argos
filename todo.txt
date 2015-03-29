@@ -47,6 +47,7 @@ TODO Long term or nice to have:
 	
 	Change profile from menu?
 	Plugin management window
+	clean-up the settings reading/writing 
 	
 THINK:
 	use QObject.blockSignals

@@ -110,7 +110,7 @@ class BaseTreeItem(object):
         for child in self.childItems:
             if child.nodeName == nodeName:
                 return child
-        raise ValueError("No child item found having nodeName: {}".format(nodeName))
+        raise IndexError("No child item found having nodeName: {}".format(nodeName))
 
 
     def childNumber(self):

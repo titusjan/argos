@@ -151,7 +151,12 @@ class BaseCti(BaseTreeItem):
             self.value = dct['value']
         
         for childDct in dct.get('childItems', []):
-            childCti = self.childByNodeName(childDct['nodeName'])
+            key = childDct['nodeName']
+            try:
+                childCti = self.childByNodeName(key)
+            except IndexError as _ex:
+                logger.warn("Unable to set values for: {}".format(key))
+                
             childCti.setValuesFromDict(childDct)
     
     @property

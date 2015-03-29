@@ -64,7 +64,7 @@ class MainWindow(QtGui.QMainWindow):
         self.resize(QtCore.QSize(1024, 700))
         self.setWindowTitle("{}-{} (#{})".format(PROJECT_NAME, self.argosApplication.profile, 
                                                  self._instanceNr))
-        self.__addTestData()
+        self.__addTestItems()
 
 
     @property
@@ -179,7 +179,7 @@ class MainWindow(QtGui.QMainWindow):
             self.treeView.setExpanded(storeRootIndex, True)
     
     
-    def readViewSettings(self, settings=None):
+    def readViewSettings(self, settings=None): # TODO: rename to readProfile?
         """ Reads the persistent program settings
             
             :param settings: optional QSettings object which can have a group already opened.
@@ -201,6 +201,8 @@ class MainWindow(QtGui.QMainWindow):
         if splitterState:
             self.mainSplitter.restoreState(splitterState)
         self.treeView.readViewSettings('repo_tree/header_state', settings)
+        self.configTreeView.readViewSettings('config_tree/header_state', settings)
+        self._config.readModelSettings('config_model', settings)
         
 
     def saveProfile(self, settings=None):
@@ -210,6 +212,8 @@ class MainWindow(QtGui.QMainWindow):
             settings = QtCore.QSettings()  
         logger.debug("Writing settings to: {}".format(settings.group()))
         
+        self._config.saveProfile('config_model', settings)
+        self.configTreeView.saveProfile("config_tree/header_state", settings)
         self.treeView.saveProfile("repo_tree/header_state", settings)
         settings.setValue("main_splitter/state", self.mainSplitter.saveState())        
         settings.setValue("window_pos", self.pos())
@@ -251,19 +255,20 @@ class MainWindow(QtGui.QMainWindow):
 
 
 
-    def __addTestData(self):
-        """ Temporary function to add test data
+    def __addTestItems(self):
+        """ Temporary function to add test CTIs
         """
         from libargos.config.basecti import BaseCti
         from libargos.config.simplectis import IntegerCti, StringCti, BoolCti
         
-        rootItem = BaseCti(nodeName='line color', value=123)
-        rootItem.insertChild(IntegerCti(nodeName='line-1 color', value=-7, minValue = -5, stepSize=2))
+        rootItem = BaseCti(nodeName='line color', defaultValue=123)
         rootIndex = self._config.insertItem(rootItem)
+        self.configTreeView.setExpanded(rootIndex, True) # does not work because of read settings
+
+        rootItem.insertChild(IntegerCti(nodeName='line-1 color', defaultValue=-7, minValue = -5, stepSize=2))
         
         self._config.insertItem(StringCti(nodeName='letter', defaultValue='aa', maxLength = 1))
         self._config.insertItem(BoolCti(nodeName='grid', defaultValue=True))
 
         
-        self.configTreeView.setExpanded(rootIndex, True)
             

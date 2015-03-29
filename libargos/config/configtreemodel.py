@@ -18,8 +18,12 @@
 """ Data repository functionality
 """
 import logging
+
+from json import dumps, loads
+
 from libargos.qt import QtCore, QtSlot
 from libargos.qt.treemodels import BaseTreeModel
+from libargos.config.basecti import BaseCti
 from libargos.info import DEBUGGING
 from libargos.utils.cls import type_name
 
@@ -39,7 +43,7 @@ class ConfigTreeModel(BaseTreeModel):
         """ Constructor
         """
         super(ConfigTreeModel, self).__init__(parent=parent)
-        
+        self._rootItem = BaseCti(nodeName='<invisible-root>')
         self.dataChanged.connect(self.debug)
 
 
@@ -113,5 +117,40 @@ class ConfigTreeModel(BaseTreeModel):
         else:
             return True
         
-
+        
+    def readModelSettings(self, key, settings):
+        """ Reads the persistent program settings.
+        
+            Will reset the model and thus collapse all nodes.
+            
+            :param key: key where the setting will be read from
+            :param settings: optional QSettings object which can have a group already opened.
+            :returns: True if the header state was restored, otherwise returns False
+        """ 
+        if settings is None:
+            settings = QtCore.QSettings()     
+            
+        values_json = settings.value(key, None)
+        
+        if values_json:
+            values = loads(values_json)
+            self.beginResetModel()
+            self.rootItem.setValuesFromDict(values)
+            self.endResetModel()
+        else:
+            logger.warn("No settings found at: {}".format(key))
     
+
+    def saveProfile(self, key, settings=None):
+        """ Writes the view settings to the persistent store
+            :param key: key where the setting will be read from
+            :param settings: optional QSettings object which can have a group already opened.        
+        """         
+        logger.debug("Writing model settings for: {}".format(key))
+        if settings is None:
+            settings = QtCore.QSettings()
+            
+        values = self.rootItem.getNonDefaultsDict()
+        values_json = dumps(values)
+        settings.setValue(key, values_json)
+
