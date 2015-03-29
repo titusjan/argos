@@ -85,8 +85,8 @@ class MainWindow(QtGui.QMainWindow):
         centralLayout = QtGui.QVBoxLayout()
         self.mainSplitter.setLayout(centralLayout)
         
-        self.treeView = RepoTreeView(self.argosApplication.repo)
-        centralLayout.addWidget(self.treeView)
+        self.repoTreeView = RepoTreeView(self.argosApplication.repo)
+        centralLayout.addWidget(self.repoTreeView)
         
         self.configTreeView = ConfigTreeView(self._config)
         centralLayout.addWidget(self.configTreeView)
@@ -131,10 +131,10 @@ class MainWindow(QtGui.QMainWindow):
                                                  caption="Open {}".format(rtiClass.classLabel())))
             openAsMenu.addAction(action)
 
-        for action in self.treeView.topLevelItemActionGroup.actions():
+        for action in self.repoTreeView.topLevelItemActionGroup.actions():
             fileMenu.addAction(action)
             
-        for action in self.treeView.currentItemActionGroup.actions():
+        for action in self.repoTreeView.currentItemActionGroup.actions():
             fileMenu.addAction(action)
 
         fileMenu.addSeparator()
@@ -176,7 +176,7 @@ class MainWindow(QtGui.QMainWindow):
             
         for fileName in fileNames:
             storeRootIndex = self.argosApplication.repo.loadFile(fileName, rtiClass=rtiClass)
-            self.treeView.setExpanded(storeRootIndex, True)
+            self.repoTreeView.setExpanded(storeRootIndex, True)
     
     
     def readViewSettings(self, settings=None): # TODO: rename to readProfile?
@@ -200,7 +200,7 @@ class MainWindow(QtGui.QMainWindow):
         splitterState = settings.value("main_splitter/state")
         if splitterState:
             self.mainSplitter.restoreState(splitterState)
-        self.treeView.readViewSettings('repo_tree/header_state', settings)
+        self.repoTreeView.readViewSettings('repo_tree/header_state', settings)
         self.configTreeView.readViewSettings('config_tree/header_state', settings)
         self._config.readModelSettings('config_model', settings)
         
@@ -214,7 +214,7 @@ class MainWindow(QtGui.QMainWindow):
         
         self._config.saveProfile('config_model', settings)
         self.configTreeView.saveProfile("config_tree/header_state", settings)
-        self.treeView.saveProfile("repo_tree/header_state", settings)
+        self.repoTreeView.saveProfile("repo_tree/header_state", settings)
         settings.setValue("main_splitter/state", self.mainSplitter.saveState())        
         settings.setValue("window_pos", self.pos())
         settings.setValue("window_size", self.size())
