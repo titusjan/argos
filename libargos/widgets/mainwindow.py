@@ -28,6 +28,7 @@ import logging
 from .repotreeview import RepoTreeView
 from .aboutdialog import AboutDialog
 from libargos.config.configtreemodel import ConfigTreeModel
+from libargos.inspector.base import BaseInspector
 from libargos.widgets.configtreeview import ConfigTreeView
 from libargos.info import DEBUGGING, PROJECT_NAME
 from libargos.qt import QtCore, QtGui, QtSlot
@@ -60,6 +61,7 @@ class MainWindow(QtGui.QMainWindow):
         
         self.__setupViews()
         self.__setupMenu()
+        self.__setupDockWidgets()
         
         self.resize(QtCore.QSize(1024, 700))
         self.setWindowTitle("{}-{} (#{})".format(PROJECT_NAME, self.argosApplication.profile, 
@@ -144,13 +146,41 @@ class MainWindow(QtGui.QMainWindow):
             fileMenu.addSeparator()
             fileMenu.addAction("&Test-{}".format(self._instanceNr), self.myTest, "Ctrl+T")
                  
+        ### View Menu ###
+        
+        self.viewMenu = menuBar.addMenu("&View")
+                
         ### Help Menu ###
                 
         menuBar.addSeparator()
         helpMenu = menuBar.addMenu("&Help")
         helpMenu.addAction('&About', self.about)
 
+
+    def __setupDockWidgets(self):
+        """ Sets up the dock widgets
+        """
+        attributeInspector = BaseInspector()
+        self.addDockedInspector(attributeInspector)
+       
+
     # -- End of setup_methods --
+    
+    
+    def addDockedInspector(self, inspector):
+        """ 
+        """
+        assert inspector.parent() is None, "Inspector already has a parent"
+        
+        dockWidget = QtGui.QDockWidget(inspector.classLabel(), parent=self)
+        dockWidget.setWidget(inspector)
+        
+        self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dockWidget)
+        self.viewMenu.addAction(dockWidget.toggleViewAction())
+                
+        
+        #dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
+
 
     # TODO: to repotreemodel? Note that the functionality will be common to selectors.
     @QtSlot() 
