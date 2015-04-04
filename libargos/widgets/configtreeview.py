@@ -22,7 +22,7 @@ from __future__ import print_function
 import logging
 from libargos.qt import QtCore, QtGui, QtSlot
 from libargos.widgets.argostreeview import ArgosTreeView
-
+from libargos.widgets.constants import RIGHT_DOCK_WIDTH
 from libargos.config.configtreemodel import ConfigTreeModel
 
 logger = logging.getLogger(__name__)
@@ -118,16 +118,19 @@ class ConfigTreeView(ArgosTreeView):
         super(ConfigTreeView, self).__init__(configTreeModel)
 
         self.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
-
+        
         treeHeader = self.header()
-        treeHeader.resizeSection(ConfigTreeModel.COL_NODE_NAME, 300)
-        treeHeader.resizeSection(ConfigTreeModel.COL_VALUE, 300)  
+        treeHeader.resizeSection(ConfigTreeModel.COL_NODE_NAME, RIGHT_DOCK_WIDTH / 2)
+        treeHeader.resizeSection(ConfigTreeModel.COL_VALUE, RIGHT_DOCK_WIDTH / 2)
 
         headerNames = self.model().horizontalHeaders
         enabled = dict((name, True) for name in headerNames)
         enabled[headerNames[ConfigTreeModel.COL_NODE_NAME]] = False # Name cannot be unchecked
         enabled[headerNames[ConfigTreeModel.COL_VALUE]] = False # Value cannot be unchecked
-        self.addHeaderContextMenu(enabled=enabled, checkable={})
+        checked = dict((name, False) for name in headerNames)
+        checked[headerNames[ConfigTreeModel.COL_NODE_NAME]] = True # Checked by default
+        checked[headerNames[ConfigTreeModel.COL_VALUE]] = True # Checked by default
+        self.addHeaderContextMenu(checked=checked, enabled=enabled, checkable={})
 
         self.setItemDelegate(ConfigItemDelegate())
         self.setEditTriggers(QtGui.QAbstractItemView.AllEditTriggers) 
@@ -138,4 +141,7 @@ class ConfigTreeView(ArgosTreeView):
         #                     QtGui.QAbstractItemView.SelectedClicked)
         
         
+    def sizeHint(self):
+        """ The recommended size for the widget."""
+        return QtCore.QSize(RIGHT_DOCK_WIDTH, 500)
         

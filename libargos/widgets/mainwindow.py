@@ -29,9 +29,10 @@ from .repotreeview import RepoTreeView
 from .aboutdialog import AboutDialog
 from libargos.config.configtreemodel import ConfigTreeModel
 from libargos.inspector.base import BaseInspector
+
 from libargos.widgets.configtreeview import ConfigTreeView
 from libargos.info import DEBUGGING, PROJECT_NAME
-from libargos.qt import QtCore, QtGui, QtSlot
+from libargos.qt import Qt, QtCore, QtGui, QtSlot
 
 
 logger = logging.getLogger(__name__)
@@ -53,19 +54,18 @@ class MainWindow(QtGui.QMainWindow):
         super(MainWindow, self).__init__()
         self._instanceNr = MainWindow.__numInstances # Used only for debugging
         MainWindow.__numInstances += 1
+        
+        self._argosApplication = argosApplication
+        self._config = ConfigTreeModel()
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self._argosApplication = argosApplication
-        
-        self._config = ConfigTreeModel()
-        
+        self.setUnifiedTitleAndToolBarOnMac(True)
+        self.resize(1024, 700)
+        self.setWindowTitle("{}-{} (#{})".format(PROJECT_NAME, self.argosApplication.profile, 
+                                                 self._instanceNr))
         self.__setupViews()
         self.__setupMenu()
         self.__setupDockWidgets()
-        
-        self.resize(QtCore.QSize(1024, 700))
-        self.setWindowTitle("{}-{} (#{})".format(PROJECT_NAME, self.argosApplication.profile, 
-                                                 self._instanceNr))
         self.__addTestItems()
 
 
@@ -91,7 +91,7 @@ class MainWindow(QtGui.QMainWindow):
         centralLayout.addWidget(self.repoTreeView)
         
         self.configTreeView = ConfigTreeView(self._config)
-        centralLayout.addWidget(self.configTreeView)
+        #centralLayout.addWidget(self.configTreeView)
         
         #self.label2 = QtGui.QLabel("Hi there", parent=self)
         #centralLayout.addWidget(self.label2)    
@@ -158,28 +158,40 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def __setupDockWidgets(self):
-        """ Sets up the dock widgets
+        """ Sets up the dock widgets. Must be called after the menu is setup.
         """
         attributeInspector = BaseInspector()
-        self.addDockedInspector(attributeInspector)
+        self.dockInspector(attributeInspector)
+        
+        # TODO: if the title == "Settings" it won't be added to the view menu.
+        self.dockWidget(self.configTreeView, "Plot Settings", area=Qt.RightDockWidgetArea) 
        
 
     # -- End of setup_methods --
     
     
-    def addDockedInspector(self, inspector):
-        """ 
+    def dockWidget(self, widget, title, area=None):
+        """ Adds a widget as a docked widget.
+            By default the widget is added to the Qt.LeftDockWidgetArea.
+            Returns the added dockWidget
         """
-        assert inspector.parent() is None, "Inspector already has a parent"
+        assert widget.parent() is None, "Inspector already has a parent"
+        area = Qt.LeftDockWidgetArea if area is None else area
         
-        dockWidget = QtGui.QDockWidget(inspector.classLabel(), parent=self)
-        dockWidget.setWidget(inspector)
+        dockWidget = QtGui.QDockWidget(title, parent=self)
+        dockWidget.setWidget(widget)
         
-        self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dockWidget)
+        self.addDockWidget(area, dockWidget)
+        logger.debug("Adding action: {!r}".format(dockWidget.toggleViewAction()))
         self.viewMenu.addAction(dockWidget.toggleViewAction())
-                
-        
-        #dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
+        return dockWidget
+    
+    
+    def dockInspector(self, inspector, title=None, area=None):
+        """ Calls addDockedWidget to add an inspector with a default title.
+        """
+        title = inspector.classLabel() if title is None else title
+        return self.dockWidget(inspector, title, area=area)
 
 
     # TODO: to repotreemodel? Note that the functionality will be common to selectors.

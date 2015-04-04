@@ -24,18 +24,6 @@ from libargos.qt import Qt, QtGui
 
 logger = logging.getLogger(__name__)
 
-TEMP_ERROR = """Traceback (most recent call last):
-  File "/Users/titusjan/Programming/python/argos/argos", line 27, in <module>
-    from libargos import browse
-  File "/Users/titusjan/Programming/python/argos/libargos/__init__.py", line 26, in <module>
-    from .application import ArgosApplication
-  File "/Users/titusjan/Programming/python/argos/libargos/application.py", line 28, in <module>
-    from libargos.widgets.mainwindow import MainWindow
-  File "/Users/titusjan/Programming/python/argos/libargos/widgets/mainwindow.py", line 31, in <module>
-    from libargos.inspector.base import BaseInspector
-  File "/Users/titusjan/Programming/python/argos/libargos/inspector/base.py", line 68
-    centralLayout.addWidget(self.errorLabel)
-"""
 
 # TODO: is-a-widget or has-a-widget?
 
@@ -81,7 +69,7 @@ class BaseInspector(QtGui.QWidget):
         font.setFixedPitch(True)
         font.setPointSize(13)
         
-        self.errorMessageLabel = QtGui.QLabel(TEMP_ERROR)
+        self.errorMessageLabel = QtGui.QLabel("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut ultrices quam id elementum commodo. Praesent. ") # TODO: temp
         self.errorMessageLabel.setFont(font)
         self.errorMessageLabel.setTextFormat(Qt.PlainText)
         self.errorMessageLabel.setTextInteractionFlags(Qt.TextSelectableByMouse)
