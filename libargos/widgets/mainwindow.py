@@ -25,14 +25,14 @@ from __future__ import division
 
 import logging
 
-from .repotreeview import RepoTreeView
 from .aboutdialog import AboutDialog
+from .configtreeview import ConfigTreeView
+from .repotreeview import RepoTreeView
 from libargos.config.configtreemodel import ConfigTreeModel
 from libargos.inspector.base import BaseInspector
-
-from libargos.widgets.configtreeview import ConfigTreeView
 from libargos.info import DEBUGGING, PROJECT_NAME
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
+from libargos.utils.misc import string_to_identifier
 
 
 logger = logging.getLogger(__name__)
@@ -164,7 +164,7 @@ class MainWindow(QtGui.QMainWindow):
         self.dockInspector(attributeInspector)
         
         # TODO: if the title == "Settings" it won't be added to the view menu.
-        self.dockWidget(self.configTreeView, "Plot Settings", area=Qt.RightDockWidgetArea) 
+        self.dockWidget(self.configTreeView, "Application Settings", area=Qt.RightDockWidgetArea) 
        
 
     # -- End of setup_methods --
@@ -179,10 +179,10 @@ class MainWindow(QtGui.QMainWindow):
         area = Qt.LeftDockWidgetArea if area is None else area
         
         dockWidget = QtGui.QDockWidget(title, parent=self)
+        dockWidget.setObjectName("dock_" + string_to_identifier(title))
         dockWidget.setWidget(widget)
         
         self.addDockWidget(area, dockWidget)
-        logger.debug("Adding action: {!r}".format(dockWidget.toggleViewAction()))
         self.viewMenu.addAction(dockWidget.toggleViewAction())
         return dockWidget
     
@@ -231,13 +231,8 @@ class MainWindow(QtGui.QMainWindow):
             settings = QtCore.QSettings()  
         logger.debug("Reading settings from: {}".format(settings.group()))
         
-        windowSize = settings.value("window_size", None)
-        if windowSize:
-            self.resize(windowSize)
-            
-        windowPos = settings.value("window_pos", None)
-        if windowPos:
-            self.move(windowPos) 
+        self.restoreGeometry(settings.value("geometry"))
+        self.restoreState(settings.value("state"))
                                  
         splitterState = settings.value("main_splitter/state")
         if splitterState:
@@ -257,9 +252,10 @@ class MainWindow(QtGui.QMainWindow):
         self._config.saveProfile('config_model', settings)
         self.configTreeView.saveProfile("config_tree/header_state", settings)
         self.repoTreeView.saveProfile("repo_tree/header_state", settings)
-        settings.setValue("main_splitter/state", self.mainSplitter.saveState())        
-        settings.setValue("window_pos", self.pos())
-        settings.setValue("window_size", self.size())
+        settings.setValue("main_splitter/state", self.mainSplitter.saveState())     
+                    
+        settings.setValue("geometry", self.saveGeometry())
+        settings.setValue("state", self.saveState())
 
  
     def closeEvent(self, event):
