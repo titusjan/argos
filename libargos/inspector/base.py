@@ -78,4 +78,13 @@ class BaseInspector(QtGui.QWidget):
         self.errorMessageLabel.setFrameStyle(QtGui.QFrame.Panel | QtGui.QFrame.Plain)
         centralLayout.addWidget(self.errorMessageLabel, stretch=1)
 
+        self.showErrorMessage("This is an emergency.")
+        
+
+    def showErrorMessage(self, msg):
+        """ Shows and error message
+        """
+        self.errorMessageLabel.setText(msg)
+        
+        
         

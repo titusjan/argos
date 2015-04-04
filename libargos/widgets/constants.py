@@ -19,7 +19,7 @@
 """
 
 # Initial dock widths of the main window
-LEFT_DOCK_WIDTH = 400
+LEFT_DOCK_WIDTH = 350
 RIGHT_DOCK_WIDTH = 300
 
 

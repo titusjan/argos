@@ -47,47 +47,41 @@ from __future__ import print_function
 
 import logging
 from libargos.qt import Qt, QtGui, QtCore, QtSlot
-from libargos.qt.togglecolumn import ToggleColumnTreeView
-
+from libargos.widgets.argostreeview import ArgosTreeView
 from libargos.repo.repotreemodel import RepoTreeModel
+from libargos.widgets.constants import LEFT_DOCK_WIDTH
 
 logger = logging.getLogger(__name__)
 
 # Qt classes have many ancestors
 #pylint: disable=R0901
 
-class RepoTreeView(ToggleColumnTreeView): # TODO: from ArgosTreeView
+class RepoTreeView(ArgosTreeView):
     """ Tree widget for browsing the data repository.
     """
     def __init__(self, repoTreeModel):
         """ Constructor
         """
-        super(RepoTreeView, self).__init__()
-        self.setModel(repoTreeModel)
-        self.setAlternatingRowColors(True)
-        self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.setAnimated(True)
-        self.setAllColumnsShowFocus(True) 
-
+        super(RepoTreeView, self).__init__(repoTreeModel)
+ 
         treeHeader = self.header()
-        treeHeader.setMovable(True)
-        treeHeader.setStretchLastSection(False)
-        treeHeader.resizeSection(RepoTreeModel.COL_NODE_NAME, 300)
-        treeHeader.resizeSection(RepoTreeModel.COL_FILE_NAME, 500)  
+        treeHeader.resizeSection(RepoTreeModel.COL_NODE_NAME, 180)
+        treeHeader.resizeSection(RepoTreeModel.COL_SHAPE, 60)  
+        treeHeader.resizeSection(RepoTreeModel.COL_ELEM_TYPE, 60)  
+        #treeHeader.resizeSection(RepoTreeModel.COL_NODE_PATH, 300)  
+        #treeHeader.resizeSection(RepoTreeModel.COL_FILE_NAME, 500)  
+        treeHeader.setStretchLastSection(True)
 
         headerNames = self.model().horizontalHeaders
         enabled = dict((name, True) for name in headerNames)
-        enabled[headerNames[0]] = False # First column cannot be unchecked
-        self.addHeaderContextMenu(enabled=enabled, checkable={})
+        enabled[headerNames[RepoTreeModel.COL_NODE_NAME]] = False # Cannot be unchecked
+        checked = dict((name, False) for name in headerNames)
+        checked[headerNames[RepoTreeModel.COL_NODE_NAME]] = True 
+        checked[headerNames[RepoTreeModel.COL_SHAPE]] = True 
+        checked[headerNames[RepoTreeModel.COL_ELEM_TYPE]] = True 
+        self.addHeaderContextMenu(checked=checked, enabled=enabled, checkable={})
         
-        self.setContextMenuPolicy(Qt.ActionsContextMenu)
-
         # Add actions
-        #self._currentItemActions = [] # list of actions expecting a currentItem. 
-        #self._topLevelItemActions = [] # list of actions expecting (current) a top level item.
-        
         self.topLevelItemActionGroup = QtGui.QActionGroup(self)
         self.topLevelItemActionGroup.setExclusive(False)
         self.currentItemActionGroup = QtGui.QActionGroup(self)
@@ -117,6 +111,11 @@ class RepoTreeView(ToggleColumnTreeView): # TODO: from ArgosTreeView
         selectionModel = self.selectionModel() # need to store to prevent crash in PySide
         selectionModel.currentChanged.connect(self.updateCurrentItemActions)
 
+        
+    def sizeHint(self):
+        """ The recommended size for the widget."""
+        return QtCore.QSize(LEFT_DOCK_WIDTH, 500)
+    
  
     def updateCurrentItemActions(self):
         """ Enables/disables actions when a new item is the current item in the tree view.

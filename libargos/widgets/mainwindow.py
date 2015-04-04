@@ -60,7 +60,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setUnifiedTitleAndToolBarOnMac(True)
-        self.resize(1024, 700)
+        self.resize(1300, 700)  # Assumes minimal resolution of 1366 x 768
         self.setWindowTitle("{}-{} (#{})".format(PROJECT_NAME, self.argosApplication.profile, 
                                                  self._instanceNr))
         self.__setupViews()
@@ -88,13 +88,8 @@ class MainWindow(QtGui.QMainWindow):
         self.mainSplitter.setLayout(centralLayout)
         
         self.repoTreeView = RepoTreeView(self.argosApplication.repo)
-        centralLayout.addWidget(self.repoTreeView)
         
         self.configTreeView = ConfigTreeView(self._config)
-        #centralLayout.addWidget(self.configTreeView)
-        
-        #self.label2 = QtGui.QLabel("Hi there", parent=self)
-        #centralLayout.addWidget(self.label2)    
         
                               
     def __setupMenu(self):
@@ -160,23 +155,25 @@ class MainWindow(QtGui.QMainWindow):
     def __setupDockWidgets(self):
         """ Sets up the dock widgets. Must be called after the menu is setup.
         """
+        # TODO: if the title == "Settings" it won't be added to the view menu.
+        self.dockWidget(self.repoTreeView, "Repository", Qt.LeftDockWidgetArea) 
+        self.dockWidget(self.configTreeView, "Application Settings", Qt.RightDockWidgetArea) 
+
         attributeInspector = BaseInspector()
         self.dockInspector(attributeInspector)
         
-        # TODO: if the title == "Settings" it won't be added to the view menu.
-        self.dockWidget(self.configTreeView, "Application Settings", area=Qt.RightDockWidgetArea) 
        
 
     # -- End of setup_methods --
     
     
-    def dockWidget(self, widget, title, area=None):
+    def dockWidget(self, widget, title, area):
         """ Adds a widget as a docked widget.
             By default the widget is added to the Qt.LeftDockWidgetArea.
             Returns the added dockWidget
         """
         assert widget.parent() is None, "Inspector already has a parent"
-        area = Qt.LeftDockWidgetArea if area is None else area
+        
         
         dockWidget = QtGui.QDockWidget(title, parent=self)
         dockWidget.setObjectName("dock_" + string_to_identifier(title))
@@ -191,7 +188,8 @@ class MainWindow(QtGui.QMainWindow):
         """ Calls addDockedWidget to add an inspector with a default title.
         """
         title = inspector.classLabel() if title is None else title
-        return self.dockWidget(inspector, title, area=area)
+        area = Qt.LeftDockWidgetArea if area is None else area
+        return self.dockWidget(inspector, title, area)
 
 
     # TODO: to repotreemodel? Note that the functionality will be common to selectors.
