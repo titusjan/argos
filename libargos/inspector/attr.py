@@ -19,27 +19,30 @@
 """
 import logging
 
-from .base import BaseInspector
-from libargos.qt import Qt, QtGui
-from libargos.qt.togglecolumn import ToggleColumnTableWidget
+from .basetable import BaseTableInspector
+from libargos.widgets.constants import COL_ELEM_TYPE_WIDTH
 
 logger = logging.getLogger(__name__)
 
-class AttributeInspector(BaseInspector):
+
+
+class AttributeInspector(BaseTableInspector):
     """ Shows the attributes of the selected variable
     """
     _label = "Attribute Inspector"
     
-    def __init__(self, parent=None):
-        super(AttributeInspector, self).__init__(parent)
-        
-        self.table = ToggleColumnTableWidget(5, 2)
-        self.contentsLayout.addWidget(self.table)
-        
+    HEADERS = ["Name", "Value", "Type"]
+    (COL_ATTR_NAME, COL_VALUE, COL_ELEM_TYPE) = range(len(HEADERS))
     
-        
+    def __init__(self, parent=None):
+        super(AttributeInspector, self).__init__(AttributeInspector.HEADERS, parent=parent)
+        self.table.addHeaderContextMenu(enabled = {'Name': False, 'Value': False}, 
+                                        checked = {'Type': False}) 
+    
+        tableHeader = self.table._horizontalHeader() # TODO
+        tableHeader.resizeSection(self.COL_ATTR_NAME, 125)
+        tableHeader.resizeSection(self.COL_VALUE, 150)  
+        tableHeader.resizeSection(self.COL_ELEM_TYPE, COL_ELEM_TYPE_WIDTH)          
 
-
-        
         
         

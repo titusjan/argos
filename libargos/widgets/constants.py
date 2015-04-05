@@ -22,6 +22,10 @@
 LEFT_DOCK_WIDTH = 350
 RIGHT_DOCK_WIDTH = 300
 
+COL_NODE_NAME_WIDTH = 180
+COL_SHAPE_WIDTH = 60  
+COL_ELEM_TYPE_WIDTH = 60
+
 # Spacing and margin in dock widgets in pixels
 DOCK_SPACING = 2 
 DOCK_MARGIN  = 2 

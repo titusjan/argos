@@ -18,8 +18,8 @@
 """ Base class for inspectors
 """
 import logging
-from libargos.qt import Qt, QtGui
-from libargos.widgets.constants import DOCK_SPACING, DOCK_MARGIN
+from libargos.qt import Qt, QtCore, QtGui
+from libargos.widgets.constants import DOCK_SPACING, DOCK_MARGIN, LEFT_DOCK_WIDTH
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +99,10 @@ class BaseInspector(QtGui.QStackedWidget):
         """ Returns a short string that describes this class. For use in menus, headers, etc. 
         """
         return cls._label
+        
+    def sizeHint(self):
+        """ The recommended size for the widget."""
+        return QtCore.QSize(LEFT_DOCK_WIDTH, 250)
         
 
     def drawEmpty(self):

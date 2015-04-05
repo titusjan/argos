@@ -49,7 +49,8 @@ import logging
 from libargos.qt import Qt, QtGui, QtCore, QtSlot
 from libargos.widgets.argostreeview import ArgosTreeView
 from libargos.repo.repotreemodel import RepoTreeModel
-from libargos.widgets.constants import LEFT_DOCK_WIDTH
+from libargos.widgets.constants import (LEFT_DOCK_WIDTH, COL_NODE_NAME_WIDTH, 
+                                        COL_SHAPE_WIDTH, COL_ELEM_TYPE_WIDTH)
 
 logger = logging.getLogger(__name__)
 
@@ -65,9 +66,9 @@ class RepoTreeView(ArgosTreeView):
         super(RepoTreeView, self).__init__(repoTreeModel)
  
         treeHeader = self.header()
-        treeHeader.resizeSection(RepoTreeModel.COL_NODE_NAME, 180)
-        treeHeader.resizeSection(RepoTreeModel.COL_SHAPE, 60)  
-        treeHeader.resizeSection(RepoTreeModel.COL_ELEM_TYPE, 60)  
+        treeHeader.resizeSection(RepoTreeModel.COL_NODE_NAME, COL_NODE_NAME_WIDTH)
+        treeHeader.resizeSection(RepoTreeModel.COL_SHAPE, COL_SHAPE_WIDTH)  
+        treeHeader.resizeSection(RepoTreeModel.COL_ELEM_TYPE, COL_ELEM_TYPE_WIDTH)  
         treeHeader.setStretchLastSection(True)
 
         headerNames = self.model().horizontalHeaders
@@ -112,7 +113,7 @@ class RepoTreeView(ArgosTreeView):
         
     def sizeHint(self):
         """ The recommended size for the widget."""
-        return QtCore.QSize(LEFT_DOCK_WIDTH, 500)
+        return QtCore.QSize(LEFT_DOCK_WIDTH, 450)
     
  
     def updateCurrentItemActions(self):
