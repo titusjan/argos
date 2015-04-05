@@ -29,6 +29,7 @@ from .aboutdialog import AboutDialog
 from .configtreeview import ConfigTreeView
 from .repotreeview import RepoTreeView
 from libargos.config.configtreemodel import ConfigTreeModel
+from libargos.inspector.attr import AttributeInspector
 from libargos.inspector.base import BaseInspector
 from libargos.info import DEBUGGING, PROJECT_NAME
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
@@ -58,6 +59,11 @@ class MainWindow(QtGui.QMainWindow):
         self._argosApplication = argosApplication
         self._config = ConfigTreeModel()
 
+        self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
+        self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
+        self.setCorner(Qt.TopRightCorner, Qt.RightDockWidgetArea)
+        self.setCorner(Qt.BottomRightCorner, Qt.RightDockWidgetArea)
+        
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setUnifiedTitleAndToolBarOnMac(True)
         self.resize(1300, 700)  # Assumes minimal resolution of 1366 x 768
@@ -79,17 +85,11 @@ class MainWindow(QtGui.QMainWindow):
     def __setupViews(self):
         """ Creates the UI widgets. 
         """
-        #self.mainWidget = QtGui.QWidget(self)
-        #self.setCentralWidget(self.mainWidget)
-        
-        self.mainSplitter = QtGui.QSplitter(self, orientation = QtCore.Qt.Vertical)
-        self.setCentralWidget(self.mainSplitter)
-        centralLayout = QtGui.QVBoxLayout()
-        self.mainSplitter.setLayout(centralLayout)
-        
         self.repoTreeView = RepoTreeView(self.argosApplication.repo)
-        
         self.configTreeView = ConfigTreeView(self._config)
+        
+        temporaryInspector = BaseInspector()
+        self.setCentralInspector(temporaryInspector)
         
                               
     def __setupMenu(self):
@@ -159,21 +159,18 @@ class MainWindow(QtGui.QMainWindow):
         self.dockWidget(self.repoTreeView, "Repository", Qt.LeftDockWidgetArea) 
         self.dockWidget(self.configTreeView, "Application Settings", Qt.RightDockWidgetArea) 
 
-        attributeInspector = BaseInspector()
-        self.dockInspector(attributeInspector)
+        self.attributeInspector = AttributeInspector()
+        self.dockInspector(self.attributeInspector, area=Qt.LeftDockWidgetArea)
         
        
 
     # -- End of setup_methods --
     
-    
     def dockWidget(self, widget, title, area):
         """ Adds a widget as a docked widget.
-            By default the widget is added to the Qt.LeftDockWidgetArea.
             Returns the added dockWidget
         """
         assert widget.parent() is None, "Inspector already has a parent"
-        
         
         dockWidget = QtGui.QDockWidget(title, parent=self)
         dockWidget.setObjectName("dock_" + string_to_identifier(title))
@@ -186,11 +183,19 @@ class MainWindow(QtGui.QMainWindow):
     
     def dockInspector(self, inspector, title=None, area=None):
         """ Calls addDockedWidget to add an inspector with a default title.
+            By default the inspector widget is added to the Qt.LeftDockWidgetArea.
         """
         title = inspector.classLabel() if title is None else title
         area = Qt.LeftDockWidgetArea if area is None else area
         return self.dockWidget(inspector, title, area)
 
+    
+    def setCentralInspector(self, inspector):
+        """ Sets the central inspector widget
+        """
+        self.setCentralWidget(inspector)
+        
+        
 
     # TODO: to repotreemodel? Note that the functionality will be common to selectors.
     @QtSlot() 
@@ -232,9 +237,6 @@ class MainWindow(QtGui.QMainWindow):
         self.restoreGeometry(settings.value("geometry"))
         self.restoreState(settings.value("state"))
                                  
-        splitterState = settings.value("main_splitter/state")
-        if splitterState:
-            self.mainSplitter.restoreState(splitterState)
         self.repoTreeView.readViewSettings('repo_tree/header_state', settings)
         self.configTreeView.readViewSettings('config_tree/header_state', settings)
         self._config.readModelSettings('config_model', settings)
@@ -250,7 +252,6 @@ class MainWindow(QtGui.QMainWindow):
         self._config.saveProfile('config_model', settings)
         self.configTreeView.saveProfile("config_tree/header_state", settings)
         self.repoTreeView.saveProfile("repo_tree/header_state", settings)
-        settings.setValue("main_splitter/state", self.mainSplitter.saveState())     
                     
         settings.setValue("geometry", self.saveGeometry())
         settings.setValue("state", self.saveState())
@@ -278,16 +279,23 @@ class MainWindow(QtGui.QMainWindow):
         """ Function for testing """
         logger.debug("myTest for window: {}".format(self._instanceNr))
         
-        self.argosApplication.raiseAllWindows()
+        try:
+            self.__show_error = not self.__show_error
+        except:
+            self.__show_error = True
+            
+        if self.__show_error:            
+            self.attributeInspector.drawError(msg="Debug Error")
+        else:
+            self.attributeInspector.drawEmpty()
         
-        import gc
-        
-        from libargos.qt import printAllWidgets
-        printAllWidgets(self._argosApplication._qApplication, ofType=MainWindow)
-
-        print("forcing garbage collection")
-        gc.collect()
-        printAllWidgets(self._argosApplication._qApplication, ofType=MainWindow)
+#        self.argosApplication.raiseAllWindows()
+#        import gc
+#        from libargos.qt import printAllWidgets
+#        printAllWidgets(self._argosApplication._qApplication, ofType=MainWindow)
+#        print("forcing garbage collection")
+#        gc.collect()
+#        printAllWidgets(self._argosApplication._qApplication, ofType=MainWindow)
 
 
 

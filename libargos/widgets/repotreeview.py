@@ -68,8 +68,6 @@ class RepoTreeView(ArgosTreeView):
         treeHeader.resizeSection(RepoTreeModel.COL_NODE_NAME, 180)
         treeHeader.resizeSection(RepoTreeModel.COL_SHAPE, 60)  
         treeHeader.resizeSection(RepoTreeModel.COL_ELEM_TYPE, 60)  
-        #treeHeader.resizeSection(RepoTreeModel.COL_NODE_PATH, 300)  
-        #treeHeader.resizeSection(RepoTreeModel.COL_FILE_NAME, 500)  
         treeHeader.setStretchLastSection(True)
 
         headerNames = self.model().horizontalHeaders
