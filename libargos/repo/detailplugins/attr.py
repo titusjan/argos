@@ -19,14 +19,14 @@
 """
 import logging
 
-from .basetable import BaseTableInspector
+from libargos.repo.basedetail import TableDetailPane
 from libargos.widgets.constants import COL_ELEM_TYPE_WIDTH
 
 logger = logging.getLogger(__name__)
 
 
 
-class AttributeInspector(BaseTableInspector):
+class AttributesPane(TableDetailPane):
     """ Shows the attributes of the selected variable
     """
     _label = "Attribute Inspector"
@@ -35,7 +35,7 @@ class AttributeInspector(BaseTableInspector):
     (COL_ATTR_NAME, COL_VALUE, COL_ELEM_TYPE) = range(len(HEADERS))
     
     def __init__(self, parent=None):
-        super(AttributeInspector, self).__init__(AttributeInspector.HEADERS, parent=parent)
+        super(AttributesPane, self).__init__(AttributesPane.HEADERS, parent=parent)
         self.table.addHeaderContextMenu(enabled = {'Name': False, 'Value': False}, 
                                         checked = {'Type': False}) 
     

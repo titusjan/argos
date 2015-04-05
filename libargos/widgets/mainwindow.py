@@ -29,7 +29,7 @@ from .aboutdialog import AboutDialog
 from .configtreeview import ConfigTreeView
 from .repotreeview import RepoTreeView
 from libargos.config.configtreemodel import ConfigTreeModel
-from libargos.inspector.attr import AttributeInspector
+from libargos.repo.detailplugins.attr import AttributesPane 
 from libargos.inspector.base import BaseInspector
 from libargos.info import DEBUGGING, PROJECT_NAME
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
@@ -159,10 +159,8 @@ class MainWindow(QtGui.QMainWindow):
         self.dockWidget(self.repoTreeView, "Repository", Qt.LeftDockWidgetArea) 
         self.dockWidget(self.configTreeView, "Application Settings", Qt.RightDockWidgetArea) 
 
-        self.attributeInspector = AttributeInspector()
-        self.dockInspector(self.attributeInspector, area=Qt.LeftDockWidgetArea)
-        
-       
+        self.attributesPane = AttributesPane()
+        self.dockInspector(self.attributesPane, area=Qt.LeftDockWidgetArea)
 
     # -- End of setup_methods --
     

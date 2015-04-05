@@ -18,29 +18,28 @@
 """ Base class for inspectors
 """
 import logging
-from libargos.qt import Qt, QtCore, QtGui
+from libargos.qt import QtCore, QtGui
+from libargos.qt.togglecolumn import ToggleColumnTableWidget
 from libargos.widgets.constants import DOCK_SPACING, DOCK_MARGIN, LEFT_DOCK_WIDTH
 from libargos.widgets.display import MessageDisplay
 
 logger = logging.getLogger(__name__)
 
 
-class BaseInspector(QtGui.QStackedWidget):
-    """ Base class for inspectors.
+class BaseDetailPane(QtGui.QStackedWidget):
+    """ Base class for plugins that show details of the current repository tree item.
         Serves as an interface but can also be instantiated for debugging purposes.
-        An inspector is a stacked widget; it has a contents page and and error page.
+        A detail pane is a stacked widget; it has a contents page and and error page.
     """
-    _label = "Base Inspector"
+    _label = "Details"
     
     ERROR_PAGE_IDX = 0
     CONTENTS_PAGE_IDX = 1
     
     def __init__(self, parent=None):
         
-        super(BaseInspector, self).__init__(parent)
-        
-        #self._collector = None
-        
+        super(BaseDetailPane, self).__init__(parent)
+
         self.errorWidget = MessageDisplay()
         self.addWidget(self.errorWidget)
 
@@ -63,7 +62,7 @@ class BaseInspector(QtGui.QStackedWidget):
     def sizeHint(self):
         """ The recommended size for the widget."""
         return QtCore.QSize(LEFT_DOCK_WIDTH, 250)
-        
+          
 
     def drawEmpty(self):
         """ Draws the inspector widget when no input is available.
@@ -79,4 +78,37 @@ class BaseInspector(QtGui.QStackedWidget):
         self.setCurrentIndex(self.ERROR_PAGE_IDX)
         
         
+    
+class TableDetailPane(BaseDetailPane):
+    """ Base class for inspectors that consist of a single QTableWidget
+    """
+    _label = "Details Table"
+    
+    def __init__(self, columnLabels, parent=None):
+        super(TableDetailPane, self).__init__(parent)
+
+        assert len(columnLabels) > 0, "column_labels is not defined"
+        self._columnLabels = columnLabels if columnLabels is not None else []
+        
+        self.table = ToggleColumnTableWidget(5, 2)
+        self.contentsLayout.addWidget(self.table)
+        
+        self.table.setWordWrap(True)
+        #self.table.setTextElideMode(QtCore.Qt.ElideNone)
+        self.table.setColumnCount(len(self._columnLabels))
+        self.table.setHorizontalHeaderLabels(self._columnLabels)
+        self.table.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.table.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.table.verticalHeader().hide()        
+        self.table.setAlternatingRowColors(True)
+        self.table.setShowGrid(False)
+        
+        self.table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.table.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+
+        tableHeader = self.table.horizontalHeader()
+        tableHeader.setResizeMode(QtGui.QHeaderView.Interactive) # don't set to stretch
+        tableHeader.setStretchLastSection(True)
+        
+            
         
