@@ -39,7 +39,7 @@ class AttributeInspector(BaseTableInspector):
         self.table.addHeaderContextMenu(enabled = {'Name': False, 'Value': False}, 
                                         checked = {'Type': False}) 
     
-        tableHeader = self.table._horizontalHeader() # TODO
+        tableHeader = self.table.horizontalHeader()
         tableHeader.resizeSection(self.COL_ATTR_NAME, 125)
         tableHeader.resizeSection(self.COL_VALUE, 150)  
         tableHeader.resizeSection(self.COL_ELEM_TYPE, COL_ELEM_TYPE_WIDTH)          

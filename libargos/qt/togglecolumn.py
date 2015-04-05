@@ -53,7 +53,7 @@ class ToggleColumnMixIn(object):
         checkable = checkable if checkable is not None else {}
         enabled = enabled if enabled is not None else {}
         
-        horizontal_header = self._horizontalHeader()
+        horizontal_header = self.horizontalHeader()
         horizontal_header.setContextMenuPolicy(Qt.ActionsContextMenu)
 
         self.toggle_column_actions_group = QtGui.QActionGroup(self)
@@ -80,15 +80,7 @@ class ToggleColumnMixIn(object):
     def getHeaderContextMenuActions(self):
         """ Returns the actions of the context menu of the header
         """
-        return self._horizontalHeader().actions()
-        
-        
-    def _horizontalHeader(self): # TODO: just redefine horizontalHeader()?
-        """ Returns the horizontal header (of type QHeaderView).
-        
-            Override this if the horizontalHeader() function does not exist.
-        """
-        return self.horizontalHeader()
+        return self.horizontalHeader().actions()
         
         
     def __makeShowColumnFunction(self, column_idx):
@@ -108,7 +100,7 @@ class ToggleColumnMixIn(object):
         if settings is None:
             settings = QtCore.QSettings()
     
-        horizontal_header = self._horizontalHeader()
+        horizontal_header = self.horizontalHeader()
         header_restored = horizontal_header.restoreState(settings.value(key))
         
         # update actions
@@ -126,7 +118,7 @@ class ToggleColumnMixIn(object):
         #logger.debug("Writing view settings for: {}".format(key))
         if settings is None:
             settings = QtCore.QSettings()
-        settings.setValue(key, self._horizontalHeader().saveState())
+        settings.setValue(key, self.horizontalHeader().saveState())
 
 
 
@@ -147,7 +139,7 @@ class ToggleColumnTableView(QtGui.QTableView, ToggleColumnMixIn):
 class ToggleColumnTreeWidget(QtGui.QTreeWidget, ToggleColumnMixIn):
     """ A QTreeWidget where right clicking on the header allows the user to show/hide columns
     """
-    def _horizontalHeader(self):
+    def horizontalHeader(self):
         """ Returns the horizontal header (of type QHeaderView).
         
             Override this if the horizontalHeader() function does not exist.
@@ -159,7 +151,7 @@ class ToggleColumnTreeWidget(QtGui.QTreeWidget, ToggleColumnMixIn):
 class ToggleColumnTreeView(QtGui.QTreeView, ToggleColumnMixIn):
     """ A QTreeView where right clicking on the header allows the user to show/hide columns
     """
-    def _horizontalHeader(self):
+    def horizontalHeader(self):
         """ Returns the horizontal header (of type QHeaderView).
         
             Override this if the horizontalHeader() function does not exist.

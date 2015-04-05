@@ -52,7 +52,7 @@ class BaseTableInspector(BaseInspector):
         self.table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.table.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
 
-        tableHeader = self.table._horizontalHeader() # TODO
+        tableHeader = self.table.horizontalHeader()
         tableHeader.setResizeMode(QtGui.QHeaderView.Interactive) # don't set to stretch
         tableHeader.setStretchLastSection(True)
         
