@@ -22,4 +22,10 @@
 LEFT_DOCK_WIDTH = 350
 RIGHT_DOCK_WIDTH = 300
 
+# Spacing and margin in dock widgets in pixels
+DOCK_SPACING = 2 
+DOCK_MARGIN  = 2 
 
+# Spacing and margin in central widgets in pixels
+CENTRAL_SPACING = 0 
+CENTRAL_MARGIN  = 0 

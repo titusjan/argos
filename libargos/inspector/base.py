@@ -19,6 +19,7 @@
 """
 import logging
 from libargos.qt import Qt, QtGui
+from libargos.widgets.constants import DOCK_SPACING, DOCK_MARGIN
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +88,8 @@ class BaseInspector(QtGui.QStackedWidget):
         self.addWidget(self.contentsWidget)
 
         self.contentsLayout = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom)
+        self.contentsLayout.setSpacing(DOCK_SPACING)
+        self.contentsLayout.setContentsMargins(DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN)        
         self.contentsWidget.setLayout(self.contentsLayout)
         
         self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
