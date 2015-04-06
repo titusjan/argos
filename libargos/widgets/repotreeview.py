@@ -116,10 +116,11 @@ class RepoTreeView(ArgosTreeView):
         return QtCore.QSize(LEFT_DOCK_WIDTH, 450)
     
  
-    def updateCurrentItemActions(self):
+    @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
+    def updateCurrentItemActions(self, currentIndex, _previousIndex):
         """ Enables/disables actions when a new item is the current item in the tree view.
         """ 
-        currentIndex = self.selectionModel().currentIndex()
+        #currentIndex = self.selectionModel().currentIndex()
         
         # When the model is empty the current index may be invalid.
         hasCurrent = currentIndex.isValid()

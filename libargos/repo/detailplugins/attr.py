@@ -19,6 +19,7 @@
 """
 import logging
 
+from libargos.qt import QtGui
 from libargos.repo.basedetail import TableDetailPane
 from libargos.widgets.constants import COL_ELEM_TYPE_WIDTH
 
@@ -29,7 +30,7 @@ logger = logging.getLogger(__name__)
 class AttributesPane(TableDetailPane):
     """ Shows the attributes of the selected variable
     """
-    _label = "Attribute Inspector"
+    _label = "Attribute Details"
     
     HEADERS = ["Name", "Value", "Type"]
     (COL_ATTR_NAME, COL_VALUE, COL_ELEM_TYPE) = range(len(HEADERS))
@@ -44,5 +45,46 @@ class AttributesPane(TableDetailPane):
         tableHeader.resizeSection(self.COL_VALUE, 150)  
         tableHeader.resizeSection(self.COL_ELEM_TYPE, COL_ELEM_TYPE_WIDTH)          
 
+        
+    def drawContents(self, currentRti=None):
+        """ Draws the attributes of the currentRTI
+        """
+        table = self.table
+        table.setUpdatesEnabled(False)
+        try:
+            table.clearContents()
+            verticalHeader = table.verticalHeader()
+            verticalHeader.setResizeMode(QtGui.QHeaderView.Fixed)
+
+            attributes = currentRti.attributes if currentRti is not None else {}
+            table.setRowCount(len(attributes))
+            
+            for row, (attrName, attrValue) in enumerate(sorted(attributes.items())):
+                try: # a number
+                    attrStr = "{:g}".format(attrValue)
+                except RuntimeError:
+                    # Structured types give infinite recursion if printed as string.
+                    # Seems a bug: https://github.com/numpy/numpy/issues/385
+                    attrStr = "{!r}".format(attrValue)
+                except Exception:
+                    attrStr = "{}".format(attrValue)
+                
+                try: 
+                    type_str = type(attrValue).__name__
+                except Exception as ex:
+                    logger.exception(ex)
+                    type_str = "<???>"
+                
+                table.setItem(row, self.COL_ATTR_NAME, QtGui.QTableWidgetItem(attrName))
+                table.setItem(row, self.COL_VALUE, QtGui.QTableWidgetItem(attrStr))
+                table.setItem(row, self.COL_ELEM_TYPE, QtGui.QTableWidgetItem(type_str))
+                table.resizeRowToContents(row)
+    
+            verticalHeader.setResizeMode(QtGui.QHeaderView.ResizeToContents)
+
+        finally:
+            table.setUpdatesEnabled(True)
+        
+        
         
         

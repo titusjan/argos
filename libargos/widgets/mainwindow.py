@@ -160,7 +160,10 @@ class MainWindow(QtGui.QMainWindow):
         self.dockWidget(self.configTreeView, "Application Settings", Qt.RightDockWidgetArea) 
 
         self.attributesPane = AttributesPane()
-        self.dockInspector(self.attributesPane, area=Qt.LeftDockWidgetArea)
+        self.dockDetailPane(self.attributesPane, area=Qt.LeftDockWidgetArea)
+        
+        selectionModel = self.repoTreeView.selectionModel()
+        selectionModel.currentChanged.connect(self.attributesPane.currentChanged)
 
     # -- End of setup_methods --
     
@@ -179,13 +182,13 @@ class MainWindow(QtGui.QMainWindow):
         return dockWidget
     
     
-    def dockInspector(self, inspector, title=None, area=None):
-        """ Calls addDockedWidget to add an inspector with a default title.
-            By default the inspector widget is added to the Qt.LeftDockWidgetArea.
+    def dockDetailPane(self, detailPane, title=None, area=None):
+        """ Calls addDockedWidget to add a repo detail pane with a default title.
+            By default the detail widget is added to the Qt.LeftDockWidgetArea.
         """
-        title = inspector.classLabel() if title is None else title
+        title = detailPane.classLabel() if title is None else title
         area = Qt.LeftDockWidgetArea if area is None else area
-        return self.dockWidget(inspector, title, area)
+        return self.dockWidget(detailPane, title, area)
 
     
     def setCentralInspector(self, inspector):
@@ -278,14 +281,14 @@ class MainWindow(QtGui.QMainWindow):
         logger.debug("myTest for window: {}".format(self._instanceNr))
         
         try:
-            self.__show_error = not self.__show_error
+            self.__show_error += 1
         except:
-            self.__show_error = True
+            self.__show_error = 0
             
-        if self.__show_error:            
-            self.attributeInspector.drawError(msg="Debug Error")
+        if self.__show_error % 2 == 0:            
+            self.attributesPane.drawError(msg="Debug Error")
         else:
-            self.attributeInspector.drawEmpty()
+            self.attributesPane.drawContents()
         
 #        self.argosApplication.raiseAllWindows()
 #        import gc

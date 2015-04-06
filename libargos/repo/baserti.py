@@ -248,9 +248,9 @@ class BaseRti(AbstractLazyLoadTreeItem):
 #    def dimensions(self):
 #        return []
 #    
-#    @property
-#    def attributes(self):
-#        return {}
+    @property
+    def attributes(self):
+        return {}
 
 
     

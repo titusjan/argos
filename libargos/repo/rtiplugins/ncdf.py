@@ -53,6 +53,10 @@ class VariableRti(BaseRti):
         return False
    
     @property
+    def attributes(self):
+        return self._ncVar.__dict__
+
+    @property
     def arrayShape(self):
         return self._ncVar.shape
 
@@ -67,7 +71,7 @@ class VariableRti(BaseRti):
     
     
 
-class DatasetRti(BaseRti):
+class DatasetRti(BaseRti): # TODO: rename to GroupRti?
 
     _label = "NCDF Group"
     _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.group-closed.svg'))
@@ -81,6 +85,10 @@ class DatasetRti(BaseRti):
 
         self._dataset = dataset
         self._childrenFetched = False
+        
+    @property
+    def attributes(self):
+        return self._dataset.__dict__ if self._dataset else {}
         
                
     def _fetchAllChildren(self):
@@ -114,7 +122,10 @@ class NcdfFileRti(DatasetRti):
         """
         super(NcdfFileRti, self).__init__(None, nodeName=nodeName, fileName=fileName)
         self._checkFileExists()
-
+        
+    @property
+    def attributes(self):
+        return self._dataset.__dict__ if self._dataset else {}
     
     def _openResources(self):
         """ Opens the root Dataset.

@@ -18,8 +18,11 @@
 """ Base class for inspectors
 """
 import logging
-from libargos.qt import QtCore, QtGui
-from libargos.qt.togglecolumn import ToggleColumnTableWidget
+
+from libargos.info import DEBUGGING
+from libargos.qt import QtSlot, QtCore, QtGui
+from libargos.qt.togglecolumn import ToggleColumnTableWidget, ToggleColumnTreeWidget
+from libargos.utils.cls import get_class_name
 from libargos.widgets.constants import DOCK_SPACING, DOCK_MARGIN, LEFT_DOCK_WIDTH
 from libargos.widgets.display import MessageDisplay
 
@@ -64,20 +67,31 @@ class BaseDetailPane(QtGui.QStackedWidget):
         return QtCore.QSize(LEFT_DOCK_WIDTH, 250)
           
 
-    def drawEmpty(self):
-        """ Draws the inspector widget when no input is available.
-            The default implementation shows an error message. Descendants should override this.
+    @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
+    def currentChanged(self, currentIndex=None, _previousIndex=None):
+        """ Updates the content when the current repo tree item changes
         """
-        self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
-        
+        rti = currentIndex.model().getItem(currentIndex)
+        try:
+            self.drawContents(rti)
+            self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
+        except Exception as ex:
+            if DEBUGGING:
+                raise
+            logger.exception(ex)
+            self.errorWidget.setError(msg=str(ex), title=get_class_name(ex))
+            self.setCurrentIndex(self.ERROR_PAGE_IDX)
+            
 
-    def drawError(self, msg="", title="Error"):
-        """ Shows and error message
+    def drawContents(self, currentRti=None):
+        """ Draws the contents for the current RTI. Descendants should override this.
+            Descendants should draw 'empty' contents if currentRti is None. No need to
+            handle exceptions though, these are handled by the called (currentChanged). 
         """
-        self.errorWidget.setError(msg=msg, title=title)
-        self.setCurrentIndex(self.ERROR_PAGE_IDX)
+        pass
         
-        
+    
+    
     
 class TableDetailPane(BaseDetailPane):
     """ Base class for inspectors that consist of a single QTableWidget
@@ -109,6 +123,4 @@ class TableDetailPane(BaseDetailPane):
         tableHeader = self.table.horizontalHeader()
         tableHeader.setResizeMode(QtGui.QHeaderView.Interactive) # don't set to stretch
         tableHeader.setStretchLastSection(True)
-        
-            
         
