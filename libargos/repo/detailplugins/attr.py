@@ -65,9 +65,9 @@ class AttributesPane(TableDetailPane):
                 except RuntimeError:
                     # Structured types give infinite recursion if printed as string.
                     # Seems a bug: https://github.com/numpy/numpy/issues/385
-                    attrStr = "{!r}".format(attrValue)
+                    attrStr = repr(attrValue)
                 except Exception:
-                    attrStr = "{}".format(attrValue)
+                    attrStr = str(attrValue)
                 
                 try: 
                     type_str = type(attrValue).__name__
