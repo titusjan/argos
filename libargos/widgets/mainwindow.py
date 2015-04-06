@@ -304,7 +304,7 @@ class MainWindow(QtGui.QMainWindow):
         """ Temporary function to add test CTIs
         """
         from libargos.config.basecti import BaseCti
-        from libargos.config.simplectis import IntegerCti, StringCti, BoolCti
+        from libargos.config.simplectis import IntegerCti, StringCti, BoolCti, ChoiceCti
         
         rootItem = BaseCti(nodeName='line color', defaultValue=123)
         rootIndex = self._config.insertItem(rootItem)
@@ -316,4 +316,7 @@ class MainWindow(QtGui.QMainWindow):
         self._config.insertItem(BoolCti(nodeName='grid', defaultValue=True))
 
         
-            
+        self._config.insertItem(ChoiceCti(nodeName='hobbit', defaultValue=2, 
+                                          choices=['Frodo', 'Sam', 'Pippin', 'Merry']))
+
+    

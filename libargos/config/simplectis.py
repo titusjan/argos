@@ -182,7 +182,7 @@ class BoolCti(BaseCti):
         
 
     def createEditor(self, delegate, parent, _option):
-        """ Creates a QSpinBox for editing. 
+        """ Creates a QCheckBox for editing. 
             :type option: QStyleOptionViewItem        
         """
         checkBox = QtGui.QCheckBox(parent)
@@ -220,4 +220,60 @@ class BoolCti(BaseCti):
         qApp.style().drawControl(QtGui.QStyle.CE_CheckBox, checkBox, painter)
         return True
     
+                
+
+class ChoiceCti(BaseCti):
+    """ Config Tree Item to store a choice between strings.
+    """
+    def __init__(self, nodeName='', value=USE_DEFAULT_VALUE, defaultValue=0, choices=None):
+        """ Constructor
+            value and defaultValue are used to store the currentIndex.
+            choices must be a list of string.
+                    
+            For the other parameters see the BaseCti constructor documentation.
+        """
+        super(ChoiceCti, self).__init__(nodeName=nodeName, value=value, defaultValue=defaultValue)
+        self.choices = [] if choices is None else choices
+        
+    
+    def _convertValueType(self, value):
+        """ Converts to int so that this CTI always stores that type. 
+        """
+        return int(value)
+
+    
+    @property
+    def displayValue(self):
+        """ Returns the string representation of value for use in the tree view. 
+        """
+        return str(self.choices[self.value])
+    
+    
+    @property
+    def debugInfo(self):
+        """ Returns the string with debugging information
+        """
+        return repr(self.choices)
+    
+    
+    def createEditor(self, delegate, parent, _option):
+        """ Creates a QComboBox for editing. 
+            :type option: QStyleOptionViewItem
+        """
+        comboBox = QtGui.QComboBox(parent)
+        comboBox.addItems(self.choices)
+        return comboBox
+        
+        
+    def setEditorValue(self, comboBox, index):
+        """ Provides the combo box an value that is the current index.
+        """
+        comboBox.setCurrentIndex(index)        
+        
+        
+    def getEditorValue(self, comboBox):
+        """ Gets data from the combo box editor widget.
+        """
+        value = comboBox.currentIndex()
+        return value
                 
