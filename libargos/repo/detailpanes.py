@@ -29,6 +29,7 @@ from libargos.widgets.display import MessageDisplay
 logger = logging.getLogger(__name__)
 
 
+
 class DetailBasePane(QtGui.QStackedWidget):
     """ Base class for plugins that show details of the current repository tree item.
         Serves as an interface but can also be instantiated for debugging purposes.
@@ -39,9 +40,12 @@ class DetailBasePane(QtGui.QStackedWidget):
     ERROR_PAGE_IDX = 0
     CONTENTS_PAGE_IDX = 1
     
-    def __init__(self, parent=None):
-        
+    def __init__(self, repoTreeView, parent=None):
+        """ Constructor takes a reference to the repository tree view it monitors
+        """ 
         super(DetailBasePane, self).__init__(parent)
+        
+        self._repoTreeView = repoTreeView
 
         self.errorWidget = MessageDisplay()
         self.addWidget(self.errorWidget)
@@ -55,6 +59,7 @@ class DetailBasePane(QtGui.QStackedWidget):
         self.contentsWidget.setLayout(self.contentsLayout)
         
         self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
+        
 
     @classmethod
     def classLabel(cls):
@@ -66,12 +71,33 @@ class DetailBasePane(QtGui.QStackedWidget):
         """ The recommended size for the widget."""
         return QtCore.QSize(LEFT_DOCK_WIDTH, 250)
           
+          
+    @QtSlot(bool)
+    def dockVisibilityChanged(self, visible):
+        """ Slot to be called when the dock widget that this pane contains become (in)visible.
+            Is used to (dis)connect the pane from its repo tree view and so prevent unnecessary
+            and potentially costly updates when the pane is hidden.
+        """
+        logger.debug("dockVisibilityChanged of {}: visible={}".format(self.objectName(), visible))
+        
+        selectionModel = self._repoTreeView.selectionModel()
+        if visible:        
+            selectionModel.currentChanged.connect(self.currentChanged)
+            currentIndex = selectionModel.currentIndex()
+            self.currentChanged(currentIndex)
+        else:
+            selectionModel.currentChanged.disconnect(self.currentChanged)
+            self.errorWidget.setError(msg="Contents disabled", title="Error")
+            self.setCurrentIndex(self.ERROR_PAGE_IDX)
+        
 
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
     def currentChanged(self, currentIndex=None, _previousIndex=None):
-        """ Updates the content when the current repo tree item changes
+        """ Updates the content when the current repo tree item changes.
+            _previousIndex is ignored.
         """
-        rti = currentIndex.model().getItem(currentIndex)
+        model = currentIndex.model() if currentIndex is not None else None 
+        rti = model.getItem(currentIndex) if model is not None else None 
         try:
             self.drawContents(rti)
             self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
@@ -90,7 +116,6 @@ class DetailBasePane(QtGui.QStackedWidget):
         """
         pass
         
-    
     
     
 class DetailTablePane(DetailBasePane):

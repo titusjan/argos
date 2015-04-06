@@ -57,7 +57,11 @@ THINK:
 			Cons: where to set the fileName = os.path.realpath(resource) (in a setter?) 
 		2) Implement createFromResource method. Don't check file names in children? How?
 		3) Separate fileName and resource attributes (which is a bit of a duplicated effort)
-		
+
+	When there are multiple repo tree viewers, do they share a selection? Or do the details
+		only work per repo tree viewer? 
+		# https://steveire.wordpress.com/2010/04/20/sharing-a-qitemselection-between-views-through-proxy-models/
+				
 USE CASES:
 	Select 3 lines of a wavelength map (at 0 and extreme swath angles), 
 	then select another detector.

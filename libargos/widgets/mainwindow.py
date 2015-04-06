@@ -159,11 +159,9 @@ class MainWindow(QtGui.QMainWindow):
         self.dockWidget(self.repoTreeView, "Repository", Qt.LeftDockWidgetArea) 
         self.dockWidget(self.configTreeView, "Application Settings", Qt.RightDockWidgetArea) 
 
-        self.attributesPane = AttributesPane()
+        self.attributesPane = AttributesPane(self.repoTreeView)
         self.dockDetailPane(self.attributesPane, area=Qt.LeftDockWidgetArea)
-        
-        selectionModel = self.repoTreeView.selectionModel()
-        selectionModel.currentChanged.connect(self.attributesPane.currentChanged)
+
 
     # -- End of setup_methods --
     
@@ -188,7 +186,9 @@ class MainWindow(QtGui.QMainWindow):
         """
         title = detailPane.classLabel() if title is None else title
         area = Qt.LeftDockWidgetArea if area is None else area
-        return self.dockWidget(detailPane, title, area)
+        dockWidget = self.dockWidget(detailPane, title, area)
+        dockWidget.visibilityChanged.connect(detailPane.dockVisibilityChanged) 
+        return dockWidget
 
     
     def setCentralInspector(self, inspector):
