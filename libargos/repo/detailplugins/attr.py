@@ -20,7 +20,7 @@
 import logging
 
 from libargos.qt import QtGui
-from libargos.repo.basedetail import DetailTablePane
+from libargos.repo.detailpanes import DetailTablePane
 from libargos.widgets.constants import COL_ELEM_TYPE_WIDTH
 
 logger = logging.getLogger(__name__)
