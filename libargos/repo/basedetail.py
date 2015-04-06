@@ -21,7 +21,7 @@ import logging
 
 from libargos.info import DEBUGGING
 from libargos.qt import QtSlot, QtCore, QtGui
-from libargos.qt.togglecolumn import ToggleColumnTableWidget, ToggleColumnTreeWidget
+from libargos.qt.togglecolumn import ToggleColumnTableWidget
 from libargos.utils.cls import get_class_name
 from libargos.widgets.constants import DOCK_SPACING, DOCK_MARGIN, LEFT_DOCK_WIDTH
 from libargos.widgets.display import MessageDisplay
@@ -29,7 +29,7 @@ from libargos.widgets.display import MessageDisplay
 logger = logging.getLogger(__name__)
 
 
-class BaseDetailPane(QtGui.QStackedWidget):
+class DetailBasePane(QtGui.QStackedWidget):
     """ Base class for plugins that show details of the current repository tree item.
         Serves as an interface but can also be instantiated for debugging purposes.
         A detail pane is a stacked widget; it has a contents page and and error page.
@@ -41,7 +41,7 @@ class BaseDetailPane(QtGui.QStackedWidget):
     
     def __init__(self, parent=None):
         
-        super(BaseDetailPane, self).__init__(parent)
+        super(DetailBasePane, self).__init__(parent)
 
         self.errorWidget = MessageDisplay()
         self.addWidget(self.errorWidget)
@@ -93,13 +93,13 @@ class BaseDetailPane(QtGui.QStackedWidget):
     
     
     
-class TableDetailPane(BaseDetailPane):
+class DetailTablePane(DetailBasePane):
     """ Base class for inspectors that consist of a single QTableWidget
     """
     _label = "Details Table"
     
     def __init__(self, columnLabels, parent=None):
-        super(TableDetailPane, self).__init__(parent)
+        super(DetailTablePane, self).__init__(parent)
 
         assert len(columnLabels) > 0, "column_labels is not defined"
         self._columnLabels = columnLabels if columnLabels is not None else []
