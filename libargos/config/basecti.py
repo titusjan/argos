@@ -46,7 +46,7 @@ class BaseCti(BaseTreeItem):
 
         Serves as an interface but can also be instantiated for debugging purposes.
     """
-    def __init__(self, nodeName='', value=USE_DEFAULT_VALUE, defaultValue=None):
+    def __init__(self, nodeName, value=USE_DEFAULT_VALUE, defaultValue=None):
         """ Constructor
             :param nodeName: name of this node (used to construct the node path).
             :param value: the configuration value. If omitted the defaultValue will be used.

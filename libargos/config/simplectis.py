@@ -43,7 +43,7 @@ class StringCti(BaseCti):
         The string can have an optional maximum length.
 
     """
-    def __init__(self, nodeName='', value=USE_DEFAULT_VALUE, defaultValue='', 
+    def __init__(self, nodeName, value=USE_DEFAULT_VALUE, defaultValue='', 
                  maxLength=None):
         """ Constructor. 
         
@@ -51,7 +51,7 @@ class StringCti(BaseCti):
             
             For the (other) parameters see the BaseCti constructor documentation.
         """
-        super(StringCti, self).__init__(nodeName=nodeName, value=value, defaultValue=defaultValue)
+        super(StringCti, self).__init__(nodeName, value=value, defaultValue=defaultValue)
         
         # We could define a mask here as well but since that very likely will be rarely used, 
         # we don't want to store it for each cti. You can make a subclass if you need it. 
@@ -99,7 +99,7 @@ class StringCti(BaseCti):
 class IntegerCti(BaseCti):
     """ Config Tree Item to store an integer. It can be edited using a QSinBox.
     """
-    def __init__(self, nodeName='', value=USE_DEFAULT_VALUE, defaultValue=0, 
+    def __init__(self, nodeName, value=USE_DEFAULT_VALUE, defaultValue=0, 
                  minValue = None, maxValue = None, stepSize = 1):
         """ Constructor
             
@@ -109,7 +109,7 @@ class IntegerCti(BaseCti):
                     
             For the (other) parameters see the BaseCti constructor documentation.
         """
-        super(IntegerCti, self).__init__(nodeName=nodeName, value=value, defaultValue=defaultValue)
+        super(IntegerCti, self).__init__(nodeName, value=value, defaultValue=defaultValue)
         
         self.minValue = minValue
         self.maxValue = maxValue
@@ -167,12 +167,12 @@ class IntegerCti(BaseCti):
 class BoolCti(BaseCti):
     """ Config Tree Item to store an integer. It can be edited using a QSinBox.
     """
-    def __init__(self, nodeName='', value=USE_DEFAULT_VALUE, defaultValue=False):
+    def __init__(self, nodeName, value=USE_DEFAULT_VALUE, defaultValue=False):
         """ Constructor
 
             For the parameters see the BaseCti constructor documentation.
         """
-        super(BoolCti, self).__init__(nodeName=nodeName, value=value, defaultValue=defaultValue)
+        super(BoolCti, self).__init__(nodeName, value=value, defaultValue=defaultValue)
 
     
     def _convertValueType(self, value):
@@ -225,14 +225,14 @@ class BoolCti(BaseCti):
 class ChoiceCti(BaseCti):
     """ Config Tree Item to store a choice between strings.
     """
-    def __init__(self, nodeName='', value=USE_DEFAULT_VALUE, defaultValue=0, choices=None):
+    def __init__(self, nodeName, value=USE_DEFAULT_VALUE, defaultValue=0, choices=None):
         """ Constructor
             value and defaultValue are used to store the currentIndex.
             choices must be a list of string.
                     
             For the (other) parameters see the BaseCti constructor documentation.
         """
-        super(ChoiceCti, self).__init__(nodeName=nodeName, value=value, defaultValue=defaultValue)
+        super(ChoiceCti, self).__init__(nodeName, value=value, defaultValue=defaultValue)
         self.choices = [] if choices is None else choices
         
     
@@ -282,11 +282,11 @@ class ChoiceCti(BaseCti):
 class ColorCti(BaseCti):
     """ Config Tree Item to store a color. 
     """
-    def __init__(self, nodeName='', value=USE_DEFAULT_VALUE, defaultValue=''):
+    def __init__(self, nodeName, value=USE_DEFAULT_VALUE, defaultValue=''):
         """ Constructor. 
             For the (other) parameters see the BaseCti constructor documentation.
         """
-        super(ColorCti, self).__init__(nodeName=nodeName, value=value, defaultValue=defaultValue)
+        super(ColorCti, self).__init__(nodeName, value=value, defaultValue=defaultValue)
         
 
     def _convertValueType(self, value):
