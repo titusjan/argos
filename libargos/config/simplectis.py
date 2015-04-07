@@ -31,9 +31,9 @@ logger = logging.getLogger(__name__)
 # TODO: QCompleter? See demos/spreadsheet/spreadsheetdelegate.py
 # TODO: FloatCti using QDoubleSpinBox
 # TODO: Nullable bool with tri-state checkbox
-# TODO: Bool and CombiBox  
 # TODO: Date selector.
-# TODO: Color selector. Font selector?
+# TODO: Color selector (transparency) 
+# TODO: Font selector?
 # TODO: reset button
 # TODO: None takes value of parent
 
@@ -49,7 +49,7 @@ class StringCti(BaseCti):
         
             :param maxLength: maximum length of the string
             
-            For the other parameters see the BaseCti constructor documentation.
+            For the (other) parameters see the BaseCti constructor documentation.
         """
         super(StringCti, self).__init__(nodeName=nodeName, value=value, defaultValue=defaultValue)
         
@@ -107,7 +107,7 @@ class IntegerCti(BaseCti):
             :param maxValue: maximum value allowed when editing (use None for no maximum)
             :param stepSize: steps between values when ediging (default = 1)
                     
-            For the other parameters see the BaseCti constructor documentation.
+            For the (other) parameters see the BaseCti constructor documentation.
         """
         super(IntegerCti, self).__init__(nodeName=nodeName, value=value, defaultValue=defaultValue)
         
@@ -230,7 +230,7 @@ class ChoiceCti(BaseCti):
             value and defaultValue are used to store the currentIndex.
             choices must be a list of string.
                     
-            For the other parameters see the BaseCti constructor documentation.
+            For the (other) parameters see the BaseCti constructor documentation.
         """
         super(ChoiceCti, self).__init__(nodeName=nodeName, value=value, defaultValue=defaultValue)
         self.choices = [] if choices is None else choices
@@ -276,4 +276,53 @@ class ChoiceCti(BaseCti):
         """
         value = comboBox.currentIndex()
         return value
+                
+
+
+class ColorCti(BaseCti):
+    """ Config Tree Item to store a color. 
+    """
+    def __init__(self, nodeName='', value=USE_DEFAULT_VALUE, defaultValue=''):
+        """ Constructor. 
+            For the (other) parameters see the BaseCti constructor documentation.
+        """
+        super(ColorCti, self).__init__(nodeName=nodeName, value=value, defaultValue=defaultValue)
+        
+
+    def _convertValueType(self, value):
+        """ Converts to str so that this CTI always stores that type. 
+        """
+        return str(value)    
+        
+    
+    @property
+    def debugInfo(self):
+        """ Returns the string with debugging information
+        """
+        return ""
+    
+    
+    def createEditor(self, delegate, parent, _option):
+        """ Creates a QSpinBox for editing. 
+            :type option: QStyleOptionViewItem
+        """
+        editor = QtGui.QLineEdit(parent)
+        editor.setInputMask("\#>HHHHHH")
+        return editor
+        
+        
+    def setEditorValue(self, editor, value):
+        """ Provides the editor widget with a value to manipulate.
+        """
+        lineEditor = editor
+        lineEditor.setText(value)
+        
+        
+    def getEditorValue(self, editor):
+        """ Gets data from the editor widget.
+        """
+        lineEditor = editor
+        return lineEditor.text()
+
+
                 
