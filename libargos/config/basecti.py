@@ -47,13 +47,12 @@ class BaseCti(BaseTreeItem):
         """
         super(BaseCti, self).__init__(nodeName=nodeName)
 
-        self._value = None # keep pylint happy
         self._defaultValue = self._convertValueType(defaultValue)
-                
-        if value is NOT_SPECIFIED:
-            value = self.defaultValue
 
-        self.value = value
+        if value is NOT_SPECIFIED:
+            self._value = self.defaultValue
+        else:
+            self._value = self._convertValueType(value)
          
     
     def __eq__(self, other): 
