@@ -79,14 +79,114 @@ class BaseCti(BaseTreeItem):
         """
         return not self.__eq__(other)
 
+    @property
+    def debugInfo(self):
+        """ Returns the string with debugging information
+        """
+        return ""
+    
+    @property
+    def displayValue(self):
+        """ Returns the string representation of value for use in the tree view. 
+        """
+        return str(self._value)
+    
+    @property
+    def value(self):
+        """ Returns the value of this item. 
+        """
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        """ Sets the value of this item. 
+            Does type conversion to ensure value is always of the correct type.
+        """
+        # Descendants should convert the value to the desired type here
+        self._value = self._convertValueType(value)
+            
+    @property
+    def defaultValue(self):
+        """ Returns the default value of this item. 
+        """
+        return self._defaultValue
+
+    @defaultValue.setter
+    def defaultValue(self, defVal):
+        """ Sets the value of this item. 
+            Does type conversion to ensure default value is always of the correct type.
+        """
+        # Descendants should convert the value to the desired type here
+        self._defaultValue = self._convertValueType(defVal)
+        
+    
+    def _convertValueType(self, value):
+        """ Converts value to the type of this CTI.
+            Used by the setter to ensure that the value and defaultValue have the correct type 
+            The default implementation does nothing; should be overridden by descendants.
+        """
+        return value
+    
+
+    #### The following methods are called by the ConfigItemDelegate class ####
+    
+    def createEditor(self, delegate, parent, option):
+        """ Creates an editor (QWidget) for editing. 
+            It's parent will be set by the ConfigItemDelegate class
+            :param delegate: the delegate that called this function
+            :type  delegate: ConfigItemDelegate
+            :param parent: The parent widget for the editor
+            :type  parent: QWidget
+            :param option: describes the parameters used to draw an item in a view widget.
+            :type  option: QStyleOptionViewItem
+        """
+        editor = QtGui.QLineEdit(parent)
+        #editor.setText(str(self.value)) # not necessary, it will be done by setEditorValue
+        return editor
+        
+        
+    def setEditorValue(self, editor, value):
+        """ Provides the editor widget with a value to manipulate.
+            
+            The value parameter could be replaced by self.value but the caller 
+            (ConfigItemelegate.getModelData) retrieves it via the model to be consistent 
+            with setModelData.
+             
+            :type editor: QWidget
+        """
+        lineEditor = editor
+        lineEditor.setText(str(value))
+        
+        
+    def getEditorValue(self, editor):
+        """ Gets data from the editor widget.
+            
+            :type editor: QWidget
+        """
+        lineEditor = editor
+        return lineEditor.text()
+
+
+    def paintDisplayValue(self, painter, option, value):
+        """ Can be overridden to paint a widget in display mode.
+            Should return True, otherwise the displayValue property is written in the cell.
+            The default implementation returns False.
+        """
+        return False
+    
+    
+    #### The following methods are for (de)serialization ####
+    
 
     @classmethod        
     def createFromJsonDict(cls, dct):
         """ Creates a CTI given a dictionary, which usually comes from a JSON decoder.
         """
-        cti = cls(dct['nodeName'], value=dct['value'])
+        cti = cls(dct['nodeName'])
+        if 'value' in dct:
+            cti.value = dct['value']
         if 'defaultValue' in dct:
-            cti._defaultValue = dct['defaultValue']
+            cti.defaultValue = dct['defaultValue']
             
         for childCti in dct['childItems']:
             cti.insertChild(childCti)
@@ -159,93 +259,7 @@ class BaseCti(BaseTreeItem):
                 
             childCti.setValuesFromDict(childDct)
     
-    @property
-    def debugInfo(self):
-        """ Returns the string with debugging information
-        """
-        return ""
-    
-    @property
-    def displayValue(self):
-        """ Returns the string representation of value for use in the tree view. 
-        """
-        return str(self._value)
-    
-    @property
-    def value(self):
-        """ Returns the value of this item. 
-        """
-        return self._value
 
-    @value.setter
-    def value(self, value):
-        """ Sets the value of this item. 
-            Does type conversion to ensure value is always of the correct type.
-        """
-        # Descendants should convert the value to the desired type here
-        self._value = self._convertValueType(value)
-        
-    
-    def _convertValueType(self, value):
-        """ Converts value to the type of this CTI.
-            Used by the setter to ensure that the value and defaultValue have the correct type 
-            The default implementation does nothing; should be overridden by descendants.
-        """
-        return value
-    
-            
-    @property
-    def defaultValue(self):
-        """ Returns the default value of this item. 
-        """
-        return self._defaultValue
-
-
-    ## The following methods are called by the ConfigItemDelegate class
-    
-    def createEditor(self, delegate, parent, option):
-        """ Creates an editor (QWidget) for editing. 
-            It's parent will be set by the ConfigItemDelegate class
-            :param delegate: the delegate that called this function
-            :type  delegate: ConfigItemDelegate
-            :param parent: The parent widget for the editor
-            :type  parent: QWidget
-            :param option: describes the parameters used to draw an item in a view widget.
-            :type  option: QStyleOptionViewItem
-        """
-        editor = QtGui.QLineEdit(parent)
-        #editor.setText(str(self.value)) # not necessary, it will be done by setEditorValue
-        return editor
-        
-        
-    def setEditorValue(self, editor, value):
-        """ Provides the editor widget with a value to manipulate.
-            
-            The value parameter could be replaced by self.value but the caller 
-            (ConfigItemelegate.getModelData) retrieves it via the model to be consistent 
-            with setModelData.
-             
-            :type editor: QWidget
-        """
-        lineEditor = editor
-        lineEditor.setText(str(value))
-        
-        
-    def getEditorValue(self, editor):
-        """ Gets data from the editor widget.
-            
-            :type editor: QWidget
-        """
-        lineEditor = editor
-        return lineEditor.text()
-
-
-    def paintDisplayValue(self, painter, option, value):
-        """ Can be overridden to paint a widget in display mode.
-            Should return True, otherwise the displayValue property is written in the cell.
-            The default implementation returns False.
-        """
-        return False
                 
 
 #################
