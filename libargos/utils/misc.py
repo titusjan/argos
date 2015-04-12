@@ -20,6 +20,16 @@
 import logging, sys
 logger = logging.getLogger(__name__)
     
+
+class NotSpecified(object):
+    """ Class for NOT_SPECIFIED constant.
+        Is used so that a parameter can have a default value other than None.
+    """
+    pass
+    
+NOT_SPECIFIED = NotSpecified()
+    
+    
     
 def python_major_version():
     """ Returns 2 or 3 for Python 2.x or 3.x respectively

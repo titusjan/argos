@@ -25,20 +25,12 @@ from libargos.info import DEBUGGING
 from libargos.qt import QtGui
 from libargos.qt.treeitems import BaseTreeItem
 from libargos.utils.cls import get_full_class_name, import_symbol
-
+from libargos.utils.misc import NOT_SPECIFIED
 
 
 logger = logging.getLogger(__name__)
 
 
-class UseDefaultValue(object):
-    """ Class for USE_DEFAULT_VALUE constant.
-        Is used so that a BaseCti can have a value of None and still use the default value.
-    """
-    pass
-    
-USE_DEFAULT_VALUE = UseDefaultValue()
-    
 
 class BaseCti(BaseTreeItem):
     """ TreeItem for use in a ConfigTreeModel. (RTI = Config TreeItem)
@@ -46,7 +38,7 @@ class BaseCti(BaseTreeItem):
 
         Serves as an interface but can also be instantiated for debugging purposes.
     """
-    def __init__(self, nodeName, value=USE_DEFAULT_VALUE, defaultValue=None):
+    def __init__(self, nodeName, value=NOT_SPECIFIED, defaultValue=None):
         """ Constructor
             :param nodeName: name of this node (used to construct the node path).
             :param value: the configuration value. If omitted the defaultValue will be used.
@@ -58,7 +50,7 @@ class BaseCti(BaseTreeItem):
         self._value = None # keep pylint happy
         self._defaultValue = self._convertValueType(defaultValue)
                 
-        if value is USE_DEFAULT_VALUE:
+        if value is NOT_SPECIFIED:
             value = self.defaultValue
 
         self.value = value
@@ -210,6 +202,7 @@ class BaseCti(BaseTreeItem):
             Does not save defaultValue and other properties.
             Only stores values if they differ from the defaultValue. If the CTI and none of its 
             children differ from their default, a completely empty dictionary is returned. 
+            This is to achieve a smaller json representation.
         """
         dct = {}
         if self.value != self.defaultValue:

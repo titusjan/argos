@@ -20,8 +20,9 @@
 import logging
 import numpy as np
 
-from .basecti import BaseCti, USE_DEFAULT_VALUE
+from .basecti import BaseCti
 from libargos.qt import QtGui, getQApplicationInstance, Qt
+from libargos.utils.misc import NOT_SPECIFIED
 
 
 logger = logging.getLogger(__name__)
@@ -43,7 +44,7 @@ class StringCti(BaseCti):
         The string can have an optional maximum length.
 
     """
-    def __init__(self, nodeName, value=USE_DEFAULT_VALUE, defaultValue='', 
+    def __init__(self, nodeName, value=NOT_SPECIFIED, defaultValue='', 
                  maxLength=None):
         """ Constructor. 
         
@@ -99,7 +100,7 @@ class StringCti(BaseCti):
 class IntegerCti(BaseCti):
     """ Config Tree Item to store an integer. It can be edited using a QSinBox.
     """
-    def __init__(self, nodeName, value=USE_DEFAULT_VALUE, defaultValue=0, 
+    def __init__(self, nodeName, value=NOT_SPECIFIED, defaultValue=0, 
                  minValue = None, maxValue = None, stepSize = 1):
         """ Constructor
             
@@ -167,7 +168,7 @@ class IntegerCti(BaseCti):
 class BoolCti(BaseCti):
     """ Config Tree Item to store an integer. It can be edited using a QSinBox.
     """
-    def __init__(self, nodeName, value=USE_DEFAULT_VALUE, defaultValue=False):
+    def __init__(self, nodeName, value=NOT_SPECIFIED, defaultValue=False):
         """ Constructor
 
             For the parameters see the BaseCti constructor documentation.
@@ -225,7 +226,7 @@ class BoolCti(BaseCti):
 class ChoiceCti(BaseCti):
     """ Config Tree Item to store a choice between strings.
     """
-    def __init__(self, nodeName, value=USE_DEFAULT_VALUE, defaultValue=0, choices=None):
+    def __init__(self, nodeName, value=NOT_SPECIFIED, defaultValue=0, choices=None):
         """ Constructor
             value and defaultValue are used to store the currentIndex.
             choices must be a list of string.
@@ -282,7 +283,7 @@ class ChoiceCti(BaseCti):
 class ColorCti(BaseCti):
     """ Config Tree Item to store a color. 
     """
-    def __init__(self, nodeName, value=USE_DEFAULT_VALUE, defaultValue=''):
+    def __init__(self, nodeName, value=NOT_SPECIFIED, defaultValue=''):
         """ Constructor. 
             For the (other) parameters see the BaseCti constructor documentation.
         """
