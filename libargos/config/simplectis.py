@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 # TODO: Color selector (transparency) 
 # TODO: Font selector?
 # TODO: reset button
-# TODO: None takes value of parent
+# TODO: None takes data of parent
 
 
 class StringCti(BaseCti):
@@ -44,7 +44,7 @@ class StringCti(BaseCti):
         The string can have an optional maximum length.
 
     """
-    def __init__(self, nodeName, value=NOT_SPECIFIED, defaultValue='', 
+    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData='', 
                  maxLength=None):
         """ Constructor. 
         
@@ -52,17 +52,17 @@ class StringCti(BaseCti):
             
             For the (other) parameters see the BaseCti constructor documentation.
         """
-        super(StringCti, self).__init__(nodeName, value=value, defaultValue=defaultValue)
+        super(StringCti, self).__init__(nodeName, data=data, defaultData=defaultData)
         
         # We could define a mask here as well but since that very likely will be rarely used, 
         # we don't want to store it for each cti. You can make a subclass if you need it. 
         self.maxLength = maxLength
 
 
-    def _convertValueType(self, value):
+    def _enforceDataType(self, data):
         """ Converts to str so that this CTI always stores that type. 
         """
-        return str(value)    
+        return str(data)    
         
     
     @property
@@ -82,11 +82,11 @@ class StringCti(BaseCti):
         return editor
         
         
-    def setEditorValue(self, editor, value):
-        """ Provides the editor widget with a value to manipulate.
+    def setEditorValue(self, editor, data):
+        """ Provides the editor widget with a data to manipulate.
         """
         lineEditor = editor
-        lineEditor.setText(value)
+        lineEditor.setText(data)
         
         
     def getEditorValue(self, editor):
@@ -100,27 +100,27 @@ class StringCti(BaseCti):
 class IntegerCti(BaseCti):
     """ Config Tree Item to store an integer. It can be edited using a QSinBox.
     """
-    def __init__(self, nodeName, value=NOT_SPECIFIED, defaultValue=0, 
+    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=0, 
                  minValue = None, maxValue = None, stepSize = 1):
         """ Constructor
             
-            :param minValue: minimum value allowed when editing (use None for no minimum)
-            :param maxValue: maximum value allowed when editing (use None for no maximum)
+            :param minValue: minimum data allowed when editing (use None for no minimum)
+            :param maxValue: maximum data allowed when editing (use None for no maximum)
             :param stepSize: steps between values when ediging (default = 1)
                     
             For the (other) parameters see the BaseCti constructor documentation.
         """
-        super(IntegerCti, self).__init__(nodeName, value=value, defaultValue=defaultValue)
+        super(IntegerCti, self).__init__(nodeName, data=data, defaultData=defaultData)
         
         self.minValue = minValue
         self.maxValue = maxValue
         self.stepSize = stepSize
 
     
-    def _convertValueType(self, value):
+    def _enforceDataType(self, data):
         """ Converts to int so that this CTI always stores that type. 
         """
-        return int(value)
+        return int(data)
         
     
     @property
@@ -150,36 +150,36 @@ class IntegerCti(BaseCti):
         return spinBox
         
         
-    def setEditorValue(self, spinBox, value):
-        """ Provides the spin box editor widget with a value to manipulate.
+    def setEditorValue(self, spinBox, data):
+        """ Provides the spin box editor widget with a data to manipulate.
         """
-        spinBox.setValue(value)
+        spinBox.setValue(data)
         
         
     def getEditorValue(self, spinBox):
         """ Gets data from the spin box editor widget.
         """
         spinBox.interpretText()
-        value = spinBox.value()
-        return value
+        data = spinBox.value()
+        return data
 
         
 
 class BoolCti(BaseCti):
-    """ Config Tree Item to store an integer. It can be edited using a QSinBox.
+    """ Config Tree Item to store an integer. It can be edited using a QSpinBox.
     """
-    def __init__(self, nodeName, value=NOT_SPECIFIED, defaultValue=False):
+    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=False):
         """ Constructor
 
             For the parameters see the BaseCti constructor documentation.
         """
-        super(BoolCti, self).__init__(nodeName, value=value, defaultValue=defaultValue)
+        super(BoolCti, self).__init__(nodeName, data=data, defaultData=defaultData)
 
     
-    def _convertValueType(self, value):
-        """ Converts to bool so that self.value always is of that type.
+    def _enforceDataType(self, data):
+        """ Converts to bool so that self.data always is of that type.
         """
-        return bool(value)
+        return bool(data)
         
 
     def createEditor(self, delegate, parent, _option):
@@ -192,10 +192,10 @@ class BoolCti(BaseCti):
         return checkBox
 
         
-    def setEditorValue(self, checkBox, value):
-        """ Provides the check box editor widget with a value to manipulate.
+    def setEditorValue(self, checkBox, data):
+        """ Provides the check box editor widget with a data to manipulate.
         """
-        checkBox.setChecked(value)
+        checkBox.setChecked(data)
         
         
     def getEditorValue(self, checkBox):
@@ -204,7 +204,7 @@ class BoolCti(BaseCti):
         return checkBox.isChecked()
 
         
-    def paintDisplayValue(self, painter, option, value):
+    def paintDisplayValue(self, painter, option, data):
         """ Paints a check box on the painter.
         """
         checkBox = QtGui.QStyleOptionButton()
@@ -212,7 +212,7 @@ class BoolCti(BaseCti):
         checkBox.state = QtGui.QStyle.State_Enabled
         checkBox.rect = option.rect
         
-        if value:
+        if data:
             checkBox.state = QtGui.QStyle.State_On | QtGui.QStyle.State_Enabled
         else:
             checkBox.state = QtGui.QStyle.State_Off | QtGui.QStyle.State_Enabled
@@ -226,28 +226,28 @@ class BoolCti(BaseCti):
 class ChoiceCti(BaseCti):
     """ Config Tree Item to store a choice between strings.
     """
-    def __init__(self, nodeName, value=NOT_SPECIFIED, defaultValue=0, choices=None):
+    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=0, choices=None):
         """ Constructor
-            value and defaultValue are used to store the currentIndex.
+            data and defaultData are used to store the currentIndex.
             choices must be a list of string.
                     
             For the (other) parameters see the BaseCti constructor documentation.
         """
-        super(ChoiceCti, self).__init__(nodeName, value=value, defaultValue=defaultValue)
+        super(ChoiceCti, self).__init__(nodeName, data=data, defaultData=defaultData)
         self.choices = [] if choices is None else choices
         
     
-    def _convertValueType(self, value):
+    def _enforceDataType(self, data):
         """ Converts to int so that this CTI always stores that type. 
         """
-        return int(value)
+        return int(data)
 
     
     @property
     def displayValue(self):
-        """ Returns the string representation of value for use in the tree view. 
+        """ Returns the string representation of data for use in the tree view. 
         """
-        return str(self.choices[self.value])
+        return str(self.choices[self.data])
     
     
     @property
@@ -267,7 +267,7 @@ class ChoiceCti(BaseCti):
         
         
     def setEditorValue(self, comboBox, index):
-        """ Provides the combo box an value that is the current index.
+        """ Provides the combo box an data that is the current index.
         """
         comboBox.setCurrentIndex(index)        
         
@@ -275,25 +275,32 @@ class ChoiceCti(BaseCti):
     def getEditorValue(self, comboBox):
         """ Gets data from the combo box editor widget.
         """
-        value = comboBox.currentIndex()
-        return value
+        data = comboBox.currentIndex()
+        return data
                 
 
 
 class ColorCti(BaseCti):
     """ Config Tree Item to store a color. 
     """
-    def __init__(self, nodeName, value=NOT_SPECIFIED, defaultValue=''):
+    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=''):
         """ Constructor. 
             For the (other) parameters see the BaseCti constructor documentation.
         """
-        super(ColorCti, self).__init__(nodeName, value=value, defaultValue=defaultValue)
+        super(ColorCti, self).__init__(nodeName, data=data, defaultData=defaultData)
         
 
-    def _convertValueType(self, value):
+    def _enforceDataType(self, data):
         """ Converts to str so that this CTI always stores that type. 
         """
-        return str(value)    
+        return QtGui.QColor(data)    
+        
+    
+    @property
+    def displayValue(self):
+        """ Returns a string with the RGB value in hexadecimal (e.g. '#00FF88') 
+        """
+        return self._data.name().upper()    
         
     
     @property
@@ -312,11 +319,11 @@ class ColorCti(BaseCti):
         return editor
         
         
-    def setEditorValue(self, editor, value):
-        """ Provides the editor widget with a value to manipulate.
+    def setEditorValue(self, editor, qColor):
+        """ Provides the editor widget with a data to manipulate.
         """
         lineEditor = editor
-        lineEditor.setText(value)
+        lineEditor.setText(qColor.name())
         
         
     def getEditorValue(self, editor):

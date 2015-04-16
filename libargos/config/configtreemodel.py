@@ -99,7 +99,7 @@ class ConfigTreeModel(BaseTreeModel):
             :rtype: string
         """
         if column == self.COL_VALUE:
-            return treeItem.value
+            return treeItem.data
         else:
             raise ValueError("Invalid column: {}".format(column))
             
@@ -111,7 +111,8 @@ class ConfigTreeModel(BaseTreeModel):
         if column != self.COL_VALUE:
             return False
         try:
-            treeItem.value = value
+            logger.debug("_setEditValueForColumn: {!r}".format(value))
+            treeItem.data = value
         except Exception:
             raise
         else:

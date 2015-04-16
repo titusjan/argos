@@ -20,12 +20,9 @@ http://www.census.gov/population/international/data/countryrank/rank.php
 
 
 
-
 TODO:
-	config table select only individual cells
 	confirm on error when editing cell
 	read/write config to yaml, QSettings. 
-	
 			
 Collectors:
 	test with Evoss sciamachy products
@@ -48,6 +45,7 @@ TODO Long term or nice to have:
 	Change profile from menu?
 	Plugin management window
 	clean-up the settings reading/writing 
+	Qt::SizeHintRole in toggleTreeView?
 	
 THINK:
 	use QObject.blockSignals
@@ -63,7 +61,7 @@ THINK:
 		# https://steveire.wordpress.com/2010/04/20/sharing-a-qitemselection-between-views-through-proxy-models/
 				
 USE CASES:
-	Select 3 lines of a wavelength map (at 0 and extreme swath angles), 
-	then select another detector.
+	Select 3 lines of a wavelength map (at 0 and extreme swath angles), then select another detector.
+	Compare irrads
 
 	

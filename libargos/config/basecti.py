@@ -33,26 +33,56 @@ logger = logging.getLogger(__name__)
 
 
 class BaseCti(BaseTreeItem):
-    """ TreeItem for use in a ConfigTreeModel. (RTI = Config TreeItem)
-        Base node from which to derive the other types of nodes.
+    """ TreeItem for use in a ConfigTreeModel. (CTI = Config Tree Item)
 
+        Base node from which to derive the other types of nodes.
         Serves as an interface but can also be instantiated for debugging purposes.
+        
+        Just like the BaseTreeItem every node has a name and a full path that is a slash-separated 
+        string of the full path leading from the root node to the current node. For instance, the 
+        path may be '/scale/x', the nodeName in that case is 'x'. 
+        
+        CTIs are used to store a certain configuration value. It can be queried by the configValue
+        property. The type of this value differs between descendants of BaseCti, but a sub class
+        should always return the same type. For example, the ColorCti.configValue always returns a
+        QColor object. The displayValue returns the string representation for use in the tables; 
+        by default this returns: str(configValue)
+        
+        The underlying data is usually stored in that type as well but this is not necessarily so.
+        A ChoiceCti, which represents a combo box, stores a list of choices and an index that is
+        actual choice made by the user. ChoiceCti.data contains the index while ChoiceCti.configData
+        returns: choices[index]. Note that the constructor expects the data as input parameter. The
+        constructor calls the _enforceDataType method to convert the data to the correct type.
+        
+        The purpose of the defaultData is to reset a config data to its initial value when the 
+        user clicks on the reset button during editing. The getNonDefaultsDict returns a dictionary 
+        containing only the items that differ from their default values. This is used to store the 
+        persistent settings between runs. When a developer changes the default value in a future
+        version, the new value will be updated in the UI unless the user has explicitly set the
+        value himself.
+        
+        Each CTI can be edited. The createEditor must be overridden so that it creates the
+        desired editor (a QWidget) when the user starts editing. The setEditorValue sets the
+        editor widget's value from the CTI data. The getEditorData does the inverse when the user
+        has finished editing. These methods are all called by the ConfigItemDelegate class. You
+        can read more about delegates in the model/view programming page of the QT documentation: 
+        http://doc.qt.io/qt-4.8/model-view-programming.html
     """
-    def __init__(self, nodeName, value=NOT_SPECIFIED, defaultValue=None):
+    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=None):
         """ Constructor
             :param nodeName: name of this node (used to construct the node path).
-            :param value: the configuration value. If omitted the defaultValue will be used.
-            :param defaultValue: default value to which the value can be reset or initialized
-                if omitted  from the constructor
+            :param data: the configuration data. If omitted the defaultData will be used.
+            :param defaultData: default data to which the data can be reset or initialized if 
+                omitted from the constructor.
         """
         super(BaseCti, self).__init__(nodeName=nodeName)
 
-        self._defaultValue = self._convertValueType(defaultValue)
+        self._defaultData = self._enforceDataType(defaultData)
 
-        if value is NOT_SPECIFIED:
-            self._value = self.defaultValue
+        if data is NOT_SPECIFIED:
+            self._data = self.defaultData
         else:
-            self._value = self._convertValueType(value)
+            self._data = self._enforceDataType(data)
          
     
     def __eq__(self, other): 
@@ -60,8 +90,8 @@ class BaseCti(BaseTreeItem):
         """
         result = (type(self) == type(other) and 
                   self.nodeName == other.nodeName and
-                  self.value == other.value and
-                  self.defaultValue == other.defaultValue and
+                  self.data == other.data and
+                  self.defaultData == other.defaultData and
                   self.childItems == other.childItems)
         return result
 
@@ -78,42 +108,50 @@ class BaseCti(BaseTreeItem):
     
     @property
     def displayValue(self):
-        """ Returns the string representation of value for use in the tree view. 
+        """ Returns the string representation of data for use in the tree view. 
         """
-        return str(self._value)
+        return str(self.value)
     
     @property
     def value(self):
-        """ Returns the value of this item. 
+        """ Returns the configuration value of this item. 
+            By default this is the same as the underlying data but it can be overridden, 
+            e.g. when the data is an index in a combo box and the value returns the choice.
         """
-        return self._value
+        return self._data
+    
+    @property
+    def data(self):
+        """ Returns the data of this item. 
+        """
+        return self._data
 
-    @value.setter
-    def value(self, value):
-        """ Sets the value of this item. 
-            Does type conversion to ensure value is always of the correct type.
+    @data.setter
+    def data(self, data):
+        """ Sets the data of this item. 
+            Does type conversion to ensure data is always of the correct type.
         """
-        # Descendants should convert the value to the desired type here
-        self._value = self._convertValueType(value)
+        # Descendants should convert the data to the desired type here
+        self._data = self._enforceDataType(data)
             
     @property
-    def defaultValue(self):
-        """ Returns the default value of this item. 
+    def defaultData(self):
+        """ Returns the default data of this item. 
         """
-        return self._defaultValue
+        return self._defaultData
 
-    @defaultValue.setter
-    def defaultValue(self, defVal):
-        """ Sets the value of this item. 
-            Does type conversion to ensure default value is always of the correct type.
+    @defaultData.setter
+    def defaultData(self, defaultData):
+        """ Sets the data of this item. 
+            Does type conversion to ensure default data is always of the correct type.
         """
-        # Descendants should convert the value to the desired type here
-        self._defaultValue = self._convertValueType(defVal)
+        # Descendants should convert the data to the desired type here
+        self._defaultData = self._enforceDataType(defaultData)
         
     
-    def _convertValueType(self, value):
-        """ Converts value to the type of this CTI.
-            Used by the setter to ensure that the value and defaultValue have the correct type 
+    def _enforceDataType(self, value):
+        """ Converts data to the type of this CTI.
+            Used by the setter to ensure that the data and defaultData have the correct type 
             The default implementation does nothing; should be overridden by descendants.
         """
         return value
@@ -132,14 +170,14 @@ class BaseCti(BaseTreeItem):
             :type  option: QStyleOptionViewItem
         """
         editor = QtGui.QLineEdit(parent)
-        #editor.setText(str(self.value)) # not necessary, it will be done by setEditorValue
+        #editor.setText(str(self.data)) # not necessary, it will be done by setEditorValue
         return editor
         
         
-    def setEditorValue(self, editor, value):
-        """ Provides the editor widget with a value to manipulate.
+    def setEditorValue(self, editor, value): # TODO: renamed setEditorValue?
+        """ Provides the editor widget with a data to manipulate.
             
-            The value parameter could be replaced by self.value but the caller 
+            The data parameter could be replaced by self.data but the caller 
             (ConfigItemelegate.getModelData) retrieves it via the model to be consistent 
             with setModelData.
              
@@ -174,10 +212,10 @@ class BaseCti(BaseTreeItem):
         """ Creates a CTI given a dictionary, which usually comes from a JSON decoder.
         """
         cti = cls(dct['nodeName'])
-        if 'value' in dct:
-            cti.value = dct['value']
-        if 'defaultValue' in dct:
-            cti.defaultValue = dct['defaultValue']
+        if 'data' in dct:
+            cti.data = dct['data']
+        if 'defaultData' in dct:
+            cti.defaultData = dct['defaultData']
             
         for childCti in dct['childItems']:
             cti.insertChild(childCti)
@@ -192,20 +230,20 @@ class BaseCti(BaseTreeItem):
         """ Returns a dictionary representation to be used in a JSON encoder,
         """
         return {'_class_': get_full_class_name(self),
-                'nodeName': self.nodeName, 'value': self.value, 
-                'defaultValue': self.defaultValue, 'childItems': self.childItems}
+                'nodeName': self.nodeName, 'data': self.data, 
+                'defaultData': self.defaultData, 'childItems': self.childItems}
         
 
     def getNonDefaultsDict(self):
         """ Recursively retrieves values as a dictionary to be used for persistence.
-            Does not save defaultValue and other properties.
-            Only stores values if they differ from the defaultValue. If the CTI and none of its 
+            Does not save defaultData and other properties.
+            Only stores values if they differ from the defaultData. If the CTI and none of its 
             children differ from their default, a completely empty dictionary is returned. 
             This is to achieve a smaller json representation.
         """
         dct = {}
-        if self.value != self.defaultValue:
-            dct['value'] = self.value
+        if self.data != self.defaultData:
+            dct['data'] = self.data
             
         childList = []
         for childCti in self.childItems:
@@ -239,8 +277,8 @@ class BaseCti(BaseTreeItem):
                 logger.warn(msg)
                 return
             
-        if 'value' in dct:
-            self.value = dct['value']
+        if 'data' in dct:
+            self.data = dct['data']
         
         for childDct in dct.get('childItems', []):
             key = childDct['nodeName']
@@ -274,8 +312,7 @@ class CtiEncoder(JSONEncoder):
 
 
 def jsonAsCti(dct): 
-    """ Config tree item JSON decoding function.
-        Returns a CTI given a dictionary of attributes.
+    """ Config tree item JSON decoding function. Returns a CTI given a dictionary of attributes.
         The full class name of desired CTI class should be in dct['_class_''].
     """
     if '_class_'in dct:
@@ -287,8 +324,8 @@ def jsonAsCti(dct):
 
     
 class CtiDecoder(JSONDecoder):
-    """ Config tree item JSON decoder class. Not strictly necessary, you can use the
-        jsonAsCti function as object_hook directly in loads, but since we also have an 
+    """ Config tree item JSON decoder class. Not strictly necessary (you can use the
+        jsonAsCti function as object_hook directly in loads) but since we also have an 
         encoder class it feels right to have a decoder as well.
     """
     def __init__(self, *args, **kwargs):

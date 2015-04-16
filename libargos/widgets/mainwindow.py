@@ -306,17 +306,17 @@ class MainWindow(QtGui.QMainWindow):
         from libargos.config.basecti import BaseCti
         from libargos.config.simplectis import IntegerCti, StringCti, BoolCti, ChoiceCti, ColorCti
         
-        rootItem = BaseCti(nodeName='line color', defaultValue=123)
+        rootItem = BaseCti(nodeName='line color', defaultData=123)
         rootIndex = self._config.insertItem(rootItem)
         self.configTreeView.setExpanded(rootIndex, True) # does not work because of read settings
 
-        rootItem.insertChild(IntegerCti(nodeName='line-1 color', defaultValue=-7, minValue = -5, stepSize=2))
+        rootItem.insertChild(IntegerCti(nodeName='line-1 color', defaultData=-7, minValue = -5, stepSize=2))
         
-        self._config.insertItem(StringCti(nodeName='letter', defaultValue='aa', maxLength = 1))
-        self._config.insertItem(BoolCti(nodeName='grid', defaultValue=True))
+        self._config.insertItem(StringCti(nodeName='letter', defaultData='aa', maxLength = 1))
+        self._config.insertItem(BoolCti(nodeName='grid', defaultData=True))
 
-        self._config.insertItem(ChoiceCti(nodeName='hobbit', defaultValue=2, 
+        self._config.insertItem(ChoiceCti(nodeName='hobbit', defaultData=2, 
                                           choices=['Frodo', 'Sam', 'Pippin', 'Merry']))
 
-        self._config.insertItem(ColorCti(nodeName='favorite color', defaultValue="#22FF33"))
+        self._config.insertItem(ColorCti(nodeName='favorite color', defaultData="#22FF33"))
     

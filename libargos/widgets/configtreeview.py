@@ -36,7 +36,7 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         Creates an editor based on the underlying config tree item at an index.
         
         We don't use a QItemEditorFactory since that is typically registered for a type of 
-        QVariant. We then would have to make a new UserType QVariant for (each?) CTIs.
+        QVariant. We then would have to make a new UserType QVariant for (each?) CTI.
         This is cumbersome and possibly unPyQTtonic :-)
     """
     def paint(self, painter, option, index):
@@ -72,25 +72,25 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
             :type editor: QWidget
             :type index: QModelIndex
         """
-        # We take the value via the model to be consistent with setModelData
-        value = index.model().data(index, QtCore.Qt.EditRole)
+        # We take the config value via the model to be consistent with setModelData
+        data = index.model().data(index, QtCore.Qt.EditRole)
         cti = index.model().getItem(index)
-        cti.setEditorValue(editor, value)
+        cti.setEditorValue(editor, data)
         
 
     def setModelData(self, editor, model, index):
         """ Gets data from the editor widget and stores it in the specified model at the item index.
-            Does this by caling setModelData of the config tree item at the index.
+            Does this by caling getEditorValue of the config tree item at the index.
             
             :type editor: QWidget
             :type model: ConfigTreeModel
             :type index: QModelIndex
         """
         cti = model.getItem(index)
-        value = cti.getEditorValue(editor)
+        data = cti.getEditorValue(editor)
         
         # The value is set via the model so that signals are emitted
-        model.setData(index, value, QtCore.Qt.EditRole)
+        model.setData(index, data, QtCore.Qt.EditRole)
 
 
     def updateEditorGeometry(self, editor, option, index):
