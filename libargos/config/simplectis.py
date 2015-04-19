@@ -293,8 +293,21 @@ class ColorCti(BaseCti):
     def _enforceDataType(self, data):
         """ Converts to str so that this CTI always stores that type. 
         """
-        return QtGui.QColor(data)    
+        return QtGui.QColor(data)    # TODO: store a RGB string?
         
+        
+    def _dataToJson(self, qColor):
+        """ Converts data or defaultData to serializable json dictionary or scalar.
+            Helper function that can be overridden; by default the input is returned.
+        """
+        return qColor.name()
+    
+    def _dataFromJson(self, json):
+        """ Converts json dictionary or scalar to an object to use in self.data or defaultData.
+            Helper function that can be overridden; by default the input is returned.
+        """
+        return QtGui.QColor(json) 
+
     
     @property
     def displayValue(self):

@@ -226,12 +226,27 @@ class BaseCti(BaseTreeItem):
         return cti
 
 
+    def _dataToJson(self, data):
+        """ Converts data or defaultData to serializable json dictionary or scalar.
+            Helper function that can be overridden; by default the input is returned.
+        """
+        return data
+    
+    def _dataFromJson(self, json):
+        """ Converts json dictionary or scalar to an object to use in self.data or defaultData.
+            Helper function that can be overridden; by default the input is returned.
+        """
+        return json
+    
+
     def asJsonDict(self):
         """ Returns a dictionary representation to be used in a JSON encoder,
         """
         return {'_class_': get_full_class_name(self),
-                'nodeName': self.nodeName, 'data': self.data, 
-                'defaultData': self.defaultData, 'childItems': self.childItems}
+                'nodeName': self.nodeName, 
+                'data': self._dataToJson(self.data), 
+                'defaultData': self._dataToJson(self.defaultData), 
+                'childItems': self.childItems}
         
 
     def getNonDefaultsDict(self):
@@ -243,7 +258,7 @@ class BaseCti(BaseTreeItem):
         """
         dct = {}
         if self.data != self.defaultData:
-            dct['data'] = self.data
+            dct['data'] = self._dataToJson(self.data)
             
         childList = []
         for childCti in self.childItems:
@@ -278,7 +293,7 @@ class BaseCti(BaseTreeItem):
                 return
             
         if 'data' in dct:
-            self.data = dct['data']
+            self.data = self._dataFromJson(dct['data'])
         
         for childDct in dct.get('childItems', []):
             key = childDct['nodeName']

@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 
-import unittest, logging, sys
-from json import loads
+import unittest, logging, sys, copy
+from json import loads, dumps
 
 from libargos.qt import QtCore, QtGui
 from libargos.config.basecti import BaseCti, ctiDumps, CtiDecoder
@@ -66,7 +66,7 @@ class TestBaseCtis(unittest.TestCase):
         # is read correctly if the default stays the same 
         ctiIn  = BaseCti('parent', 7, defaultData=7)
         defDict = ctiIn.getNonDefaultsDict()
-        print(defDict)
+        #print(defDict)
         ctiOut = BaseCti('parent', defaultData=7)
         ctiOut.setValuesFromDict(defDict)
         self.assertEqual(ctiIn, ctiOut)
@@ -103,9 +103,9 @@ class TestSimpleCtis(unittest.TestCase):
         self.rootItem = BaseCti(nodeName='<invisible-root>', data=0.123456789012345678901234567890)
         self.rootItem.insertChild(BaseCti(nodeName='kid', data=-7))
 
-
     def tearDown(self):
         pass
+
 
     def testColorCti(self):
         
@@ -114,6 +114,26 @@ class TestSimpleCtis(unittest.TestCase):
         self.assertEqual(cti.data, QtGui.QColor(colorStr))
         self.assertEqual(cti.value, QtGui.QColor(colorStr))
         self.assertEqual(cti.displayValue, colorStr)
+
+
+    def closedLoop(self, ctiIn):
+        """ serialize cti default values to json and back
+        """
+        nonDefaults = ctiIn.getNonDefaultsDict()
+        json = dumps(nonDefaults)
+        valuesDict = loads(json)
+        
+        ctiOut = copy.deepcopy(ctiIn)
+        ctiOut._data = None
+        ctiOut.setValuesFromDict(valuesDict)
+        return ctiOut
+        
+        
+    def testClosedLoop(self):
+        # A data different than its default should be restored 
+        ctiIn  = ColorCti('parent', '#123456', defaultData='#ABCDEF')
+        ctiOut = self.closedLoop(ctiIn)
+        self.assertEqual(ctiIn, ctiOut)
 
 
 if __name__ == '__main__':
