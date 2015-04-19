@@ -31,6 +31,10 @@ from libargos.utils.misc import NOT_SPECIFIED
 logger = logging.getLogger(__name__)
 
 
+class InvalidInputError(Exception):
+    """ Exception raised when the input is invalid after editing
+    """
+    pass
 
 class BaseCti(BaseTreeItem):
     """ TreeItem for use in a ConfigTreeModel. (CTI = Config Tree Item)

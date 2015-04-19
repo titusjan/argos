@@ -20,8 +20,8 @@
 import logging
 import numpy as np
 
-from .basecti import BaseCti
-from libargos.qt import QtGui, getQApplicationInstance, Qt
+from .basecti import BaseCti, InvalidInputError
+from libargos.qt import Qt, QtCore, QtGui, getQApplicationInstance
 from libargos.utils.misc import NOT_SPECIFIED
 
 
@@ -330,23 +330,37 @@ class ColorCti(BaseCti):
         """ Creates a QSpinBox for editing. 
             :type option: QStyleOptionViewItem
         """
-        editor = QtGui.QLineEdit(parent)
-        editor.setInputMask("\#>HHHHHH")
-        return editor
+        lineEditor = QtGui.QLineEdit(parent)
+        #editor.setInputMask("\#>HHHHHH")
+        regExp = QtCore.QRegExp(r'#[0-9A-F]{6}', Qt.CaseInsensitive)
+        validator = QtGui.QRegExpValidator(regExp, parent=lineEditor)
+        lineEditor.setValidator(validator)
+            
+        return lineEditor
         
         
-    def setEditorValue(self, editor, qColor):
+    def setEditorValue(self, lineEditor, qColor):
         """ Provides the editor widget with a data to manipulate.
         """
-        lineEditor = editor
-        lineEditor.setText(qColor.name())
+        lineEditor.setText(qColor.name().upper())
         
         
-    def getEditorValue(self, editor):
+    def getEditorValue(self, lineEditor):
         """ Gets data from the editor widget.
         """
-        lineEditor = editor
-        return lineEditor.text()
+        text = lineEditor.text()
+        
+#        if not lineEditor.acceptableInput() :
+#            raise InvalidInputError("Invalid input: {!r}".format(text))
+        
+        validator = lineEditor.validator()
+        if validator is not None:
+            state, text, _ = validator.validate(text, 0)
+            if state != QtGui.QValidator.Acceptable:
+                raise InvalidInputError("Invalid input: {!r}".format(text))
+
+        return text
+    
 
 
                 

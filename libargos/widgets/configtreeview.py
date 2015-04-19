@@ -24,6 +24,7 @@ from libargos.qt import QtCore, QtGui, QtSlot
 from libargos.widgets.argostreeview import ArgosTreeView
 from libargos.widgets.constants import RIGHT_DOCK_WIDTH
 from libargos.config.configtreemodel import ConfigTreeModel
+from libargos.config.basecti import InvalidInputError
 
 logger = logging.getLogger(__name__)
 
@@ -87,10 +88,13 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
             :type index: QModelIndex
         """
         cti = model.getItem(index)
-        data = cti.getEditorValue(editor)
-        
-        # The value is set via the model so that signals are emitted
-        model.setData(index, data, QtCore.Qt.EditRole)
+        try:
+            data = cti.getEditorValue(editor)
+        except InvalidInputError as ex:
+            logger.warn(ex)
+        else:
+            # The value is set via the model so that signals are emitted
+            model.setData(index, data, QtCore.Qt.EditRole)
 
 
     def updateEditorGeometry(self, editor, option, index):
