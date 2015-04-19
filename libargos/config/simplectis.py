@@ -331,8 +331,7 @@ class ColorCti(BaseCti):
             :type option: QStyleOptionViewItem
         """
         lineEditor = QtGui.QLineEdit(parent)
-        #editor.setInputMask("\#>HHHHHH")
-        regExp = QtCore.QRegExp(r'#[0-9A-F]{6}', Qt.CaseInsensitive)
+        regExp = QtCore.QRegExp(r'#?[0-9A-F]{6}', Qt.CaseInsensitive)
         validator = QtGui.QRegExpValidator(regExp, parent=lineEditor)
         lineEditor.setValidator(validator)
             
@@ -349,10 +348,9 @@ class ColorCti(BaseCti):
         """ Gets data from the editor widget.
         """
         text = lineEditor.text()
-        
-#        if not lineEditor.acceptableInput() :
-#            raise InvalidInputError("Invalid input: {!r}".format(text))
-        
+        if not text.startswith('#'):
+            text = '#' + text
+
         validator = lineEditor.validator()
         if validator is not None:
             state, text, _ = validator.validate(text, 0)

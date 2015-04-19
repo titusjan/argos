@@ -46,6 +46,7 @@ TODO Long term or nice to have:
 	Plugin management window
 	clean-up the settings reading/writing 
 	Qt::SizeHintRole in toggleTreeView?
+	http://snorf.net/blog/2014/08/09/validating-user-input-in-pyqt4-using-qvalidator/
 	
 THINK:
 	use QObject.blockSignals
