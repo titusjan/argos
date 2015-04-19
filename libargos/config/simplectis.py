@@ -293,7 +293,10 @@ class ColorCti(BaseCti):
     def _enforceDataType(self, data):
         """ Converts to str so that this CTI always stores that type. 
         """
-        return QtGui.QColor(data)    # TODO: store a RGB string?
+        qColor = QtGui.QColor(data)    # TODO: store a RGB string?
+        if not qColor.isValid():
+            raise ValueError("Invalid color specification: {!r}".format(data))
+        return qColor
         
         
     def _dataToJson(self, qColor):
