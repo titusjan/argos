@@ -22,7 +22,7 @@ import logging, os
 from json import JSONEncoder, JSONDecoder, dumps
 
 from libargos.info import DEBUGGING, icons_directory
-from libargos.qt import QtCore, QtGui
+from libargos.qt import Qt, QtGui
 from libargos.qt.treeitems import BaseTreeItem
 from libargos.utils.cls import get_full_class_name, import_symbol
 from libargos.utils.misc import NOT_SPECIFIED
@@ -46,13 +46,15 @@ class ResettableEditor(QtGui.QWidget):
         """ Wraps the child widget in a new widget with a reset button appended.
         """
         assert parent, "parent undefined"
+        assert len(childWidgets) >= 1, "You should specify at least one childWidget"
+        
         super(ResettableEditor, self).__init__(parent=parent)
         
         hBoxLayout = QtGui.QHBoxLayout()
         hBoxLayout.setContentsMargins(0, 0, 0, 0)
         hBoxLayout.setSpacing(0)
         self.setLayout(hBoxLayout)
-    
+
         self.childWidgets = childWidgets
         for childWidget in childWidgets:
             hBoxLayout.addWidget(childWidget)
@@ -60,7 +62,11 @@ class ResettableEditor(QtGui.QWidget):
         button = QtGui.QToolButton()
         button.setText("Reset")
         button.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'err.warning.svg')))
+        button.setFocusPolicy(Qt.NoFocus)
         hBoxLayout.addWidget(button)
+        
+        self.setFocusProxy(self.mainEditor)
+
                 
     
     def paintEvent(self, event):
@@ -220,9 +226,9 @@ class BaseCti(BaseTreeItem):
         """
         lineEditor = QtGui.QLineEdit()
         lineEditor.setFrame(True)
-        editor = ResettableEditor(lineEditor, parent=parent) 
+        resettableEditor = ResettableEditor(lineEditor, parent=parent) 
         #editor.setText(str(self.data)) # not necessary, it will be done by setEditorValue
-        return editor
+        return resettableEditor
         
         
     def setEditorValue(self, resettableEditor, value): # TODO: renamed setEditorValue?
