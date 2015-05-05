@@ -49,33 +49,18 @@ class ResettableEditor(QtGui.QWidget):
         super(ResettableEditor, self).__init__(parent=parent)
         
         hBoxLayout = QtGui.QHBoxLayout()
-        #hBoxLayout.setSpacing(15)
-        #hBoxLayout.setContentsMargins(15, 0, 15, 0)
         hBoxLayout.setContentsMargins(0, 0, 0, 0)
         hBoxLayout.setSpacing(0)
         self.setLayout(hBoxLayout)
+    
+        self.childWidgets = childWidgets
+        for childWidget in childWidgets:
+            hBoxLayout.addWidget(childWidget)
 
         button = QtGui.QToolButton()
         button.setText("Reset")
         button.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'err.warning.svg')))
         hBoxLayout.addWidget(button)
-    
-        self.childWidgets = childWidgets
-        for childWidget in childWidgets:
-            #childWidget.setSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
-            hBoxLayout.addWidget(childWidget)
-            #childWidget.setStyleSheet("background-color: #ff00ff;")
-            policy = QtGui.QSizePolicy()
-            policy.setVerticalPolicy(QtGui.QSizePolicy.MinimumExpanding)
-            childWidget.setSizePolicy(policy)
-            #childWidget.setContentsMargins(0, 0, 0, 0)
-
-
-        policy = QtGui.QSizePolicy()
-        policy.setVerticalPolicy(QtGui.QSizePolicy.MinimumExpanding)
-        self.setSizePolicy(policy)
-        #self.setSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
-        #self.setStyleSheet("background-color: #FFFF00;")
                 
     
     def paintEvent(self, event):
@@ -87,8 +72,6 @@ class ResettableEditor(QtGui.QWidget):
         painter = QtGui.QPainter(self)
         self.style().drawPrimitive(QtGui.QStyle.PE_Widget, opt, painter, self)
         painter.end()
-        
-        
         
     @property
     def mainEditor(self):
@@ -237,9 +220,7 @@ class BaseCti(BaseTreeItem):
         """
         lineEditor = QtGui.QLineEdit()
         lineEditor.setFrame(True)
-        toolButton = QtGui.QToolButton()
-        toolButton.setText("...")
-        editor = ResettableEditor(lineEditor, toolButton, parent=parent) 
+        editor = ResettableEditor(lineEditor, parent=parent) 
         #editor.setText(str(self.data)) # not necessary, it will be done by setEditorValue
         return editor
         
