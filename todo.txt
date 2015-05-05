@@ -65,4 +65,7 @@ USE CASES:
 	Select 3 lines of a wavelength map (at 0 and extreme swath angles), then select another detector.
 	Compare irrads
 
+BUGS:
+	Why doesn't value attribute show in 
+	/Users/titusjan/Data/argos/2015_04_21T01_00_34_LaserSunIsrfStraySts/quicklook_000_minutes-000-020
 	

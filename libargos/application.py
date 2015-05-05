@@ -67,7 +67,7 @@ class ArgosApplication(object):
         
         
     @property
-    def qApplication(self):
+    def qApplication(self): # TODO: QtGui.qApp does the same?
         """ Returns the QApplication object
         """
         return self._qApplication

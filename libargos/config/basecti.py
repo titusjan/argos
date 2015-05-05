@@ -21,8 +21,8 @@
 import logging, os
 from json import JSONEncoder, JSONDecoder, dumps
 
-from libargos.info import DEBUGGING
-from libargos.qt import QtGui
+from libargos.info import DEBUGGING, icons_directory
+from libargos.qt import QtCore, QtGui
 from libargos.qt.treeitems import BaseTreeItem
 from libargos.utils.cls import get_full_class_name, import_symbol
 from libargos.utils.misc import NOT_SPECIFIED
@@ -35,6 +35,68 @@ class InvalidInputError(Exception):
     """ Exception raised when the input is invalid after editing
     """
     pass
+
+
+
+class ResettableEditor(QtGui.QWidget):
+    """ A horizontal collection of widgets, the last of which is a reset button
+    """
+         
+    def __init__(self, *childWidgets, parent=None):
+        """ Wraps the child widget in a new widget with a reset button appended.
+        """
+        assert parent, "parent undefined"
+        super(ResettableEditor, self).__init__(parent=parent)
+        
+        hBoxLayout = QtGui.QHBoxLayout()
+        #hBoxLayout.setSpacing(15)
+        #hBoxLayout.setContentsMargins(15, 0, 15, 0)
+        hBoxLayout.setContentsMargins(0, 0, 0, 0)
+        hBoxLayout.setSpacing(0)
+        self.setLayout(hBoxLayout)
+
+        button = QtGui.QToolButton()
+        button.setText("Reset")
+        button.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'err.warning.svg')))
+        hBoxLayout.addWidget(button)
+    
+        self.childWidgets = childWidgets
+        for childWidget in childWidgets:
+            #childWidget.setSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
+            hBoxLayout.addWidget(childWidget)
+            #childWidget.setStyleSheet("background-color: #ff00ff;")
+            policy = QtGui.QSizePolicy()
+            policy.setVerticalPolicy(QtGui.QSizePolicy.MinimumExpanding)
+            childWidget.setSizePolicy(policy)
+            #childWidget.setContentsMargins(0, 0, 0, 0)
+
+
+        policy = QtGui.QSizePolicy()
+        policy.setVerticalPolicy(QtGui.QSizePolicy.MinimumExpanding)
+        self.setSizePolicy(policy)
+        #self.setSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
+        #self.setStyleSheet("background-color: #FFFF00;")
+                
+    
+    def paintEvent(self, event):
+        """ Reimplementation of paintEvent to allow for style sheets
+            See: http://qt-project.org/wiki/How_to_Change_the_Background_Color_of_QWidget
+        """
+        opt = QtGui.QStyleOption()
+        opt.initFrom(self)
+        painter = QtGui.QPainter(self)
+        self.style().drawPrimitive(QtGui.QStyle.PE_Widget, opt, painter, self)
+        painter.end()
+        
+        
+        
+    @property
+    def mainEditor(self):
+        """ Returns the first child widget 
+        """
+        return self.childWidgets[0]
+
+
 
 class BaseCti(BaseTreeItem):
     """ TreeItem for use in a ConfigTreeModel. (CTI = Config Tree Item)
@@ -173,12 +235,16 @@ class BaseCti(BaseTreeItem):
             :param option: describes the parameters used to draw an item in a view widget.
             :type  option: QStyleOptionViewItem
         """
-        editor = QtGui.QLineEdit(parent)
+        lineEditor = QtGui.QLineEdit()
+        lineEditor.setFrame(True)
+        toolButton = QtGui.QToolButton()
+        toolButton.setText("...")
+        editor = ResettableEditor(lineEditor, toolButton, parent=parent) 
         #editor.setText(str(self.data)) # not necessary, it will be done by setEditorValue
         return editor
         
         
-    def setEditorValue(self, editor, value): # TODO: renamed setEditorValue?
+    def setEditorValue(self, resettableEditor, value): # TODO: renamed setEditorValue?
         """ Provides the editor widget with a data to manipulate.
             
             The data parameter could be replaced by self.data but the caller 
@@ -187,16 +253,16 @@ class BaseCti(BaseTreeItem):
              
             :type editor: QWidget
         """
-        lineEditor = editor
+        lineEditor = resettableEditor.mainEditor
         lineEditor.setText(str(value))
         
         
-    def getEditorValue(self, editor):
+    def getEditorValue(self, resettableEditor):
         """ Gets data from the editor widget.
             
             :type editor: QWidget
         """
-        lineEditor = editor
+        lineEditor = resettableEditor.mainEditor
         return lineEditor.text()
 
 
@@ -235,6 +301,7 @@ class BaseCti(BaseTreeItem):
             Helper function that can be overridden; by default the input is returned.
         """
         return data
+    
     
     def _dataFromJson(self, json):
         """ Converts json dictionary or scalar to an object to use in self.data or defaultData.
