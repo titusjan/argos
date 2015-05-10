@@ -221,7 +221,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
         """ The displayed icon.
          
             Shows open icon when node was visited (children are fetched). This allows users
-            for instance to collapse a directory node but still see that it was visited, whic
+            for instance to collapse a directory node but still see that it was visited, which
             may be useful if there is a huge list of directories.
         """
         if self._exception:
