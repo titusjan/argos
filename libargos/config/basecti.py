@@ -38,14 +38,19 @@ class InvalidInputError(Exception):
 
 
 
-class ResettableEditor(QtGui.QWidget):
-    """ A horizontal collection of widgets, the last of which is a reset button
+class CtiEditor(QtGui.QWidget):
+    """ An editor for use in the ConfigTreeView.
+    
+        It is a horizontal collection of child widgets, the last of which is a reset button.
+        The reset button will reset the config data to its default.
+        
+        The first editor is considered the main editor. This editor will receive the focus.
     """
-         
     def __init__(self, cti, *childWidgets, parent=None):
-        """ Wraps the child widget in a new widget with a reset button appended.
+        """ Wraps the child widgets in a horizontal layout and appends a reset button.
+            Maintains a reference to the ConfigTreeItem (cti)
         """
-        super(ResettableEditor, self).__init__(parent=parent)
+        super(CtiEditor, self).__init__(parent=parent)
 
         assert parent, "parent undefined"
         assert len(childWidgets) >= 1, "You should specify at least one childWidget"
@@ -74,21 +79,10 @@ class ResettableEditor(QtGui.QWidget):
     def finalize(self):
         """ Called at clean up. Can be used to disconnect signals.
         """
-        logger.debug("ResettableEditor.finalize")
+        logger.debug("CtiEditor.finalize")
         self.cti.finalizeEditor()
         self.cti = None # just to make sure it's not used again.
         self.button.clicked.disconnect(self.resetEditorValue)
-    
-    
-    def paintEvent(self, event):
-        """ Reimplementation of paintEvent to allow for style sheets
-            See: http://qt-project.org/wiki/How_to_Change_the_Background_Color_of_QWidget
-        """
-        opt = QtGui.QStyleOption()
-        opt.initFrom(self)
-        painter = QtGui.QPainter(self)
-        self.style().drawPrimitive(QtGui.QStyle.PE_Widget, opt, painter, self)
-        painter.end()
     
         
     @property
@@ -104,6 +98,17 @@ class ResettableEditor(QtGui.QWidget):
         """
         logger.debug("resetEditorValue: {}".format(checked))
         self.cti.setEditorValue(self, self.cti.defaultData)
+    
+    
+    def paintEvent(self, event):
+        """ Reimplementation of paintEvent to allow for style sheets
+            See: http://qt-project.org/wiki/How_to_Change_the_Background_Color_of_QWidget
+        """
+        opt = QtGui.QStyleOption()
+        opt.initFrom(self)
+        painter = QtGui.QPainter(self)
+        self.style().drawPrimitive(QtGui.QStyle.PE_Widget, opt, painter, self)
+        painter.end()
 
 
 
@@ -246,9 +251,9 @@ class BaseCti(BaseTreeItem):
         """
         lineEditor = QtGui.QLineEdit()
         lineEditor.setFrame(True)
-        resettableEditor = ResettableEditor(self, lineEditor, parent=parent) 
+        ctiEditor = CtiEditor(self, lineEditor, parent=parent) 
         #editor.setText(str(self.data)) # not necessary, it will be done by setEditorValue
-        return resettableEditor
+        return ctiEditor
         
     
     def finalizeEditor(self):
@@ -258,7 +263,7 @@ class BaseCti(BaseTreeItem):
         pass
 
         
-    def setEditorValue(self, resettableEditor, value): # TODO: renamed setEditorValue?
+    def setEditorValue(self, ctiEditor, value):
         """ Provides the editor widget with a data to manipulate.
             
             The data parameter could be replaced by self.data but the caller 
@@ -267,16 +272,16 @@ class BaseCti(BaseTreeItem):
              
             :type editor: QWidget
         """
-        lineEditor = resettableEditor.mainEditor
+        lineEditor = ctiEditor.mainEditor
         lineEditor.setText(str(value))
         
         
-    def getEditorValue(self, resettableEditor):
+    def getEditorValue(self, ctiEditor):
         """ Gets data from the editor widget.
             
             :type editor: QWidget
         """
-        lineEditor = resettableEditor.mainEditor
+        lineEditor = ctiEditor.mainEditor
         return lineEditor.text()
 
 

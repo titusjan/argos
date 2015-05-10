@@ -20,11 +20,11 @@
 from __future__ import print_function
 
 import logging
-from libargos.qt import Qt, QtCore, QtGui, QtSlot
+from libargos.qt import QtCore, QtGui, QtSlot
 from libargos.widgets.argostreeview import ArgosTreeView
 from libargos.widgets.constants import RIGHT_DOCK_WIDTH
 from libargos.config.configtreemodel import ConfigTreeModel
-from libargos.config.basecti import InvalidInputError, ResettableEditor
+from libargos.config.basecti import InvalidInputError, CtiEditor
 
 logger = logging.getLogger(__name__)
 
@@ -165,7 +165,7 @@ class ConfigTreeView(ArgosTreeView):
         # 
         # I know checking the object type is bad practice but this allows us to use regular editors
         # without having to wrap them in CtiEdtors. Perhaps in the future this check can be omitted. 
-        if isinstance(editor, ResettableEditor):
+        if isinstance(editor, CtiEditor):
             editor.finalize()
         else:
             logger.debug("Editor not a CtiEditor. No finalized() called.")
