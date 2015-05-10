@@ -279,16 +279,9 @@ class MainWindow(QtGui.QMainWindow):
     def myTest(self):
         """ Function for testing """
         logger.debug("myTest for window: {}".format(self._instanceNr))
+        from libargos.qt import printChildren
+        printChildren(self.configTreeView)
         
-        try:
-            self.__show_error += 1
-        except:
-            self.__show_error = 0
-            
-        if self.__show_error % 2 == 0:            
-            self.attributesPane.drawError(msg="Debug Error")
-        else:
-            self.attributesPane.drawContents()
         
 #        self.argosApplication.raiseAllWindows()
 #        import gc

@@ -22,7 +22,7 @@ import logging, os
 from json import JSONEncoder, JSONDecoder, dumps
 
 from libargos.info import DEBUGGING, icons_directory
-from libargos.qt import Qt, QtGui
+from libargos.qt import Qt, QtGui, QtSlot
 from libargos.qt.treeitems import BaseTreeItem
 from libargos.utils.cls import get_full_class_name, import_symbol
 from libargos.utils.misc import NOT_SPECIFIED
@@ -42,13 +42,15 @@ class ResettableEditor(QtGui.QWidget):
     """ A horizontal collection of widgets, the last of which is a reset button
     """
          
-    def __init__(self, *childWidgets, parent=None):
+    def __init__(self, cti, *childWidgets, parent=None):
         """ Wraps the child widget in a new widget with a reset button appended.
         """
+        super(ResettableEditor, self).__init__(parent=parent)
+
         assert parent, "parent undefined"
         assert len(childWidgets) >= 1, "You should specify at least one childWidget"
-        
-        super(ResettableEditor, self).__init__(parent=parent)
+
+        self.cti = cti
         
         hBoxLayout = QtGui.QHBoxLayout()
         hBoxLayout.setContentsMargins(0, 0, 0, 0)
@@ -59,15 +61,24 @@ class ResettableEditor(QtGui.QWidget):
         for childWidget in childWidgets:
             hBoxLayout.addWidget(childWidget)
 
-        button = QtGui.QToolButton()
-        button.setText("Reset")
-        button.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'err.warning.svg')))
-        button.setFocusPolicy(Qt.NoFocus)
-        hBoxLayout.addWidget(button)
+        self.button = QtGui.QToolButton()
+        self.button.setText("Reset")
+        self.button.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'err.warning.svg')))
+        self.button.setFocusPolicy(Qt.NoFocus)
+        self.button.clicked.connect(self.resetEditorValue)
+        hBoxLayout.addWidget(self.button)
         
         self.setFocusProxy(self.mainEditor)
-
-                
+    
+    
+    def finalize(self):
+        """ Called at clean up. Can be used to disconnect signals.
+        """
+        logger.debug("ResettableEditor.finalize")
+        self.cti.finalizeEditor()
+        self.cti = None # just to make sure it's not used again.
+        self.button.clicked.disconnect(self.resetEditorValue)
+    
     
     def paintEvent(self, event):
         """ Reimplementation of paintEvent to allow for style sheets
@@ -78,12 +89,21 @@ class ResettableEditor(QtGui.QWidget):
         painter = QtGui.QPainter(self)
         self.style().drawPrimitive(QtGui.QStyle.PE_Widget, opt, painter, self)
         painter.end()
+    
         
     @property
     def mainEditor(self):
         """ Returns the first child widget 
         """
         return self.childWidgets[0]
+
+
+    @QtSlot(bool)
+    def resetEditorValue(self, checked=False):
+        """ Resets the main editor to the default value of the config tree item
+        """
+        logger.debug("resetEditorValue: {}".format(checked))
+        self.cti.setEditorValue(self, self.cti.defaultData)
 
 
 
@@ -226,10 +246,17 @@ class BaseCti(BaseTreeItem):
         """
         lineEditor = QtGui.QLineEdit()
         lineEditor.setFrame(True)
-        resettableEditor = ResettableEditor(lineEditor, parent=parent) 
+        resettableEditor = ResettableEditor(self, lineEditor, parent=parent) 
         #editor.setText(str(self.data)) # not necessary, it will be done by setEditorValue
         return resettableEditor
         
+    
+    def finalizeEditor(self):
+        """ Is called when the editor is closed. 
+            Can be used for disconnecting slots and other cleaning
+        """
+        pass
+
         
     def setEditorValue(self, resettableEditor, value): # TODO: renamed setEditorValue?
         """ Provides the editor widget with a data to manipulate.

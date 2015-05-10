@@ -20,11 +20,11 @@
 from __future__ import print_function
 
 import logging
-from libargos.qt import QtCore, QtGui, QtSlot
+from libargos.qt import Qt, QtCore, QtGui, QtSlot
 from libargos.widgets.argostreeview import ArgosTreeView
 from libargos.widgets.constants import RIGHT_DOCK_WIDTH
 from libargos.config.configtreemodel import ConfigTreeModel
-from libargos.config.basecti import InvalidInputError
+from libargos.config.basecti import InvalidInputError, ResettableEditor
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +59,7 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         """ Returns the widget used to change data from the model and can be reimplemented to 
             customize editing behavior.
         """
+        logger.debug("ConfigItemDelegate.createEditor, parent: {!r}".format(parent.objectName()))
         assert index.isValid(), "sanity check failed: invalid index"
         
         cti = index.model().getItem(index)
@@ -87,6 +88,7 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
             :type model: ConfigTreeModel
             :type index: QModelIndex
         """
+        logger.debug("Set model data: editor {}".format(editor))
         cti = model.getItem(index)
         try:
             data = cti.getEditorValue(editor)
@@ -101,9 +103,10 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         """ Ensures that the editor is displayed correctly with respect to the item view.
         """
         editor.setGeometry(option.rect)
-        
+    
+    
     @QtSlot()
-    def commitAndCloseEditor(self, *args, **kwargs):
+    def commitAndCloseEditor(self, *args, **kwargs): # TODO: args?
         """ Calls the signals to commit the data and close the editor
         """
         #logger.debug("commitAndCloseEditor: {} {}".format(args, kwargs))
@@ -124,8 +127,6 @@ class ConfigTreeView(ArgosTreeView):
         self.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
         
         treeHeader = self.header()
-        
-        
         treeHeader.resizeSection(ConfigTreeModel.COL_VALUE, RIGHT_DOCK_WIDTH / 2)
 
         headerNames = self.model().horizontalHeaders
@@ -149,4 +150,26 @@ class ConfigTreeView(ArgosTreeView):
     def sizeHint(self):
         """ The recommended size for the widget."""
         return QtCore.QSize(RIGHT_DOCK_WIDTH, 500)
+        
+    
+    @QtSlot(QtGui.QWidget, QtGui.QAbstractItemDelegate)
+    def closeEditor(self, editor, hint):
+        """ Closes the given editor, and releases it. 
+            Calls finalize on CtiEditors.
+        """
+        # It would be nicer if this method was part of ConfigItemDelegate since createEditor also
+        # lives there. However, QAbstractItemView.closeEditor is sometimes called directly,
+        # without the QAbstractItemDelegate.closeEditor signal begin emited, e.g when the 
+        # currentItem changes. Therefore we cannot connect to the QAbstractItemDelegate.closeEditor
+        # signal to a slot in the ConfigItemDelegate.
+        # 
+        # I know checking the object type is bad practice but this allows us to use regular editors
+        # without having to wrap them in CtiEdtors. Perhaps in the future this check can be omitted. 
+        if isinstance(editor, ResettableEditor):
+            editor.finalize()
+        else:
+            logger.debug("Editor not a CtiEditor. No finalized() called.")
+        
+        super(ConfigTreeView, self).closeEditor(editor, hint)
+
         
