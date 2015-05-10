@@ -61,12 +61,13 @@ def printChildren(obj, indent=""):
         return
     for child in children:
         try:
-            childName = child.name()
+            childName = child.objectName()
         except AttributeError:
             childName = "<no-name>"
             
-        print ("{}{:10s}: {}".format(indent, childName, child.__class__))
-        printChildren(child, indent + "  ")
+        #print ("{}{:10s}: {}".format(indent, childName, child.__class__))
+        print ("{}{!r}: {}".format(indent, childName, child.__class__))
+        printChildren(child, indent + "    ")
 
             
 def printAllWidgets(qApplication, ofType=None):
