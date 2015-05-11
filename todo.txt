@@ -18,6 +18,9 @@ http://mirador.gsfc.nasa.gov/cgi-bin/mirador/granlist.pl?page=1&location=%28-90,
 # US Census
 http://www.census.gov/population/international/data/countryrank/rank.php
 
+# Mapping libs:
+http://pygal.org/chart_types/#idworldmap-charts
+
 
 
 TODO:
