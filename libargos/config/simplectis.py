@@ -186,6 +186,7 @@ class BoolCti(BaseCti):
             :type option: QStyleOptionViewItem        
         """
         checkBox = QtGui.QCheckBox(parent)
+        checkBox.setAutoFillBackground(True)
         checkBox.setFocusPolicy(Qt.StrongFocus) # See QAbstractItemDelegate.createEditor docs
         checkBox.clicked.connect(delegate.commitAndCloseEditor)
         return checkBox
@@ -203,7 +204,7 @@ class BoolCti(BaseCti):
         return checkBox.isChecked()
 
         
-    def paintDisplayValue(self, painter, option, data):
+    def __paintDisplayValue(self, painter, option, data):
         """ Paints a check box on the painter.
         """
         checkBox = QtGui.QStyleOptionButton()
