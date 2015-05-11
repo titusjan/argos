@@ -46,15 +46,18 @@ class CtiEditor(QtGui.QWidget):
         
         The first editor is considered the main editor. This editor will receive the focus.
     """
-    def __init__(self, cti, *childWidgets, parent=None):
+    def __init__(self, cti, delegate, *childWidgets, parent=None):
         """ Wraps the child widgets in a horizontal layout and appends a reset button.
-            Maintains a reference to the ConfigTreeItem (cti)
+            
+            Maintains a reference to the ConfigTreeItem (cti) and to delegate, this last reference
+            is so that we can command the delegate to commit and close the editor.
         """
         super(CtiEditor, self).__init__(parent=parent)
 
         assert parent, "parent undefined"
         assert len(childWidgets) >= 1, "You should specify at least one childWidget"
 
+        self.delegate = delegate
         self.cti = cti
         
         hBoxLayout = QtGui.QHBoxLayout()
@@ -80,7 +83,7 @@ class CtiEditor(QtGui.QWidget):
         """ Called at clean up. Can be used to disconnect signals.
         """
         logger.debug("CtiEditor.finalize")
-        self.cti.finalizeEditor()
+        self.cti.finalizeEditor(self, self.delegate)
         self.cti = None # just to make sure it's not used again.
         self.button.clicked.disconnect(self.resetEditorValue)
     
@@ -90,7 +93,22 @@ class CtiEditor(QtGui.QWidget):
         """ Returns the first child widget 
         """
         return self.childWidgets[0]
-
+    
+    
+    @QtSlot()
+    def commitAndClose(self):
+        """ Commits the data of the main editor and instructs the delegate to close this ctiEditor.
+        
+            The delegate will emit the closeEditor signal which is connected to the closeEditor
+            method of the ConfigTreeView class. This, in turn will, call the finalize method of
+            this object so that signals can be disconnected and resources can be freed. This is
+            complicated but I don't see a simpler solution.
+        """
+        logger.debug("CtiEditor.commitAndClose... committing")
+        self.delegate.commitData.emit(self)
+        logger.debug("CtiEditor.commitAndClose... closing")
+        self.delegate.closeEditor.emit(self, QtGui.QAbstractItemDelegate.NoHint)   # CLOSES SELF!
+        
 
     @QtSlot(bool)
     def resetEditorValue(self, checked=False):
@@ -250,15 +268,14 @@ class BaseCti(BaseTreeItem):
             :type  option: QStyleOptionViewItem
         """
         lineEditor = QtGui.QLineEdit()
-        lineEditor.setFrame(True)
-        ctiEditor = CtiEditor(self, lineEditor, parent=parent) 
+        ctiEditor = CtiEditor(self, delegate, lineEditor, parent=parent) 
         #editor.setText(str(self.data)) # not necessary, it will be done by setEditorValue
         return ctiEditor
         
     
-    def finalizeEditor(self):
+    def finalizeEditor(self, ctiEditor, delegate):
         """ Is called when the editor is closed. 
-            Can be used for disconnecting slots and other cleaning
+            Can be used for disconnecting slots and to free resources.
         """
         pass
 

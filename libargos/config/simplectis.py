@@ -20,7 +20,7 @@
 import logging
 import numpy as np
 
-from .basecti import BaseCti, InvalidInputError
+from .basecti import BaseCti, CtiEditor, InvalidInputError
 from libargos.qt import Qt, QtCore, QtGui, getQApplicationInstance
 from libargos.utils.misc import NOT_SPECIFIED
 
@@ -35,7 +35,6 @@ logger = logging.getLogger(__name__)
 # TODO: Date selector.
 # TODO: Color selector (transparency) 
 # TODO: Font selector?
-# TODO: reset button
 # TODO: None takes data of parent
 
 
@@ -261,20 +260,33 @@ class ChoiceCti(BaseCti):
         """ Creates a QComboBox for editing. 
             :type option: QStyleOptionViewItem
         """
-        comboBox = QtGui.QComboBox(parent)
+        comboBox = QtGui.QComboBox()
         comboBox.addItems(self.choices)
-        return comboBox
+        
+        ctiEditor = CtiEditor(self, delegate, comboBox, parent=parent) 
+
+        comboBox.activated.connect(ctiEditor.commitAndClose)        
+        return ctiEditor
+        
+    
+    def finalizeEditor(self, ctiEditor, delegate):
+        """ Is called when the editor is closed. Disconnect signals.
+        """
+        comboBox = ctiEditor.mainEditor
+        comboBox.activated.disconnect(ctiEditor.commitAndClose)      
         
         
-    def setEditorValue(self, comboBox, index):
+    def setEditorValue(self, ctiEditor, index):
         """ Provides the combo box an data that is the current index.
         """
+        comboBox = ctiEditor.mainEditor
         comboBox.setCurrentIndex(index)        
         
         
-    def getEditorValue(self, comboBox):
+    def getEditorValue(self, ctiEditor):
         """ Gets data from the combo box editor widget.
         """
+        comboBox = ctiEditor.mainEditor
         data = comboBox.currentIndex()
         return data
                 

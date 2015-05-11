@@ -40,6 +40,12 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         QVariant. We then would have to make a new UserType QVariant for (each?) CTI.
         This is cumbersome and possibly unPyQTtonic :-)
     """
+    def __init__(self, parent=None):
+        super(ConfigItemDelegate, self).__init__(parent=parent)
+        
+        self.commitData.connect(self.onCommitData) # just for debugging.
+        
+    
     def paint(self, painter, option, index):
 
         painted = False
@@ -58,6 +64,8 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
     def createEditor(self, parent, option, index):
         """ Returns the widget used to change data from the model and can be reimplemented to 
             customize editing behavior.
+            
+            Reimplemented from QStyledItemDelegate.
         """
         logger.debug("ConfigItemDelegate.createEditor, parent: {!r}".format(parent.objectName()))
         assert index.isValid(), "sanity check failed: invalid index"
@@ -67,12 +75,36 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         return editor
     
 
+    def finalizeEditor(self, editor):
+        """ Calls editor.finalize() if the editor is a CtiEditor, otherwise does nothing.    
+        
+            I know checking the object type is bad practice but this allows us to still use regular 
+            widgets without having to wrap them in CtiEditors. Perhaps in the future we only will 
+            use CtiEditors.
+            
+            Not part of the QAbstractItemView interface but added to be able to free resources.
+            
+            Note that, unlike the other methods of this class, finalizeEditor does not have an
+            index parameter. We cannot derive this since indexForEditor is a private method in Qt.
+            Therefore a CtiEditor maintains a reference to its config tree item and so cti.finalize
+            can be called.
+        """
+        if isinstance(editor, CtiEditor):
+            editor.finalize()
+        else:
+            logger.debug("Editor not a CtiEditor. No finalized() called.")
+
+    # TODO: enforce the use of CtiEditors? In that case the setEditorData and setModelData calls
+    # can call ctiEditor.setData and ctiEditor.getData. This would be consistent with finalizing.
+
     def setEditorData(self, editor, index):
         """ Provides the widget with data to manipulate.
             Calls the setEditorValue of the config tree item at the index. 
         
             :type editor: QWidget
             :type index: QModelIndex
+            
+            Reimplemented from QStyledItemDelegate.
         """
         # We take the config value via the model to be consistent with setModelData
         data = index.model().data(index, QtCore.Qt.EditRole)
@@ -82,13 +114,15 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
 
     def setModelData(self, editor, model, index):
         """ Gets data from the editor widget and stores it in the specified model at the item index.
-            Does this by caling getEditorValue of the config tree item at the index.
+            Does this by calling getEditorValue of the config tree item at the index.
             
             :type editor: QWidget
             :type model: ConfigTreeModel
             :type index: QModelIndex
+            
+            Reimplemented from QStyledItemDelegate.
         """
-        logger.debug("Set model data: editor {}".format(editor))
+        logger.debug("ConfigItemDelegate.setModelData: editor {}".format(editor))
         cti = model.getItem(index)
         try:
             data = cti.getEditorValue(editor)
@@ -103,6 +137,11 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         """ Ensures that the editor is displayed correctly with respect to the item view.
         """
         editor.setGeometry(option.rect)
+    
+    
+    def __onCommitData(self, editor):
+        """ Logs when commitData signal is emitted. For debugging purposes """
+        logger.debug("commitData signal emitted")
     
     
     @QtSlot()
@@ -154,22 +193,16 @@ class ConfigTreeView(ArgosTreeView):
     
     @QtSlot(QtGui.QWidget, QtGui.QAbstractItemDelegate)
     def closeEditor(self, editor, hint):
-        """ Closes the given editor, and releases it. 
-            Calls finalize on CtiEditors.
+        """ Finalizes, closes and releases the given editor. 
         """
         # It would be nicer if this method was part of ConfigItemDelegate since createEditor also
         # lives there. However, QAbstractItemView.closeEditor is sometimes called directly,
-        # without the QAbstractItemDelegate.closeEditor signal begin emited, e.g when the 
+        # without the QAbstractItemDelegate.closeEditor signal begin emitted, e.g when the 
         # currentItem changes. Therefore we cannot connect to the QAbstractItemDelegate.closeEditor
         # signal to a slot in the ConfigItemDelegate.
-        # 
-        # I know checking the object type is bad practice but this allows us to use regular editors
-        # without having to wrap them in CtiEdtors. Perhaps in the future this check can be omitted. 
-        if isinstance(editor, CtiEditor):
-            editor.finalize()
-        else:
-            logger.debug("Editor not a CtiEditor. No finalized() called.")
-        
+
+        configItemDelegate = self.itemDelegate()
+        configItemDelegate.finalizeEditor(editor)
         super(ConfigTreeView, self).closeEditor(editor, hint)
 
         
