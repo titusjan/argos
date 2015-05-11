@@ -116,6 +116,7 @@ class CtiEditor(QtGui.QWidget):
         """
         logger.debug("resetEditorValue: {}".format(checked))
         self.cti.setEditorValue(self, self.cti.defaultData)
+        self.commitAndClose()
     
     
     def paintEvent(self, event):

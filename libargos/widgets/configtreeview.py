@@ -43,7 +43,7 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
     def __init__(self, parent=None):
         super(ConfigItemDelegate, self).__init__(parent=parent)
         
-        self.commitData.connect(self.onCommitData) # just for debugging.
+        self.commitData.connect(self._onCommitData) # just for debugging.
         
     
     def paint(self, painter, option, index):
@@ -139,7 +139,7 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         editor.setGeometry(option.rect)
     
     
-    def __onCommitData(self, editor):
+    def _onCommitData(self, editor):
         """ Logs when commitData signal is emitted. For debugging purposes """
         logger.debug("commitData signal emitted")
     
