@@ -21,7 +21,7 @@ import logging
 
 from json import dumps, loads
 
-from libargos.qt import QtCore, QtSlot
+from libargos.qt import Qt, QtCore, QtSlot
 from libargos.qt.treemodels import BaseTreeModel
 from libargos.config.basecti import BaseCti
 from libargos.info import DEBUGGING
@@ -66,10 +66,10 @@ class ConfigTreeModel(BaseTreeModel):
         if not index.isValid():
             return 0
         
-        result = QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable 
+        result = Qt.ItemIsEnabled | Qt.ItemIsSelectable 
 
         if index.column() == self.COL_VALUE:   
-            result |= QtCore.Qt.ItemIsEditable
+            result |= Qt.ItemIsEditable
             
         return result
         

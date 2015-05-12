@@ -3,7 +3,7 @@ import logging
 
 from .treeitems import BaseTreeItem
 from libargos.info import DEBUGGING
-from libargos.qt import QtCore, QtGui
+from libargos.qt import Qt, QtCore
 
 logger = logging.getLogger(__name__)
     
@@ -83,15 +83,15 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         if not index.isValid():
             return None
 
-        if role == QtCore.Qt.DisplayRole:
+        if role == Qt.DisplayRole:
             item = self.getItem(index, altItem=self.rootItem)
             return self._displayValueForColumn(item, index.column())
 
-        if role == QtCore.Qt.EditRole:
+        if role == Qt.EditRole:
             item = self.getItem(index, altItem=self.rootItem)
             return self._editValueForColumn(item, index.column())
         
-        elif role == QtCore.Qt.DecorationRole:
+        elif role == Qt.DecorationRole:
             if index.column() == self.COL_ICON:
                 item = self.getItem(index, altItem=self.rootItem)
                 return item.icon
@@ -108,17 +108,17 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         if not index.isValid():
             return 0
         else:
-            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+            return Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
 
-    def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
         """ Returns the data for the given role and section in the header with the specified 
             orientation.
             
             For horizontal headers, the section number corresponds to the column number. Similarly, 
             for vertical headers, the section number corresponds to the row number.
         """
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self.horizontalHeaders[section] 
 
         return None
@@ -213,13 +213,13 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         raise NotImplementedError("Abstract class.")    
 
 
-    def setData(self, index, value, role=QtCore.Qt.EditRole):
+    def setData(self, index, value, role=Qt.EditRole):
         """ Sets the role data for the item at index to value.
             Returns true if successful; otherwise returns false.
             
             The dataChanged() signal should be emitted if the data was successfully set.
         """
-        if role != QtCore.Qt.EditRole:
+        if role != Qt.EditRole:
             return False
 
         treeItem = self.getItem(index, altItem=self.rootItem)
@@ -236,7 +236,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
 #                defaultButton = QtGui.QMessageBox.Yes)
 #            
 #            if buttonPressed == QtGui.QMessageBox.Yes:
-#                result = self.setData(index, value, role=QtCore.Qt.EditRole)
+#                result = self.setData(index, value, role=Qt.EditRole)
 #            else:
 #                result = False
             

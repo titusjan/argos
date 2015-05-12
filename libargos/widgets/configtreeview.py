@@ -20,7 +20,7 @@
 from __future__ import print_function
 
 import logging
-from libargos.qt import QtCore, QtGui, QtSlot
+from libargos.qt import Qt, QtCore, QtGui, QtSlot
 from libargos.widgets.argostreeview import ArgosTreeView
 from libargos.widgets.constants import RIGHT_DOCK_WIDTH
 from libargos.config.configtreemodel import ConfigTreeModel
@@ -53,7 +53,7 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         if index.column() == ConfigTreeModel.COL_VALUE:
 
             # We take the value via the model to be consistent with setModelData
-            value = index.model().data(index, QtCore.Qt.EditRole) 
+            value = index.model().data(index, Qt.EditRole) 
             cti = index.model().getItem(index)
             painted = cti.paintDisplayValue(painter, option, value)
         
@@ -107,7 +107,7 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
             Reimplemented from QStyledItemDelegate.
         """
         # We take the config value via the model to be consistent with setModelData
-        data = index.model().data(index, QtCore.Qt.EditRole)
+        data = index.model().data(index, Qt.EditRole)
         cti = index.model().getItem(index)
         cti.setEditorValue(editor, data)
         
@@ -130,7 +130,7 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
             logger.warn(ex)
         else:
             # The value is set via the model so that signals are emitted
-            model.setData(index, data, QtCore.Qt.EditRole)
+            model.setData(index, data, Qt.EditRole)
 
 
     def updateEditorGeometry(self, editor, option, index):
