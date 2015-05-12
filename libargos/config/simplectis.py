@@ -194,7 +194,6 @@ class BoolCti(BaseCti):
             be called. A checkbox is a special case regarding editing.
         """
         return Qt.ItemIsUserCheckable
-        #return Qt.NoItemFlags
     
 
     @property
@@ -206,8 +205,6 @@ class BoolCti(BaseCti):
             return Qt.Checked
         elif self.data is False:
             return Qt.Unchecked
-        elif self.data is None:
-            return Qt.PartiallyChecked
         else:
             raise ValueError("Unexpected data: {!r}".format(self.data))
 
@@ -219,8 +216,6 @@ class BoolCti(BaseCti):
             self.data = True
         elif checkState == Qt.Unchecked:
             self.data = False
-        elif checkState is Qt.PartiallyChecked:
-            self.data = None
         else:
             raise ValueError("Unexpected check state: {!r}".format(checkState))
 
