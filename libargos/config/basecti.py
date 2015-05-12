@@ -255,8 +255,20 @@ class BaseCti(BaseTreeItem):
         """
         return value
     
+   
+    @property
+    def valueColumnItemFlags(self):
+        """ Returns Qt.ItemFlag enum that will be used for the value column in the config tree.
+            These flags determine how the user can interact with the value column (e.g. can edit).
+            
+            Note that the ConfigTreeModel may override them: the current implementation will add
+            the Qt.ItemIsEnabled and Qt.ItemIsSelectable to the flags. 
+        """
+        return Qt.ItemIsEditable 
 
     #### The following methods are called by the ConfigItemDelegate class ####
+    
+    
     
     def createEditor(self, delegate, parent, option):
         """ Creates an editor (QWidget) for editing. 

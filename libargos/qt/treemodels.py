@@ -61,17 +61,28 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
 
 
     def _displayValueForColumn(self, treeItem, column):
-        """ Descendants should override this function to return the value of the item 
+        """ Descendants should override this function to return the display value of the item 
             for the given column number.
         """
         raise NotImplementedError("Abstract class.")
 
 
     def _editValueForColumn(self, treeItem, column):
-        """ Descendants should override this function to return the value of the item 
+        """ Descendants should override this function to return the edit value of the item 
             for the given column number.
         """
         raise NotImplementedError("Abstract class.")
+
+
+    def _checkStateForColumn(self, treeItem, column):
+        """ Descendants should override this function to return the check state of the item 
+            for the given column number.
+             
+            :rtype: Qt.CheckState or None
+        """
+        # The CheckStateRole seems to be called for each cell so we can't make this an abstract
+        # function like the _editValueForColumn. Just return None.  
+        return None
     
         
     def data(self, index, role):
@@ -87,9 +98,13 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             item = self.getItem(index, altItem=self.rootItem)
             return self._displayValueForColumn(item, index.column())
 
-        if role == Qt.EditRole:
+        elif role == Qt.EditRole:
             item = self.getItem(index, altItem=self.rootItem)
             return self._editValueForColumn(item, index.column())
+        
+        elif role == Qt.CheckStateRole:
+            item = self.getItem(index, altItem=self.rootItem)
+            return self._checkStateForColumn(item, index.column())
         
         elif role == Qt.DecorationRole:
             if index.column() == self.COL_ICON:
@@ -204,9 +219,16 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         return parentItem.hasChildren()
         
 
-
     def _setEditValueForColumn(self, treeItem, column, value):
         """ Descendants should override this function to set the value corresponding
+            to the column number in treeItem.
+            It should return True for success, otherwise False.
+        """
+        raise NotImplementedError("Abstract class.")    
+        
+
+    def _setCheckStateForColumn(self, treeItem, column, checkState):
+        """ Descendants should override this function to set the check state corresponding
             to the column number in treeItem.
             It should return True for success, otherwise False.
         """
@@ -219,12 +241,16 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             
             The dataChanged() signal should be emitted if the data was successfully set.
         """
-        if role != Qt.EditRole:
+        if role != Qt.CheckStateRole and role != Qt.EditRole:
             return False
 
         treeItem = self.getItem(index, altItem=self.rootItem)
         try:
-            result = self._setEditValueForColumn(treeItem, index.column(), value)
+            if role == Qt.CheckStateRole:
+                result = self._setCheckStateForColumn(treeItem, index.column(), value)
+            else:
+                result = self._setEditValueForColumn(treeItem, index.column(), value)
+                
         except Exception as ex:
             logger.warn("Unable to set data: {}".format(ex))
             if DEBUGGING:

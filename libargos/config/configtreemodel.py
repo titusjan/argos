@@ -66,10 +66,11 @@ class ConfigTreeModel(BaseTreeModel):
         if not index.isValid():
             return 0
         
-        result = Qt.ItemIsEnabled | Qt.ItemIsSelectable 
+        result = Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
-        if index.column() == self.COL_VALUE:   
-            result |= Qt.ItemIsEditable
+        if index.column() == self.COL_VALUE: 
+            cti = self.getItem(index)  
+            result |= cti.valueColumnItemFlags
             
         return result
         
@@ -118,6 +119,46 @@ class ConfigTreeModel(BaseTreeModel):
         else:
             return True
         
+
+    def _checkStateForColumn(self, treeItem, column):
+        """ Returns the check state of the item given the column number.
+            for the given column number.
+            :rtype: Qt.CheckState or None
+        """
+        if column != self.COL_VALUE:
+            # The CheckStateRole seems to be called for each cell so return None here.              
+            return None
+        else:
+            if treeItem.data is True:
+                return Qt.Checked
+            elif treeItem.data is False:
+                return Qt.Unchecked
+            elif treeItem.data is None:
+                return Qt.PartiallyChecked
+            else:
+                return None
+            
+            
+    def _setCheckStateForColumn(self, treeItem, column, checkState):
+        """ Sets the check state in the item, of the item given the column number.
+            It returns True for success, otherwise False.
+        """
+        if column == self.COL_VALUE:
+            logger.debug("_setCheckStateForColumn: {!r}".format(checkState))
+            if checkState == Qt.Checked:
+                treeItem.data = True
+                return True
+            elif checkState == Qt.Unchecked:
+                treeItem.data = False
+                return True
+            elif checkState is Qt.PartiallyChecked:
+                treeItem.data = None
+                return True
+            else:
+                raise ValueError("Unexpected check state: {!r}".format(checkState))
+        else:
+            return False
+
         
     def readModelSettings(self, key, settings):
         """ Reads the persistent program settings.

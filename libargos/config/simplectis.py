@@ -180,7 +180,22 @@ class BoolCti(BaseCti):
         """
         return bool(data)
         
+        
+    @property
+    def displayValue(self):
+        """ Returns empty string since a checkbox will displayed in the value column instead.  
+        """
+        return ""
+   
+    @property
+    def valueColumnItemFlags(self):
+        """ Returns Qt.ItemIsUserCheckable so that a check box will be drawn in the config tree.
+            Note that the flags don't include Qt.ItemIsEditable to that createEditor will never
+            be called. A checkbox is a special case regarding editing.
+        """
+        return Qt.ItemIsUserCheckable
 
+    
     def createEditor(self, delegate, parent, _option):
         """ Creates a QCheckBox for editing. 
             :type option: QStyleOptionViewItem        
