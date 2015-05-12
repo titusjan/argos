@@ -194,6 +194,35 @@ class BoolCti(BaseCti):
             be called. A checkbox is a special case regarding editing.
         """
         return Qt.ItemIsUserCheckable
+        #return Qt.NoItemFlags
+    
+
+    @property
+    def checkState(self):
+        """ Returns how the checkbox for this cti should look like. Returns None for no checkbox. 
+            :rtype: QtCheckState or None 
+        """
+        if self.data is True:
+            return Qt.Checked
+        elif self.data is False:
+            return Qt.Unchecked
+        elif self.data is None:
+            return Qt.PartiallyChecked
+        else:
+            raise ValueError("Unexpected data: {!r}".format(self.data))
+
+    @checkState.setter
+    def checkState(self, checkState):
+        """ Allows the data to be set given a Qt.CheckState.
+        """
+        if checkState == Qt.Checked:
+            self.data = True
+        elif checkState == Qt.Unchecked:
+            self.data = False
+        elif checkState is Qt.PartiallyChecked:
+            self.data = None
+        else:
+            raise ValueError("Unexpected check state: {!r}".format(checkState))
 
     
     def createEditor(self, delegate, parent, _option):

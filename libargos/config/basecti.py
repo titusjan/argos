@@ -257,6 +257,21 @@ class BaseCti(BaseTreeItem):
     
    
     @property
+    def checkState(self):
+        """ Returns how the checkbox for this cti should look like. Returns None for no checkbox. 
+            :rtype: Qt.CheckState or None 
+        """
+        return None
+
+    @checkState.setter
+    def checkState(self, checkState):
+        """ Allows the data to be set given a Qt.CheckState.
+            Is an abstract method. Can be overridden.
+        """
+        raise NotImplementedError()
+
+   
+    @property
     def valueColumnItemFlags(self):
         """ Returns Qt.ItemFlag enum that will be used for the value column in the config tree.
             These flags determine how the user can interact with the value column (e.g. can edit).

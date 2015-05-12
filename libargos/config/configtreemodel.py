@@ -126,38 +126,26 @@ class ConfigTreeModel(BaseTreeModel):
             :rtype: Qt.CheckState or None
         """
         if column != self.COL_VALUE:
-            # The CheckStateRole seems to be called for each cell so return None here.              
+            # The CheckStateRole is called for each cell so return None here.              
             return None
         else:
-            if treeItem.data is True:
-                return Qt.Checked
-            elif treeItem.data is False:
-                return Qt.Unchecked
-            elif treeItem.data is None:
-                return Qt.PartiallyChecked
-            else:
-                return None
+            return treeItem.checkState
             
             
     def _setCheckStateForColumn(self, treeItem, column, checkState):
         """ Sets the check state in the item, of the item given the column number.
             It returns True for success, otherwise False.
         """
-        if column == self.COL_VALUE:
-            logger.debug("_setCheckStateForColumn: {!r}".format(checkState))
-            if checkState == Qt.Checked:
-                treeItem.data = True
-                return True
-            elif checkState == Qt.Unchecked:
-                treeItem.data = False
-                return True
-            elif checkState is Qt.PartiallyChecked:
-                treeItem.data = None
-                return True
-            else:
-                raise ValueError("Unexpected check state: {!r}".format(checkState))
-        else:
+        if column != self.COL_VALUE:
             return False
+        else:
+            logger.debug("_setCheckStateForColumn: {!r}".format(checkState))
+            try:
+                treeItem.checkState = checkState
+            except NotImplementedError:
+                return False
+            else:
+                return True
 
         
     def readModelSettings(self, key, settings):
