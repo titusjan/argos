@@ -26,10 +26,11 @@ from __future__ import division
 import logging
 
 from .aboutdialog import AboutDialog
-from .repotreeview import RepoTreeView
+
 from libargos.config.configtreeview import ConfigTreeView
 from libargos.config.configtreemodel import ConfigTreeModel
 from libargos.repo.detailplugins.attr import AttributesPane 
+from libargos.repo.repotreeview import RepoTreeView
 from libargos.inspector.base import BaseInspector
 from libargos.info import DEBUGGING, PROJECT_NAME
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
