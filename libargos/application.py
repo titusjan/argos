@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 class ArgosApplication(object):
-    """ The application singleton which holds global stat
+    """ The application singleton which holds global state.
     """
     def __init__(self):
         """ Constructor
@@ -40,6 +40,7 @@ class ArgosApplication(object):
         # Call getQApplicationInstance() so that the users can call libargos.browse without 
         # having to call it themselves.
         self._qApplication = getQApplicationInstance()
+        #self.qApplication.focusChanged.connect(self.focusChanged) # for debugging
         
         self._repo = RepoTreeModel()
         self._rtiRegistry = globalRtiRegistry()
@@ -92,6 +93,10 @@ class ArgosApplication(object):
         """
         return self._profile
     
+    def focusChanged(self, old, now):
+        """ Is called when the focues changes. Usefull for debugging
+        """
+        logger.debug("Focus changed from {} to {}".format(old, now))
         
     @property
     def mainWindows(self):
