@@ -22,7 +22,7 @@ import logging, os
 from json import JSONEncoder, JSONDecoder, dumps
 
 from libargos.info import DEBUGGING, icons_directory
-from libargos.qt import Qt, QtGui, QtSlot
+from libargos.qt import Qt, QtCore, QtGui, QtSlot
 from libargos.qt.treeitems import BaseTreeItem
 from libargos.utils.cls import get_full_class_name, import_symbol
 from libargos.utils.misc import NOT_SPECIFIED
@@ -69,24 +69,64 @@ class CtiEditor(QtGui.QWidget):
         for childWidget in childWidgets:
             hBoxLayout.addWidget(childWidget)
 
-        self.button = QtGui.QToolButton()
+        self.button = QtGui.QToolButton() # TODO: rename to resetButton
         self.button.setText("Reset")
         self.button.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'err.warning.svg')))
         self.button.setFocusPolicy(Qt.NoFocus)
         self.button.clicked.connect(self.resetEditorValue)
         hBoxLayout.addWidget(self.button)
         
+        # From the QAbstractItemDelegate.createEditor docs: The returned editor widget should have 
+        # Qt.StrongFocus; otherwise, QMouseEvents received by the widget will propagate to the view. 
+        # The view's background will shine through unless the editor paints its own background 
+        # (e.g., with setAutoFillBackground()).
+        #self.setFocusPolicy(Qt.NoFocus)
+        self.setFocusPolicy(Qt.StrongFocus)
         self.setFocusProxy(self.mainEditor)
-    
+        self.mainEditor.setFocusPolicy(Qt.NoFocus)
+        
+        self.mainEditor.installEventFilter(self)
+        
+
+    def eventFilter(self, watchedObject, event):
+        """ Calls commitAndClose when the tab and back-tab are pressed.
+            This is necessary because, normally the event filter of QStyledItemDelegate does this
+            for us. However, that event filter works on this object, not on the main editor.
+        """
+        if event.type() == QtCore.QEvent.KeyPress:
+            key = event.key()
+            if key in (Qt.Key_Tab, Qt.Key_Backtab):
+                self.commitAndClose()
+                return True
+            else:
+                return False
+
+        return super(CtiEditor, self).eventFilter(watchedObject, event) 
+            
+        
+#    def event(self, event):
+#        #if not isinstance(event, QtGui.QPaintEvent):
+#        if isinstance(event, (QtGui.QFocusEvent)):
+#            logger.debug("CtiEditor.event: {!r} (type={})".format(event, event.type()))
+#        return super(CtiEditor, self).event(event)
+#    
+#        
+#    def keyPressEvent(self, event):
+#        #if not isinstance(event, QtGui.QPaintEvent):
+#        if isinstance(event, (QtGui.QKeyEvent, QtGui.QFocusEvent)):
+#            logger.debug("CtiEditor.keyEvent: {!r} (type={}), (key={})".format(event, event.type(), event.key()))
+#        return super(CtiEditor, self).keyPressEvent(event)
+
     
     def finalize(self):
         """ Called at clean up. Can be used to disconnect signals.
         """
         logger.debug("CtiEditor.finalize")
+        self.mainEditor.removeEventFilter(self)
         self.cti.finalizeEditor(self, self.delegate)
         self.cti = None # just to make sure it's not used again.
         self.button.clicked.disconnect(self.resetEditorValue)
-    
+
         
     @property
     def mainEditor(self):

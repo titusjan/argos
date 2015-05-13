@@ -280,8 +280,7 @@ class MainWindow(QtGui.QMainWindow):
         """ Function for testing """
         logger.debug("myTest for window: {}".format(self._instanceNr))
         from libargos.qt import printChildren
-        printChildren(self.configTreeView)
-        
+        printChildren(self)
         
 #        self.argosApplication.raiseAllWindows()
 #        import gc
