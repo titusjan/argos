@@ -38,7 +38,7 @@ class InvalidInputError(Exception):
 
 
 
-class CtiEditor(QtGui.QWidget):
+class BaseCtiEditor(QtGui.QWidget):
     """ An editor for use in the ConfigTreeView.
     
         It is a horizontal collection of child widgets, the last of which is a reset button.
@@ -46,16 +46,16 @@ class CtiEditor(QtGui.QWidget):
         
         The first editor is considered the main editor. This editor will receive the focus.
     """
-    def __init__(self, cti, delegate, *childWidgets, parent=None):
+    def __init__(self, cti, delegate, subEditors, parent=None):
         """ Wraps the child widgets in a horizontal layout and appends a reset button.
             
             Maintains a reference to the ConfigTreeItem (cti) and to delegate, this last reference
             is so that we can command the delegate to commit and close the editor.
         """
-        super(CtiEditor, self).__init__(parent=parent)
+        super(BaseCtiEditor, self).__init__(parent=parent)
 
         assert parent, "parent undefined"
-        assert len(childWidgets) >= 1, "You should specify at least one childWidget"
+        assert len(subEditors) >= 1, "You should specify at least one childWidget"
 
         self.delegate = delegate
         self.cti = cti
@@ -65,11 +65,11 @@ class CtiEditor(QtGui.QWidget):
         hBoxLayout.setSpacing(0)
         self.setLayout(hBoxLayout)
 
-        self.childWidgets = childWidgets
-        for childWidget in childWidgets:
-            hBoxLayout.addWidget(childWidget)
+        self.subEditors = subEditors
+        for subEditor in subEditors:
+            hBoxLayout.addWidget(subEditor)
 
-        self.resetButton = QtGui.QToolButton() # TODO: rename to resetButton
+        self.resetButton = QtGui.QToolButton()
         self.resetButton.setText("Reset")
         self.resetButton.setToolTip("Reset to default value.")
         self.resetButton.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'err.warning.svg')))
@@ -101,24 +101,38 @@ class CtiEditor(QtGui.QWidget):
             else:
                 return False
 
-        return super(CtiEditor, self).eventFilter(watchedObject, event) 
+        return super(BaseCtiEditor, self).eventFilter(watchedObject, event) 
             
 
     def finalize(self):
         """ Called at clean up. Can be used to disconnect signals.
         """
-        logger.debug("CtiEditor.finalize")
+        logger.debug("BaseCtiEditor.finalize")
         self.mainEditor.removeEventFilter(self)
-        self.cti.finalizeEditor(self, self.delegate)
-        self.cti = None # just to make sure it's not used again.
         self.resetButton.clicked.disconnect(self.resetEditorValue)
+        self.cti = None # just to make sure it's not used again.
+        self.delegate = None
 
+        
+    def setData(self, value): # TODO abstract.
+        """ Provides the main editor widget with a data to manipulate.
+        """
+        lineEditor = self.mainEditor
+        lineEditor.setText(str(value))
+        
+        
+    def getData(self): # TODO: rename get data?
+        """ Gets data from the editor widget.
+        """
+        lineEditor = self.mainEditor 
+        return lineEditor.text()
+    
         
     @property
     def mainEditor(self):
         """ Returns the first child widget 
         """
-        return self.childWidgets[0]
+        return self.subEditors[0]
     
     
     @QtSlot()
@@ -130,9 +144,7 @@ class CtiEditor(QtGui.QWidget):
             this object so that signals can be disconnected and resources can be freed. This is
             complicated but I don't see a simpler solution.
         """
-        logger.debug("CtiEditor.commitAndClose... committing")
         self.delegate.commitData.emit(self)
-        logger.debug("CtiEditor.commitAndClose... closing")
         self.delegate.closeEditor.emit(self, QtGui.QAbstractItemDelegate.NoHint)   # CLOSES SELF!
         
 
@@ -141,7 +153,7 @@ class CtiEditor(QtGui.QWidget):
         """ Resets the main editor to the default value of the config tree item
         """
         logger.debug("resetEditorValue: {}".format(checked))
-        self.cti.setEditorValue(self, self.cti.defaultData)
+        self.setData(self.cti.defaultData)
         self.commitAndClose()
     
     
@@ -155,6 +167,9 @@ class CtiEditor(QtGui.QWidget):
         self.style().drawPrimitive(QtGui.QStyle.PE_Widget, opt, painter, self)
         painter.end()
 
+        
+
+    
 
 
 class BaseCti(BaseTreeItem):
@@ -187,11 +202,7 @@ class BaseCti(BaseTreeItem):
         value himself.
         
         Each CTI can be edited. The createEditor must be overridden so that it creates the
-        desired editor (a QWidget) when the user starts editing. The setEditorValue sets the
-        editor widget's value from the CTI data. The getEditorData does the inverse when the user
-        has finished editing. These methods are all called by the ConfigItemDelegate class. You
-        can read more about delegates in the model/view programming page of the QT documentation: 
-        http://doc.qt.io/qt-4.8/model-view-programming.html
+        desired editor (a descendant of BaseCtiEditor) when the user starts editing.
     """
     def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=None):
         """ Constructor
@@ -322,47 +333,9 @@ class BaseCti(BaseTreeItem):
             :type  option: QStyleOptionViewItem
         """
         lineEditor = QtGui.QLineEdit()
-        ctiEditor = CtiEditor(self, delegate, lineEditor, parent=parent) 
+        ctiEditor = BaseCtiEditor(self, delegate, [lineEditor], parent=parent) 
         #editor.setText(str(self.data)) # not necessary, it will be done by setEditorValue
         return ctiEditor
-        
-    
-    def finalizeEditor(self, ctiEditor, delegate):
-        """ Is called when the editor is closed. 
-            Can be used for disconnecting slots and to free resources.
-        """
-        pass
-
-        
-    def setEditorValue(self, ctiEditor, value):
-        """ Provides the editor widget with a data to manipulate.
-            
-            The data parameter could be replaced by self.data but the caller 
-            (ConfigItemelegate.getModelData) retrieves it via the model to be consistent 
-            with setModelData.
-             
-            :type editor: QWidget
-        """
-        lineEditor = ctiEditor.mainEditor
-        lineEditor.setText(str(value))
-        
-        
-    def getEditorValue(self, ctiEditor):
-        """ Gets data from the editor widget.
-            
-            :type editor: QWidget
-        """
-        lineEditor = ctiEditor.mainEditor
-        return lineEditor.text()
-
-
-    def paintDisplayValue(self, painter, option, value):
-        """ Can be overridden to paint a widget in display mode.
-            Should return True, otherwise the displayValue property is written in the cell.
-            The default implementation returns False.
-        """
-        return False
-    
     
     #### The following methods are for (de)serialization ####
     

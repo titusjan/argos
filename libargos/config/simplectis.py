@@ -20,7 +20,7 @@
 import logging
 import numpy as np
 
-from .basecti import BaseCti, CtiEditor, InvalidInputError
+from .basecti import BaseCti, BaseCtiEditor, InvalidInputError
 from libargos.qt import Qt, QtCore, QtGui, getQApplicationInstance
 from libargos.utils.misc import NOT_SPECIFIED
 
@@ -225,7 +225,7 @@ class BoolCti(BaseCti):
         """
         widget = QtGui.QWidget() # Add hidden widget to store editor value
         widget.hide()
-        ctiEditor = CtiEditor(self, delegate, widget, parent=parent) 
+        ctiEditor = BaseCtiEditor(self, delegate, widget, parent=parent) 
         #editor.setText(str(self.data)) # not necessary, it will be done by setEditorValue
         return ctiEditor
 
@@ -302,7 +302,7 @@ class ChoiceCti(BaseCti):
         comboBox = QtGui.QComboBox()
         comboBox.addItems(self.choices)
         
-        ctiEditor = CtiEditor(self, delegate, comboBox, parent=parent) 
+        ctiEditor = BaseCtiEditor(self, delegate, comboBox, parent=parent) 
 
         comboBox.activated.connect(ctiEditor.commitAndClose)        
         return ctiEditor

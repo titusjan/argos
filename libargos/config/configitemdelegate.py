@@ -21,7 +21,7 @@ from __future__ import print_function
 import logging
 from libargos.qt import Qt,  QtGui, QtSlot, widgetSubCheckBoxRect
 from libargos.config.configtreemodel import ConfigTreeModel
-from libargos.config.basecti import InvalidInputError, CtiEditor
+from libargos.config.basecti import InvalidInputError, BaseCtiEditor
 
 logger = logging.getLogger(__name__)
 
@@ -43,19 +43,19 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         self.commitData.connect(self._onCommitData) # just for debugging.
         
     
-    def paint(self, painter, option, index):
-
-        painted = False
-                
-        if index.column() == ConfigTreeModel.COL_VALUE:
-
-            # We take the value via the model to be consistent with setModelData
-            value = index.model().data(index, Qt.EditRole) 
-            cti = index.model().getItem(index)
-            painted = cti.paintDisplayValue(painter, option, value)
-        
-        if not painted:
-            super(ConfigItemDelegate, self).paint(painter, option, index)
+#    def paint(self, painter, option, index):
+#
+#        painted = False
+#                
+#        if index.column() == ConfigTreeModel.COL_VALUE:
+#
+#            # We take the value via the model to be consistent with setModelData
+#            value = index.model().data(index, Qt.EditRole) 
+#            cti = index.model().getItem(index)
+#            painted = cti.paintDisplayValue(painter, option, value)
+#        
+#        if not painted:
+#            super(ConfigItemDelegate, self).paint(painter, option, index)
         
     
     def createEditor(self, parent, option, index):
@@ -73,23 +73,15 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
     
 
     def finalizeEditor(self, editor):
-        """ Calls editor.finalize() if the editor is a CtiEditor, otherwise does nothing.    
-        
-            I know checking the object type is bad practice but this allows us to still use regular 
-            widgets without having to wrap them in CtiEditors. Perhaps in the future we only will 
-            use CtiEditors.
+        """ Calls editor.finalize().    
             
             Not part of the QAbstractItemView interface but added to be able to free resources.
             
             Note that, unlike the other methods of this class, finalizeEditor does not have an
             index parameter. We cannot derive this since indexForEditor is a private method in Qt.
-            Therefore a CtiEditor maintains a reference to its config tree item and so cti.finalize
-            can be called.
+            Therefore a BaseCtiEditor maintains a reference to its config tree item (cti).
         """
-        if isinstance(editor, CtiEditor):
-            editor.finalize()
-        else:
-            logger.debug("Editor not a CtiEditor. No finalized() called.")
+        editor.finalize()
 
     # TODO: enforce the use of CtiEditors? In that case the setEditorData and setModelData calls
     # can call ctiEditor.setData and ctiEditor.getData. This would be consistent with finalizing.
@@ -105,8 +97,7 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         """
         # We take the config value via the model to be consistent with setModelData
         data = index.model().data(index, Qt.EditRole)
-        cti = index.model().getItem(index)
-        cti.setEditorValue(editor, data)
+        editor.setData(data)
         
 
     def setModelData(self, editor, model, index):
@@ -120,14 +111,9 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
             Reimplemented from QStyledItemDelegate.
         """
         logger.debug("ConfigItemDelegate.setModelData: editor {}".format(editor))
-        cti = model.getItem(index)
-        try:
-            data = cti.getEditorValue(editor)
-        except InvalidInputError as ex:
-            logger.warn(ex)
-        else:
-            # The value is set via the model so that signals are emitted
-            model.setData(index, data, Qt.EditRole)
+        
+        # The value is set via the model so that signals are emitted
+        model.setData(index, editor.getData(), Qt.EditRole)
 
 
     def updateEditorGeometry(self, editor, option, index):
