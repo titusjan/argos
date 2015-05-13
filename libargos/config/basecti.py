@@ -75,7 +75,7 @@ class CtiEditor(QtGui.QWidget):
         self.resetButton.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'err.warning.svg')))
         self.resetButton.setFocusPolicy(Qt.NoFocus)
         self.resetButton.clicked.connect(self.resetEditorValue)
-        hBoxLayout.addWidget(self.resetButton)
+        hBoxLayout.addWidget(self.resetButton, alignment=Qt.AlignRight)
         
         # From the QAbstractItemDelegate.createEditor docs: The returned editor widget should have 
         # Qt.StrongFocus; otherwise, QMouseEvents received by the widget will propagate to the view. 

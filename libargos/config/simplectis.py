@@ -190,8 +190,7 @@ class BoolCti(BaseCti):
     @property
     def valueColumnItemFlags(self):
         """ Returns Qt.ItemIsUserCheckable so that a check box will be drawn in the config tree.
-            Note that the flags don't include Qt.ItemIsEditable to that createEditor will never
-            be called. A checkbox is a special case regarding editing.
+            Note that the flags include Qt.ItemIsEditable; then a reset button will appear.
         """
         return Qt.ItemIsUserCheckable | Qt.ItemIsEditable
     
@@ -224,8 +223,9 @@ class BoolCti(BaseCti):
         """ Creates a QCheckBox for editing. 
             :type option: QStyleOptionViewItem        
         """
-        label = QtGui.QLabel("my label")
-        ctiEditor = CtiEditor(self, delegate, label, parent=parent) 
+        widget = QtGui.QWidget() # Add empty widget to store editor value
+        widget.hide()
+        ctiEditor = CtiEditor(self, delegate, widget, parent=parent) 
         #editor.setText(str(self.data)) # not necessary, it will be done by setEditorValue
         return ctiEditor
 
