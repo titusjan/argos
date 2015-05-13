@@ -242,7 +242,7 @@ class BoolCti(BaseCti):
         return widget.property("editor_data")
 
         
-    def paintDisplayValue(self, painter, option, data):
+    def __paintDisplayValue(self, painter, option, data):
         """ Paints a check box on the painter.
         """
         checkBox = QtGui.QStyleOptionButton()
