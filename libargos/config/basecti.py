@@ -69,21 +69,21 @@ class CtiEditor(QtGui.QWidget):
         for childWidget in childWidgets:
             hBoxLayout.addWidget(childWidget)
 
-        self.button = QtGui.QToolButton() # TODO: rename to resetButton
-        self.button.setText("Reset")
-        self.button.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'err.warning.svg')))
-        self.button.setFocusPolicy(Qt.NoFocus)
-        self.button.clicked.connect(self.resetEditorValue)
-        hBoxLayout.addWidget(self.button)
+        self.resetButton = QtGui.QToolButton() # TODO: rename to resetButton
+        self.resetButton.setText("Reset")
+        self.resetButton.setToolTip("Reset to default value.")
+        self.resetButton.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'err.warning.svg')))
+        self.resetButton.setFocusPolicy(Qt.NoFocus)
+        self.resetButton.clicked.connect(self.resetEditorValue)
+        hBoxLayout.addWidget(self.resetButton)
         
         # From the QAbstractItemDelegate.createEditor docs: The returned editor widget should have 
         # Qt.StrongFocus; otherwise, QMouseEvents received by the widget will propagate to the view. 
         # The view's background will shine through unless the editor paints its own background 
         # (e.g., with setAutoFillBackground()).
-        #self.setFocusPolicy(Qt.NoFocus)
         self.setFocusPolicy(Qt.StrongFocus)
         self.setFocusProxy(self.mainEditor)
-        self.mainEditor.setFocusPolicy(Qt.NoFocus)
+        self.mainEditor.setFocusPolicy(Qt.StrongFocus)
         
         self.mainEditor.installEventFilter(self)
         
@@ -103,21 +103,7 @@ class CtiEditor(QtGui.QWidget):
 
         return super(CtiEditor, self).eventFilter(watchedObject, event) 
             
-        
-#    def event(self, event):
-#        #if not isinstance(event, QtGui.QPaintEvent):
-#        if isinstance(event, (QtGui.QFocusEvent)):
-#            logger.debug("CtiEditor.event: {!r} (type={})".format(event, event.type()))
-#        return super(CtiEditor, self).event(event)
-#    
-#        
-#    def keyPressEvent(self, event):
-#        #if not isinstance(event, QtGui.QPaintEvent):
-#        if isinstance(event, (QtGui.QKeyEvent, QtGui.QFocusEvent)):
-#            logger.debug("CtiEditor.keyEvent: {!r} (type={}), (key={})".format(event, event.type(), event.key()))
-#        return super(CtiEditor, self).keyPressEvent(event)
 
-    
     def finalize(self):
         """ Called at clean up. Can be used to disconnect signals.
         """
@@ -125,7 +111,7 @@ class CtiEditor(QtGui.QWidget):
         self.mainEditor.removeEventFilter(self)
         self.cti.finalizeEditor(self, self.delegate)
         self.cti = None # just to make sure it's not used again.
-        self.button.clicked.disconnect(self.resetEditorValue)
+        self.resetButton.clicked.disconnect(self.resetEditorValue)
 
         
     @property
