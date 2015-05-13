@@ -116,3 +116,16 @@ def handleException(exc_type, exc_value, exc_traceback):
                 
 # Must be after application instance has been instantiated
 sys.excepthook = handleException
+
+##########################
+# Miscellaneous routines #
+##########################
+
+def widgetSubCheckBoxRect(widget, option):
+    """ Returns the rectangle of a check box drawn as a sub element of widget
+    """
+    opt = QtGui.QStyleOption()
+    opt.initFrom(widget)
+    style = widget.style()
+    return style.subElementRect(QtGui.QStyle.SE_ViewItemCheckIndicator, opt, widget)
+

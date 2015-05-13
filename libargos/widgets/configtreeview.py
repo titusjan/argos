@@ -20,7 +20,7 @@
 from __future__ import print_function
 
 import logging
-from libargos.qt import Qt, QtCore, QtGui, QtSlot
+from libargos.qt import Qt, QtCore, QtGui, QtSlot, widgetSubCheckBoxRect
 from libargos.widgets.argostreeview import ArgosTreeView
 from libargos.widgets.constants import RIGHT_DOCK_WIDTH
 from libargos.config.configtreemodel import ConfigTreeModel
@@ -136,7 +136,16 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
     def updateEditorGeometry(self, editor, option, index):
         """ Ensures that the editor is displayed correctly with respect to the item view.
         """
-        editor.setGeometry(option.rect)
+        cti = index.model().getItem(index)
+        if cti.checkState is None:
+            displayRect = option.rect
+        else:
+            checkBoxRect = widgetSubCheckBoxRect(editor, option)
+            offset = checkBoxRect.x() + checkBoxRect.width()
+            displayRect = option.rect
+            displayRect.adjust(offset, 0, 0, 0)
+
+        editor.setGeometry(displayRect)
     
     
     def _onCommitData(self, editor):

@@ -193,7 +193,7 @@ class BoolCti(BaseCti):
             Note that the flags don't include Qt.ItemIsEditable to that createEditor will never
             be called. A checkbox is a special case regarding editing.
         """
-        return Qt.ItemIsUserCheckable
+        return Qt.ItemIsUserCheckable | Qt.ItemIsEditable
     
 
     @property
@@ -224,26 +224,25 @@ class BoolCti(BaseCti):
         """ Creates a QCheckBox for editing. 
             :type option: QStyleOptionViewItem        
         """
-        checkBox = QtGui.QCheckBox(parent)
-        checkBox.setAutoFillBackground(True)
-        checkBox.setFocusPolicy(Qt.StrongFocus) # See QAbstractItemDelegate.createEditor docs
-        checkBox.clicked.connect(delegate.commitAndCloseEditor)
-        return checkBox
+        label = QtGui.QLabel("my label")
+        ctiEditor = CtiEditor(self, delegate, label, parent=parent) 
+        #editor.setText(str(self.data)) # not necessary, it will be done by setEditorValue
+        return ctiEditor
 
         
-    def setEditorValue(self, checkBox, data):
+    def setEditorValue(self, widget, data):
         """ Provides the check box editor widget with a data to manipulate.
         """
-        checkBox.setChecked(data)
+        widget.setProperty("editor_data", data)
         
         
-    def getEditorValue(self, checkBox):
+    def getEditorValue(self, widget):
         """ Gets data from the check box editor widget.
         """
-        return checkBox.isChecked()
+        return widget.property("editor_data")
 
         
-    def __paintDisplayValue(self, painter, option, data):
+    def paintDisplayValue(self, painter, option, data):
         """ Paints a check box on the painter.
         """
         checkBox = QtGui.QStyleOptionButton()
