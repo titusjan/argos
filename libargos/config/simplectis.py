@@ -220,10 +220,10 @@ class BoolCti(BaseCti):
 
     
     def createEditor(self, delegate, parent, _option):
-        """ Creates a QCheckBox for editing. 
+        """ Creates a hidden widget so that only the reset button is visible during editing.
             :type option: QStyleOptionViewItem        
         """
-        widget = QtGui.QWidget() # Add empty widget to store editor value
+        widget = QtGui.QWidget() # Add hidden widget to store editor value
         widget.hide()
         ctiEditor = CtiEditor(self, delegate, widget, parent=parent) 
         #editor.setText(str(self.data)) # not necessary, it will be done by setEditorValue
