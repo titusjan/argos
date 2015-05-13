@@ -15,5 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Qt widgets specific to this project
+""" Qt widgets specific to this project. 
+
+    Note that some widgets are locate elsewhere if it makes sense to place them near related 
+    classes. For example the ConfigTreeView widgets can be found in libargos.config.configtreeview.
 """

@@ -26,8 +26,8 @@ from __future__ import division
 import logging
 
 from .aboutdialog import AboutDialog
-from .configtreeview import ConfigTreeView
 from .repotreeview import RepoTreeView
+from libargos.config.configtreeview import ConfigTreeView
 from libargos.config.configtreemodel import ConfigTreeModel
 from libargos.repo.detailplugins.attr import AttributesPane 
 from libargos.inspector.base import BaseInspector
