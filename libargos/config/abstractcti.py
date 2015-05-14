@@ -30,165 +30,61 @@ from libargos.utils.misc import NOT_SPECIFIED
 logger = logging.getLogger(__name__)
 
 
+# TODO: QCompleter? See demos/spreadsheet/spreadsheetdelegate.py
+# TODO: FloatCti using QDoubleSpinBox
+# TODO: None takes data of parent
+
 class InvalidInputError(Exception):
     """ Exception raised when the input is invalid after editing
     """
     pass
-
-
-class AbstractCtiEditor(QtGui.QWidget):
-    """ An editor for use in the ConfigTreeView (CTI).
-    
-        It consists of a horizontal collection of child widgets, the last of which is a reset 
-        button which will reset the config data to its default when clicked.
-        
-        You must implemented setData and getData which that pass the data from the 
-        QConfigItemDelegate to the editor and back.
-    """
-    def __init__(self, cti, delegate, subEditors=None, parent=None):
-        """ Wraps the child widgets in a horizontal layout and appends a reset button.
-            
-            Maintains a reference to the ConfigTreeItem (cti) and to delegate, this last reference
-            is so that we can command the delegate to commit and close the editor.
-            
-            The subEditors must be a list of QWidgets. Note that the sub editors do not yet have
-            to be initialized with editor data since setData will be called by the delegate 
-            after construction. There it can be taken care of.
-        """
-        super(AbstractCtiEditor, self).__init__(parent=parent)
-
-        self._subEditors = []
-        self.delegate = delegate
-        self.cti = cti
-
-        # From the QAbstractItemDelegate.createEditor docs: The returned editor widget should have 
-        # Qt.StrongFocus; otherwise, QMouseEvents received by the widget will propagate to the view. 
-        # The view's background will shine through unless the editor paints its own background 
-        # (e.g., with setAutoFillBackground()).
-        self.setFocusPolicy(Qt.StrongFocus)
-        
-        self.hBoxLayout = QtGui.QHBoxLayout()
-        self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
-        self.hBoxLayout.setSpacing(0)
-        self.setLayout(self.hBoxLayout)
-
-        self.resetButton = QtGui.QToolButton()
-        self.resetButton.setText("Reset")
-        self.resetButton.setToolTip("Reset to default value.")
-        self.resetButton.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'err.warning.svg')))
-        self.resetButton.setFocusPolicy(Qt.NoFocus)
-        self.resetButton.clicked.connect(self.resetEditorValue)
-        self.hBoxLayout.addWidget(self.resetButton, alignment=Qt.AlignRight)
-
-        for subEditor in (subEditors if subEditors is not None else []):
-            self.addSubEditor(subEditor)
                 
 
-    def finalize(self):
-        """ Called at clean up. Can be used to disconnect signals.
-            Be sure to call the finalize of the super class if you override this function. 
-        """
-        for subEditor in self._subEditors:
-            self.removeSubEditor(subEditor)
-            
-        self.resetButton.clicked.disconnect(self.resetEditorValue)
-        self.cti = None # just to make sure it's not used again.
-        self.delegate = None
+#################
+# JSON encoding #    
+#################
 
-        
-    def addSubEditor(self, subEditor, isFocusProxy=False):
-        """ Adds a sub editor to the layout (at the right but before the reset button)
-            Will add the necessary event filter to handle tabs and sets the strong focus so
-            that events will not propagate to the tree view.
-            
-            If isFocusProxy is True the sub editor will be the focus proxy of the CTI.
-        """
-        self.hBoxLayout.insertWidget(len(self._subEditors), subEditor)
-        self._subEditors.append(subEditor)
-
-        subEditor.installEventFilter(self)
-        subEditor.setFocusPolicy(Qt.StrongFocus)
-        
-        if isFocusProxy:
-            self.setFocusProxy(subEditor)
-
-        return subEditor
+def ctiDumps(obj, sort_keys=True, indent=4):
+    """ Dumps cti as JSON string """
+    return dumps(obj, sort_keys=sort_keys, cls=CtiEncoder, indent=indent)
 
 
-    def removeSubEditor(self, subEditor):
-        """ Removes the subEditor from the layout and removes the event filter.
-        """
-        if subEditor is self.focusProxy():
-            self.setFocusProxy(None)
-                    
-        subEditor.removeEventFilter(self)
-        self._subEditors.remove(subEditor)
-        self.hBoxLayout.removeWidget(subEditor)
+class CtiEncoder(JSONEncoder):
+    """ JSON encoder that knows how to encode AbstractCti objects
+    """
+    def default(self, obj):
+        if isinstance(obj, AbstractCti):
+            return obj.asJsonDict()
+        else:
+            return JSONEncoder.default(self, obj)
 
-        
-    def setData(self, value):
-        """ Provides the editor widget with a data to manipulate.
-            Value originates from the ConfigTreeModel.data(role=QEditRole).
-        """
-        raise NotImplementedError()
-        
-        
-    def getData(self):
-        """ Gets data from the editor widget.
-            Should return a value that can be set into the ConfigTreeModel with the QEditRole.
-        """
-        raise NotImplementedError()
-            
-        
-    def eventFilter(self, watchedObject, event):
-        """ Calls commitAndClose when the tab and back-tab are pressed.
-            This is necessary because, normally the event filter of QStyledItemDelegate does this
-            for us. However, that event filter works on this object, not on the sub editor.
-        """
-        if event.type() == QtCore.QEvent.KeyPress:
-            key = event.key()
-            if key in (Qt.Key_Tab, Qt.Key_Backtab):
-                self.commitAndClose()
-                return True
-            else:
-                return False
 
-        return super(AbstractCtiEditor, self).eventFilter(watchedObject, event) 
+def jsonAsCti(dct): 
+    """ Config tree item JSON decoding function. Returns a CTI given a dictionary of attributes.
+        The full class name of desired CTI class should be in dct['_class_''].
+    """
+    if '_class_'in dct:
+        full_class_name = dct['_class_'] # TODO: how to handle the full_class_name?
+        cls = import_symbol(full_class_name)
+        return cls.createFromJsonDict(dct)
+    else:
+        return dct
+
     
-    
-    @QtSlot()
-    def commitAndClose(self):
-        """ Commits the data of the sub editor and instructs the delegate to close this ctiEditor.
-        
-            The delegate will emit the closeEditor signal which is connected to the closeEditor
-            method of the ConfigTreeView class. This, in turn will, call the finalize method of
-            this object so that signals can be disconnected and resources can be freed. This is
-            complicated but I don't see a simpler solution.
-        """
-        self.delegate.commitData.emit(self)
-        self.delegate.closeEditor.emit(self, QtGui.QAbstractItemDelegate.NoHint)   # CLOSES SELF!
-        
+class CtiDecoder(JSONDecoder):
+    """ Config tree item JSON decoder class. Not strictly necessary (you can use the
+        jsonAsCti function as object_hook directly in loads) but since we also have an 
+        encoder class it feels right to have a decoder as well.
+    """
+    def __init__(self, *args, **kwargs):
+        # The object_hook must be given to the parent constructor since that makes 
+        # an internal scanner.
+        super(CtiDecoder, self).__init__(*args, object_hook = jsonAsCti, **kwargs)
 
-    @QtSlot(bool)
-    def resetEditorValue(self, checked=False):
-        """ Resets the editor to the default value of the config tree item
-        """
-        logger.debug("resetEditorValue: {}".format(checked))
-        self.setData(self.cti.defaultData)
-        self.commitAndClose()
-    
-    
-    def paintEvent(self, event):
-        """ Reimplementation of paintEvent to allow for style sheets
-            See: http://qt-project.org/wiki/How_to_Change_the_Background_Color_of_QWidget
-        """
-        opt = QtGui.QStyleOption()
-        opt.initFrom(self)
-        painter = QtGui.QPainter(self)
-        self.style().drawPrimitive(QtGui.QStyle.PE_Widget, opt, painter, self)
-        painter.end()
-        
-        
+
+###########
+# Classes #
+###########        
 
 class AbstractCti(BaseTreeItem):
     """ TreeItem for use in a ConfigTreeModel. (CTI = Config Tree Item)
@@ -458,50 +354,160 @@ class AbstractCti(BaseTreeItem):
             childCti.setValuesFromDict(childDct)
     
 
+
+        
+        
+
+
+class AbstractCtiEditor(QtGui.QWidget):
+    """ An editor for use in the ConfigTreeView (CTI).
+    
+        It consists of a horizontal collection of child widgets, the last of which is a reset 
+        button which will reset the config data to its default when clicked.
+        
+        You must implemented setData and getData which that pass the data from the 
+        QConfigItemDelegate to the editor and back.
+    """
+    def __init__(self, cti, delegate, subEditors=None, parent=None):
+        """ Wraps the child widgets in a horizontal layout and appends a reset button.
+            
+            Maintains a reference to the ConfigTreeItem (cti) and to delegate, this last reference
+            is so that we can command the delegate to commit and close the editor.
+            
+            The subEditors must be a list of QWidgets. Note that the sub editors do not yet have
+            to be initialized with editor data since setData will be called by the delegate 
+            after construction. There it can be taken care of.
+        """
+        super(AbstractCtiEditor, self).__init__(parent=parent)
+
+        self._subEditors = []
+        self.delegate = delegate
+        self.cti = cti
+
+        # From the QAbstractItemDelegate.createEditor docs: The returned editor widget should have 
+        # Qt.StrongFocus; otherwise, QMouseEvents received by the widget will propagate to the view. 
+        # The view's background will shine through unless the editor paints its own background 
+        # (e.g., with setAutoFillBackground()).
+        self.setFocusPolicy(Qt.StrongFocus)
+        
+        self.hBoxLayout = QtGui.QHBoxLayout()
+        self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
+        self.hBoxLayout.setSpacing(0)
+        self.setLayout(self.hBoxLayout)
+
+        self.resetButton = QtGui.QToolButton()
+        self.resetButton.setText("Reset")
+        self.resetButton.setToolTip("Reset to default value.")
+        self.resetButton.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'err.warning.svg')))
+        self.resetButton.setFocusPolicy(Qt.NoFocus)
+        self.resetButton.clicked.connect(self.resetEditorValue)
+        self.hBoxLayout.addWidget(self.resetButton, alignment=Qt.AlignRight)
+
+        for subEditor in (subEditors if subEditors is not None else []):
+            self.addSubEditor(subEditor)
                 
 
-#################
-# JSON encoding #    
-#################
+    def finalize(self):
+        """ Called at clean up. Can be used to disconnect signals.
+            Be sure to call the finalize of the super class if you override this function. 
+        """
+        for subEditor in self._subEditors:
+            self.removeSubEditor(subEditor)
+            
+        self.resetButton.clicked.disconnect(self.resetEditorValue)
+        self.cti = None # just to make sure it's not used again.
+        self.delegate = None
 
-def ctiDumps(obj, sort_keys=True, indent=4):
-    """ Dumps cti as JSON string """
-    return dumps(obj, sort_keys=sort_keys, cls=CtiEncoder, indent=indent)
+        
+    def addSubEditor(self, subEditor, isFocusProxy=False):
+        """ Adds a sub editor to the layout (at the right but before the reset button)
+            Will add the necessary event filter to handle tabs and sets the strong focus so
+            that events will not propagate to the tree view.
+            
+            If isFocusProxy is True the sub editor will be the focus proxy of the CTI.
+        """
+        self.hBoxLayout.insertWidget(len(self._subEditors), subEditor)
+        self._subEditors.append(subEditor)
+
+        subEditor.installEventFilter(self)
+        subEditor.setFocusPolicy(Qt.StrongFocus)
+        
+        if isFocusProxy:
+            self.setFocusProxy(subEditor)
+
+        return subEditor
 
 
-class CtiEncoder(JSONEncoder):
-    """ JSON encoder that knows how to encode AbstractCti objects
-    """
-    def default(self, obj):
-        if isinstance(obj, AbstractCti):
-            return obj.asJsonDict()
-        else:
-            return JSONEncoder.default(self, obj)
+    def removeSubEditor(self, subEditor):
+        """ Removes the subEditor from the layout and removes the event filter.
+        """
+        if subEditor is self.focusProxy():
+            self.setFocusProxy(None)
+                    
+        subEditor.removeEventFilter(self)
+        self._subEditors.remove(subEditor)
+        self.hBoxLayout.removeWidget(subEditor)
 
+        
+    def setData(self, value):
+        """ Provides the editor widget with a data to manipulate.
+            Value originates from the ConfigTreeModel.data(role=QEditRole).
+        """
+        raise NotImplementedError()
+        
+        
+    def getData(self):
+        """ Gets data from the editor widget.
+            Should return a value that can be set into the ConfigTreeModel with the QEditRole.
+        """
+        raise NotImplementedError()
+            
+        
+    def eventFilter(self, watchedObject, event):
+        """ Calls commitAndClose when the tab and back-tab are pressed.
+            This is necessary because, normally the event filter of QStyledItemDelegate does this
+            for us. However, that event filter works on this object, not on the sub editor.
+        """
+        if event.type() == QtCore.QEvent.KeyPress:
+            key = event.key()
+            if key in (Qt.Key_Tab, Qt.Key_Backtab):
+                self.commitAndClose()
+                return True
+            else:
+                return False
 
-def jsonAsCti(dct): 
-    """ Config tree item JSON decoding function. Returns a CTI given a dictionary of attributes.
-        The full class name of desired CTI class should be in dct['_class_''].
-    """
-    if '_class_'in dct:
-        full_class_name = dct['_class_'] # TODO: how to handle the full_class_name?
-        cls = import_symbol(full_class_name)
-        return cls.createFromJsonDict(dct)
-    else:
-        return dct
-
+        return super(AbstractCtiEditor, self).eventFilter(watchedObject, event) 
     
-class CtiDecoder(JSONDecoder):
-    """ Config tree item JSON decoder class. Not strictly necessary (you can use the
-        jsonAsCti function as object_hook directly in loads) but since we also have an 
-        encoder class it feels right to have a decoder as well.
-    """
-    def __init__(self, *args, **kwargs):
-        # The object_hook must be given to the parent constructor since that makes 
-        # an internal scanner.
-        super(CtiDecoder, self).__init__(*args, object_hook = jsonAsCti, **kwargs)
+    
+    @QtSlot()
+    def commitAndClose(self):
+        """ Commits the data of the sub editor and instructs the delegate to close this ctiEditor.
+        
+            The delegate will emit the closeEditor signal which is connected to the closeEditor
+            method of the ConfigTreeView class. This, in turn will, call the finalize method of
+            this object so that signals can be disconnected and resources can be freed. This is
+            complicated but I don't see a simpler solution.
+        """
+        self.delegate.commitData.emit(self)
+        self.delegate.closeEditor.emit(self, QtGui.QAbstractItemDelegate.NoHint)   # CLOSES SELF!
+        
 
-
-        
-        
-        
+    @QtSlot(bool)
+    def resetEditorValue(self, checked=False):
+        """ Resets the editor to the default value of the config tree item
+        """
+        logger.debug("resetEditorValue: {}".format(checked))
+        self.setData(self.cti.defaultData)
+        self.commitAndClose()
+    
+    
+    def paintEvent(self, event):
+        """ Reimplementation of paintEvent to allow for style sheets
+            See: http://qt-project.org/wiki/How_to_Change_the_Background_Color_of_QWidget
+        """
+        opt = QtGui.QStyleOption()
+        opt.initFrom(self)
+        painter = QtGui.QPainter(self)
+        self.style().drawPrimitive(QtGui.QStyle.PE_Widget, opt, painter, self)
+        painter.end()
+                
