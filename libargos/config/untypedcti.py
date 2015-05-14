@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Configuration TreeItem (CTI) classes
-    Tree items for use in the ConfigTreeModel
+""" Contains the UntypedCti and UntypedCtiEditor classes 
 """
 import logging
 
@@ -27,29 +26,6 @@ from libargos.utils.misc import NOT_SPECIFIED
 logger = logging.getLogger(__name__)
 
 
-        
-class UntypedCtiEditor(AbstractCtiEditor):
-    """ A CtiEditor which contains a QLineEdit for editing UntypedCti objects. 
-    """
-    def __init__(self, cti, delegate, parent=None):
-        """ See the AbstractCtiEditor for more info on the parameters 
-        """
-        super(UntypedCtiEditor, self).__init__(cti, delegate, parent=parent)
-        self.lineEditor = self.addSubEditor(QtGui.QLineEdit(), isFocusProxy=True)
-    
-    
-    def setData(self, value):
-        """ Provides the main editor widget with a data to manipulate.
-        """
-        self.lineEditor.setText(str(value))
-        
-        
-    def getData(self):
-        """ Gets data from the editor widget.
-        """
-        return self.lineEditor.text()
-    
-    
     
 class UntypedCti(AbstractCti):
     """ Config Tree Item to store a any type of data as long as it can be edited with a QLineEdit.
@@ -62,13 +38,11 @@ class UntypedCti(AbstractCti):
         """ Constructor. For the parameters see the AbstractCti constructor documentation.
         """
         super(UntypedCti, self).__init__(nodeName, data=data, defaultData=defaultData)
-
     
     def _enforceDataType(self, value):
         """ Since UntypedCti can store any type of data no conversion will be done. 
         """
         return value
-    
     
     def createEditor(self, delegate, parent, option):
         """ Creates an UntypedCtiEditor. 
@@ -76,3 +50,25 @@ class UntypedCti(AbstractCti):
         """
         return UntypedCtiEditor(self, delegate, parent=parent) 
     
+        
+        
+class UntypedCtiEditor(AbstractCtiEditor):
+    """ A CtiEditor which contains a QLineEdit for editing UntypedCti objects. 
+    """
+    def __init__(self, cti, delegate, parent=None):
+        """ See the AbstractCtiEditor for more info on the parameters 
+        """
+        super(UntypedCtiEditor, self).__init__(cti, delegate, parent=parent)
+        self.lineEditor = self.addSubEditor(QtGui.QLineEdit(), isFocusProxy=True)
+    
+    def setData(self, value):
+        """ Provides the main editor widget with a data to manipulate.
+        """
+        self.lineEditor.setText(str(value))
+        
+    def getData(self):
+        """ Gets data from the editor widget.
+        """
+        return self.lineEditor.text()
+    
+        
