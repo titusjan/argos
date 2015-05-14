@@ -32,11 +32,9 @@ class StringCti(AbstractCti):
     """
     def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData='', 
                  maxLength=None):
-        """ Constructor. 
+        """ For the (other) parameters see the AbstractCti constructor documentation. 
         
             :param maxLength: maximum length of the string
-            
-            For the (other) parameters see the AbstractCti constructor documentation.
         """
         super(StringCti, self).__init__(nodeName, data=data, defaultData=defaultData)
         
