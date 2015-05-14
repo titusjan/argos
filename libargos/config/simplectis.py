@@ -31,77 +31,7 @@ logger = logging.getLogger(__name__)
  
 
         
-
-
-
-class ChoiceCti(AbstractCti):
-    """ Config Tree Item to store a choice between strings.
-    """
-    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=0, choices=None):
-        """ Constructor
-            data and defaultData are used to store the currentIndex.
-            choices must be a list of string.
-                    
-            For the (other) parameters see the AbstractCti constructor documentation.
-        """
-        super(ChoiceCti, self).__init__(nodeName, data=data, defaultData=defaultData)
-        self.choices = [] if choices is None else choices
-        
-    
-    def _enforceDataType(self, data):
-        """ Converts to int so that this CTI always stores that type. 
-        """
-        return int(data)
-
-    
-    @property
-    def displayValue(self):
-        """ Returns the string representation of data for use in the tree view. 
-        """
-        return str(self.choices[self.data])
-    
-    
-    @property
-    def debugInfo(self):
-        """ Returns the string with debugging information
-        """
-        return repr(self.choices)
-    
-    
-    def createEditor(self, delegate, parent, _option):
-        """ Creates a QComboBox for editing. 
-            :type option: QStyleOptionViewItem
-        """
-        comboBox = QtGui.QComboBox()
-        comboBox.addItems(self.choices)
-        
-        ctiEditor = AbstractCtiEditor(self, delegate, comboBox, parent=parent) 
-
-        comboBox.activated.connect(ctiEditor.commitAndClose)        
-        return ctiEditor
-        
-    
-    def finalizeEditor(self, ctiEditor, delegate):
-        """ Is called when the editor is closed. Disconnect signals.
-        """
-        comboBox = ctiEditor.mainEditor
-        comboBox.activated.disconnect(ctiEditor.commitAndClose)      
-        
-        
-    def setEditorValue(self, ctiEditor, index):
-        """ Provides the combo box an data that is the current index.
-        """
-        comboBox = ctiEditor.mainEditor
-        comboBox.setCurrentIndex(index)        
-        
-        
-    def getEditorValue(self, ctiEditor):
-        """ Gets data from the combo box editor widget.
-        """
-        comboBox = ctiEditor.mainEditor
-        data = comboBox.currentIndex()
-        return data
-                
+          
 
 
 class ColorCti(AbstractCti):

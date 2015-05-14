@@ -355,10 +355,6 @@ class AbstractCti(BaseTreeItem):
     
 
 
-        
-        
-
-
 class AbstractCtiEditor(QtGui.QWidget):
     """ An editor for use in the ConfigTreeView (CTI).
     

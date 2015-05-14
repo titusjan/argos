@@ -19,7 +19,7 @@
 from __future__ import print_function
 
 import logging
-from libargos.qt import Qt,  QtGui, QtSlot, widgetSubCheckBoxRect
+from libargos.qt import Qt,  QtGui, widgetSubCheckBoxRect
 
 logger = logging.getLogger(__name__)
 
