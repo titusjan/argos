@@ -19,7 +19,9 @@
 from __future__ import print_function
 
 import logging
+from libargos.config.abstractcti import InvalidInputError
 from libargos.qt import Qt,  QtGui, widgetSubCheckBoxRect
+
 
 logger = logging.getLogger(__name__)
 
@@ -90,10 +92,13 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
             
             Reimplemented from QStyledItemDelegate.
         """
-        logger.debug("ConfigItemDelegate.setModelData: editor {}".format(editor))
-        
-        # The value is set via the model so that signals are emitted
-        model.setData(index, editor.getData(), Qt.EditRole)
+        try:
+            data = editor.getData()
+        except InvalidInputError as ex:
+            logger.warn(ex)
+        else:
+            # The value is set via the model so that signals are emitted
+            model.setData(index, data, Qt.EditRole)
 
 
     def updateEditorGeometry(self, editor, option, index):
