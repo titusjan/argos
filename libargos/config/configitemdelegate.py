@@ -20,18 +20,15 @@ from __future__ import print_function
 
 import logging
 from libargos.qt import Qt,  QtGui, QtSlot, widgetSubCheckBoxRect
-from libargos.config.configtreemodel import ConfigTreeModel
-from libargos.config.abstractcti import InvalidInputError, AbstractCtiEditor
 
 logger = logging.getLogger(__name__)
 
 # Qt classes have many ancestors
 #pylint: disable=R0901
 
-
 class ConfigItemDelegate(QtGui.QStyledItemDelegate):
     """ Provides editing facilities for config tree items.
-        Creates an editor based on the underlying config tree item at an index.
+        Creates an editor kd on the underlying config tree item at an index.
         
         We don't use a QItemEditorFactory since that is typically registered for a type of 
         QVariant. We then would have to make a new UserType QVariant for (each?) CTI.
@@ -41,21 +38,6 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         super(ConfigItemDelegate, self).__init__(parent=parent)
         
         self.commitData.connect(self._onCommitData) # just for debugging.
-        
-    
-#    def paint(self, painter, option, index):
-#
-#        painted = False
-#                
-#        if index.column() == ConfigTreeModel.COL_VALUE:
-#
-#            # We take the value via the model to be consistent with setModelData
-#            value = index.model().data(index, Qt.EditRole) 
-#            cti = index.model().getItem(index)
-#            painted = cti.paintDisplayValue(painter, option, value)
-#        
-#        if not painted:
-#            super(ConfigItemDelegate, self).paint(painter, option, index)
         
     
     def createEditor(self, parent, option, index):
@@ -79,7 +61,7 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
             
             Note that, unlike the other methods of this class, finalizeEditor does not have an
             index parameter. We cannot derive this since indexForEditor is a private method in Qt.
-            Therefore a BaseCtiEditor maintains a reference to its config tree item (cti).
+            Therefore a AbstractCtiEditor maintains a reference to its config tree item (cti).
         """
         editor.finalize()
 
@@ -134,13 +116,3 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         logger.debug("commitData signal emitted")
     
     
-    @QtSlot()
-    def __not_used__commitAndCloseEditor(self, *args, **kwargs): # TODO: args?
-        """ Calls the signals to commit the data and close the editor
-        """
-        #logger.debug("commitAndCloseEditor: {} {}".format(args, kwargs))
-        editor = self.sender() # TODO somehow make parameter?
-        self.commitData.emit(editor)
-        self.closeEditor.emit(editor, QtGui.QAbstractItemDelegate.NoHint)        
-
-        

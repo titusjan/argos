@@ -299,8 +299,9 @@ class MainWindow(QtGui.QMainWindow):
         from libargos.config.untypedcti import UntypedCti
         from libargos.config.stringcti import StringCti
         from libargos.config.intcti import IntCti
+        from libargos.config.boolcti import BoolCti
         
-        from libargos.config.simplectis import BoolCti, ChoiceCti, ColorCti
+        from libargos.config.simplectis import ChoiceCti, ColorCti
         
         rootItem = UntypedCti(nodeName='line color', defaultData=123)
         rootIndex = self._config.insertItem(rootItem)
