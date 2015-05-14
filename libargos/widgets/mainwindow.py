@@ -297,7 +297,9 @@ class MainWindow(QtGui.QMainWindow):
         """ Temporary function to add test CTIs
         """
         from libargos.config.untypedcti import UntypedCti
-        from libargos.config.simplectis import IntegerCti, StringCti, BoolCti, ChoiceCti, ColorCti
+        from libargos.config.stringcti import StringCti
+        
+        from libargos.config.simplectis import IntegerCti, BoolCti, ChoiceCti, ColorCti
         
         rootItem = UntypedCti(nodeName='line color', defaultData=123)
         rootIndex = self._config.insertItem(rootItem)
