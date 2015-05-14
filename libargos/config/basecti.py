@@ -21,6 +21,7 @@
 import logging, os
 from json import JSONEncoder, JSONDecoder, dumps
 
+from libargos.config.abstractcti import AbstractCtiEditor
 from libargos.info import DEBUGGING, icons_directory
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
 from libargos.qt.treeitems import BaseTreeItem
@@ -31,152 +32,37 @@ from libargos.utils.misc import NOT_SPECIFIED
 logger = logging.getLogger(__name__)
 
 
-class InvalidInputError(Exception):
-    """ Exception raised when the input is invalid after editing
+        
+class _BaseCtiEditor(AbstractCtiEditor):
+    """ A CtiEditor which contains QLineEdit for editing BaseCti objects. 
     """
-    pass
-
-
-
-class BaseCtiEditor(QtGui.QWidget):
-    """ An editor for use in the ConfigTreeView.
-    
-        It is a horizontal collection of child widgets, the last of which is a reset button.
-        The reset button will reset the config data to its default.
-        
-        The first editor is considered the main editor. This editor will receive the focus.
-    """
-    def __init__(self, cti, delegate, subEditors, parent=None):
-        """ Wraps the child widgets in a horizontal layout and appends a reset button.
-            
-            Maintains a reference to the ConfigTreeItem (cti) and to delegate, this last reference
-            is so that we can command the delegate to commit and close the editor.
+    def __init__(self, cti, delegate, parent=None):
+        """ See the AbstractCtiEditor for more info on the parameters 
         """
-        super(BaseCtiEditor, self).__init__(parent=parent)
-
-        assert parent, "parent undefined"
-        assert len(subEditors) >= 1, "You should specify at least one childWidget"
-
-        self.delegate = delegate
-        self.cti = cti
-        
-        hBoxLayout = QtGui.QHBoxLayout()
-        hBoxLayout.setContentsMargins(0, 0, 0, 0)
-        hBoxLayout.setSpacing(0)
-        self.setLayout(hBoxLayout)
-
-        self.subEditors = subEditors
-        for subEditor in subEditors:
-            hBoxLayout.addWidget(subEditor)
-
-        self.resetButton = QtGui.QToolButton()
-        self.resetButton.setText("Reset")
-        self.resetButton.setToolTip("Reset to default value.")
-        self.resetButton.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'err.warning.svg')))
-        self.resetButton.setFocusPolicy(Qt.NoFocus)
-        self.resetButton.clicked.connect(self.resetEditorValue)
-        hBoxLayout.addWidget(self.resetButton, alignment=Qt.AlignRight)
-        
-        # From the QAbstractItemDelegate.createEditor docs: The returned editor widget should have 
-        # Qt.StrongFocus; otherwise, QMouseEvents received by the widget will propagate to the view. 
-        # The view's background will shine through unless the editor paints its own background 
-        # (e.g., with setAutoFillBackground()).
-        self.setFocusPolicy(Qt.StrongFocus)
-        self.setFocusProxy(self.mainEditor)
-        self.mainEditor.setFocusPolicy(Qt.StrongFocus)
-        
-        self.mainEditor.installEventFilter(self)
-        
-
-    def eventFilter(self, watchedObject, event):
-        """ Calls commitAndClose when the tab and back-tab are pressed.
-            This is necessary because, normally the event filter of QStyledItemDelegate does this
-            for us. However, that event filter works on this object, not on the main editor.
-        """
-        if event.type() == QtCore.QEvent.KeyPress:
-            key = event.key()
-            if key in (Qt.Key_Tab, Qt.Key_Backtab):
-                self.commitAndClose()
-                return True
-            else:
-                return False
-
-        return super(BaseCtiEditor, self).eventFilter(watchedObject, event) 
-            
-
-    def finalize(self):
-        """ Called at clean up. Can be used to disconnect signals.
-        """
-        logger.debug("BaseCtiEditor.finalize")
-        self.mainEditor.removeEventFilter(self)
-        self.resetButton.clicked.disconnect(self.resetEditorValue)
-        self.cti = None # just to make sure it's not used again.
-        self.delegate = None
+        super(_BaseCtiEditor, self).__init__(cti, delegate, [QtGui.QLineEdit()], parent=parent)
 
         
-    def setData(self, value): # TODO abstract.
+    def setData(self, value):
         """ Provides the main editor widget with a data to manipulate.
         """
         lineEditor = self.mainEditor
         lineEditor.setText(str(value))
         
         
-    def getData(self): # TODO: rename get data?
+    def getData(self):
         """ Gets data from the editor widget.
         """
         lineEditor = self.mainEditor 
         return lineEditor.text()
-    
-        
-    @property
-    def mainEditor(self):
-        """ Returns the first child widget 
-        """
-        return self.subEditors[0]
-    
-    
-    @QtSlot()
-    def commitAndClose(self):
-        """ Commits the data of the main editor and instructs the delegate to close this ctiEditor.
-        
-            The delegate will emit the closeEditor signal which is connected to the closeEditor
-            method of the ConfigTreeView class. This, in turn will, call the finalize method of
-            this object so that signals can be disconnected and resources can be freed. This is
-            complicated but I don't see a simpler solution.
-        """
-        self.delegate.commitData.emit(self)
-        self.delegate.closeEditor.emit(self, QtGui.QAbstractItemDelegate.NoHint)   # CLOSES SELF!
-        
-
-    @QtSlot(bool)
-    def resetEditorValue(self, checked=False):
-        """ Resets the main editor to the default value of the config tree item
-        """
-        logger.debug("resetEditorValue: {}".format(checked))
-        self.setData(self.cti.defaultData)
-        self.commitAndClose()
-    
-    
-    def paintEvent(self, event):
-        """ Reimplementation of paintEvent to allow for style sheets
-            See: http://qt-project.org/wiki/How_to_Change_the_Background_Color_of_QWidget
-        """
-        opt = QtGui.QStyleOption()
-        opt.initFrom(self)
-        painter = QtGui.QPainter(self)
-        self.style().drawPrimitive(QtGui.QStyle.PE_Widget, opt, painter, self)
-        painter.end()
-
-        
 
     
-
 
 class BaseCti(BaseTreeItem):
     """ TreeItem for use in a ConfigTreeModel. (CTI = Config Tree Item)
 
         Base node from which to derive the other types of nodes.
-        Serves as an interface but can also be instantiated for debugging purposes.
+        Serves as an interface but can also be instantiated for debugging purposes. The BaseCti
+        can hold any type of data as long as it can be edited as a string in a QLineEdit.
         
         Just like the BaseTreeItem every node has a name and a full path that is a slash-separated 
         string of the full path leading from the root node to the current node. For instance, the 
@@ -303,10 +189,14 @@ class BaseCti(BaseTreeItem):
     @checkState.setter
     def checkState(self, checkState):
         """ Allows the data to be set given a Qt.CheckState.
-            Is an abstract method. Can be overridden.
+            Abstract method; you must override it if valueColumnItemFlags returns
+            Qt.ItemIsUserCheckable
         """
         raise NotImplementedError()
 
+    ########################
+    # Editor look and feel #
+    ########################
    
     @property
     def valueColumnItemFlags(self):
@@ -318,13 +208,11 @@ class BaseCti(BaseTreeItem):
         """
         return Qt.ItemIsEditable 
 
-    #### The following methods are called by the ConfigItemDelegate class ####
-    
-    
     
     def createEditor(self, delegate, parent, option):
         """ Creates an editor (QWidget) for editing. 
-            It's parent will be set by the ConfigItemDelegate class
+            It's parent will be set by the ConfigItemDelegate class that calls it.
+            
             :param delegate: the delegate that called this function
             :type  delegate: ConfigItemDelegate
             :param parent: The parent widget for the editor
@@ -332,13 +220,12 @@ class BaseCti(BaseTreeItem):
             :param option: describes the parameters used to draw an item in a view widget.
             :type  option: QStyleOptionViewItem
         """
-        lineEditor = QtGui.QLineEdit()
-        ctiEditor = BaseCtiEditor(self, delegate, [lineEditor], parent=parent) 
-        #editor.setText(str(self.data)) # not necessary, it will be done by setEditorValue
+        ctiEditor = _BaseCtiEditor(self, delegate, parent=parent) 
         return ctiEditor
     
-    #### The following methods are for (de)serialization ####
-    
+    #################
+    # serialization #
+    #################
 
     @classmethod        
     def createFromJsonDict(cls, dct):

@@ -21,7 +21,7 @@ from __future__ import print_function
 import logging
 from libargos.qt import Qt,  QtGui, QtSlot, widgetSubCheckBoxRect
 from libargos.config.configtreemodel import ConfigTreeModel
-from libargos.config.basecti import InvalidInputError, BaseCtiEditor
+from libargos.config.abstractcti import InvalidInputError, AbstractCtiEditor
 
 logger = logging.getLogger(__name__)
 
@@ -83,8 +83,6 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         """
         editor.finalize()
 
-    # TODO: enforce the use of CtiEditors? In that case the setEditorData and setModelData calls
-    # can call ctiEditor.setData and ctiEditor.getData. This would be consistent with finalizing.
 
     def setEditorData(self, editor, index):
         """ Provides the widget with data to manipulate.
@@ -137,7 +135,7 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
     
     
     @QtSlot()
-    def commitAndCloseEditor(self, *args, **kwargs): # TODO: args?
+    def __not_used__commitAndCloseEditor(self, *args, **kwargs): # TODO: args?
         """ Calls the signals to commit the data and close the editor
         """
         #logger.debug("commitAndCloseEditor: {} {}".format(args, kwargs))

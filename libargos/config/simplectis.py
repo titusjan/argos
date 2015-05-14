@@ -20,7 +20,8 @@
 import logging
 import numpy as np
 
-from .basecti import BaseCti, BaseCtiEditor, InvalidInputError
+from .basecti import BaseCti
+from libargos.config.abstractcti import AbstractCtiEditor, InvalidInputError
 from libargos.qt import Qt, QtCore, QtGui, getQApplicationInstance
 from libargos.utils.misc import NOT_SPECIFIED
 
@@ -242,7 +243,7 @@ class BoolCti(BaseCti):
         return widget.property("editor_data")
 
         
-    def __paintDisplayValue(self, painter, option, data):
+    def __not_used__paintDisplayValue(self, painter, option, data):
         """ Paints a check box on the painter.
         """
         checkBox = QtGui.QStyleOptionButton()
