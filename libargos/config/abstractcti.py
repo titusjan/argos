@@ -82,22 +82,6 @@ class AbstractCtiEditor(QtGui.QWidget):
 
         for subEditor in (subEditors if subEditors is not None else []):
             self.addSubEditor(subEditor)
-            
-        
-    def eventFilter(self, watchedObject, event):
-        """ Calls commitAndClose when the tab and back-tab are pressed.
-            This is necessary because, normally the event filter of QStyledItemDelegate does this
-            for us. However, that event filter works on this object, not on the sub editor.
-        """
-        if event.type() == QtCore.QEvent.KeyPress:
-            key = event.key()
-            if key in (Qt.Key_Tab, Qt.Key_Backtab):
-                self.commitAndClose()
-                return True
-            else:
-                return False
-
-        return super(AbstractCtiEditor, self).eventFilter(watchedObject, event) 
                 
 
     def finalize(self):
@@ -154,6 +138,22 @@ class AbstractCtiEditor(QtGui.QWidget):
             Should return a value that can be set into the ConfigTreeModel with the QEditRole.
         """
         raise NotImplementedError()
+            
+        
+    def eventFilter(self, watchedObject, event):
+        """ Calls commitAndClose when the tab and back-tab are pressed.
+            This is necessary because, normally the event filter of QStyledItemDelegate does this
+            for us. However, that event filter works on this object, not on the sub editor.
+        """
+        if event.type() == QtCore.QEvent.KeyPress:
+            key = event.key()
+            if key in (Qt.Key_Tab, Qt.Key_Backtab):
+                self.commitAndClose()
+                return True
+            else:
+                return False
+
+        return super(AbstractCtiEditor, self).eventFilter(watchedObject, event) 
     
     
     @QtSlot()
