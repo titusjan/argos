@@ -298,14 +298,15 @@ class MainWindow(QtGui.QMainWindow):
         """
         from libargos.config.untypedcti import UntypedCti
         from libargos.config.stringcti import StringCti
+        from libargos.config.intcti import IntCti
         
-        from libargos.config.simplectis import IntegerCti, BoolCti, ChoiceCti, ColorCti
+        from libargos.config.simplectis import BoolCti, ChoiceCti, ColorCti
         
         rootItem = UntypedCti(nodeName='line color', defaultData=123)
         rootIndex = self._config.insertItem(rootItem)
         self.configTreeView.setExpanded(rootIndex, True) # does not work because of read settings
 
-        rootItem.insertChild(IntegerCti(nodeName='line-1 color', defaultData=-7, minValue = -5, stepSize=2))
+        rootItem.insertChild(IntCti(nodeName='line-1 color', defaultData=-7, minValue = -5, stepSize=2))
         
         self._config.insertItem(StringCti(nodeName='letter', defaultData='aa', maxLength = 1))
         self._config.insertItem(BoolCti(nodeName='grid', defaultData=True))

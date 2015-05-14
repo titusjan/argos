@@ -54,7 +54,7 @@ class StringCti(AbstractCti):
         return "maxLength = {}".format(self.maxLength)
     
     def createEditor(self, delegate, parent, option):
-        """ Creates an StringCtiEditor. 
+        """ Creates a StringCtiEditor. 
             For the parameters see the AbstractCti constructor documentation.
         """
         return StringCtiEditor(self, delegate, parent=parent, maxLength=self.maxLength) 
@@ -73,10 +73,10 @@ class StringCtiEditor(AbstractCtiEditor):
         if maxLength is not None:
             self.lineEditor.setMaxLength(maxLength)    
     
-    def setData(self, value):
+    def setData(self, data):
         """ Provides the main editor widget with a data to manipulate.
         """
-        self.lineEditor.setText(str(value))
+        self.lineEditor.setText(str(data))
         
     def getData(self):
         """ Gets data from the editor widget.

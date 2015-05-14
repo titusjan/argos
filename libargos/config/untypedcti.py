@@ -61,10 +61,10 @@ class UntypedCtiEditor(AbstractCtiEditor):
         super(UntypedCtiEditor, self).__init__(cti, delegate, parent=parent)
         self.lineEditor = self.addSubEditor(QtGui.QLineEdit(), isFocusProxy=True)
     
-    def setData(self, value):
+    def setData(self, data):
         """ Provides the main editor widget with a data to manipulate.
         """
-        self.lineEditor.setText(str(value))
+        self.lineEditor.setText(str(data))
         
     def getData(self):
         """ Gets data from the editor widget.

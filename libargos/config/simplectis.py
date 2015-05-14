@@ -28,73 +28,7 @@ from libargos.utils.misc import NOT_SPECIFIED
 logger = logging.getLogger(__name__)
 
 # Use setIndexWidget()?
-        
-
-class IntegerCti(AbstractCti):
-    """ Config Tree Item to store an integer. It can be edited using a QSinBox.
-    """
-    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=0, 
-                 minValue = None, maxValue = None, stepSize = 1):
-        """ Constructor
-            
-            :param minValue: minimum data allowed when editing (use None for no minimum)
-            :param maxValue: maximum data allowed when editing (use None for no maximum)
-            :param stepSize: steps between values when ediging (default = 1)
-                    
-            For the (other) parameters see the AbstractCti constructor documentation.
-        """
-        super(IntegerCti, self).__init__(nodeName, data=data, defaultData=defaultData)
-        
-        self.minValue = minValue
-        self.maxValue = maxValue
-        self.stepSize = stepSize
-
-    
-    def _enforceDataType(self, data):
-        """ Converts to int so that this CTI always stores that type. 
-        """
-        return int(data)
-        
-    
-    @property
-    def debugInfo(self):
-        """ Returns the string with debugging information
-        """
-        return "min = {}, max = {}, step = {}".format(self.minValue, self.maxValue, self.stepSize)
-    
-    
-    def createEditor(self, delegate, parent, _option):
-        """ Creates a QSpinBox for editing. 
-            :type option: QStyleOptionViewItem
-        """
-        spinBox = QtGui.QSpinBox(parent)
-
-        if self.minValue is None:
-            spinBox.setMinimum(np.iinfo('i').min)
-        else: 
-            spinBox.setMinimum(self.minValue) 
-
-        if self.maxValue is None:
-            spinBox.setMaximum(np.iinfo('i').max)
-        else: 
-            spinBox.setMaximum(self.maxValue) 
-
-        spinBox.setSingleStep(self.stepSize)
-        return spinBox
-        
-        
-    def setEditorValue(self, spinBox, data):
-        """ Provides the spin box editor widget with a data to manipulate.
-        """
-        spinBox.setValue(data)
-        
-        
-    def getEditorValue(self, spinBox):
-        """ Gets data from the spin box editor widget.
-        """
-        spinBox.interpretText()
-        data = spinBox.value()
-        return data
+ 
 
         
 
