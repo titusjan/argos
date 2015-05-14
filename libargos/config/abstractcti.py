@@ -45,32 +45,32 @@ class AbstractCtiEditor(QtGui.QWidget):
         You must implemented setData and getData which that pass the data from the 
         QConfigItemDelegate to the editor and back.
     """
-    def __init__(self, cti, delegate, subEditors, parent=None):
+    def __init__(self, cti, delegate, subEditors=None, parent=None):
         """ Wraps the child widgets in a horizontal layout and appends a reset button.
             
             Maintains a reference to the ConfigTreeItem (cti) and to delegate, this last reference
             is so that we can command the delegate to commit and close the editor.
             
-            The subEditors must be a list of QWidgets. The first sub editor is considered the 
-            main editor. This editor will receive the focus. Note that the sub editors do not yet
-            have to be initialized with editor data since setData will be called by the delegate 
+            The subEditors must be a list of QWidgets. Note that the sub editors do not yet have
+            to be initialized with editor data since setData will be called by the delegate 
             after construction. There it can be taken care of.
         """
         super(AbstractCtiEditor, self).__init__(parent=parent)
 
-        assert len(subEditors) >= 1, "You should specify at least one childWidget"
-
+        self._subEditors = []
         self.delegate = delegate
         self.cti = cti
-        
-        hBoxLayout = QtGui.QHBoxLayout()
-        hBoxLayout.setContentsMargins(0, 0, 0, 0)
-        hBoxLayout.setSpacing(0)
-        self.setLayout(hBoxLayout)
 
-        self.subEditors = subEditors
-        for subEditor in subEditors:
-            hBoxLayout.addWidget(subEditor)
+        # From the QAbstractItemDelegate.createEditor docs: The returned editor widget should have 
+        # Qt.StrongFocus; otherwise, QMouseEvents received by the widget will propagate to the view. 
+        # The view's background will shine through unless the editor paints its own background 
+        # (e.g., with setAutoFillBackground()).
+        self.setFocusPolicy(Qt.StrongFocus)
+        
+        self.hBoxLayout = QtGui.QHBoxLayout()
+        self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
+        self.hBoxLayout.setSpacing(0)
+        self.setLayout(self.hBoxLayout)
 
         self.resetButton = QtGui.QToolButton()
         self.resetButton.setText("Reset")
@@ -78,23 +78,16 @@ class AbstractCtiEditor(QtGui.QWidget):
         self.resetButton.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'err.warning.svg')))
         self.resetButton.setFocusPolicy(Qt.NoFocus)
         self.resetButton.clicked.connect(self.resetEditorValue)
-        hBoxLayout.addWidget(self.resetButton, alignment=Qt.AlignRight)
-        
-        # From the QAbstractItemDelegate.createEditor docs: The returned editor widget should have 
-        # Qt.StrongFocus; otherwise, QMouseEvents received by the widget will propagate to the view. 
-        # The view's background will shine through unless the editor paints its own background 
-        # (e.g., with setAutoFillBackground()).
-        self.setFocusPolicy(Qt.StrongFocus)
-        self.setFocusProxy(self.mainEditor)
-        self.mainEditor.setFocusPolicy(Qt.StrongFocus)
-        
-        self.mainEditor.installEventFilter(self)
-        
+        self.hBoxLayout.addWidget(self.resetButton, alignment=Qt.AlignRight)
 
+        for subEditor in (subEditors if subEditors is not None else []):
+            self.addSubEditor(subEditor)
+            
+        
     def eventFilter(self, watchedObject, event):
         """ Calls commitAndClose when the tab and back-tab are pressed.
             This is necessary because, normally the event filter of QStyledItemDelegate does this
-            for us. However, that event filter works on this object, not on the main editor.
+            for us. However, that event filter works on this object, not on the sub editor.
         """
         if event.type() == QtCore.QEvent.KeyPress:
             key = event.key()
@@ -105,20 +98,52 @@ class AbstractCtiEditor(QtGui.QWidget):
                 return False
 
         return super(AbstractCtiEditor, self).eventFilter(watchedObject, event) 
-            
+                
 
     def finalize(self):
         """ Called at clean up. Can be used to disconnect signals.
             Be sure to call the finalize of the super class if you override this function. 
         """
-        self.mainEditor.removeEventFilter(self)
+        for subEditor in self._subEditors:
+            self.removeSubEditor(subEditor)
+            
         self.resetButton.clicked.disconnect(self.resetEditorValue)
         self.cti = None # just to make sure it's not used again.
         self.delegate = None
 
         
+    def addSubEditor(self, subEditor, isFocusProxy=False):
+        """ Adds a sub editor to the layout (at the right but before the reset button)
+            Will add the necessary event filter to handle tabs and sets the strong focus so
+            that events will not propagate to the tree view.
+            
+            If isFocusProxy is True the sub editor will be the focus proxy of the CTI.
+        """
+        self.hBoxLayout.insertWidget(len(self._subEditors), subEditor)
+        self._subEditors.append(subEditor)
+
+        subEditor.installEventFilter(self)
+        subEditor.setFocusPolicy(Qt.StrongFocus)
+        
+        if isFocusProxy:
+            self.setFocusProxy(subEditor)
+
+        return subEditor
+
+
+    def removeSubEditor(self, subEditor):
+        """ Removes the subEditor from the layout and removes the event filter.
+        """
+        if subEditor is self.focusProxy():
+            self.setFocusProxy(None)
+                    
+        subEditor.removeEventFilter(self)
+        self._subEditors.remove(subEditor)
+        self.hBoxLayout.removeWidget(subEditor)
+
+        
     def setData(self, value):
-        """ Provides the main editor widget with a data to manipulate.
+        """ Provides the editor widget with a data to manipulate.
             Value originates from the ConfigTreeModel.data(role=QEditRole).
         """
         raise NotImplementedError()
@@ -130,17 +155,10 @@ class AbstractCtiEditor(QtGui.QWidget):
         """
         raise NotImplementedError()
     
-        
-    @property
-    def mainEditor(self):
-        """ Returns the first child widget 
-        """
-        return self.subEditors[0]
-    
     
     @QtSlot()
     def commitAndClose(self):
-        """ Commits the data of the main editor and instructs the delegate to close this ctiEditor.
+        """ Commits the data of the sub editor and instructs the delegate to close this ctiEditor.
         
             The delegate will emit the closeEditor signal which is connected to the closeEditor
             method of the ConfigTreeView class. This, in turn will, call the finalize method of
@@ -153,7 +171,7 @@ class AbstractCtiEditor(QtGui.QWidget):
 
     @QtSlot(bool)
     def resetEditorValue(self, checked=False):
-        """ Resets the main editor to the default value of the config tree item
+        """ Resets the editor to the default value of the config tree item
         """
         logger.debug("resetEditorValue: {}".format(checked))
         self.setData(self.cti.defaultData)
