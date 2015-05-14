@@ -28,13 +28,13 @@ logger = logging.getLogger(__name__)
 
 
         
-class BaseCtiEditor(AbstractCtiEditor):
-    """ A CtiEditor which contains a QLineEdit for editing BaseCti objects. 
+class UntypedCtiEditor(AbstractCtiEditor):
+    """ A CtiEditor which contains a QLineEdit for editing UntypedCti objects. 
     """
     def __init__(self, cti, delegate, parent=None):
         """ See the AbstractCtiEditor for more info on the parameters 
         """
-        super(BaseCtiEditor, self).__init__(cti, delegate, [QtGui.QLineEdit()], parent=parent)
+        super(UntypedCtiEditor, self).__init__(cti, delegate, [QtGui.QLineEdit()], parent=parent)
     
     
     def setData(self, value):
@@ -52,24 +52,28 @@ class BaseCtiEditor(AbstractCtiEditor):
     
     
     
-class BaseCti(AbstractCti):
+class UntypedCti(AbstractCti):
     """ Config Tree Item to store a any type of data as long as it can be edited with a QLineEdit.
+    
+        Typically it's better to use 'typed' CTIs, where the data is always internally stored in
+        the same type (enforcec by _enforceDataType). This class is currently only used in the
+        invisible root item of the ConfigTreeModel, and may become obsolete in the future.
     """
     def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=''):
         """ Constructor. For the parameters see the AbstractCti constructor documentation.
         """
-        super(BaseCti, self).__init__(nodeName, data=data, defaultData=defaultData)
+        super(UntypedCti, self).__init__(nodeName, data=data, defaultData=defaultData)
 
     
     def _enforceDataType(self, value):
-        """ Since BaseCti can store any type of data no conversion will be done. 
+        """ Since UntypedCti can store any type of data no conversion will be done. 
         """
         return value
     
     
     def createEditor(self, delegate, parent, option):
-        """ Creates an BaseCtiEditor. 
+        """ Creates an UntypedCtiEditor. 
             For the parameters see the AbstractCti constructor documentation.
         """
-        return BaseCtiEditor(self, delegate, parent=parent) 
+        return UntypedCtiEditor(self, delegate, parent=parent) 
     

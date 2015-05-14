@@ -296,10 +296,10 @@ class MainWindow(QtGui.QMainWindow):
     def __addTestItems(self):
         """ Temporary function to add test CTIs
         """
-        from libargos.config.basecti import BaseCti
+        from libargos.config.untypedcti import UntypedCti
         from libargos.config.simplectis import IntegerCti, StringCti, BoolCti, ChoiceCti, ColorCti
         
-        rootItem = BaseCti(nodeName='line color', defaultData=123)
+        rootItem = UntypedCti(nodeName='line color', defaultData=123)
         rootIndex = self._config.insertItem(rootItem)
         self.configTreeView.setExpanded(rootIndex, True) # does not work because of read settings
 
