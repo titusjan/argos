@@ -91,6 +91,38 @@ class ColorCtiEditor(AbstractCtiEditor):
         
         self.lineEditor = self.addSubEditor(lineEditor, isFocusProxy=True)
         
+        pickButton = QtGui.QToolButton()
+        pickButton.setText("...")
+        pickButton.setToolTip("Opens color dialog.")
+        #pickButton.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'err.warning.svg')))
+        pickButton.setFocusPolicy(Qt.NoFocus)
+        pickButton.clicked.connect(self.openColorDialog)
+        
+        self.pickButton = self.addSubEditor(pickButton)
+
+
+    def finalize(self):
+        """ Is called when the editor is closed. Disconnect signals.
+        """
+        self.pickButton.clicked.disconnect(self.openColorDialog)
+        super(ColorCtiEditor, self).finalize()  
+        
+            
+    def openColorDialog(self):
+        """ Opens a QColorDialog for the user
+        """
+        try:
+            currentColor = self.getData()
+        except InvalidInputError:
+            currentColor = self.cti.data
+        
+        qColor = QtGui.QColorDialog.getColor(currentColor, self)
+        
+        if qColor.isValid():
+            logger.debug("color: {} (valid={})".format(qColor, qColor.isValid()))
+            self.setData(qColor)
+            self.commitAndClose()
+        
     
     def setData(self, qColor):
         """ Provides the main editor widget with a data to manipulate.
@@ -111,7 +143,7 @@ class ColorCtiEditor(AbstractCtiEditor):
             if state != QtGui.QValidator.Acceptable:
                 raise InvalidInputError("Invalid input: {!r}".format(text))
 
-        return text        
+        return  QtGui.QColor(text)         
 
 
                 
