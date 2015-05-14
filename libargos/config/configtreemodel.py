@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 class ConfigTreeModel(BaseTreeModel):
     """ An implementation QAbstractItemModel that offers access to configuration data for QTreeViews. 
-        The underlying data is stored as config tree items (BaseCti descendants)
+        The underlying data is stored as config tree items (AbstractCti descendants)
     """    
     HEADERS = ["name", "path", "value", "default value", "tree item", "debug info"]
     (COL_NODE_NAME, COL_NODE_PATH, 

@@ -20,8 +20,7 @@
 import logging
 import numpy as np
 
-from .basecti import BaseCti
-from libargos.config.abstractcti import AbstractCtiEditor, InvalidInputError
+from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor, InvalidInputError
 from libargos.qt import Qt, QtCore, QtGui, getQApplicationInstance
 from libargos.utils.misc import NOT_SPECIFIED
 
@@ -39,7 +38,7 @@ logger = logging.getLogger(__name__)
 # TODO: None takes data of parent
 
 
-class StringCti(BaseCti):
+class StringCti(AbstractCti):
     """ Config Tree Item to store a string. It can be edited with a QLineEdit.
         The string can have an optional maximum length.
 
@@ -50,7 +49,7 @@ class StringCti(BaseCti):
         
             :param maxLength: maximum length of the string
             
-            For the (other) parameters see the BaseCti constructor documentation.
+            For the (other) parameters see the AbstractCti constructor documentation.
         """
         super(StringCti, self).__init__(nodeName, data=data, defaultData=defaultData)
         
@@ -97,7 +96,7 @@ class StringCti(BaseCti):
 
 
 
-class IntegerCti(BaseCti):
+class IntegerCti(AbstractCti):
     """ Config Tree Item to store an integer. It can be edited using a QSinBox.
     """
     def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=0, 
@@ -108,7 +107,7 @@ class IntegerCti(BaseCti):
             :param maxValue: maximum data allowed when editing (use None for no maximum)
             :param stepSize: steps between values when ediging (default = 1)
                     
-            For the (other) parameters see the BaseCti constructor documentation.
+            For the (other) parameters see the AbstractCti constructor documentation.
         """
         super(IntegerCti, self).__init__(nodeName, data=data, defaultData=defaultData)
         
@@ -165,13 +164,13 @@ class IntegerCti(BaseCti):
 
         
 
-class BoolCti(BaseCti):
+class BoolCti(AbstractCti):
     """ Config Tree Item to store an integer. It can be edited using a QSpinBox.
     """
     def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=False):
         """ Constructor
 
-            For the parameters see the BaseCti constructor documentation.
+            For the parameters see the AbstractCti constructor documentation.
         """
         super(BoolCti, self).__init__(nodeName, data=data, defaultData=defaultData)
 
@@ -226,7 +225,7 @@ class BoolCti(BaseCti):
         """
         widget = QtGui.QWidget() # Add hidden widget to store editor value
         widget.hide()
-        ctiEditor = BaseCtiEditor(self, delegate, widget, parent=parent) 
+        ctiEditor = AbstractCtiEditor(self, delegate, widget, parent=parent) 
         #editor.setText(str(self.data)) # not necessary, it will be done by setEditorValue
         return ctiEditor
 
@@ -262,7 +261,7 @@ class BoolCti(BaseCti):
     
                 
 
-class ChoiceCti(BaseCti):
+class ChoiceCti(AbstractCti):
     """ Config Tree Item to store a choice between strings.
     """
     def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=0, choices=None):
@@ -270,7 +269,7 @@ class ChoiceCti(BaseCti):
             data and defaultData are used to store the currentIndex.
             choices must be a list of string.
                     
-            For the (other) parameters see the BaseCti constructor documentation.
+            For the (other) parameters see the AbstractCti constructor documentation.
         """
         super(ChoiceCti, self).__init__(nodeName, data=data, defaultData=defaultData)
         self.choices = [] if choices is None else choices
@@ -303,7 +302,7 @@ class ChoiceCti(BaseCti):
         comboBox = QtGui.QComboBox()
         comboBox.addItems(self.choices)
         
-        ctiEditor = BaseCtiEditor(self, delegate, comboBox, parent=parent) 
+        ctiEditor = AbstractCtiEditor(self, delegate, comboBox, parent=parent) 
 
         comboBox.activated.connect(ctiEditor.commitAndClose)        
         return ctiEditor
@@ -332,12 +331,12 @@ class ChoiceCti(BaseCti):
                 
 
 
-class ColorCti(BaseCti):
+class ColorCti(AbstractCti):
     """ Config Tree Item to store a color. 
     """
     def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=''):
         """ Constructor. 
-            For the (other) parameters see the BaseCti constructor documentation.
+            For the (other) parameters see the AbstractCti constructor documentation.
         """
         super(ColorCti, self).__init__(nodeName, data=data, defaultData=defaultData)
         
