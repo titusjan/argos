@@ -62,7 +62,7 @@ class ChoiceCti(AbstractCti):
         return repr(self.choices)
     
     def createEditor(self, delegate, parent, option):
-        """ Creates a StringCtiEditor. 
+        """ Creates a ChoiceCtiEditor. 
             For the parameters see the AbstractCti constructor documentation.
         """
         return ChoiceCtiEditor(self, delegate, self.choices, parent=parent) 

@@ -15,10 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Contains the StringCti and StringCtiEditor classes 
+""" Contains the Config and EmptyCtiEditor classes 
 """
 import logging
-import numpy as np
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
 from libargos.qt import Qt, QtGui

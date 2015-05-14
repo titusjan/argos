@@ -15,22 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Some simple Config Tree Items
+""" Contains the ColorCti and ColorCtiEditor classes 
 """
 import logging
-import numpy as np
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor, InvalidInputError
-from libargos.qt import Qt, QtCore, QtGui, getQApplicationInstance
+from libargos.qt import Qt, QtCore, QtGui
 from libargos.utils.misc import NOT_SPECIFIED
 
-
 logger = logging.getLogger(__name__)
-
-# Use setIndexWidget()?
- 
-
-        
           
 
 
@@ -42,7 +35,6 @@ class ColorCti(AbstractCti):
             For the (other) parameters see the AbstractCti constructor documentation.
         """
         super(ColorCti, self).__init__(nodeName, data=data, defaultData=defaultData)
-        
 
     def _enforceDataType(self, data):
         """ Converts to str so that this CTI always stores that type. 
@@ -51,7 +43,6 @@ class ColorCti(AbstractCti):
         if not qColor.isValid():
             raise ValueError("Invalid color specification: {!r}".format(data))
         return qColor
-        
         
     def _dataToJson(self, qColor):
         """ Converts data or defaultData to serializable json dictionary or scalar.
@@ -64,14 +55,12 @@ class ColorCti(AbstractCti):
             Helper function that can be overridden; by default the input is returned.
         """
         return QtGui.QColor(json) 
-
     
     @property
     def displayValue(self):
         """ Returns a string with the RGB value in hexadecimal (e.g. '#00FF88') 
         """
         return self._data.name().upper()    
-        
     
     @property
     def debugInfo(self):
@@ -79,40 +68,50 @@ class ColorCti(AbstractCti):
         """
         return ""
     
-    
-    def createEditor(self, delegate, parent, _option):
-        """ Creates a QSpinBox for editing. 
-            :type option: QStyleOptionViewItem
+    def createEditor(self, delegate, parent, option):
+        """ Creates a ColorCtiEditor. 
+            For the parameters see the AbstractCti constructor documentation.
         """
+        return ColorCtiEditor(self, delegate, parent=parent)     
+    
+
+
+class ColorCtiEditor(AbstractCtiEditor):
+    """ A CtiEditor which contains a QCombobox for editing ColorCti objects. 
+    """
+    def __init__(self, cti, delegate, parent=None):
+        """ See the AbstractCtiEditor for more info on the parameters 
+        """
+        super(ColorCtiEditor, self).__init__(cti, delegate, parent=parent)
+        
         lineEditor = QtGui.QLineEdit(parent)
         regExp = QtCore.QRegExp(r'#?[0-9A-F]{6}', Qt.CaseInsensitive)
         validator = QtGui.QRegExpValidator(regExp, parent=lineEditor)
         lineEditor.setValidator(validator)
-            
-        return lineEditor
         
+        self.lineEditor = self.addSubEditor(lineEditor, isFocusProxy=True)
         
-    def setEditorValue(self, lineEditor, qColor):
-        """ Provides the editor widget with a data to manipulate.
+    
+    def setData(self, qColor):
+        """ Provides the main editor widget with a data to manipulate.
         """
-        lineEditor.setText(qColor.name().upper())
+        self.lineEditor.setText(qColor.name().upper())
+    
         
-        
-    def getEditorValue(self, lineEditor):
+    def getData(self):
         """ Gets data from the editor widget.
         """
-        text = lineEditor.text()
+        text = self.lineEditor.text()
         if not text.startswith('#'):
             text = '#' + text
 
-        validator = lineEditor.validator()
+        validator = self.lineEditor.validator()
         if validator is not None:
             state, text, _ = validator.validate(text, 0)
             if state != QtGui.QValidator.Acceptable:
                 raise InvalidInputError("Invalid input: {!r}".format(text))
 
-        return text
-    
+        return text        
 
 
                 

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Contains the StringCti and StringCtiEditor classes 
+""" Contains the IntCti and IntCtiEditor classes 
 """
 import logging
 import numpy as np
@@ -61,7 +61,7 @@ class IntCti(AbstractCti):
     
     
     def createEditor(self, delegate, parent, option):
-        """ Creates a StringCtiEditor. 
+        """ Creates a IntCtiEditor. 
             For the parameters see the AbstractCti constructor documentation.
         """
         return IntCtiEditor(self, delegate, parent=parent, 
