@@ -58,11 +58,14 @@ logger = logging.getLogger(__name__)
 class ArgosTreeView(ToggleColumnTreeView):
     """ QTreeView that defines common functionality, look and feel for all tree views in Argos.
     """
-    def __init__(self, treeModel):
+    def __init__(self, treeModel=None):
         """ Constructor
         """
         super(ArgosTreeView, self).__init__()
-        self.setModel(treeModel)
+        
+        if treeModel is not None:
+            self.setModel(treeModel)
+            
         self.setAlternatingRowColors(True)
         self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)

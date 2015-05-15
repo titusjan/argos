@@ -35,12 +35,18 @@ class RepoTreeView(ArgosTreeView):
     
         Currently it supports only selecting one item. That is, the current item is always the 
         selected item (see notes in ArgosTreeView documentation for details). 
+        
     """
-    def __init__(self, repoTreeModel):
-        """ Constructor
+    def __init__(self, repoTreeModel, collector):
+        """ Constructor.
+        
+            Maintains a reference to a collector. The repo tree view updates the collector when
+            the currentIndex changes. 
         """
-        super(RepoTreeView, self).__init__(repoTreeModel)
+        super(RepoTreeView, self).__init__(treeModel=repoTreeModel)
  
+        self._collector = collector
+        
         treeHeader = self.header()
         treeHeader.resizeSection(RepoTreeModel.COL_NODE_NAME, COL_NODE_NAME_WIDTH)
         treeHeader.resizeSection(RepoTreeModel.COL_SHAPE, COL_SHAPE_WIDTH)  
@@ -85,7 +91,21 @@ class RepoTreeView(ArgosTreeView):
         # Connect signals
         selectionModel = self.selectionModel() # need to store to prevent crash in PySide
         selectionModel.currentChanged.connect(self.updateCurrentItemActions)
+        selectionModel.currentChanged.connect(self.updateCollector)
+        
 
+    def finalize(self):
+        """ Disconnects signals and frees resources
+        """
+        selectionModel = self.selectionModel() # need to store to prevent crash in PySide
+        selectionModel.currentChanged.disconnect(self.updateCollector)
+        selectionModel.currentChanged.disconnect(self.updateCurrentItemActions)
+        
+    @property
+    def collector(self): # TODO: move to selector class in the future
+        """ The collector that this selector view will update. Read only property.
+        """
+        return self._collector
         
     def sizeHint(self):
         """ The recommended size for the widget."""
@@ -169,4 +189,26 @@ class RepoTreeView(ArgosTreeView):
         self.setExpanded(newRtiIndex, isExpanded)
         self.setCurrentIndex(newRtiIndex)
         return newRtiIndex
-
+    
+    
+ 
+    @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
+    def updateCollector(self, currentIndex, _previousIndex):
+        """ Updates the collector based on the current selection.
+        
+            A selector always operates on one collector. Each selector implementation will update 
+            the collector in its own way. Therefore the selector maintains a reference to the
+            collector.
+            
+            TODO: make Selector classes. For now it's in the RepoTreeView.
+        """ 
+        # When the model is empty the current index may be invalid.
+        hasCurrent = currentIndex.isValid()
+        if not hasCurrent:
+            return        
+        
+        rti = self.model().getItem(currentIndex, None)
+        assert rti is not None, "sanity check failed. No RTI at current item"
+            
+        self.collector.setCurrentRti(rti)
+            

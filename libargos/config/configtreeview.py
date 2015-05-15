@@ -38,7 +38,7 @@ class ConfigTreeView(ArgosTreeView):
     def __init__(self, configTreeModel):
         """ Constructor
         """
-        super(ConfigTreeView, self).__init__(configTreeModel)
+        super(ConfigTreeView, self).__init__(treeModel=configTreeModel)
 
         self.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
         

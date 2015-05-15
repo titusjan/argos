@@ -21,6 +21,7 @@
 # Initial dock widths of the main window
 LEFT_DOCK_WIDTH = 350
 RIGHT_DOCK_WIDTH = 300
+TOP_DOCK_HEIGHT = 150
 
 COL_NODE_NAME_WIDTH = 170
 COL_SHAPE_WIDTH = 60  
