@@ -15,38 +15,11 @@
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
 """ Repository tree.
-
-    Currently it supports only selecting one item. That is, the current item is always the 
-    selected item. 
-    
-    The difference between the current item and the selected item(s) is as follows:
-    (from: http://doc.qt.digia.com/4.6/model-view-selection.html)
-    
-    In a view, there is always a current item and a selected item - two independent states. 
-    An item can be the current item and selected at the same time. The view is responsible for 
-    ensuring that there is always a current item as keyboard navigation, for example, requires 
-    a current item.
-            
-    Current Item:
-        There can only be one current item.    
-        The current item will be changed with key navigation or mouse button clicks.    
-        The current item will be edited if the edit key, F2, is pressed or the item is 
-            double-clicked (provided that editing is enabled).    
-        The current item is indicated by the focus rectangle.    
-
-    Selected Items:
-        There can be multiple selected items.
-        The selected state of items is set or unset, depending on several pre-defined modes 
-            (e.g., single selection, multiple selection, etc.) when the user interacts with the 
-            items.
-        The current item can be used together with an anchor to specify a range that should be 
-            selected or deselected (or a combination of the two).
-        The selected items are indicated with the selection rectangle.
 """
 from __future__ import print_function
 
 import logging
-from libargos.qt import Qt, QtGui, QtCore, QtSlot
+from libargos.qt import QtGui, QtCore, QtSlot
 from libargos.widgets.argostreeview import ArgosTreeView
 from libargos.repo.repotreemodel import RepoTreeModel
 from libargos.widgets.constants import (LEFT_DOCK_WIDTH, COL_NODE_NAME_WIDTH, 
@@ -59,6 +32,9 @@ logger = logging.getLogger(__name__)
 
 class RepoTreeView(ArgosTreeView):
     """ Tree widget for browsing the data repository.
+    
+        Currently it supports only selecting one item. That is, the current item is always the 
+        selected item (see notes in ArgosTreeView documentation for details). 
     """
     def __init__(self, repoTreeModel):
         """ Constructor
@@ -129,44 +105,13 @@ class RepoTreeView(ArgosTreeView):
         isTopLevel = hasCurrent and self.model().isTopLevelIndex(currentIndex)
         self.topLevelItemActionGroup.setEnabled(isTopLevel)
     
-    
-    def setCurrentIndex(self, currentIndex):
-        """ Sets the current item to be the item at currentIndex.
-            Also select the row as to give consistent user feedback.
-        """
-        selectionModel = self.selectionModel()
-        selectionFlags = (QtGui.QItemSelectionModel.ClearAndSelect | 
-                          QtGui.QItemSelectionModel.Rows)
-        selectionModel.setCurrentIndex(currentIndex, selectionFlags)  
 
-
-    def _getCurrentIndex(self): # TODO: public?
-        """ Returns the index of column 0 of the current item in the repository. 
-            See also the notes at the top of this module on current item vs selected item(s).
-        """
-        selectionModel = self.selectionModel()
-        #assert selectionModel.hasSelection(), "No selection"        
-        curIndex = selectionModel.currentIndex()
-        col0Index = curIndex.sibling(curIndex.row(), 0)
-        return col0Index
-
-
-    def _getCurrentItem(self):
-        """ Find the current repo tree item (and the current index while we're at it)
-            Returns a tuple with the current item, and its index.
-            See also the notes at the top of this module on current item vs selected item(s).
-        """
-        currentIndex = self._getCurrentIndex()
-        currentItem = self.model().getItem(currentIndex)
-        return currentItem, currentIndex
-
-    
     @QtSlot()
     def openCurrentItem(self):
         """ Opens the current item in the repository.
         """
         logger.debug("openCurrentItem")
-        currentItem, currentIndex = self._getCurrentItem()
+        currentItem, currentIndex = self.getCurrentItem()
         if not currentIndex.isValid():
             return
 
@@ -181,7 +126,7 @@ class RepoTreeView(ArgosTreeView):
             All its children will be unfetched and closed.
         """
         logger.debug("closeCurrentItem")
-        currentItem, currentIndex = self._getCurrentItem()
+        currentItem, currentIndex = self.getCurrentItem()
         if not currentIndex.isValid():
             return
 
@@ -199,7 +144,7 @@ class RepoTreeView(ArgosTreeView):
             and removes it from the list.
         """
         logger.debug("removeCurrentFile")
-        currentIndex = self._getCurrentIndex()
+        currentIndex = self.getCurrentIndex()
         if not currentIndex.isValid():
             return
 
@@ -213,7 +158,7 @@ class RepoTreeView(ArgosTreeView):
             Reloading is done by removing the repo tree item and inserting a new one.
         """
         logger.debug("reloadFileOfCurrentItem")
-        currentIndex = self._getCurrentIndex()
+        currentIndex = self.getCurrentIndex()
         if not currentIndex.isValid():
             return
         
