@@ -93,7 +93,7 @@ class ColorCtiEditor(AbstractCtiEditor):
         
         pickButton = QtGui.QToolButton()
         pickButton.setText("...")
-        pickButton.setToolTip("Opens color dialog.")
+        pickButton.setToolTip("Open color dialog.")
         #pickButton.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'err.warning.svg')))
         pickButton.setFocusPolicy(Qt.NoFocus)
         pickButton.clicked.connect(self.openColorDialog)
@@ -119,7 +119,6 @@ class ColorCtiEditor(AbstractCtiEditor):
         qColor = QtGui.QColorDialog.getColor(currentColor, self)
         
         if qColor.isValid():
-            logger.debug("color: {} (valid={})".format(qColor, qColor.isValid()))
             self.setData(qColor)
             self.commitAndClose()
         
