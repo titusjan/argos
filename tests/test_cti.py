@@ -5,33 +5,34 @@
 import unittest, logging, sys, copy
 from json import loads, dumps
 
-from libargos.qt import QtCore, QtGui
-from libargos.config.basecti import BaseCti, ctiDumps, CtiDecoder
-from libargos.config.simplectis import ColorCti
+from libargos.qt import QtGui
+from libargos.config.abstractcti import ctiDumps, CtiDecoder
+from libargos.config.untypedcti import UntypedCti
+from libargos.config.colorcti import ColorCti
 
 
 
-class TestBaseCtis(unittest.TestCase):
+class TestUntypedCtis(unittest.TestCase):
 
     def setUp(self):
-        self.rootItem = BaseCti(nodeName='<invisible-root>', data=0.123456789012345678901234567890)
-        self.rootItem.insertChild(BaseCti(nodeName='kid', data=-7))
+        self.rootItem = UntypedCti(nodeName='<invisible-root>', data=0.123456789012345678901234567890)
+        self.rootItem.insertChild(UntypedCti(nodeName='kid', data=-7))
 
 
     def test__eq__(self):
         
-        ctiIn = BaseCti('parent', 7, defaultData=7)
+        ctiIn = UntypedCti('parent', 7, defaultData=7)
         self.assertEqual(ctiIn, ctiIn)
-        self.assertEqual(ctiIn, BaseCti('parent', 7, defaultData=7))
+        self.assertEqual(ctiIn, UntypedCti('parent', 7, defaultData=7))
 
-        self.assertNotEqual(ctiIn, BaseCti('parent', 7, defaultData=9))
-        self.assertNotEqual(ctiIn, BaseCti('parent', 9, defaultData=7))
+        self.assertNotEqual(ctiIn, UntypedCti('parent', 7, defaultData=9))
+        self.assertNotEqual(ctiIn, UntypedCti('parent', 9, defaultData=7))
 
-        ctiOut = BaseCti('parent', 7, defaultData=7)
-        ctiIn.insertChild(BaseCti('kid', 22, defaultData=23))
+        ctiOut = UntypedCti('parent', 7, defaultData=7)
+        ctiIn.insertChild(UntypedCti('kid', 22, defaultData=23))
         self.assertNotEqual(ctiIn, ctiOut)
 
-        ctiOut.insertChild(BaseCti('kid', 22, defaultData=23))
+        ctiOut.insertChild(UntypedCti('kid', 22, defaultData=23))
         self.assertEqual(ctiIn, ctiOut)
 
         ctiIn.childItems[0].data = 99    
@@ -55,39 +56,39 @@ class TestBaseCtis(unittest.TestCase):
     def testNonDefaults(self):
         
         # A data different than its default should be restored 
-        ctiIn  = BaseCti('parent', 6, defaultData=7)
+        ctiIn  = UntypedCti('parent', 6, defaultData=7)
         defDict = ctiIn.getNonDefaultsDict()
         #print(defDict)
-        ctiOut = BaseCti('parent', defaultData=7)
+        ctiOut = UntypedCti('parent', defaultData=7)
         ctiOut.setValuesFromDict(defDict)
         self.assertEqual(ctiIn, ctiOut)
         
         # A data is not written if it's the default and 
         # is read correctly if the default stays the same 
-        ctiIn  = BaseCti('parent', 7, defaultData=7)
+        ctiIn  = UntypedCti('parent', 7, defaultData=7)
         defDict = ctiIn.getNonDefaultsDict()
         #print(defDict)
-        ctiOut = BaseCti('parent', defaultData=7)
+        ctiOut = UntypedCti('parent', defaultData=7)
         ctiOut.setValuesFromDict(defDict)
         self.assertEqual(ctiIn, ctiOut)
         
         # A default data should have no effect it the default changes in the future.
-        ctiIn  = BaseCti('parent', 7, defaultData=7)
+        ctiIn  = UntypedCti('parent', 7, defaultData=7)
         defDict = ctiIn.getNonDefaultsDict()
         #print(defDict)
-        ctiOut = BaseCti('parent', defaultData=9)
+        ctiOut = UntypedCti('parent', defaultData=9)
         ctiOut.setValuesFromDict(defDict)
         self.assertNotEqual(ctiIn, ctiOut)
 
         # Test children
-        ctiIn  = BaseCti('parent', defaultData=6)
-        ctiIn.insertChild(BaseCti('child1', 1, defaultData=1))
-        ctiIn.insertChild(BaseCti('child2', 3, defaultData=2))
+        ctiIn  = UntypedCti('parent', defaultData=6)
+        ctiIn.insertChild(UntypedCti('child1', 1, defaultData=1))
+        ctiIn.insertChild(UntypedCti('child2', 3, defaultData=2))
         defDict = ctiIn.getNonDefaultsDict()
         #print(defDict)
-        ctiOut = BaseCti('parent', defaultData=6)
-        ctiOut.insertChild(BaseCti('child1', defaultData=1))
-        ctiOut.insertChild(BaseCti('child2', defaultData=2))
+        ctiOut = UntypedCti('parent', defaultData=6)
+        ctiOut.insertChild(UntypedCti('child1', defaultData=1))
+        ctiOut.insertChild(UntypedCti('child2', defaultData=2))
         ctiOut.setValuesFromDict(defDict)
         self.assertEqual(ctiIn, ctiOut)
 
@@ -100,8 +101,8 @@ class TestBaseCtis(unittest.TestCase):
 class TestSimpleCtis(unittest.TestCase):
 
     def setUp(self):
-        self.rootItem = BaseCti(nodeName='<invisible-root>', data=0.123456789012345678901234567890)
-        self.rootItem.insertChild(BaseCti(nodeName='kid', data=-7))
+        self.rootItem = UntypedCti(nodeName='<invisible-root>', data=0.123456789012345678901234567890)
+        self.rootItem.insertChild(UntypedCti(nodeName='kid', data=-7))
 
     def tearDown(self):
         pass
