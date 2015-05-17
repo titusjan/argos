@@ -97,13 +97,12 @@ class ArgosTreeView(ToggleColumnTreeView):
             See also the notes at the top of this module on current item vs selected item(s).        
         """
         selectionModel = self.selectionModel()
-        #assert selectionModel.hasSelection(), "No selection"        
         curIndex = selectionModel.currentIndex()
         col0Index = curIndex.sibling(curIndex.row(), 0)
         return col0Index
 
 
-    def getCurrentItem(self):
+    def getCurrentItem(self): # TODO: rename? getCurrentItemAndIndex? getCurrentTuple? getCurrent?
         """ Find the current tree item (and the current index while we're at it)
             Returns a tuple with the current item, and its index.
             See also the notes at the top of this module on current item vs selected item(s).            
