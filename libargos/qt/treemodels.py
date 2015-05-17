@@ -419,27 +419,21 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
                     childIndex = self.index(rowNr, 0, parentIndex=parentIndex)
                     return (childItem, childIndex)
             raise IndexError("Item not found: {!r}".format(path))
-
         
         def _auxGetByPath(parts, item, index):
             "Aux function that does the actual recursive search"
-
-            logger.debug("_auxGetByPath item={}, parts={}: ".format(item, parts))
-            head, tail = parts[0], parts[1:]
+            #logger.debug("_auxGetByPath item={}, parts={}: ".format(item, parts))
             
-            if len(tail) == 0:
-                if head == '':
-                    # Path ends in a slash. Just return what has been found.
-                    return (item, index)                
-                else:
-                    return _getIndexAndItemByName(head, item, index)
+            if len(parts) == 0:
+                return (item, index)                
+        
+            head, tail = parts[0], parts[1:]
+            if head == '':
+                # Two consecutive slashes. Just go one level deeper.
+                return _auxGetByPath(tail, item, index)                
             else:
-                if head == '':
-                    # Two consecutive slashes. Just go one level deeper.
-                    return _auxGetByPath(tail, item, index)                
-                else:
-                    childItem, childIndex = _getIndexAndItemByName(head, item, index)
-                    return _auxGetByPath(tail, childItem, childIndex)
+                childItem, childIndex = _getIndexAndItemByName(head, item, index)
+                return _auxGetByPath(tail, childItem, childIndex)
     
         # The actual body of findItemAndIndexByPath starts here
         
