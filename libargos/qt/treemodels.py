@@ -1,9 +1,10 @@
 
 import logging
 
-from .treeitems import BaseTreeItem
+from libargos.qt.treeitems import BaseTreeItem
 from libargos.info import DEBUGGING
 from libargos.qt import Qt, QtCore
+from libargos.utils.cls import check_is_a_string
 
 logger = logging.getLogger(__name__)
     
@@ -17,8 +18,10 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         handling model indexes. Although the root item does not have a visible representation in 
         any of the standard views, we use its internal list of QVariant objects to store a list of 
         strings that will be passed to views for use as horizontal header titles.
+        
+        This BaseTreeModel has one column and can be instantiated for testing purposes.
     """
-    HEADERS = tuple() # override in descendants
+    HEADERS = tuple('<first column') # override in descendants
     COL_ICON = None   # Column number that contains the icon. None for no icons
     
     def __init__(self, parent=None):
@@ -31,14 +34,14 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         # The root item also is returned by getItem in case of an invalid index. 
         # Finally, it is used to store the header data.
         #self._horizontalHeaders = [header for header in headers]
-        self._rootItem = BaseTreeItem(nodeName='<invisible-root>')
+        self._invisibleRootItem = BaseTreeItem(nodeName='<invisible-root>')
         
 
     @property
-    def rootItem(self):
+    def invisibleRootItem(self):
         """ Returns the invisible root item, which contains no actual data
         """
-        return self._rootItem
+        return self._invisibleRootItem
     
 
     @property
@@ -95,20 +98,20 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             return None
 
         if role == Qt.DisplayRole:
-            item = self.getItem(index, altItem=self.rootItem)
+            item = self.getItem(index, altItem=self.invisibleRootItem)
             return self._displayValueForColumn(item, index.column())
 
         elif role == Qt.EditRole:
-            item = self.getItem(index, altItem=self.rootItem)
+            item = self.getItem(index, altItem=self.invisibleRootItem)
             return self._editValueForColumn(item, index.column())
         
         elif role == Qt.CheckStateRole:
-            item = self.getItem(index, altItem=self.rootItem)
+            item = self.getItem(index, altItem=self.invisibleRootItem)
             return self._checkStateForColumn(item, index.column())
         
         elif role == Qt.DecorationRole:
             if index.column() == self.COL_ICON:
-                item = self.getItem(index, altItem=self.rootItem)
+                item = self.getItem(index, altItem=self.invisibleRootItem)
                 return item.icon
         
         return None
@@ -156,7 +159,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
 #                     .format(parentIndex.row(), parentIndex.column(), parentIndex.isValid(), 
 #                             parentIndex.isValid() and parentIndex.column() != 0))
         
-        parentItem = self.getItem(parentIndex, altItem=self.rootItem)
+        parentItem = self.getItem(parentIndex, altItem=self.invisibleRootItem)
         #logger.debug("    Getting row {} from parentItem: {}".format(row, parentItem))
         
         if not (0 <= row < parentItem.nChildren()):
@@ -191,10 +194,10 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         if not index.isValid():
             return QtCore.QModelIndex()
 
-        childItem = self.getItem(index, altItem=self.rootItem)
+        childItem = self.getItem(index, altItem=self.invisibleRootItem)
         parentItem = childItem.parentItem
 
-        if parentItem == self.rootItem:
+        if parentItem == self.invisibleRootItem:
             return QtCore.QModelIndex()
 
         return self.createIndex(parentItem.childNumber(), 0, parentItem)
@@ -207,7 +210,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             Note: When implementing a table based model, rowCount() should return 0 when the parent 
             is valid.
         """
-        parentItem = self.getItem(parentIndex, altItem=self.rootItem)
+        parentItem = self.getItem(parentIndex, altItem=self.invisibleRootItem)
         return parentItem.nChildren()
 
 
@@ -215,7 +218,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         """ Returns true if parent has any children; otherwise returns false.
             Use rowCount() on the parent to find out the number of children.
         """
-        parentItem = self.getItem(parentIndex, altItem=self.rootItem)
+        parentItem = self.getItem(parentIndex, altItem=self.invisibleRootItem)
         return parentItem.hasChildren()
         
 
@@ -244,7 +247,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         if role != Qt.CheckStateRole and role != Qt.EditRole:
             return False
 
-        treeItem = self.getItem(index, altItem=self.rootItem)
+        treeItem = self.getItem(index, altItem=self.invisibleRootItem)
         try:
             if role == Qt.CheckStateRole:
                 result = self._setCheckStateForColumn(treeItem, index.column(), value)
@@ -277,7 +280,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
     
     
     # Originally from the editabletreemodel example but added the altItem parameter to force
-    # callers to specify request the rootItem as alternative in case of an invalid index.
+    # callers to specify request the invisibleRootItem as alternative in case of an invalid index.
     def getItem(self, index, altItem=None):
         """ Returns the TreeItem for the given index. Returns the altItem if the index is invalid.
         """
@@ -286,17 +289,20 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             if item:
                 return item
             
-        #return altItem if altItem is not None else self.rootItem # TODO: remove
+        #return altItem if altItem is not None else self.invisibleRootItem # TODO: remove
         return altItem
         
 
-    def insertItem(self, childItem, position=None, parentIndex=QtCore.QModelIndex()):
+    def insertItem(self, childItem, position=None, parentIndex=None):
         """ Inserts a childItem before row 'position' under the parent index.
         
             If position is None the child will be appended as the last child of the parent.
             Returns the index of the new inserted child.
         """
-        parentItem = self.getItem(parentIndex, altItem=self.rootItem)
+        if parentIndex is None:
+            parentIndex=QtCore.QModelIndex()
+            
+        parentItem = self.getItem(parentIndex, altItem=self.invisibleRootItem)
         
         nChildren = parentItem.nChildren()
         if position is None:
@@ -355,7 +361,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         logger.debug("deleteItemByIndex: removing {!r}".format(item))
         
         parentIndex = itemIndex.parent()
-        parentItem = self.getItem(parentIndex, altItem=self.rootItem)
+        parentItem = self.getItem(parentIndex, altItem=self.invisibleRootItem)
         row = itemIndex.row()
         self.beginRemoveRows(parentIndex, row, row)
         try:
@@ -395,3 +401,60 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             return self.findTopLevelItemIndex(childIndex.parent())
             
 
+    def getItemAndIndexByPath(self, path, startIndex=None):
+        """ Searches all the model recursively (starting at startIndex) for an item where
+            item.nodePath == path.
+            
+            If startIndex is None, or path starts with a slash, searching begins at the (invisible)
+            root item.
+               
+            Returns (item, itemIndex) tuple. Raises IndexError if the item cannot be found.
+        """
+        
+        def _auxGetByPath(restPath, item, index):
+            "Aux function that does the actual recursive search"
+
+            parts = restPath.split('/', 1)
+            assert len(parts) <= 2, "Sanity check"
+            #logger.debug("_auxGetByPath item={}, parts={}: ".format(item, parts))
+            
+            if len(parts) == 1:
+                # We have reached the end of the path
+                head = parts[0]
+                if head == '':
+                    # Two consecutive slashes. Just return what has been found
+                    return (item, index)                
+                else:
+                    for rowNr, childItem in enumerate(item.childItems):
+                        if childItem.nodeName == head:
+                            childIndex = self.index(rowNr, 0, parentIndex=index)
+                            return (childItem, childIndex)
+                    raise IndexError("Item not found: {!r}".format(path))
+            else:
+                head, tail = parts
+                if head == '':
+                    # Two consecutive slashes. Just go one level deeper.
+                    return _auxGetByPath(tail, item, index)                
+                else:
+                    for rowNr, childItem in enumerate(item.childItems):
+                        if childItem.nodeName == head:
+                            childIndex = self.index(rowNr, 0, parentIndex=index)
+                            return _auxGetByPath(tail, childItem, childIndex)
+                    raise IndexError("Item not found: {!r}".format(path))
+    
+        # The actual body of getItemAndIndexByPath starts here
+        
+        check_is_a_string(path)
+        if not path:
+            raise IndexError("Item not found: {!r}".format(path))
+        
+        if startIndex is None or path.startswith('/'):
+            startIndex = QtCore.QModelIndex()
+            startItem = self.invisibleRootItem
+        else:
+            startItem = self.getItem(startIndex, None)
+            
+        if not startItem:
+            raise IndexError("Item not found: {!r}. No start item!".format(path))
+            
+        return _auxGetByPath(path, startItem, startIndex)

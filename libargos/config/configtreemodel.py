@@ -42,7 +42,7 @@ class ConfigTreeModel(BaseTreeModel):
         """ Constructor
         """
         super(ConfigTreeModel, self).__init__(parent=parent)
-        self._rootItem = UntypedCti(nodeName='<invisible-root>')
+        self._invisibleRootItem = UntypedCti(nodeName='<invisible-root>')
         self.dataChanged.connect(self.debug)
 
 
@@ -164,7 +164,7 @@ class ConfigTreeModel(BaseTreeModel):
         if values_json:
             values = loads(values_json)
             self.beginResetModel()
-            self.rootItem.setValuesFromDict(values)
+            self.invisibleRootItem.setValuesFromDict(values)
             self.endResetModel()
         else:
             logger.warn("No settings found at: {}".format(key))
@@ -179,7 +179,7 @@ class ConfigTreeModel(BaseTreeModel):
         if settings is None:
             settings = QtCore.QSettings()
             
-        values = self.rootItem.getNonDefaultsDict()
+        values = self.invisibleRootItem.getNonDefaultsDict()
         values_json = dumps(values)
         settings.setValue(key, values_json)
 

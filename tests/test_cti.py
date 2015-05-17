@@ -15,8 +15,8 @@ from libargos.config.colorcti import ColorCti
 class TestUntypedCtis(unittest.TestCase):
 
     def setUp(self):
-        self.rootItem = UntypedCti(nodeName='<invisible-root>', data=0.123456789012345678901234567890)
-        self.rootItem.insertChild(UntypedCti(nodeName='kid', data=-7))
+        self.invisibleRootItem = UntypedCti(nodeName='<invisible-root>', data=0.123456789012345678901234567890)
+        self.invisibleRootItem.insertChild(UntypedCti(nodeName='kid', data=-7))
 
 
     def test__eq__(self):
@@ -42,7 +42,7 @@ class TestUntypedCtis(unittest.TestCase):
     def testJson(self):
         
         # encoding
-        jstr = ctiDumps(self.rootItem)
+        jstr = ctiDumps(self.invisibleRootItem)
         #print(jstr)
         
         # decoding
@@ -50,7 +50,7 @@ class TestUntypedCtis(unittest.TestCase):
         testItem = loads(jstr, cls=CtiDecoder)
         #print(mydumps(testItem))
             
-        self.assertEqual(testItem, self.rootItem)
+        self.assertEqual(testItem, self.invisibleRootItem)
 
 
     def testNonDefaults(self):
@@ -101,8 +101,8 @@ class TestUntypedCtis(unittest.TestCase):
 class TestSimpleCtis(unittest.TestCase):
 
     def setUp(self):
-        self.rootItem = UntypedCti(nodeName='<invisible-root>', data=0.123456789012345678901234567890)
-        self.rootItem.insertChild(UntypedCti(nodeName='kid', data=-7))
+        self.invisibleRootItem = UntypedCti(nodeName='<invisible-root>', data=0.123456789012345678901234567890)
+        self.invisibleRootItem.insertChild(UntypedCti(nodeName='kid', data=-7))
 
     def tearDown(self):
         pass
