@@ -25,7 +25,7 @@ from __future__ import division
 
 import logging
 
-from .aboutdialog import AboutDialog
+from libargos.widgets.aboutdialog import AboutDialog
 
 from libargos.collect.collectortree import CollectorTree
 from libargos.config.configtreeview import ConfigTreeView
@@ -307,11 +307,14 @@ class MainWindow(QtGui.QMainWindow):
         from libargos.config.choicecti import ChoiceCti
         from libargos.config.colorcti import ColorCti
         
-        rootItem = UntypedCti(nodeName='line color', defaultData=123)
-        rootIndex = self._config.insertItem(rootItem)
-        self.configTreeView.setExpanded(rootIndex, True) # does not work because of read settings
+        lcItem = UntypedCti(nodeName='line color', defaultData=123)
+        lcIndex = self._config.insertItem(lcItem)
+        self.configTreeView.setExpanded(lcIndex, True) # does not work because of read settings
 
-        rootItem.insertChild(IntCti(nodeName='line-1 color', defaultData=-7, minValue = -5, stepSize=2))
+        # this only works b
+        #rootItem.insertChild(IntCti(nodeName='line-1 color', defaultData=-7, minValue = -5, stepSize=2))
+        self._config.insertItem(IntCti(nodeName='line-1 color', defaultData=-7, minValue = -5, stepSize=2), 
+                                parentIndex=lcIndex)
         
         self._config.insertItem(StringCti(nodeName='letter', defaultData='aa', maxLength = 1))
         self._config.insertItem(BoolCti(nodeName='grid', defaultData=True))
@@ -320,4 +323,4 @@ class MainWindow(QtGui.QMainWindow):
                                           choices=['Frodo', 'Sam', 'Pippin', 'Merry']))
 
         self._config.insertItem(ColorCti(nodeName='favorite color', defaultData="#22FF33"))
-    
+        
