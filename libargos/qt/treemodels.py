@@ -410,6 +410,16 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
                
             Returns (item, itemIndex) tuple. Raises IndexError if the item cannot be found.
         """
+        def _getIndexAndItemByName(nodeName, parentItem, parentIndex):
+            """ Searches the parent for a direct child having the nodeName.
+                Returns (item, itemIndex) tuple. Raises IndexError if the item cannot be found.
+            """
+            for rowNr, childItem in enumerate(parentItem.childItems):
+                if childItem.nodeName == nodeName:
+                    childIndex = self.index(rowNr, 0, parentIndex=parentIndex)
+                    return (childItem, childIndex)
+            raise IndexError("Item not found: {!r}".format(path))
+
         
         def _auxGetByPath(restPath, item, index):
             "Aux function that does the actual recursive search"
@@ -419,28 +429,20 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             #logger.debug("_auxGetByPath item={}, parts={}: ".format(item, parts))
             
             if len(parts) == 1:
-                # We have reached the end of the path
                 head = parts[0]
                 if head == '':
-                    # Two consecutive slashes. Just return what has been found
+                    # Two consecutive slashes. Just return what has been found.
                     return (item, index)                
                 else:
-                    for rowNr, childItem in enumerate(item.childItems):
-                        if childItem.nodeName == head:
-                            childIndex = self.index(rowNr, 0, parentIndex=index)
-                            return (childItem, childIndex)
-                    raise IndexError("Item not found: {!r}".format(path))
+                    return _getIndexAndItemByName(head, item, index)
             else:
                 head, tail = parts
                 if head == '':
                     # Two consecutive slashes. Just go one level deeper.
                     return _auxGetByPath(tail, item, index)                
                 else:
-                    for rowNr, childItem in enumerate(item.childItems):
-                        if childItem.nodeName == head:
-                            childIndex = self.index(rowNr, 0, parentIndex=index)
-                            return _auxGetByPath(tail, childItem, childIndex)
-                    raise IndexError("Item not found: {!r}".format(path))
+                    childItem, childIndex = _getIndexAndItemByName(head, item, index)
+                    return _auxGetByPath(tail, childItem, childIndex)
     
         # The actual body of findItemAndIndexByPath starts here
         
