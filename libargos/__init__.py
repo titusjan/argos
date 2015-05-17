@@ -27,6 +27,14 @@ from .application import ArgosApplication
 
 logger = logging.getLogger(__name__)
 
+
+def configBasicLogging(level = 'DEBUG'):
+    """ Setup basic config logging. Useful for debugging to quickly setup a useful logger
+    """
+    fmt = '%(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s'
+    logging.basicConfig(level=level, format=fmt)
+
+    
 def browse(fileNames = None, 
            profile=DEFAULT_PROFILE, 
            resetProfile=False, 
