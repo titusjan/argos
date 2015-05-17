@@ -38,57 +38,57 @@ class TestGetByPath(unittest.TestCase):
     def testGetByPathFromRoot(self):
 
         # Normal use
-        checkItem, checkIndex = self.model.getItemAndIndexByPath('item3')
+        checkItem, checkIndex = self.model.findItemAndIndexByPath('item3')
         self.assertIs(self.model.getItem(checkIndex), checkItem)
         self.assertIs(checkItem, self.item3)
 
         # Long path
-        checkItem, checkIndex = self.model.getItemAndIndexByPath('item0/item1/item2')
+        checkItem, checkIndex = self.model.findItemAndIndexByPath('item0/item1/item2')
         self.assertIs(self.model.getItem(checkIndex), checkItem)
         self.assertIs(checkItem, self.item2)
                 
         # Leading slash
-        checkItem, checkIndex = self.model.getItemAndIndexByPath('/item3')
+        checkItem, checkIndex = self.model.findItemAndIndexByPath('/item3')
         self.assertIs(self.model.getItem(checkIndex), checkItem)
         self.assertIs(checkItem, self.item3)
         
         # Trailing slash
-        checkItem, checkIndex = self.model.getItemAndIndexByPath('item3/')
+        checkItem, checkIndex = self.model.findItemAndIndexByPath('item3/')
         self.assertIs(self.model.getItem(checkIndex), checkItem)
         self.assertIs(checkItem, self.item3)
         
         # Long path with double slashes
-        checkItem, checkIndex = self.model.getItemAndIndexByPath('/item0///item1//')
+        checkItem, checkIndex = self.model.findItemAndIndexByPath('/item0///item1//')
         self.assertIs(self.model.getItem(checkIndex), checkItem)
         self.assertIs(checkItem, self.item1)
         
         # Item not found
-        self.assertRaises(IndexError, self.model.getItemAndIndexByPath, '/item0/narf//')
+        self.assertRaises(IndexError, self.model.findItemAndIndexByPath, '/item0/narf//')
 
         # Invisible root
-        checkItem, checkIndex = self.model.getItemAndIndexByPath('/')
+        checkItem, checkIndex = self.model.findItemAndIndexByPath('/')
         self.assertFalse(checkIndex.isValid())
         self.assertIs(checkItem, self.model.invisibleRootItem)
 
         # Empty string
-        self.assertRaises(IndexError, self.model.getItemAndIndexByPath, '')
+        self.assertRaises(IndexError, self.model.findItemAndIndexByPath, '')
 
         # None strings
-        self.assertRaises(TypeError, self.model.getItemAndIndexByPath, 444)
+        self.assertRaises(TypeError, self.model.findItemAndIndexByPath, 444)
 
 
     def testGetByPathFromIndex(self):
 
         # Sanity check
-        self.assertRaises(IndexError, self.model.getItemAndIndexByPath, 'item1/item2')
+        self.assertRaises(IndexError, self.model.findItemAndIndexByPath, 'item1/item2')
         
         # Normal use
-        checkItem, checkIndex = self.model.getItemAndIndexByPath('item1/item2', startIndex=self.index0)
+        checkItem, checkIndex = self.model.findItemAndIndexByPath('item1/item2', startIndex=self.index0)
         self.assertIs(self.model.getItem(checkIndex), checkItem)
         self.assertIs(checkItem, self.item2)
 
         # Starting slash starts at root
-        checkItem, checkIndex = self.model.getItemAndIndexByPath('/item0/item1/item2', startIndex=self.index0)
+        checkItem, checkIndex = self.model.findItemAndIndexByPath('/item0/item1/item2', startIndex=self.index0)
         self.assertIs(self.model.getItem(checkIndex), checkItem)
         self.assertIs(checkItem, self.item2)
         

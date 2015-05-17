@@ -401,7 +401,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             return self.findTopLevelItemIndex(childIndex.parent())
             
 
-    def getItemAndIndexByPath(self, path, startIndex=None):
+    def findItemAndIndexByPath(self, path, startIndex=None):
         """ Searches all the model recursively (starting at startIndex) for an item where
             item.nodePath == path.
             
@@ -442,7 +442,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
                             return _auxGetByPath(tail, childItem, childIndex)
                     raise IndexError("Item not found: {!r}".format(path))
     
-        # The actual body of getItemAndIndexByPath starts here
+        # The actual body of findItemAndIndexByPath starts here
         
         check_is_a_string(path)
         if not path:
