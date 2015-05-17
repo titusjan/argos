@@ -124,6 +124,9 @@ class BaseTreeItem(object):
     def insertChild(self, childItem, position=None):
         """ Inserts a child item to the current item.
             The childItem may not yet have a parent.
+            
+            IMPORTANT: this does not let the model know that items have been added. 
+            Use BaseTreeModel.insertItem instead
         """ 
         if position is None:
             position = self.nChildren()
