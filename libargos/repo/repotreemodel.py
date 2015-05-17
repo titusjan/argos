@@ -21,8 +21,9 @@ import logging
 from libargos.qt import QtCore
 from libargos.qt.treemodels import BaseTreeModel
 from libargos.info import DEBUGGING
-from libargos.utils.cls import type_name
 from libargos.repo.filesytemrtis import detectRtiFromFileName
+from libargos.repo.baserti import BaseRti
+from libargos.utils.cls import type_name
 
 
 logger = logging.getLogger(__name__)
@@ -44,6 +45,7 @@ class RepoTreeModel(BaseTreeModel):
         """ Constructor
         """
         super(RepoTreeModel, self).__init__(parent=parent)
+        self._invisibleRootItem = BaseRti(nodeName='<invisible-root>')
         self._isEditable = False
         
     
