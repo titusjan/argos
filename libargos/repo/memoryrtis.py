@@ -18,15 +18,15 @@
 """ Store and Tree items for representing data that is stored in memory.
 """
 import logging, os
-
-logger = logging.getLogger(__name__)
+import numpy as np
 
 from .baserti import ICONS_DIRECTORY, BaseRti
-
 from libargos.qt import QtGui
 from libargos.utils.cls import (check_is_a_sequence, check_is_a_mapping, check_is_an_array,  
                                 is_a_sequence, is_a_mapping, is_an_array, type_name)
+from libargos.utils.misc import NOT_SPECIFIED
 
+logger = logging.getLogger(__name__)
 
 def _createFromObject(obj, nodeName, fileName):
     if is_a_sequence(obj):
@@ -80,11 +80,8 @@ class ArrayRti(BaseRti):
         self._array = array
            
     @property
-    def arrayShape(self):
-        if self._array is None:
-            return super(ArrayRti, self).arrayShape 
-        else:
-            return self._array.shape
+    def asArray(self):
+        return self._array
 
     @property
     def typeName(self):
@@ -119,14 +116,19 @@ class SequenceRti(BaseRti):
         super(SequenceRti, self).__init__(nodeName=nodeName, fileName=fileName)
         check_is_a_sequence(sequence, allow_none=True)
         self._sequence = sequence
+        self._array = NOT_SPECIFIED
    
     @property
-    def arrayShape(self):
-        if self._sequence is None:
-            return super(SequenceRti, self).arrayShape 
-        else:
-            return (len(self._sequence), )
-
+    def asArray(self):
+        """ The sequence converted to a Numpy array. Returns None if the conversion fails
+        """
+        if self._array is NOT_SPECIFIED:
+            try:
+                self._array = np.array(self._sequence)
+            except:
+                self._array = None
+        return self._array
+    
     @property
     def typeName(self):
         return type_name(self._sequence)
@@ -156,10 +158,6 @@ class MappingRti(BaseRti):
         super(MappingRti, self).__init__(nodeName=nodeName, fileName=fileName)
         check_is_a_mapping(dictionary)
         self._dictionary = dictionary
-
-    @property
-    def arrayShape(self):
-        return (len(self._dictionary), )
 
     @property
     def typeName(self):

@@ -57,8 +57,8 @@ class VariableRti(BaseRti):
         return self._ncVar.__dict__
 
     @property
-    def arrayShape(self):
-        return self._ncVar.shape
+    def asArray(self):
+        return self._ncVar
 
     @property
     def typeName(self):

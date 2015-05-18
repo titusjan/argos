@@ -66,9 +66,14 @@ class CollectorTree(ArgosTreeView):
         """ Sets the current repo tree item
         """
         check_class(rti, BaseRti)
+        
+        assert rti.asArray is not None, "rti must have array"
         model = self.model()
         model.setData(model.index(0, 0), rti.nodePath)
-        model.setData(model.index(0, 1), rti.nodeName)
+        
+        lineEdit = QtGui.QLineEdit(rti.nodeName)
+        self.setIndexWidget(model.index(0, 1), lineEdit) 
+        
         
         
         

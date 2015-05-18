@@ -241,8 +241,30 @@ class BaseRti(AbstractLazyLoadTreeItem):
         return ""
     
     @property
+    def asArray(self):
+        """ Returns the underlying data as an array-like object that supports multi-dimensional 
+            indexing and other methods of numpy arrays (e.g. the shape). It can, for instance, 
+            return a h5py dataset. 
+            
+            If the underlying data cannot be representen as an array, this property returns None.
+        """
+        return None
+        
+    @property
     def arrayShape(self):
-        return tuple()
+        """ Returns the shape of the underlying array. Returns an empty tuple if the underlying
+            array is None
+        """
+        array = self.asArray
+        return tuple() if array is None else array.shape
+        
+    
+#    @property
+#    def ndim(self):
+#        """ The number of dimension of the underyling array
+#            Should return 0 for scalars.
+#        """
+#        return len(self.arrayShape())
     
 #    @property
 #    def dimensions(self):
