@@ -44,6 +44,7 @@ TODO Long term or nice to have:
 	let repo tree view work with multile selected items
 	example RTI using XML file.
 	fits format
+	tiff format (attributes). Other image formats.
 	
 	Change profile from menu?
 	Plugin management window
