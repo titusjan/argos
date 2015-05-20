@@ -22,6 +22,7 @@ import logging
 
 from libargos.repo.baserti import BaseRti
 from libargos.qt import QtGui, QtCore
+from libargos.qt.labeledwidget import LabeledWidget
 from libargos.utils.cls import check_class
 from libargos.widgets.argostreeview import ArgosTreeView
 from libargos.widgets.constants import (TOP_DOCK_HEIGHT)
@@ -72,9 +73,7 @@ class CollectorTree(ArgosTreeView):
         model.setData(model.index(0, 0), rti.nodePath)
         
         lineEdit = QtGui.QLineEdit(rti.nodeName)
-        self.setIndexWidget(model.index(0, 1), lineEdit) 
+        editor = LabeledWidget(QtGui.QLabel("edit"), lineEdit, layoutSpacing=0)
+        self.setIndexWidget(model.index(0, 1), editor) 
         
         
-        
-        
- 
