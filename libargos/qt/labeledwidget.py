@@ -133,12 +133,26 @@ if __name__ == "__main__":
         #label.setFrameStyle(QtGui.QFrame.Box | QtGui.QFrame.Raised) 
         label.setFrameStyle(QtGui.QFrame.Box | QtGui.QFrame.Plain)
         label.setLineWidth(1)
+        
         #label.setMidLineWidth(10)
         #label.setMargin(25)
         #label.setIndent(4)
         #self.label.setAlignment(QtCore.Qt.AlignCenter)
         #self.label.setMaximumWidth(labelMinimumWidth)
           
+                
+    class MyTableView(QtGui.QTableView):
+    
+        def __init__(self):
+            super(MyTableView, self).__init__()
+            
+            model = QtGui.QStandardItemModel(3, 2)
+            self.setModel(model)
+            self.horizontalHeader().resizeSection(0, 200)
+            self.horizontalHeader().resizeSection(1, 300)
+            
+    
+                
                 
     def main():
         import sys
@@ -164,31 +178,47 @@ if __name__ == "__main__":
                     }
                 """)
     
-        label1 = QtGui.QLabel('my great line edit')
-        label2 = QtGui.QLabel('edit')
-        label3 = QtGui.QLabel('combo')
+        label0 = QtGui.QLabel('my great line edit')
+        label1 = QtGui.QLabel('edit')
+        label2 = QtGui.QLabel('combo')
         
-        all_labels = [label1, label2, label3]
+        all_labels = [label0, label1, label2]
         for lbl in all_labels:
             _setLabelProps(lbl)
         harmonizeLabelsTextWidth(all_labels)
         
-        maxWidth = labelsMaxTextWidth([label1, label2, label3])
-        print("maxWidth: {}".format(maxWidth))
+        maxWidth = labelsMaxTextWidth([label0, label1, label2])
+        print("\mmaxWidth: {}".format(maxWidth))
         
-        
+        tableView =QtGui.QTableView()
+        layout.addWidget(tableView)
+        model = QtGui.QStandardItemModel(3, 2)
+        tableView.setModel(model)
+        tableView.horizontalHeader().resizeSection(0, 200)
+        tableView.horizontalHeader().resizeSection(1, 300)        
         layoutSpacing = 0
-        lw1 = LabeledWidget(label1, QtGui.QLineEdit(), layoutSpacing=layoutSpacing)
-        layout.addWidget(lw1)
-    
-        lw2 = LabeledWidget(label2, QtGui.QLineEdit(), layoutSpacing=layoutSpacing)
-        layout.addWidget(lw2)
+
+        editor0 = QtGui.QSpinBox()
+        editor0.setValue(5)
+        editor0.setSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
+        lw0 = LabeledWidget(label0, editor0, layoutSpacing=layoutSpacing)
+        model.setData(model.index(0, 0), "A small")
+        tableView.setIndexWidget(model.index(0, 1), lw0)
+  
+        editor1 = QtGui.QSpinBox()
+        editor1.setValue(7)
+        editor1.setSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)  
+        lw1 = LabeledWidget(label1, editor1, layoutSpacing=layoutSpacing)
+        model.setData(model.index(1, 0), "A SMALL seasoned curly")
+        tableView.setIndexWidget(model.index(1, 1), lw1)
     
         comboBox = QtGui.QComboBox()
-        comboBox.addItems(["hello", "what's all this then?"]) 
-        lw3 = LabeledWidget(label3, comboBox, layoutSpacing=layoutSpacing)
-        layout.addWidget(lw3)
+        comboBox.addItems(["Half diet coke", "Half regular coke", "Junior western bacon cheese"]) 
+        lw2 = LabeledWidget(label2, comboBox, layoutSpacing=layoutSpacing)
+        model.setData(model.index(2, 0), "What else?")
+        tableView.setIndexWidget(model.index(2, 1), lw2)
         
+        window.resize(550, 400)
         window.show()
         window.raise_()
         sys.exit(app.exec_())
