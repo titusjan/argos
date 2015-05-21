@@ -401,41 +401,46 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             return self.findTopLevelItemIndex(childIndex.parent())
             
 
-    def findItemAndIndexByPath(self, path, startIndex=None):
+    def findItemAndIndexPath(self, path, startIndex=None):
         """ Searches all the model recursively (starting at startIndex) for an item where
-            item.nodePath == path.
+            item.nodePath == path. 
+            
+            Returns list of (item, itemIndex) tuples from the start index to that node. 
+            Raises IndexError if the item cannot be found.
             
             If startIndex is None, or path starts with a slash, searching begins at the (invisible)
             root item.
-               
-            Returns (item, itemIndex) tuple. Raises IndexError if the item cannot be found.
         """
         def _getIndexAndItemByName(nodeName, parentItem, parentIndex):
             """ Searches the parent for a direct child having the nodeName.
                 Returns (item, itemIndex) tuple. Raises IndexError if the item cannot be found.
             """
+            if self.canFetchMore(parentIndex):
+                self.fetchMore(parentIndex)
+                
             for rowNr, childItem in enumerate(parentItem.childItems):
                 if childItem.nodeName == nodeName:
                     childIndex = self.index(rowNr, 0, parentIndex=parentIndex)
                     return (childItem, childIndex)
             raise IndexError("Item not found: {!r}".format(path))
         
+        
         def _auxGetByPath(parts, item, index):
             "Aux function that does the actual recursive search"
-            #logger.debug("_auxGetByPath item={}, parts={}: ".format(item, parts))
+            #logger.debug("_auxGetByPath item={}, parts={}".format(item, parts))
             
             if len(parts) == 0:
-                return (item, index)                
+                return [(item, index)]
         
             head, tail = parts[0], parts[1:]
             if head == '':
                 # Two consecutive slashes. Just go one level deeper.
-                return _auxGetByPath(tail, item, index)                
+                return _auxGetByPath(tail, item, index)
             else:
                 childItem, childIndex = _getIndexAndItemByName(head, item, index)
-                return _auxGetByPath(tail, childItem, childIndex)
+                return [(item, index)] + _auxGetByPath(tail, childItem, childIndex)
     
-        # The actual body of findItemAndIndexByPath starts here
+        # The actual body of findItemAndIndexPath starts here
         
         check_is_a_string(path)
         if not path:

@@ -111,3 +111,17 @@ class ArgosTreeView(ToggleColumnTreeView):
         currentItem = self.model().getItem(currentIndex)
         return currentItem, currentIndex
 
+    
+    def expandPath(self, path):
+        """ Expand all nodes in a node-path.
+            Returns (item, index) tuple of the last node in the path (the leaf node). This can be 
+            reused e.g. to select it.
+        """
+        iiPath = self.model().findItemAndIndexPath(path)
+        for (item, index) in iiPath[1:]: # skip invisible root
+            assert index.isValid(), "Sanity check: invalid index in path for item: {}".format(item)
+            self.expand(index)
+        
+        leaf = iiPath[-1]
+        return leaf
+

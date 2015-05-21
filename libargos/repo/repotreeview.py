@@ -131,13 +131,12 @@ class RepoTreeView(ArgosTreeView):
         """ Opens the current item in the repository.
         """
         logger.debug("openCurrentItem")
-        currentItem, currentIndex = self.getCurrentItem()
+        _currentIten, currentIndex = self.getCurrentItem()
         if not currentIndex.isValid():
             return
-
-        currentItem.open()
-        self.dataChanged(currentIndex, currentIndex)
-        self.expand(currentIndex) # to visit the children and thus show the 'open' icons
+        
+        # Expanding the node will visit the children and thus show the 'open' icons
+        self.expand(currentIndex) 
          
         
     @QtSlot()

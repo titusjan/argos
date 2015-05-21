@@ -74,7 +74,17 @@ class MainWindow(QtGui.QMainWindow):
         self.__setupViews()
         self.__setupMenu()
         self.__setupDockWidgets()
-        self.__addTestItems()
+        
+        if DEBUGGING:
+            self.__addTestItems()
+
+            # Select test item
+            path = "/trl1brb5g.lx.nc/BAND5/ICID_61347_GROUP_00000/OBSERVATIONS/signal"
+            try:
+                _lastItem, lastIndex = self.repoTreeView.expandPath(path)
+                self.repoTreeView.setCurrentIndex(lastIndex)
+            except Exception as ex:
+                logger.warn(ex)
 
 
     @property
