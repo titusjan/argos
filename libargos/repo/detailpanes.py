@@ -45,6 +45,7 @@ class DetailBasePane(QtGui.QStackedWidget):
         """ 
         super(DetailBasePane, self).__init__(parent)
         
+        self._isConntected = False
         self._repoTreeView = repoTreeView
 
         self.errorWidget = MessageDisplay()
@@ -66,7 +67,13 @@ class DetailBasePane(QtGui.QStackedWidget):
         """ Returns a short string that describes this class. For use in menus, headers, etc. 
         """
         return cls._label
-        
+    
+    @property
+    def isConntected(self):
+        "Returns True if this pane is connected to the currentChanged signal of the repoTreeView"
+        return self._isConntected
+    
+    
     def sizeHint(self):
         """ The recommended size for the widget."""
         return QtCore.QSize(LEFT_DOCK_WIDTH, 250)
@@ -78,15 +85,20 @@ class DetailBasePane(QtGui.QStackedWidget):
             Is used to (dis)connect the pane from its repo tree view and so prevent unnecessary
             and potentially costly updates when the pane is hidden.
         """
-        logger.debug("dockVisibilityChanged of {}: visible={}".format(self.objectName(), visible))
+        logger.debug("dockVisibilityChanged of {!r}: visible={}".format(self.objectName(), visible))
         
         selectionModel = self._repoTreeView.selectionModel()
         if visible:        
             selectionModel.currentChanged.connect(self.currentChanged)
+            self._isConntected = True
             currentIndex = selectionModel.currentIndex()
             self.currentChanged(currentIndex)
         else:
-            selectionModel.currentChanged.disconnect(self.currentChanged)
+            # At start-up the pane be be hidded but the signals are not connected.
+            # A disconnect would fail in that case so we test for isConnected == True.
+            if self.isConntected:
+                selectionModel.currentChanged.disconnect(self.currentChanged)
+            self._isConntected = False
             self.errorWidget.setError(msg="Contents disabled", title="Error")
             self.setCurrentIndex(self.ERROR_PAGE_IDX)
         
