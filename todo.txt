@@ -21,7 +21,11 @@ http://www.census.gov/population/international/data/countryrank/rank.php
 # Plot and Mapping libs:
 http://pygal.org/chart_types/#idworldmap-charts
 http://docs.enthought.com/chaco/quickstart.html
+http://scikit-image.org/docs/dev/auto_examples/plot_canny.html
 
+# color palette
+http://tools.medialab.sciences-po.fr/iwanthue/tutorial.php
+http://vis4.net/blog/posts/avoid-equidistant-hsv-colors/
 
 TODO:
 	confirm on error when editing cell

@@ -21,11 +21,9 @@ from __future__ import print_function
 import logging
 
 from libargos.repo.baserti import BaseRti
-from libargos.qt import QtGui, QtCore
+from libargos.qt import Qt, QtGui, QtSlot
 from libargos.qt.labeledwidget import LabeledWidget
-from libargos.utils.cls import check_class
 from libargos.widgets.argostreeview import ArgosTreeView
-from libargos.widgets.constants import (TOP_DOCK_HEIGHT)
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +43,7 @@ class CollectorTree(ArgosTreeView):
         
         model = QtGui.QStandardItemModel(3, len(self.HEADERS))
         self.setModel(model)
+        self.setTextElideMode(Qt.ElideMiddle) # ellipsis appear in the middle of the text
  
         treeHeader = self.header()
         treeHeader.resizeSection(self.COL_ITEM_PATH, 300)
@@ -56,22 +55,22 @@ class CollectorTree(ArgosTreeView):
         enabled = dict((name, False) for name in self.HEADERS)
         checked = dict((name, True) for name in self.HEADERS)
         self.addHeaderContextMenu(checked=checked, enabled=enabled, checkable={})
+        
 
+    @QtSlot(BaseRti)
+    def updateFromRti(self, rti):
+        """ Updates the current VisItem from the contents of the repo tree item.
         
-    def sizeHint(self):
-        """ The recommended size for the widget."""
-        return QtCore.QSize(300, TOP_DOCK_HEIGHT)
-    
-    
-    def setCurrentRti(self, rti):
-        """ Sets the current repo tree item
+            Is a slot but the signal is usually connected to the Collector, which then call
+            this function directly.
         """
-        check_class(rti, BaseRti)
-        
         assert rti.asArray is not None, "rti must have array"
         model = self.model()
-        model.setData(model.index(0, 0), rti.nodePath)
         
+        pathItem = QtGui.QStandardItem(rti.nodePath)
+        pathItem.setEditable(False)
+        model.setItem(0, 0, pathItem)
+
         lineEdit = QtGui.QLineEdit(rti.nodeName)
         editor = LabeledWidget(QtGui.QLabel("edit"), lineEdit, layoutSpacing=0)
         self.setIndexWidget(model.index(0, 1), editor) 

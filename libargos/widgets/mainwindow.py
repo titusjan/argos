@@ -27,7 +27,7 @@ import logging
 
 from libargos.widgets.aboutdialog import AboutDialog
 
-from libargos.collect.collectortree import CollectorTree
+from libargos.collect.collector import Collector
 from libargos.config.configtreeview import ConfigTreeView
 from libargos.config.configtreemodel import ConfigTreeModel
 from libargos.repo.detailplugins.attr import AttributesPane 
@@ -97,8 +97,8 @@ class MainWindow(QtGui.QMainWindow):
     def __setupViews(self):
         """ Creates the UI widgets. 
         """
-        self.collectorTree = CollectorTree()
-        self.repoTreeView = RepoTreeView(self.argosApplication.repo, self.collectorTree)
+        self.collector = Collector()
+        self.repoTreeView = RepoTreeView(self.argosApplication.repo, self.collector)
         self.configTreeView = ConfigTreeView(self._config)
         
         temporaryInspector = BaseInspector()
@@ -171,7 +171,7 @@ class MainWindow(QtGui.QMainWindow):
         """
         # TODO: if the title == "Settings" it won't be added to the view menu.
         self.dockWidget(self.repoTreeView, "Data Repository", Qt.LeftDockWidgetArea) 
-        self.dockWidget(self.collectorTree, "Data Collector", Qt.TopDockWidgetArea) 
+        self.dockWidget(self.collector, "Data Collector", Qt.TopDockWidgetArea) 
         self.dockWidget(self.configTreeView, "Application Settings", Qt.RightDockWidgetArea) 
 
         self.attributesPane = AttributesPane(self.repoTreeView)
