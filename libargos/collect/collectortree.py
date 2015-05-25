@@ -46,17 +46,24 @@ class CollectorTree(ArgosTreeView):
         super(CollectorTree, self).__init__(parent=parent)
         
         self._comboLabels = None
-        
-        model = QtGui.QStandardItemModel(3, 4)
+
+        nCols = 3
+        model = QtGui.QStandardItemModel(3, nCols)
         self.setModel(model)
         self.setTextElideMode(Qt.ElideMiddle) # ellipsis appear in the middle of the text
  
         treeHeader = self.header()
-        treeHeader.resizeSection(0, 250) # For item path usually
         treeHeader.setStretchLastSection(False)
+        treeHeader.setMovable(False)
         
-        model.setHorizontalHeaderLabels(["item path"])
+        treeHeader.resizeSection(0, 300) # For item path
+        for col in range(1, nCols):
+            treeHeader.resizeSection(col, 150)
 
+        labels = [''] * model.columnCount()
+        labels[0] = "VisItem Path"
+        model.setHorizontalHeaderLabels(labels)
+        
         #enabled = dict((name, False) for name in self.HEADERS)
         #checked = dict((name, True) for name in self.HEADERS)
         #self.addHeaderContextMenu(checked=checked, enabled=enabled, checkable={})

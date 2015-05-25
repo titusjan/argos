@@ -47,9 +47,10 @@ class Collector(QtGui.QWidget):
         """
         super(Collector, self).__init__()
         
-        self._comboLabels = []  # will be set in clearAndSetComboBoxes
-        self._comboBoxes = []   # will be set in clearAndSetComboBoxes
         self.COL_FIRST_COMBO = 1  
+        self._comboLabels = []  # Will be set in clearAndSetComboBoxes
+        self._comboBoxes = []   # Will be set in clearAndSetComboBoxes
+        self._spinBoxes = []    # Will be set in createSpinBoxes 
         
         self.layout = QtGui.QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -71,25 +72,32 @@ class Collector(QtGui.QWidget):
         self.buttonLayout.addStretch(stretch=1)
         self.layout.addLayout(self.buttonLayout, stretch=0)
                 
-        self.clearAndSetComboBoxes(['X', 'Y'])
+        self.clearAndSetComboBoxes(['X-Axis', 'Y-Axis'])
         
         
     def sizeHint(self):
         """ The recommended size for the widget."""
         return QtCore.QSize(300, TOP_DOCK_HEIGHT)
 
-    
+
     @property
     def comboLabels(self):
         """ Returns a copy of the combobox labels (since they are read only) """
         return tuple(self._comboLabels)    
+
 
     @property
     def maxCombos(self):
         """ Returns the maximum number of combo boxes """
         return len(self._comboLabels)
     
+
+    def dimensionNameByNumber(self, dimNr):
+        """ Returns a dimension name (e.g. Dim0) to be used for unnamed dimensions.
+        """
+        return "dimension-{}".format(dimNr)
     
+            
     def clear(self):
         """ Removes all VisItems
         """
@@ -98,7 +106,6 @@ class Collector(QtGui.QWidget):
         model.removeRows(0, 1)
         model.setRowCount(1)
         #model.setColumnCount(6)
-
     
     
     def clearAndSetComboBoxes(self, comboLabels):
@@ -146,8 +153,11 @@ class Collector(QtGui.QWidget):
         check_class(rti, BaseRti)
         #assert rti.asArray is not None, "rti must have array" # TODO: maybe later
         
+        
         row = 0
         model = self.tree.model()
+
+        self._deleteSpinboxes(row)
         
         # Create path label
         pathItem = QtGui.QStandardItem(rti.nodePath)
@@ -155,6 +165,7 @@ class Collector(QtGui.QWidget):
         model.setItem(row, 0, pathItem)
         
         self._populateComboBoxes(row, rti)
+        self._createSpinboxes(row, rti)
     
         
     def _createComboBoxes(self, row):
@@ -171,7 +182,7 @@ class Collector(QtGui.QWidget):
             comboBox = QtGui.QComboBox()
             self._comboBoxes.append(comboBox)
             
-            editor = LabeledWidget(QtGui.QLabel(comboLabel), comboBox, layoutSpacing=0)
+            editor = LabeledWidget(QtGui.QLabel(comboLabel), comboBox)
             tree.setIndexWidget(model.index(row, col), editor) 
             
 
@@ -199,17 +210,82 @@ class Collector(QtGui.QWidget):
             return
         
         for comboBoxNr, comboBox in enumerate(self._comboBoxes):
-            # Add the 1-length dimension
+            # Add a fake dimension of length 1
             comboBox.addItem(self.FAKE_DIM_NAME, userData = self.FAKE_DIM_IDX)
             
             for dimNr in range(rti.asArray.ndim):
-                comboBox.addItem("Dim{}".format(dimNr), userData=dimNr)
+                comboBox.addItem(self.dimensionNameByNumber(dimNr), userData=dimNr)
                         
                 # We set the nth combo-box index to the last item - n. This because the 
                 # NetCDF-CF conventions have the preferred dimension order of T, Z, Y, X. 
                 comboBox.setCurrentIndex(max(0, rti.asArray.ndim - comboBoxNr))
             
+            
+    def _comboBoxDimensionIndex(self, comboBox):
+        """ Returns the dimension index from the user data of the currently item of the combo box.
+        """
+        return comboBox.itemData(comboBox.currentIndex())  
+    
                 
-                                    
+    def _dimensionSelectedInComboBox(self, dimNr):
+        """ Returns True if the dimension is selected in one of the combo boxes.
+        """
+        for combobox in self._comboBoxes:
+            if self._comboBoxDimensionIndex(combobox) == dimNr:
+                return True
+        return False
+                
+
+    def _deleteSpinboxes(self, row):
+        """ Removes all spinboxes
+        """
+        tree = self.tree
+        model = self.tree.model()
+        
+        for col, _spinBox in enumerate(self._spinBoxes, self.COL_FIRST_COMBO + self.maxCombos):
+            # disconnect spinbox.
+            tree.setIndexWidget(model.index(row, col), None) 
+            
+            
+    def _createSpinboxes(self, row, rti):
+        """ Creates a spinBox for each dimension that is not selected in a combo box. 
+        """
+        self._spinBoxes = []
+        
+        rtiData = rti.asArray
+        if rtiData is None:
+            return        
+                
+        tree = self.tree
+        model = self.tree.model()
+                
+        for dimNr, dimSize in enumerate(rtiData.shape):
+            
+            if self._dimensionSelectedInComboBox(dimNr):
+                continue
+            
+            spinBox = QtGui.QSpinBox()
+            self._spinBoxes.append(spinBox)
+            
+            spinBox.setKeyboardTracking(False)
+            spinBox.setCorrectionMode(QtGui.QAbstractSpinBox.CorrectToNearestValue)
+            #spinBox.setMinimumWidth(...)
+            spinBox.setMinimum(0)
+            spinBox.setMaximum(dimSize - 1)
+            spinBox.setSingleStep(1)
+            spinBox.setValue( dimSize // 2 ) # select the middle of the slice
+            spinBox.setSuffix("/{}".format(spinBox.maximum()))
+            
+            #assert spinBox.valueChanged.connect(self._on_spinbox_changed)
+
+            spinboxLabel = QtGui.QLabel(self.dimensionNameByNumber(dimNr))
+            editor = LabeledWidget(spinboxLabel, spinBox)
+
+            col = dimNr + self.COL_FIRST_COMBO + self.maxCombos
+            if col >= model.columnCount():
+                model.setColumnCount(col + 1)
+                self._setHeaderLabel(col, '')
+                
+            tree.setIndexWidget(model.index(row, col), editor)                         
                     
             
