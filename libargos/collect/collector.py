@@ -47,6 +47,7 @@ class Collector(QtGui.QWidget):
         """
         super(Collector, self).__init__()
         
+        self._signalsBlocked = False
         self.COL_FIRST_COMBO = 1  
         self._comboLabels = []  # Will be set in clearAndSetComboBoxes
         self._comboBoxes = []   # Will be set in clearAndSetComboBoxes
@@ -97,6 +98,19 @@ class Collector(QtGui.QWidget):
         """
         return "dimension{}".format(dimNr)
     
+    
+    def blockChildrenSignals(self, block):
+        """ If block equals True, the signals of the combo boxes and spin boxes are blocked
+            Returns the old blocking state.
+        """
+        for spinBox in self._spinBoxes:
+            spinBox.blockSignals(block)
+        for comboBox in self._comboBoxes:
+            comboBox.blockSignals(block)
+        result = self._signalsBlocked
+        self._signalsBlocked = block
+        return result
+            
             
     def clear(self):
         """ Removes all VisItems
@@ -153,7 +167,6 @@ class Collector(QtGui.QWidget):
         check_class(rti, BaseRti)
         #assert rti.asArray is not None, "rti must have array" # TODO: maybe later
         
-        
         row = 0
         model = self.tree.model()
 
@@ -174,12 +187,13 @@ class Collector(QtGui.QWidget):
         tree = self.tree
         model = self.tree.model()
         
-        for col, comboLabel in enumerate(self.comboLabels, self.COL_FIRST_COMBO):
+        for col, _comboLabel in enumerate(self.comboLabels, self.COL_FIRST_COMBO):
             if col >= model.columnCount():
                 model.setColumnCount(col + 1)
                 
             logger.debug("Adding combobox at ({}, {})".format(row, col))
             comboBox = QtGui.QComboBox()
+            comboBox.activated.connect(self._comboBoxActivated)
             self._comboBoxes.append(comboBox)
             
             #editor = LabeledWidget(QtGui.QLabel(comboLabel), comboBox)
@@ -286,6 +300,33 @@ class Collector(QtGui.QWidget):
         model = self.tree.model()
         
         for col, _spinBox in enumerate(self._spinBoxes, self.COL_FIRST_COMBO + self.maxCombos):
-            # disconnect spinbox.
+            # TODO: disconnect spinbox.
             tree.setIndexWidget(model.index(row, col), None) 
+
             
+    @QtSlot(int)
+    def _comboBoxActivated(self, index, comboBox=None):
+        """ Sets the current index of the comboBox. 
+        
+            Updates the spinboxes and sets other comboboxes having the same index to
+            the 1-length dimension
+        """
+        if comboBox is None:
+            comboBox = self.sender()
+        assert comboBox, "comboBox not defined and not the sender"
+        
+        blocked = self.blockChildrenSignals(True)
+        
+        # If one of the other combo boxes has the same value, set it to the fake dimension
+        curDimIdx = self._comboBoxDimensionIndex(comboBox)
+        if curDimIdx != self.FAKE_DIM_IDX:
+            otherComboBoxes = [cb for cb in self._comboBoxes if cb is not comboBox]
+            for otherComboBox in otherComboBoxes:
+                if otherComboBox.currentIndex() == comboBox.currentIndex():
+                    newIdx = otherComboBox.findData(self.FAKE_DIM_IDX)
+                    otherComboBox.setCurrentIndex(newIdx)
+                    
+        self.blockChildrenSignals(blocked)
+        
+        logging.debug("**** TODO: emit signal....")
+
