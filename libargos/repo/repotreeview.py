@@ -209,7 +209,7 @@ class RepoTreeView(ArgosTreeView):
         rti = self.model().getItem(currentIndex, None)
         assert rti is not None, "sanity check failed. No RTI at current item"
         
-        self.collector.updateFromRti(rti)
+        self.collector.setRti(rti)
         #if rti.asArray is not None: # TODO: maybe later
-        #    self.collector.updateFromRti(rti)
+        #    self.collector.setRti(rti)
             

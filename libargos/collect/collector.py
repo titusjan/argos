@@ -46,6 +46,8 @@ class Collector(QtGui.QWidget):
         """ Constructor
         """
         super(Collector, self).__init__()
+    
+        self._rti = None
         
         self._signalsBlocked = False
         self.COL_FIRST_COMBO = 1  
@@ -158,7 +160,7 @@ class Collector(QtGui.QWidget):
             
 
     @QtSlot(BaseRti)
-    def updateFromRti(self, rti):
+    def setRti(self, rti):
         """ Updates the current VisItem from the contents of the repo tree item.
         
             Is a slot but the signal is usually connected to the Collector, which then call
@@ -167,18 +169,20 @@ class Collector(QtGui.QWidget):
         check_class(rti, BaseRti)
         #assert rti.asArray is not None, "rti must have array" # TODO: maybe later
         
+        self._rti = rti
+        
         row = 0
         model = self.tree.model()
 
-        self._deleteSpinboxes(row)
+        self._deleteSpinBoxes(row)
         
         # Create path label
         pathItem = QtGui.QStandardItem(rti.nodePath)
         pathItem.setEditable(False)
         model.setItem(row, 0, pathItem)
         
-        self._populateComboBoxes(row, rti)
-        self._createSpinboxes(row, rti)
+        self._populateComboBoxes(row)
+        self._createSpinBoxes(row)
     
         
     def _createComboBoxes(self, row):
@@ -213,26 +217,28 @@ class Collector(QtGui.QWidget):
         self._comboBoxes = []
             
 
-    def _populateComboBoxes(self, row, rti):
+    def _populateComboBoxes(self, row):
         """ Populates the comboboxes with values of the repo tree item
         """
         logger.debug("_populateComboBoxes")
         for comboBox in self._comboBoxes:
             comboBox.clear()
             
-        if rti.asArray is None:
+        if self._rti is None or self._rti.asArray is None:
             return
+        
+        nDims = self._rti.asArray.ndim
         
         for comboBoxNr, comboBox in enumerate(self._comboBoxes):
             # Add a fake dimension of length 1
             comboBox.addItem(self.FAKE_DIM_NAME, userData = self.FAKE_DIM_IDX)
             
-            for dimNr in range(rti.asArray.ndim):
+            for dimNr in range(nDims):
                 comboBox.addItem(self.dimensionNameByNumber(dimNr), userData=dimNr)
                         
                 # We set the nth combo-box index to the last item - n. This because the 
                 # NetCDF-CF conventions have the preferred dimension order of T, Z, Y, X. 
-                comboBox.setCurrentIndex(max(0, rti.asArray.ndim - comboBoxNr))
+                comboBox.setCurrentIndex(max(0, nDims - comboBoxNr))
             
             
     def _comboBoxDimensionIndex(self, comboBox):
@@ -250,19 +256,21 @@ class Collector(QtGui.QWidget):
         return False
             
             
-    def _createSpinboxes(self, row, rti):
+    def _createSpinBoxes(self, row):
         """ Creates a spinBox for each dimension that is not selected in a combo box. 
         """
-        self._spinBoxes = []
+        assert len(self._spinBoxes) == 0, "Spinbox list not empty. Call _deleteSpinBoxes first"
         
-        rtiData = rti.asArray
-        if rtiData is None:
-            return        
-                
+        if self._rti is None or self._rti.asArray is None:
+            return     
+
+        logger.debug("_createSpinBoxes, array shape: {}".format(self._rti.asArray.shape))
+        
         tree = self.tree
         model = self.tree.model()
-                
-        for dimNr, dimSize in enumerate(rtiData.shape):
+        col = self.COL_FIRST_COMBO + self.maxCombos
+                        
+        for dimNr, dimSize in enumerate(self._rti.asArray.shape):
             
             if self._dimensionSelectedInComboBox(dimNr):
                 continue
@@ -279,21 +287,21 @@ class Collector(QtGui.QWidget):
             spinBox.setValue(dimSize // 2) # select the middle of the slice
             spinBox.setPrefix("{}: ".format(self.dimensionNameByNumber(dimNr)))
             spinBox.setSuffix("/{}".format(spinBox.maximum()))
-            
-            #assert spinBox.valueChanged.connect(self._on_spinbox_changed)
+            spinBox.valueChanged[int].connect(self._SpinboxValueChanged)
 
             #spinboxLabel = QtGui.QLabel(self.dimensionNameByNumber(dimNr))
             #editor = LabeledWidget(spinboxLabel, spinBox)
 
-            col = dimNr + self.COL_FIRST_COMBO + self.maxCombos
             if col >= model.columnCount():
                 model.setColumnCount(col + 1)
                 self._setHeaderLabel(col, '')
                 
-            tree.setIndexWidget(model.index(row, col), spinBox)                         
+            logger.debug("_createSpinBoxes, adding at ({}, {})".format(row, col))                
+            tree.setIndexWidget(model.index(row, col), spinBox)
+            col += 1                         
                     
 
-    def _deleteSpinboxes(self, row):
+    def _deleteSpinBoxes(self, row):
         """ Removes all spinboxes
         """
         tree = self.tree
@@ -301,15 +309,16 @@ class Collector(QtGui.QWidget):
         
         for col, _spinBox in enumerate(self._spinBoxes, self.COL_FIRST_COMBO + self.maxCombos):
             # TODO: disconnect spinbox.
-            tree.setIndexWidget(model.index(row, col), None) 
+            tree.setIndexWidget(model.index(row, col), None)
+        self._spinBoxes = [] 
 
             
     @QtSlot(int)
     def _comboBoxActivated(self, index, comboBox=None):
-        """ Sets the current index of the comboBox. 
+        """ Is called when a combo box value was changed by the user.
         
-            Updates the spinboxes and sets other comboboxes having the same index to
-            the 1-length dimension
+            Updates the spin boxes and sets other combo boxes having the same index to 
+            the fake dimension of length 1.
         """
         if comboBox is None:
             comboBox = self.sender()
@@ -325,8 +334,28 @@ class Collector(QtGui.QWidget):
                 if otherComboBox.currentIndex() == comboBox.currentIndex():
                     newIdx = otherComboBox.findData(self.FAKE_DIM_IDX)
                     otherComboBox.setCurrentIndex(newIdx)
-                    
+        
+        # Show only spin boxes that are not selected
+        row = 0       
+        self._deleteSpinBoxes(row)
+        self._createSpinBoxes(row)
+                            
         self.blockChildrenSignals(blocked)
         
-        logging.debug("**** TODO: emit signal....")
+        logging.debug("**** TODO: emit new axes signal....")
+        
+        
+    @QtSlot(int)
+    def _SpinboxValueChanged(self, index, spinBox=None):
+        """ Is called when a spin box value was changed.
+        
+            Updates the spin boxes and sets other combo boxes having the same index to 
+            the fake dimension of length 1.
+        """
+        if spinBox is None:
+            spinBox = self.sender()
+        assert spinBox, "spinBox not defined and not the sender"
+        
+        logging.debug("**** TODO: emit item changed signal....")
+        
 

@@ -47,7 +47,7 @@ class CollectorTree(ArgosTreeView):
         
         self._comboLabels = None
 
-        nCols = 3
+        nCols = 4
         model = QtGui.QStandardItemModel(3, nCols)
         self.setModel(model)
         self.setTextElideMode(Qt.ElideMiddle) # ellipsis appear in the middle of the text
