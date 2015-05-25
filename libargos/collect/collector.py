@@ -95,7 +95,7 @@ class Collector(QtGui.QWidget):
     def dimensionNameByNumber(self, dimNr):
         """ Returns a dimension name (e.g. Dim0) to be used for unnamed dimensions.
         """
-        return "dimension-{}".format(dimNr)
+        return "dimension{}".format(dimNr)
     
             
     def clear(self):
@@ -182,8 +182,8 @@ class Collector(QtGui.QWidget):
             comboBox = QtGui.QComboBox()
             self._comboBoxes.append(comboBox)
             
-            editor = LabeledWidget(QtGui.QLabel(comboLabel), comboBox)
-            tree.setIndexWidget(model.index(row, col), editor) 
+            #editor = LabeledWidget(QtGui.QLabel(comboLabel), comboBox)
+            tree.setIndexWidget(model.index(row, col), comboBox) 
             
 
     def _deleteComboBoxes(self, row):
@@ -234,17 +234,6 @@ class Collector(QtGui.QWidget):
             if self._comboBoxDimensionIndex(combobox) == dimNr:
                 return True
         return False
-                
-
-    def _deleteSpinboxes(self, row):
-        """ Removes all spinboxes
-        """
-        tree = self.tree
-        model = self.tree.model()
-        
-        for col, _spinBox in enumerate(self._spinBoxes, self.COL_FIRST_COMBO + self.maxCombos):
-            # disconnect spinbox.
-            tree.setIndexWidget(model.index(row, col), None) 
             
             
     def _createSpinboxes(self, row, rti):
@@ -273,19 +262,30 @@ class Collector(QtGui.QWidget):
             spinBox.setMinimum(0)
             spinBox.setMaximum(dimSize - 1)
             spinBox.setSingleStep(1)
-            spinBox.setValue( dimSize // 2 ) # select the middle of the slice
+            spinBox.setValue(dimSize // 2) # select the middle of the slice
+            spinBox.setPrefix("{}: ".format(self.dimensionNameByNumber(dimNr)))
             spinBox.setSuffix("/{}".format(spinBox.maximum()))
             
             #assert spinBox.valueChanged.connect(self._on_spinbox_changed)
 
-            spinboxLabel = QtGui.QLabel(self.dimensionNameByNumber(dimNr))
-            editor = LabeledWidget(spinboxLabel, spinBox)
+            #spinboxLabel = QtGui.QLabel(self.dimensionNameByNumber(dimNr))
+            #editor = LabeledWidget(spinboxLabel, spinBox)
 
             col = dimNr + self.COL_FIRST_COMBO + self.maxCombos
             if col >= model.columnCount():
                 model.setColumnCount(col + 1)
                 self._setHeaderLabel(col, '')
                 
-            tree.setIndexWidget(model.index(row, col), editor)                         
+            tree.setIndexWidget(model.index(row, col), spinBox)                         
                     
+
+    def _deleteSpinboxes(self, row):
+        """ Removes all spinboxes
+        """
+        tree = self.tree
+        model = self.tree.model()
+        
+        for col, _spinBox in enumerate(self._spinBoxes, self.COL_FIRST_COMBO + self.maxCombos):
+            # disconnect spinbox.
+            tree.setIndexWidget(model.index(row, col), None) 
             
