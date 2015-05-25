@@ -39,6 +39,8 @@ class Collector(QtGui.QWidget):
         The CollectorTree only stores the VisItems, the intelligence is located in the Collector 
         itself.
     """
+    FAKE_DIM_NAME = '-' # The name of the fake dimension with length 1
+    FAKE_DIM_IDX  = -999    
     
     def __init__(self):
         """ Constructor
@@ -148,7 +150,7 @@ class Collector(QtGui.QWidget):
             this function directly.
         """
         check_class(rti, BaseRti)
-        assert rti.asArray is not None, "rti must have array"
+        #assert rti.asArray is not None, "rti must have array" # TODO: maybe later
         
         row = 0
         model = self.tree.model()
@@ -197,10 +199,24 @@ class Collector(QtGui.QWidget):
         """ Populates the comboboxes with values of the repo tree item
         """
         logger.debug("_populateComboBoxes")
-        for idx, comboBox in enumerate(self._comboBoxes):
+        for comboBox in self._comboBoxes:
             comboBox.clear()
-            for dimNr in range(rti.asArray.ndim):
-                comboBox.addItem("Dim{}".format(dimNr))
+            
+        if rti.asArray is None:
+            return
         
+        for comboBoxNr, comboBox in enumerate(self._comboBoxes):
+            # Add the 1-length dimension
+            comboBox.addItem(self.FAKE_DIM_NAME, userData = self.FAKE_DIM_IDX)
+            
+            for dimNr in range(rti.asArray.ndim):
+                comboBox.addItem("Dim{}".format(dimNr), userData=dimNr)
+                        
+                # We set the nth combo-box index to the last item - n. This because the 
+                # NetCDF-CF conventions have the preferred dimension order of T, Z, Y, X. 
+                comboBox.setCurrentIndex(max(0, rti.asArray.ndim - comboBoxNr))
+            
+                
+                                    
                     
             
