@@ -56,7 +56,10 @@ class Collector(QtGui.QWidget):
         self.layout.setSpacing(0)
         self.buttonLayout = QtGui.QVBoxLayout()
         self.layout.setContentsMargins(2, 0, 2, 0)
-        self.layout.addLayout(self.buttonLayout, stretch=0)
+
+        # Add tree
+        self.tree = CollectorTree(self)
+        self.layout.addWidget(self.tree)
         
         # Add buttons
         self.addVisItemButton = QtGui.QPushButton("Add")
@@ -66,17 +69,8 @@ class Collector(QtGui.QWidget):
         self.removeVisItemButton.setEnabled(False) # not yet implemented
         self.buttonLayout.addWidget(self.removeVisItemButton, stretch=0)
         self.buttonLayout.addStretch(stretch=1)
-        
-        # Add tree
-        self.tree = CollectorTree(self)
-#        self.tree = QtGui.QTreeView()
-#        model = QtGui.QStandardItemModel(3, 4)
-#        self.tree.setModel(model)
-#        treeHeader = self.tree.header()
-#        treeHeader.resizeSection(0, 250)         
-#        #treeHeader.resizeSection(1, 200)         
-        self.layout.addWidget(self.tree)
-        
+        self.layout.addLayout(self.buttonLayout, stretch=0)
+                
         self.clearAndSetComboBoxes(['X', 'Y'])
         
         
@@ -175,7 +169,6 @@ class Collector(QtGui.QWidget):
                 
             logger.debug("Adding combobox at ({}, {})".format(row, col))
             comboBox = QtGui.QComboBox()
-            comboBox.addItem("NARF")
             self._comboBoxes.append(comboBox)
             
             editor = LabeledWidget(QtGui.QLabel(comboLabel), comboBox, layoutSpacing=0)

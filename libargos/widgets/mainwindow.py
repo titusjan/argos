@@ -63,7 +63,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
-        self.setCorner(Qt.TopRightCorner, Qt.RightDockWidgetArea)
+        self.setCorner(Qt.TopRightCorner, Qt.TopDockWidgetArea)
         self.setCorner(Qt.BottomRightCorner, Qt.RightDockWidgetArea)
         
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
