@@ -35,10 +35,10 @@ logger = logging.getLogger(__name__)
 class ConfigTreeView(ArgosTreeView):
     """ Tree widget for manipulating a tree of configuration options.
     """
-    def __init__(self, configTreeModel):
+    def __init__(self, configTreeModel, parent=None):
         """ Constructor
         """
-        super(ConfigTreeView, self).__init__(treeModel=configTreeModel)
+        super(ConfigTreeView, self).__init__(treeModel=configTreeModel, parent=parent)
 
         self.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
         

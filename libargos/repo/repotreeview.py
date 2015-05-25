@@ -37,13 +37,13 @@ class RepoTreeView(ArgosTreeView):
         selected item (see notes in ArgosTreeView documentation for details). 
         
     """
-    def __init__(self, repoTreeModel, collector):
+    def __init__(self, repoTreeModel, collector, parent=None):
         """ Constructor.
         
             Maintains a reference to a collector. The repo tree view updates the collector when
             the currentIndex changes. 
         """
-        super(RepoTreeView, self).__init__(treeModel=repoTreeModel)
+        super(RepoTreeView, self).__init__(treeModel=repoTreeModel, parent=parent)
  
         self._collector = collector
         

@@ -246,7 +246,9 @@ class BaseRti(AbstractLazyLoadTreeItem):
             indexing and other methods of numpy arrays (e.g. the shape). It can, for instance, 
             return a h5py dataset. 
             
-            If the underlying data cannot be representen as an array, this property returns None.
+            If the underlying data cannot be representent as an array, this property returns None.
+            Note that the implementation is expected to be fast; it should not retrieve actual 
+            array data from an underlying file, only return a reference.
         """
         return None
         

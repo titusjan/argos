@@ -24,7 +24,7 @@ from libargos.collect.collectortree import CollectorTree
 from libargos.repo.baserti import BaseRti
 from libargos.qt import QtGui, QtCore, QtSlot
 from libargos.qt.labeledwidget import LabeledWidget
-from libargos.utils.cls import check_class
+from libargos.utils.cls import check_class, check_is_a_sequence
 from libargos.widgets.constants import (TOP_DOCK_HEIGHT)
 
 logger = logging.getLogger(__name__)
@@ -45,6 +45,8 @@ class Collector(QtGui.QWidget):
         """
         super(Collector, self).__init__()
         
+        self._comboLabels = ['X', 'Y']
+        
         self.layout = QtGui.QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
@@ -62,21 +64,97 @@ class Collector(QtGui.QWidget):
         self.buttonLayout.addStretch(stretch=1)
         
         # Add tree
-        self.tree = CollectorTree()
+        self.tree = CollectorTree(self)
+#        self.tree = QtGui.QTreeView()
+#        model = QtGui.QStandardItemModel(3, 4)
+#        self.tree.setModel(model)
+#        treeHeader = self.tree.header()
+#        treeHeader.resizeSection(0, 250)         
+#        #treeHeader.resizeSection(1, 200)         
         self.layout.addWidget(self.tree)
         
         
     def sizeHint(self):
         """ The recommended size for the widget."""
         return QtCore.QSize(300, TOP_DOCK_HEIGHT)
+
+    def clear(self):
+        """ Removes all VisItems
+        """
+        self.tree.model().clear()
     
+    def clearAndSetComboLabels(self, comboLabels):
+        """ Removes all VisItems before setting the new degree.
+        """
+        check_is_a_sequence(comboLabels)
+        self.clear()
+        self._comboLabels = comboLabels
     
+    @property
+    def comboLabels(self):
+        """ Returns a copy of the combobox labels (since they are read only) """
+        return tuple(self._comboLabels)    
+
+    @property
+    def maxCombos(self):
+        """ Returns the maximum number of combo boxes """
+        return len(self._comboLabels)
+
+
+
     @QtSlot(BaseRti)
     def updateFromRti(self, rti):
         """ Updates the current VisItem from the contents of the repo tree item.
+        
+            Is a slot but the signal is usually connected to the Collector, which then call
+            this function directly.
         """
         check_class(rti, BaseRti)
-        self.tree.updateFromRti(rti)
+        assert rti.asArray is not None, "rti must have array"
+        
+        row = 0
+        model = self.tree.model()
+        
+        # Delete current widgets
+        self._deleteComboBoxes(row)
+        
+        # Create path label
+        pathItem = QtGui.QStandardItem(rti.nodePath)
+        pathItem.setEditable(False)
+        model.setItem(row, 0, pathItem)
+        
+        self._createComboBoxesFromRti(rti, row)
+    
+        
+    def _createComboBoxesFromRti(self, rti, row):
+        """ Creates a combo boxe for each of the comboLabel
+        """  
+        tree = self.tree
+        model = self.tree.model()
+        
+        for idx, comboLabel in enumerate(self.comboLabels):
+            col = idx + 1 # first col is label
+            if col >= model.columnCount():
+                model.setColumnCount(col + 1)
+                
+            logger.debug("adding combobox at {} {}".format(row, col))
 
+            comboBox = QtGui.QComboBox()
+            for dimNr in range(rti.asArray.ndim):
+                comboBox.addItem("Dim{}".format(dimNr))
+
+            editor = LabeledWidget(QtGui.QLabel(comboLabel), comboBox, layoutSpacing=0)
+            tree.setIndexWidget(model.index(row, col), editor) 
         
         
+    def _deleteComboBoxes(self, row):
+        """ Deletes all comboboxes of a row
+        """
+        tree = self.tree
+        model = self.tree.model()
+        
+        for idx in range(self.maxCombos):
+            col = idx + 1 # first col is label
+            logger.debug("Removing editor at: {}, {}".format(row, col))
+            tree.setIndexWidget(model.index(row, col), QtGui.QFrame())         
+            #model.setItem(row, col, QtGui.QStandardItem('...'))

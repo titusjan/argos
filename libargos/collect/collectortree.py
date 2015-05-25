@@ -32,47 +32,32 @@ logger = logging.getLogger(__name__)
 
 class CollectorTree(ArgosTreeView): 
     """ Tree widget for collecting the selected data. Includes an internal tree model.
+    
+        NOTE: this class is not meant to be used directly but is 'private' to the Collector().
+        That is, plugins should interact with the Collector class, not the CollectorTree()
     """
     HEADERS = ["item path", "item name"]
     (COL_ITEM_PATH, COL_ITEM_NAME) = range(len(HEADERS))    
     
-    def __init__(self):
+    
+    def __init__(self, parent):
         """ Constructor
         """
-        super(CollectorTree, self).__init__()
+        super(CollectorTree, self).__init__(parent=parent)
         
-        model = QtGui.QStandardItemModel(3, len(self.HEADERS))
+        self._comboLabels = None
+        
+        model = QtGui.QStandardItemModel(3, 4)
         self.setModel(model)
         self.setTextElideMode(Qt.ElideMiddle) # ellipsis appear in the middle of the text
  
         treeHeader = self.header()
-        treeHeader.resizeSection(self.COL_ITEM_PATH, 300)
-        treeHeader.resizeSection(self.COL_ITEM_NAME, 100)
-        treeHeader.setStretchLastSection(True)
+        treeHeader.resizeSection(0, 250) # For item path usually
+        treeHeader.setStretchLastSection(False)
         
-        model.setHorizontalHeaderLabels (self.HEADERS)
+        #model.setHorizontalHeaderLabels(self.HEADERS)
 
-        enabled = dict((name, False) for name in self.HEADERS)
-        checked = dict((name, True) for name in self.HEADERS)
-        self.addHeaderContextMenu(checked=checked, enabled=enabled, checkable={})
-        
-
-    @QtSlot(BaseRti)
-    def updateFromRti(self, rti):
-        """ Updates the current VisItem from the contents of the repo tree item.
-        
-            Is a slot but the signal is usually connected to the Collector, which then call
-            this function directly.
-        """
-        assert rti.asArray is not None, "rti must have array"
-        model = self.model()
-        
-        pathItem = QtGui.QStandardItem(rti.nodePath)
-        pathItem.setEditable(False)
-        model.setItem(0, 0, pathItem)
-
-        lineEdit = QtGui.QLineEdit(rti.nodeName)
-        editor = LabeledWidget(QtGui.QLabel("edit"), lineEdit, layoutSpacing=0)
-        self.setIndexWidget(model.index(0, 1), editor) 
-        
-        
+        #enabled = dict((name, False) for name in self.HEADERS)
+        #checked = dict((name, True) for name in self.HEADERS)
+        #self.addHeaderContextMenu(checked=checked, enabled=enabled, checkable={})
+    
