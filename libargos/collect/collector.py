@@ -45,12 +45,14 @@ class Collector(QtGui.QWidget):
         """
         super(Collector, self).__init__()
         
-        self._comboLabels = ['X', 'Y']
+        self._comboLabels = []  # will be set in clearAndSetComboBoxes
+        self._comboBoxes = []   # will be set in clearAndSetComboBoxes
+        self.COL_FIRST_COMBO = 1  
         
         self.layout = QtGui.QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
-        self.buttonLayout = QtGui.QVBoxLayout(self)
+        self.buttonLayout = QtGui.QVBoxLayout()
         self.layout.setContentsMargins(2, 0, 2, 0)
         self.layout.addLayout(self.buttonLayout, stretch=0)
         
@@ -73,22 +75,13 @@ class Collector(QtGui.QWidget):
 #        #treeHeader.resizeSection(1, 200)         
         self.layout.addWidget(self.tree)
         
+        self.clearAndSetComboBoxes(['X', 'Y'])
+        
         
     def sizeHint(self):
         """ The recommended size for the widget."""
         return QtCore.QSize(300, TOP_DOCK_HEIGHT)
 
-    def clear(self):
-        """ Removes all VisItems
-        """
-        self.tree.model().clear()
-    
-    def clearAndSetComboLabels(self, comboLabels):
-        """ Removes all VisItems before setting the new degree.
-        """
-        check_is_a_sequence(comboLabels)
-        self.clear()
-        self._comboLabels = comboLabels
     
     @property
     def comboLabels(self):
@@ -99,8 +92,53 @@ class Collector(QtGui.QWidget):
     def maxCombos(self):
         """ Returns the maximum number of combo boxes """
         return len(self._comboLabels)
+    
+    
+    def clear(self):
+        """ Removes all VisItems
+        """
+        model = self.tree.model()
+        # Don't use model.clear(). it will delete the column sizes 
+        model.removeRows(0, 1)
+        model.setRowCount(1)
+        #model.setColumnCount(6)
+
+    
+    
+    def clearAndSetComboBoxes(self, comboLabels):
+        """ Removes all VisItems before setting the new degree.
+        """
+        check_is_a_sequence(comboLabels)
+        row = 0
+        self._deleteComboBoxes(row)
+        self.clear()
+        self._setComboLabels(comboLabels)
+        self._createComboBoxes(row)
 
 
+    def _setComboLabels(self, comboLabels):
+        """ Sets the comboLables and updates the headers. Removes old values first. 
+        """
+        for col, label in enumerate(self._comboLabels, self.COL_FIRST_COMBO):
+            self._setHeaderLabel(col, '')
+            
+        self._comboLabels = comboLabels
+        
+        for col, label in enumerate(self._comboLabels, self.COL_FIRST_COMBO):
+            self._setHeaderLabel(col, label)
+            
+
+    def _setHeaderLabel(self, col, text):
+        """ Sets the header of column col to text.
+            Will increase the number of columns if col is larger than the current number.
+        """
+        model = self.tree.model()
+        item = model.horizontalHeaderItem(col)
+        if item:
+            item.setText(text)
+        else:
+            model.setHorizontalHeaderItem(col, QtGui.QStandardItem(text))
+            
 
     @QtSlot(BaseRti)
     def updateFromRti(self, rti):
@@ -115,46 +153,54 @@ class Collector(QtGui.QWidget):
         row = 0
         model = self.tree.model()
         
-        # Delete current widgets
-        self._deleteComboBoxes(row)
-        
         # Create path label
         pathItem = QtGui.QStandardItem(rti.nodePath)
         pathItem.setEditable(False)
         model.setItem(row, 0, pathItem)
         
-        self._createComboBoxesFromRti(rti, row)
+        self._populateComboBoxes(row, rti)
     
         
-    def _createComboBoxesFromRti(self, rti, row):
-        """ Creates a combo boxe for each of the comboLabel
+    def _createComboBoxes(self, row):
+        """ Creates a combo box for each of the comboLabels
         """  
         tree = self.tree
         model = self.tree.model()
         
-        for idx, comboLabel in enumerate(self.comboLabels):
-            col = idx + 1 # first col is label
+        for col, comboLabel in enumerate(self.comboLabels, self.COL_FIRST_COMBO):
             if col >= model.columnCount():
                 model.setColumnCount(col + 1)
                 
-            logger.debug("adding combobox at {} {}".format(row, col))
-
+            logger.debug("Adding combobox at ({}, {})".format(row, col))
             comboBox = QtGui.QComboBox()
-            for dimNr in range(rti.asArray.ndim):
-                comboBox.addItem("Dim{}".format(dimNr))
-
+            comboBox.addItem("NARF")
+            self._comboBoxes.append(comboBox)
+            
             editor = LabeledWidget(QtGui.QLabel(comboLabel), comboBox, layoutSpacing=0)
             tree.setIndexWidget(model.index(row, col), editor) 
-        
-        
+            
+
     def _deleteComboBoxes(self, row):
         """ Deletes all comboboxes of a row
         """
         tree = self.tree
         model = self.tree.model()
         
-        for idx in range(self.maxCombos):
-            col = idx + 1 # first col is label
-            logger.debug("Removing editor at: {}, {}".format(row, col))
-            tree.setIndexWidget(model.index(row, col), QtGui.QFrame())         
-            #model.setItem(row, col, QtGui.QStandardItem('...'))
+        for col in range(self.COL_FIRST_COMBO, self.maxCombos):
+            logger.debug("Removing combobox at: {}, {}".format(row, col))
+            tree.setIndexWidget(model.index(row, col), None)
+                     
+        self._comboBoxes = []
+            
+
+    def _populateComboBoxes(self, row, rti):
+        """ Populates the comboboxes with values of the repo tree item
+        """
+        logger.debug("_populateComboBoxes")
+        for idx, comboBox in enumerate(self._comboBoxes):
+            comboBox.clear()
+            for dimNr in range(rti.asArray.ndim):
+                comboBox.addItem("Dim{}".format(dimNr))
+        
+                    
+            

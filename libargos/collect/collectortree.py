@@ -55,7 +55,7 @@ class CollectorTree(ArgosTreeView):
         treeHeader.resizeSection(0, 250) # For item path usually
         treeHeader.setStretchLastSection(False)
         
-        #model.setHorizontalHeaderLabels(self.HEADERS)
+        model.setHorizontalHeaderLabels(["item path"])
 
         #enabled = dict((name, False) for name in self.HEADERS)
         #checked = dict((name, True) for name in self.HEADERS)

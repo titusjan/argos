@@ -294,8 +294,16 @@ class MainWindow(QtGui.QMainWindow):
     def myTest(self):
         """ Function for testing """
         logger.debug("myTest for window: {}".format(self._instanceNr))
-        from libargos.qt import printChildren
-        printChildren(self)
+        
+        labels = ['A', 'B', 'C', 'D']
+        degree = self.collector.maxCombos
+        degree = (degree % 2) + 1
+        logger.debug("Setting degree to: {}".format(degree))
+        
+        self.collector.clearAndSetComboBoxes(labels[0:degree])
+        
+        #from libargos.qt import printChildren
+        #printChildren(self)
         
 #        self.argosApplication.raiseAllWindows()
 #        import gc
