@@ -22,8 +22,7 @@ import logging
 
 from libargos.collect.collectortree import CollectorTree
 from libargos.repo.baserti import BaseRti
-from libargos.qt import QtGui, QtCore, QtSlot
-from libargos.qt.labeledwidget import LabeledWidget
+from libargos.qt import QtGui, QtCore, QtSignal, QtSlot
 from libargos.utils.cls import check_class, check_is_a_sequence
 from libargos.widgets.constants import (TOP_DOCK_HEIGHT)
 
@@ -41,6 +40,8 @@ class Collector(QtGui.QWidget):
     """
     FAKE_DIM_NAME = '-' # The name of the fake dimension with length 1
     FAKE_DIM_IDX  = -999    
+
+    contentsChanged = QtSignal()         
     
     def __init__(self):
         """ Constructor
@@ -81,6 +82,13 @@ class Collector(QtGui.QWidget):
     def sizeHint(self):
         """ The recommended size for the widget."""
         return QtCore.QSize(300, TOP_DOCK_HEIGHT)
+    
+    @property
+    def rti(self):
+        """ The current repo tree item. Can be None.
+            Do not store references to this as it may be removed by the user!
+        """
+        return self._rti
 
 
     @property
@@ -184,7 +192,10 @@ class Collector(QtGui.QWidget):
         self._populateComboBoxes(row)
         self._createSpinBoxes(row)
     
+        logging.debug("Emitting contentsChanged signal (rti changed)")
+        self.contentsChanged.emit()
         
+                
     def _createComboBoxes(self, row):
         """ Creates a combo box for each of the comboLabels
         """  
@@ -287,6 +298,8 @@ class Collector(QtGui.QWidget):
             spinBox.setValue(dimSize // 2) # select the middle of the slice
             spinBox.setPrefix("{}: ".format(self.dimensionNameByNumber(dimNr)))
             spinBox.setSuffix("/{}".format(spinBox.maximum()))
+            
+            # This must be done after setValue to prevent emitting too many signals
             spinBox.valueChanged[int].connect(self._SpinboxValueChanged)
 
             #spinboxLabel = QtGui.QLabel(self.dimensionNameByNumber(dimNr))
@@ -342,7 +355,8 @@ class Collector(QtGui.QWidget):
                             
         self.blockChildrenSignals(blocked)
         
-        logging.debug("**** TODO: emit new axes signal....")
+        logging.debug("Emitting contentsChanged signal (comboBox)")
+        self.contentsChanged.emit()
         
         
     @QtSlot(int)
@@ -355,7 +369,8 @@ class Collector(QtGui.QWidget):
         if spinBox is None:
             spinBox = self.sender()
         assert spinBox, "spinBox not defined and not the sender"
-        
-        logging.debug("**** TODO: emit item changed signal....")
+
+        logging.debug("Emitting contentsChanged signal (spinBox)")
+        self.contentsChanged.emit()
         
 

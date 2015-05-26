@@ -32,7 +32,7 @@ from libargos.config.configtreeview import ConfigTreeView
 from libargos.config.configtreemodel import ConfigTreeModel
 from libargos.repo.detailplugins.attr import AttributesPane 
 from libargos.repo.repotreeview import RepoTreeView
-from libargos.inspector.base import BaseInspector
+from libargos.inspector.debug import DebugInspector
 from libargos.info import DEBUGGING, PROJECT_NAME
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
 from libargos.utils.misc import string_to_identifier
@@ -101,9 +101,10 @@ class MainWindow(QtGui.QMainWindow):
         self.repoTreeView = RepoTreeView(self.argosApplication.repo, self.collector)
         self.configTreeView = ConfigTreeView(self._config)
         
-        temporaryInspector = BaseInspector()
+        temporaryInspector = DebugInspector(self.collector)
         self.setCentralInspector(temporaryInspector)
         
+        self.collector.contentsChanged.connect(temporaryInspector.draw)
         
                               
     def __setupMenu(self):

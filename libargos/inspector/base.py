@@ -18,7 +18,9 @@
 """ Base class for inspectors
 """
 import logging
-from libargos.qt import Qt, QtCore, QtGui
+from libargos.info import DEBUGGING
+from libargos.qt import QtGui, QtSlot
+from libargos.utils.cls import type_name
 from libargos.widgets.constants import DOCK_SPACING, DOCK_MARGIN, LEFT_DOCK_WIDTH
 from libargos.widgets.display import MessageDisplay
 
@@ -35,11 +37,11 @@ class BaseInspector(QtGui.QStackedWidget):
     ERROR_PAGE_IDX = 0
     CONTENTS_PAGE_IDX = 1
     
-    def __init__(self, parent=None):
+    def __init__(self, collector, parent=None):
         
         super(BaseInspector, self).__init__(parent)
         
-        #self._collector = None
+        self._collector = collector
         
         self.errorWidget = MessageDisplay()
         self.addWidget(self.errorWidget)
@@ -59,24 +61,46 @@ class BaseInspector(QtGui.QStackedWidget):
         """ Returns a short string that describes this class. For use in menus, headers, etc. 
         """
         return cls._label
-        
-    def sizeHint(self):
-        """ The recommended size for the widget."""
-        return QtCore.QSize(LEFT_DOCK_WIDTH, 250)
-        
-
-    def drawEmpty(self):
-        """ Draws the inspector widget when no input is available.
-            The default implementation shows an error message. Descendants should override this.
+    
+    @property
+    def collector(self):
+        """ The data collector from where this inspector gets its data
         """
-        self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
+        return self._collector
+     
+#        
+#    def sizeHint(self):
+#        """ The recommended size for the widget."""
+#        return QtCore.QSize(LEFT_DOCK_WIDTH, 250)
+        
+    
+    @QtSlot()
+    def draw(self):
+        """ Tries to draw the widget contents. 
+            Shows the error page in case an exceptionis raised while drawing the contents.
+        """
+        try:
+            self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
+            self._drawContents()
+        except Exception as ex:
+            self.setCurrentIndex(self.ERROR_PAGE_IDX)
+            self._drawError(msg=str(ex), title=type_name(ex))
+            if DEBUGGING:
+                raise
+            
+    
+    def _drawContents(self):
+        """ Draws the inspector widget contents.
+            The default implementation shows an empty page (no widgets). Descendants should 
+            override this.
+        """
+        pass
         
 
-    def drawError(self, msg="", title="Error"):
-        """ Shows and error message
+    def _drawError(self, msg="", title="Error"):
+        """ Shows and error message.
         """
         self.errorWidget.setError(msg=msg, title=title)
-        self.setCurrentIndex(self.ERROR_PAGE_IDX)
         
         
         

@@ -111,7 +111,7 @@ class DetailBasePane(QtGui.QStackedWidget):
         model = currentIndex.model() if currentIndex is not None else None 
         rti = model.getItem(currentIndex) if model is not None else None 
         try:
-            self.drawContents(rti)
+            self._drawContents(rti)
             self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
         except Exception as ex:
             if DEBUGGING:
@@ -121,7 +121,7 @@ class DetailBasePane(QtGui.QStackedWidget):
             self.setCurrentIndex(self.ERROR_PAGE_IDX)
             
 
-    def drawContents(self, currentRti=None):
+    def _drawContents(self, currentRti=None):
         """ Draws the contents for the current RTI. Descendants should override this.
             Descendants should draw 'empty' contents if currentRti is None. No need to
             handle exceptions though, these are handled by the called (currentChanged). 
