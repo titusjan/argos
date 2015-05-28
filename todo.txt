@@ -30,6 +30,9 @@ http://vis4.net/blog/posts/avoid-equidistant-hsv-colors/
 TODO:
 	confirm on error when editing cell
 	read/write config to yaml, QSettings. 
+	Masked arrays and fill values.
+	Compound data types
+	
 			
 Collectors:
 	test with Evoss sciamachy products

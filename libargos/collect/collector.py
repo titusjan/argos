@@ -19,6 +19,7 @@
 from __future__ import print_function
 
 import logging
+import numpy as np
 
 from libargos.collect.collectortree import CollectorTree
 from libargos.repo.baserti import BaseRti
@@ -39,7 +40,7 @@ class Collector(QtGui.QWidget):
         itself.
     """
     FAKE_DIM_NAME = '-' # The name of the fake dimension with length 1
-    FAKE_DIM_IDX  = -999    
+    FAKE_DIM_OFFSET = 1000  # Fake dimensions start here (so all arrays must have a smaller ndim)  
 
     contentsChanged = QtSignal()         
     
@@ -235,14 +236,14 @@ class Collector(QtGui.QWidget):
         for comboBox in self._comboBoxes:
             comboBox.clear()
             
-        if self._rti is None or self._rti.asArray is None:
+        if self.rti is None or self.rti.asArray is None:
             return
         
         nDims = self._rti.asArray.ndim
         
         for comboBoxNr, comboBox in enumerate(self._comboBoxes):
             # Add a fake dimension of length 1
-            comboBox.addItem(self.FAKE_DIM_NAME, userData = self.FAKE_DIM_IDX)
+            comboBox.addItem(self.FAKE_DIM_NAME, userData = self.FAKE_DIM_OFFSET + comboBoxNr)
             
             for dimNr in range(nDims):
                 comboBox.addItem(self.dimensionNameByNumber(dimNr), userData=dimNr)
@@ -272,7 +273,7 @@ class Collector(QtGui.QWidget):
         """
         assert len(self._spinBoxes) == 0, "Spinbox list not empty. Call _deleteSpinBoxes first"
         
-        if self._rti is None or self._rti.asArray is None:
+        if self.rti is None or self.rti.asArray is None:
             return     
 
         logger.debug("_createSpinBoxes, array shape: {}".format(self._rti.asArray.shape))
@@ -298,6 +299,7 @@ class Collector(QtGui.QWidget):
             spinBox.setValue(dimSize // 2) # select the middle of the slice
             spinBox.setPrefix("{}: ".format(self.dimensionNameByNumber(dimNr)))
             spinBox.setSuffix("/{}".format(spinBox.maximum()))
+            spinBox.setProperty("dim_nr", dimNr)
             
             # This must be done after setValue to prevent emitting too many signals
             spinBox.valueChanged[int].connect(self._SpinboxValueChanged)
@@ -341,12 +343,13 @@ class Collector(QtGui.QWidget):
         
         # If one of the other combo boxes has the same value, set it to the fake dimension
         curDimIdx = self._comboBoxDimensionIndex(comboBox)
-        if curDimIdx != self.FAKE_DIM_IDX:
+        if curDimIdx < self.FAKE_DIM_OFFSET:
             otherComboBoxes = [cb for cb in self._comboBoxes if cb is not comboBox]
             for otherComboBox in otherComboBoxes:
                 if otherComboBox.currentIndex() == comboBox.currentIndex():
-                    newIdx = otherComboBox.findData(self.FAKE_DIM_IDX)
-                    otherComboBox.setCurrentIndex(newIdx)
+                    #newIdx = otherComboBox.findData(self.FAKE_DIM_IDX)
+                    #otherComboBox.setCurrentIndex(newIdx)
+                    otherComboBox.setCurrentIndex(0) # Fake dimension is always the first
         
         # Show only spin boxes that are not selected
         row = 0       
@@ -372,5 +375,48 @@ class Collector(QtGui.QWidget):
 
         logging.debug("Emitting contentsChanged signal (spinBox)")
         self.contentsChanged.emit()
+
+
+    def getSlicedArray(self):
+        """ Slice the rti using a slice made from the values of the combo and spin boxes
+            
+            :returns: Numpy array with the same number of dimension as the number of 
+                comboboxes; returns None if no slice can be made.
+        """
+        logging.debug("getSlicedArray")
+
+        if self.rti is None or self.rti.asArray is None:
+            return None  
+
+        # The dimensions that are selected in the combo boxes will be set to slice(None), 
+        # the values from the spinboxes will be set as a single integeger value      
+        nDims = self.rti.nDims
+        sliceList = [slice(None)] * nDims 
+                
+        for spinBox in self._spinBoxes:
+            dimNr = spinBox.property("dim_nr")
+            sliceList[dimNr] = spinBox.value()
         
+        # Make the array slicer
+        logging.debug("Array slice: {}".format(str(sliceList)))
+        slicedArray = self.rti.asArray[sliceList]
+        
+        # Add fake dimensions of length 1 so that result.ndim will equal the number of combo boxes
+        for dimNr in range(slicedArray.ndim, self.maxCombos):
+            logger.debug("Adding fake dimension: {}".format(dimNr))
+            slicedArray = np.expand_dims(slicedArray, dimNr)
+        
+        # Shuffle the dimensions to be in the order as specified by the combo boxes    
+        comboDims = [self._comboBoxDimensionIndex(cb) for cb in self._comboBoxes]
+        permutations = np.argsort(comboDims)
+        logger.debug("Transposing dimensions: {}".format(permutations))
+        slicedArray = np.transpose(slicedArray, permutations)
+        
+        # Sanity check
+        assert slicedArray.ndim == self.maxCombos, \
+            "Bug: get_sliced_array should return a {:d}D array, got: {}D" \
+            .format(self._num_comboboxes, slicedArray.ndim)
+
+        return slicedArray
+
 

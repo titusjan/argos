@@ -261,12 +261,12 @@ class BaseRti(AbstractLazyLoadTreeItem):
         return tuple() if array is None else array.shape
         
     
-#    @property
-#    def ndim(self):
-#        """ The number of dimension of the underyling array
-#            Should return 0 for scalars.
-#        """
-#        return len(self.arrayShape())
+    @property
+    def nDims(self):
+        """ The number of dimension of the underlying array
+            Should return 0 for scalars.
+        """
+        return len(self.arrayShape)
     
 #    @property
 #    def dimensions(self):
