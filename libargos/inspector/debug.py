@@ -45,7 +45,10 @@ class DebugInspector(BaseInspector):
             The default implementation shows an error message. Descendants should override this.
         """
         slicedArray = self.collector.getSlicedArray()
-        text = str(slicedArray.shape)
+        if slicedArray == None:
+            text = "<None>"
+        else:
+            text = str(slicedArray.shape)
         
         logger.debug("@@@@@@@@ _drawContents: {}".format(text))
         self.label.setText(text)
