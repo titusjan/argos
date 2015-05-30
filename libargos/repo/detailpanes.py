@@ -136,7 +136,7 @@ class DetailTablePane(DetailBasePane):
     """
     _label = "Details Table"
     
-    HEADERS = [] # Childresn should override this
+    HEADERS = [] # Children should override this
     
     def __init__(self, repoTreeView, parent=None):
         super(DetailTablePane, self).__init__(repoTreeView, parent=parent)
