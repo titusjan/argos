@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 # Qt classes have many ancestors
 #pylint: disable=R0901
 
+#TODO: do we still need this as a separate class?
 class CollectorTree(ArgosTreeView): 
     """ Tree widget for collecting the selected data. Includes an internal tree model.
     
