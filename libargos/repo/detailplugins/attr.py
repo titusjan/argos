@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Variable attributes inspector. 
+""" RTI attributes inspector. 
 """
 import logging
 
@@ -28,9 +28,9 @@ logger = logging.getLogger(__name__)
 
 
 class AttributesPane(DetailTablePane):
-    """ Shows the attributes of the selected variable
+    """ Shows the attributes of the selected repo tree item
     """
-    _label = "Attribute Details"
+    _label = "Attributes"
     
     HEADERS = ["Name", "Value", "Type"]
     (COL_ATTR_NAME, COL_VALUE, COL_ELEM_TYPE) = range(len(HEADERS))

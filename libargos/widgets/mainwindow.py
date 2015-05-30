@@ -30,6 +30,7 @@ from libargos.widgets.aboutdialog import AboutDialog
 from libargos.collect.collector import Collector
 from libargos.config.configtreeview import ConfigTreeView
 from libargos.config.configtreemodel import ConfigTreeModel
+from libargos.repo.detailplugins.prop import PropertiesPane 
 from libargos.repo.detailplugins.attr import AttributesPane 
 from libargos.repo.repotreeview import RepoTreeView
 from libargos.inspector.table import TableInspector
@@ -58,6 +59,7 @@ class MainWindow(QtGui.QMainWindow):
         self._instanceNr = MainWindow.__numInstances # Used only for debugging
         MainWindow.__numInstances += 1
         
+        self._detailDockWidgets = []
         self._argosApplication = argosApplication
         self._config = ConfigTreeModel()
 
@@ -68,6 +70,7 @@ class MainWindow(QtGui.QMainWindow):
         
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setUnifiedTitleAndToolBarOnMac(True)
+        self.setDocumentMode(True) # Look of tabs as Safari on OS-X
         self.resize(1300, 700)  # Assumes minimal resolution of 1366 x 768
         self.setWindowTitle("{}-{} (#{})".format(PROJECT_NAME, self.argosApplication.profile, 
                                                  self._instanceNr))
@@ -175,8 +178,13 @@ class MainWindow(QtGui.QMainWindow):
         self.dockWidget(self.collector, "Data Collector", Qt.TopDockWidgetArea) 
         self.dockWidget(self.configTreeView, "Application Settings", Qt.RightDockWidgetArea) 
 
-        self.attributesPane = AttributesPane(self.repoTreeView)
-        self.dockDetailPane(self.attributesPane, area=Qt.LeftDockWidgetArea)
+        self.viewMenu.addSeparator()
+        
+        propertiesPane = PropertiesPane(self.repoTreeView)
+        self.dockDetailPane(propertiesPane, area=Qt.LeftDockWidgetArea)
+
+        attributesPane = AttributesPane(self.repoTreeView)
+        self.dockDetailPane(attributesPane, area=Qt.LeftDockWidgetArea)
 
 
     # -- End of setup_methods --
@@ -204,6 +212,9 @@ class MainWindow(QtGui.QMainWindow):
         area = Qt.LeftDockWidgetArea if area is None else area
         dockWidget = self.dockWidget(detailPane, title, area)
         dockWidget.visibilityChanged.connect(detailPane.dockVisibilityChanged) 
+        if len(self._detailDockWidgets) > 0:
+            self.tabifyDockWidget(self._detailDockWidgets[-1], dockWidget)
+        self._detailDockWidgets.append(dockWidget)
         return dockWidget
 
     

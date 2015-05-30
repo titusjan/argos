@@ -49,7 +49,7 @@ class RepoTreeModel(BaseTreeModel):
         self._isEditable = False
         
     
-    def _displayValueForColumn(self, treeItem, column):
+    def displayValueForColumn(self, treeItem, column):
         """ Returns the value of the item given the column number.
             :rtype: string
         """

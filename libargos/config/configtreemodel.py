@@ -74,7 +74,7 @@ class ConfigTreeModel(BaseTreeModel):
         return result
         
     
-    def _displayValueForColumn(self, treeItem, column):
+    def displayValueForColumn(self, treeItem, column):
         """ Returns the display value of the item given the column number.
             :rtype: string
         """
@@ -94,7 +94,7 @@ class ConfigTreeModel(BaseTreeModel):
             raise ValueError("Invalid column: {}".format(column))
         
     
-    def _editValueForColumn(self, treeItem, column):
+    def editValueForColumn(self, treeItem, column):
         """ Returns the value for editing of the item given the column number.
             :rtype: string
         """
@@ -104,14 +104,14 @@ class ConfigTreeModel(BaseTreeModel):
             raise ValueError("Invalid column: {}".format(column))
             
 
-    def _setEditValueForColumn(self, treeItem, column, value):
+    def setEditValueForColumn(self, treeItem, column, value):
         """ Sets the value in the item, of the item given the column number.
             It returns True for success, otherwise False.
         """
         if column != self.COL_VALUE:
             return False
         try:
-            logger.debug("_setEditValueForColumn: {!r}".format(value))
+            logger.debug("setEditValueForColumn: {!r}".format(value))
             treeItem.data = value
         except Exception:
             raise
@@ -131,14 +131,14 @@ class ConfigTreeModel(BaseTreeModel):
             return treeItem.checkState
             
             
-    def _setCheckStateForColumn(self, treeItem, column, checkState):
+    def setCheckStateForColumn(self, treeItem, column, checkState):
         """ Sets the check state in the item, of the item given the column number.
             It returns True for success, otherwise False.
         """
         if column != self.COL_VALUE:
             return False
         else:
-            logger.debug("_setCheckStateForColumn: {!r}".format(checkState))
+            logger.debug("setCheckStateForColumn: {!r}".format(checkState))
             try:
                 treeItem.checkState = checkState
             except NotImplementedError:
