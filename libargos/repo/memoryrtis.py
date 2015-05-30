@@ -51,12 +51,8 @@ class ScalarRti(BaseRti):
         self._scalar = scalar 
     
     @property
-    def typeName(self):
-        return type_name(self._scalar)
-    
-    @property
     def elementTypeName(self):
-        return self.typeName
+        return type_name(self._scalar)
     
     def hasChildren(self):
         """ Returns False. Leaf nodes never have children. """
@@ -82,10 +78,6 @@ class ArrayRti(BaseRti):
     @property
     def asArray(self):
         return self._array
-
-    @property
-    def typeName(self):
-        return type_name(self._array)
     
     @property
     def elementTypeName(self):

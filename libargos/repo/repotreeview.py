@@ -58,8 +58,8 @@ class RepoTreeView(ArgosTreeView):
         enabled[headerNames[RepoTreeModel.COL_NODE_NAME]] = False # Cannot be unchecked
         checked = dict((name, False) for name in headerNames)
         checked[headerNames[RepoTreeModel.COL_NODE_NAME]] = True 
-        checked[headerNames[RepoTreeModel.COL_SHAPE]] = True 
-        checked[headerNames[RepoTreeModel.COL_ELEM_TYPE]] = True 
+        checked[headerNames[RepoTreeModel.COL_SHAPE]] = False 
+        checked[headerNames[RepoTreeModel.COL_ELEM_TYPE]] = False 
         self.addHeaderContextMenu(checked=checked, enabled=enabled, checkable={})
         
         # Add actions

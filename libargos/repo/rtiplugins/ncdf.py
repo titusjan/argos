@@ -59,10 +59,6 @@ class VariableRti(BaseRti):
     @property
     def asArray(self):
         return self._ncVar
-
-    @property
-    def typeName(self):
-        return type_name(self._ncVar)
     
     @property
     def elementTypeName(self):

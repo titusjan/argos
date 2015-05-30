@@ -33,10 +33,9 @@ class RepoTreeModel(BaseTreeModel):
         for QTreeViews. The underlying data is stored as repository tree items (BaseRti 
         descendants).
     """
-    HEADERS = ["name", "path", "shape", "is open", "tree item", "type", "elem type", "file name"]
+    HEADERS = ["name", "path", "shape", "is open", "tree item", "elem type", "file name"]
     (COL_NODE_NAME, COL_NODE_PATH, COL_SHAPE, COL_IS_OPEN, 
-     COL_RTI_TYPE, COL_TYPE, COL_ELEM_TYPE, 
-     COL_FILE_NAME) = range(len(HEADERS))
+     COL_RTI_TYPE, COL_ELEM_TYPE, COL_FILE_NAME) = range(len(HEADERS))
      
     COL_ICON = 0   # Column number that contains the icon. None for no icons
     
@@ -63,8 +62,6 @@ class RepoTreeModel(BaseTreeModel):
             return str(treeItem.isOpen)
         elif column == self.COL_RTI_TYPE:
             return type_name(treeItem)
-        elif column == self.COL_TYPE:
-            return treeItem.typeName
         elif column == self.COL_ELEM_TYPE:
             return treeItem.elementTypeName
         elif column == self.COL_FILE_NAME:

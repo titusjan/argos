@@ -231,10 +231,6 @@ class BaseRti(AbstractLazyLoadTreeItem):
         else:
             return self._iconClosed
 
-        
-    @property
-    def typeName(self):
-        return ""
     
     @property
     def elementTypeName(self):
