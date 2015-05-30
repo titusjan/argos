@@ -35,8 +35,8 @@ class AttributesPane(DetailTablePane):
     HEADERS = ["Name", "Value", "Type"]
     (COL_ATTR_NAME, COL_VALUE, COL_ELEM_TYPE) = range(len(HEADERS))
     
-    def __init__(self, parent=None):
-        super(AttributesPane, self).__init__(AttributesPane.HEADERS, parent=parent)
+    def __init__(self, repoTreeView, parent=None):
+        super(AttributesPane, self).__init__(repoTreeView, parent=parent)
         self.table.addHeaderContextMenu(enabled = {'Name': False, 'Value': False}, 
                                         checked = {'Type': False}) 
     
@@ -46,7 +46,7 @@ class AttributesPane(DetailTablePane):
         tableHeader.resizeSection(self.COL_ELEM_TYPE, COL_ELEM_TYPE_WIDTH)          
 
         
-    def drawContents(self, currentRti=None):
+    def _drawContents(self, currentRti=None):
         """ Draws the attributes of the currentRTI
         """
         #logger.debug("drawContents: {}".format(currentRti))

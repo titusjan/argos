@@ -45,7 +45,7 @@ class DebugInspector(BaseInspector):
             The default implementation shows an error message. Descendants should override this.
         """
         slicedArray = self.collector.getSlicedArray()
-        if slicedArray == None:
+        if slicedArray is None:
             text = "<None>"
         else:
             text = str(slicedArray.shape)

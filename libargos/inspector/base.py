@@ -77,7 +77,7 @@ class BaseInspector(QtGui.QStackedWidget):
     @QtSlot()
     def draw(self):
         """ Tries to draw the widget contents. 
-            Shows the error page in case an exceptionis raised while drawing the contents.
+            Shows the error page in case an exception is raised while drawing the contents.
         """
         try:
             self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
@@ -101,6 +101,4 @@ class BaseInspector(QtGui.QStackedWidget):
         """ Shows and error message.
         """
         self.errorWidget.setError(msg=msg, title=title)
-        
-        
         

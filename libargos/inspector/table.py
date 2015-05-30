@@ -109,7 +109,6 @@ class TableInspector(BaseInspector):
         self.model = TableInspectorModel(collector, parent=self)
         self.table = QtGui.QTableView()
         self.table.setModel(self.model)
-        
         self.contentsLayout.addWidget(self.table)
         
 
@@ -119,11 +118,4 @@ class TableInspector(BaseInspector):
         """
         slicedArray = self.collector.getSlicedArray()
         self.model.setSlicedArray(slicedArray)
-        
-        # TODO: remove debug logging below
-        if slicedArray == None:
-            text = "<None>"
-        else:
-            text = str(slicedArray.shape)
-        logger.debug("@@@@@@@@ _drawContents: {}".format(text))
 

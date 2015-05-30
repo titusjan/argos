@@ -185,7 +185,7 @@ class MainWindow(QtGui.QMainWindow):
         """ Adds a widget as a docked widget.
             Returns the added dockWidget
         """
-        assert widget.parent() is None, "Inspector already has a parent"
+        assert widget.parent() is None, "Widget already has a parent"
         
         dockWidget = QtGui.QDockWidget(title, parent=self)
         dockWidget.setObjectName("dock_" + string_to_identifier(title))
@@ -296,15 +296,8 @@ class MainWindow(QtGui.QMainWindow):
         """ Function for testing """
         logger.debug("myTest for window: {}".format(self._instanceNr))
         
-        labels = ['A', 'B', 'C', 'D']
-        degree = self.collector.maxCombos
-        degree = (degree % 2) + 1
-        logger.debug("Setting degree to: {}".format(degree))
-        
-        self.collector.clearAndSetComboBoxes(labels[0:degree])
-        
-        #from libargos.qt import printChildren
-        #printChildren(self)
+        from libargos.qt import printChildren
+        printChildren(self)
         
 #        self.argosApplication.raiseAllWindows()
 #        import gc

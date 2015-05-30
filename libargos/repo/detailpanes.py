@@ -85,7 +85,7 @@ class DetailBasePane(QtGui.QStackedWidget):
             Is used to (dis)connect the pane from its repo tree view and so prevent unnecessary
             and potentially costly updates when the pane is hidden.
         """
-        logger.debug("dockVisibilityChanged of {!r}: visible={}".format(self.objectName(), visible))
+        logger.debug("dockVisibilityChanged of {!r}: visible={}".format(self, visible))
         
         selectionModel = self._repoTreeView.selectionModel()
         if visible:        
@@ -94,7 +94,7 @@ class DetailBasePane(QtGui.QStackedWidget):
             currentIndex = selectionModel.currentIndex()
             self.currentChanged(currentIndex)
         else:
-            # At start-up the pane be be hidded but the signals are not connected.
+            # At start-up the pane be be hidden but the signals are not connected.
             # A disconnect would fail in that case so we test for isConnected == True.
             if self.isConntected:
                 selectionModel.currentChanged.disconnect(self.currentChanged)
@@ -108,6 +108,7 @@ class DetailBasePane(QtGui.QStackedWidget):
         """ Updates the content when the current repo tree item changes.
             _previousIndex is ignored.
         """
+        logger.debug("DetailBasePane.currentChanged()")
         model = currentIndex.model() if currentIndex is not None else None 
         rti = model.getItem(currentIndex) if model is not None else None 
         try:
@@ -135,19 +136,18 @@ class DetailTablePane(DetailBasePane):
     """
     _label = "Details Table"
     
-    def __init__(self, columnLabels, parent=None):
-        super(DetailTablePane, self).__init__(parent)
-
-        assert len(columnLabels) > 0, "column_labels is not defined"
-        self._columnLabels = columnLabels if columnLabels is not None else []
+    HEADERS = [] # Childresn should override this
+    
+    def __init__(self, repoTreeView, parent=None):
+        super(DetailTablePane, self).__init__(repoTreeView, parent=parent)
         
         self.table = ToggleColumnTableWidget(5, 2)
         self.contentsLayout.addWidget(self.table)
         
         self.table.setWordWrap(True)
         #self.table.setTextElideMode(QtCore.Qt.ElideNone)
-        self.table.setColumnCount(len(self._columnLabels))
-        self.table.setHorizontalHeaderLabels(self._columnLabels)
+        self.table.setColumnCount(len(self.HEADERS))
+        self.table.setHorizontalHeaderLabels(self.HEADERS)
         self.table.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.table.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.table.verticalHeader().hide()        
