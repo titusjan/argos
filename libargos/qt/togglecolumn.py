@@ -43,10 +43,10 @@ class ToggleColumnMixIn(object):
             with the key name will get the checked value from the dictionary. 
             The corresponding column will be hidden if checked is False.
         
-            checkable can be a header_name -> boolean dictionary. If given, headers
+            checkable can be a header_name -> boolean dictionary. If given, header actions
             with the key name will get the checkable value from the dictionary.
             
-            enabled can be a header_name -> boolean dictionary. If given, headers
+            enabled can be a header_name -> boolean dictionary. If given, header actions
             with the key name will get the enabled value from the dictionary.
         """
         checked = checked if checked is not None else {}
