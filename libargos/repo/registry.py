@@ -18,7 +18,7 @@
 """
 
 import logging
-from libargos.utils.cls import import_symbol, check_is_a_string, check_class
+from libargos.utils.cls import import_symbol, check_is_a_string
 from libargos.utils.misc import prepend_point_to_extension
 
 
@@ -86,7 +86,7 @@ class RtiRegistry(object):
         """ Register which Repo Tree Item should be used to open a particular file type.
                 
             :param rtiFullName: full name of the repo tree item. 
-                E.g.: 'libargos.plugins.rti.ncdf.NcdfFileRti'
+                E.g.: 'libargos.repo.rtiplugins.ncdf.NcdfFileRti'
                 The rti should be a descendant of BaseRti
             :param extensions: optional list of extensions that will be linked to this RTI
                 a point will be prepended to the extensions if not already present.

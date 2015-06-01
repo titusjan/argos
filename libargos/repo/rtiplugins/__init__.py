@@ -18,10 +18,7 @@
 """ Repository Tree Items (RTI) plugins package.
 """
 
-from libargos.repo.registry import globalRtiRegistry
-
-
-def registerDefaultRtiPlugins(registry): # TODO: resigter extensions in QSettings
+def registerDefaultRtiPlugins(registry): # TODO: register extensions in QSettings
     """ Registers the default RTI plugins for Argos
     """
     registry.registerRti('libargos.repo.rtiplugins.ncdf.NcdfFileRti', 

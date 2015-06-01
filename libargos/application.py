@@ -20,6 +20,8 @@
 import logging, platform
 
 from libargos.info import DEBUGGING
+from libargos.inspector import registerDefaultInspectorPlugins
+from libargos.inspector.registry import InspectorRegistry
 from libargos.qt import getQApplicationInstance, QtCore
 from libargos.repo.repotreemodel import RepoTreeModel
 from libargos.repo.registry import globalRtiRegistry
@@ -45,6 +47,9 @@ class ArgosApplication(object):
         self._repo = RepoTreeModel()
         self._rtiRegistry = globalRtiRegistry()
         registerDefaultRtiPlugins(self._rtiRegistry) # TODO: better solution
+        
+        self._inspectorRegistry = InspectorRegistry()
+        registerDefaultInspectorPlugins(self._inspectorRegistry)
         
         self._profile = ''
         self._mainWindows = []
@@ -86,6 +91,12 @@ class ArgosApplication(object):
         return self._rtiRegistry
         
     @property
+    def inspectorRegistry(self):
+        """ Returns the repository tree item (rti) registry
+        """
+        return self._inspectorRegistry
+        
+    @property
     def profile(self):
         """ Persistent settings are associated to a profile. This allows users to save the
             program state for several usage profiles.
@@ -94,7 +105,7 @@ class ArgosApplication(object):
         return self._profile
     
     def focusChanged(self, old, now):
-        """ Is called when the focues changes. Usefull for debugging
+        """ Is called when the focus changes. Useful for debugging
         """
         logger.debug("Focus changed from {} to {}".format(old, now))
         
@@ -115,7 +126,7 @@ class ArgosApplication(object):
 
     def _profileGroupName(self, profile):
         """ Returns the name of the QSetting group for this profile.
-            Converts to lower case and removes whitespace, interpuction, etc.
+            Converts to lower case and removes whitespace, interpunction, etc.
             Prepends __debugging__ if the debugging flag is set 
         """
         profGroupName = '__debugging__' if DEBUGGING else '' 

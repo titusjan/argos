@@ -141,7 +141,7 @@ class DetailTablePane(DetailBasePane):
     def __init__(self, repoTreeView, parent=None):
         super(DetailTablePane, self).__init__(repoTreeView, parent=parent)
         
-        self.table = ToggleColumnTableWidget(5, 2)
+        self.table = ToggleColumnTableWidget()
         self.contentsLayout.addWidget(self.table)
         
         self.table.setWordWrap(True)

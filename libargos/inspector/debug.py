@@ -27,9 +27,10 @@ logger = logging.getLogger(__name__)
 
 class DebugInspector(BaseInspector):
     """ Inspector for debugging purposes.
-        Shows the shape of the selected array
+    
+        Displays the shape of the selected array.
     """
-    _label = "Debug Inspector"
+    _label = "Debug"
     
     
     def __init__(self, collector, parent=None):
@@ -44,12 +45,14 @@ class DebugInspector(BaseInspector):
         """ Draws the inspector widget when no input is available.
             The default implementation shows an error message. Descendants should override this.
         """
+        logger.debug("DebugInspector._drawContents: {}".format(self))
+        
         slicedArray = self.collector.getSlicedArray()
         if slicedArray is None:
             text = "<None>"
         else:
             text = str(slicedArray.shape)
         
-        logger.debug("@@@@@@@@ _drawContents: {}".format(text))
+        logger.debug("_drawContents: {}".format(text))
         self.label.setText(text)
 

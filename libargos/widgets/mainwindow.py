@@ -30,10 +30,11 @@ from libargos.widgets.aboutdialog import AboutDialog
 from libargos.collect.collector import Collector
 from libargos.config.configtreeview import ConfigTreeView
 from libargos.config.configtreemodel import ConfigTreeModel
+from libargos.inspector.dialog import OpenInspectorDialog
+from libargos.inspector.debug import DebugInspector
 from libargos.repo.detailplugins.prop import PropertiesPane 
 from libargos.repo.detailplugins.attr import AttributesPane 
 from libargos.repo.repotreeview import RepoTreeView
-from libargos.inspector.table import TableInspector
 from libargos.info import DEBUGGING, PROJECT_NAME
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
 from libargos.utils.misc import string_to_identifier
@@ -59,6 +60,9 @@ class MainWindow(QtGui.QMainWindow):
         self._instanceNr = MainWindow.__numInstances # Used only for debugging
         MainWindow.__numInstances += 1
         
+        self.collector = None
+        self.inspector = None
+                
         self._detailDockWidgets = []
         self._argosApplication = argosApplication
         self._config = ConfigTreeModel()
@@ -104,10 +108,10 @@ class MainWindow(QtGui.QMainWindow):
         self.repoTreeView = RepoTreeView(self.argosApplication.repo, self.collector)
         self.configTreeView = ConfigTreeView(self._config)
         
-        temporaryInspector = TableInspector(self.collector)
-        self.setCentralInspector(temporaryInspector)
+        self.setInspector(DebugInspector(self.collector))
         
-        self.collector.contentsChanged.connect(temporaryInspector.draw)
+        # Must be after setInspector since that already draws the inspector
+        self.collector.contentsChanged.connect(self.collectorContentsChanged)
         
                               
     def __setupMenu(self):
@@ -125,22 +129,33 @@ class MainWindow(QtGui.QMainWindow):
         ### File Menu ###
 
         fileMenu = menuBar.addMenu("&File")
-        openFileAction = fileMenu.addAction("&New Inspector Window", 
-            self.argosApplication.addNewMainWindow)
-        openFileAction.setShortcut(QtGui.QKeySequence.New)
 
-        openDirAction = fileMenu.addAction("Browse Directory...", 
-            lambda: self.openFiles(fileMode = QtGui.QFileDialog.Directory))
-        openDirAction.setShortcut(QtGui.QKeySequence("Ctrl+B"))
+        action = fileMenu.addAction("&Set Inspector...",  
+            self.openInspector)
+        action.setShortcut(QtGui.QKeySequence("Ctrl+I"))
         
-        openFileAction = fileMenu.addAction("&Open Files...", 
+        action = fileMenu.addAction("&New Window...", # TODO 
+            self.argosApplication.addNewMainWindow)
+        action.setShortcut(QtGui.QKeySequence("Ctrl+N"))
+        
+        action = fileMenu.addAction("&Clone Window", 
+            self.argosApplication.addNewMainWindow)
+        action.setShortcut(QtGui.QKeySequence("Ctrl+Shift+N"))
+        
+        fileMenu.addSeparator()
+
+        action = fileMenu.addAction("Browse Directory...", 
+            lambda: self.openFiles(fileMode = QtGui.QFileDialog.Directory))
+        action.setShortcut(QtGui.QKeySequence("Ctrl+B"))
+        
+        action = fileMenu.addAction("&Open Files...", 
             lambda: self.openFiles(fileMode = QtGui.QFileDialog.ExistingFiles))
-        openFileAction.setShortcut(QtGui.QKeySequence("Ctrl+O"))
+        action.setShortcut(QtGui.QKeySequence("Ctrl+O"))
         
         openAsMenu = fileMenu.addMenu("Open As")
         for regRti in self.argosApplication.rtiRegistry.registeredRtis:
             rtiClass = regRti.rtiClass
-            action = QtGui.QAction(rtiClass.classLabel(), self,
+            action = QtGui.QAction("{}...".format(rtiClass.classLabel()), self,
                 triggered=lambda: self.openFiles(rtiClass=rtiClass, 
                                                  fileMode = QtGui.QFileDialog.ExistingFiles, 
                                                  caption="Open {}".format(rtiClass.classLabel())))
@@ -218,12 +233,34 @@ class MainWindow(QtGui.QMainWindow):
         return dockWidget
 
     
-    def setCentralInspector(self, inspector):
+    def setInspector(self, inspector):
         """ Sets the central inspector widget
         """
+        if self.inspector is not None: # can be None at start-up
+            self.inspector.finalize()
+            
+        self.inspector = inspector
+        self.setUpdatesEnabled(False)
         self.setCentralWidget(inspector)
+        self.setUpdatesEnabled(True)
+        self.inspector.draw()
         
         
+    def openInspector(self):
+        """ Opens the inspector dialog box to let the user change the current inspector.
+        """
+        dialog = OpenInspectorDialog(self.argosApplication.inspectorRegistry, parent=self)
+        dialog.exec_()
+        if dialog.result():
+            inspector = dialog.currentRegisteredInspector().create(self.collector)
+            self.setInspector(inspector)
+        
+        
+    def collectorContentsChanged(self):
+        """ Slot that updates the UI whenever the contents of the collector has changed. 
+        """
+        self.inspector.draw()
+    
 
     # TODO: to repotreemodel? Note that the functionality will be common to selectors.
     @QtSlot() 
@@ -248,10 +285,10 @@ class MainWindow(QtGui.QMainWindow):
                 fileNames = []
             
         for fileName in fileNames:
-            storeRootIndex = self.argosApplication.repo.loadFile(fileName, rtiClass=rtiClass)
-            self.repoTreeView.setExpanded(storeRootIndex, True)
-    
-    
+            fileRootIndex = self.argosApplication.repo.loadFile(fileName, rtiClass=rtiClass)
+            self.repoTreeView.setExpanded(fileRootIndex, True)
+            
+            
     def readViewSettings(self, settings=None): # TODO: rename to readProfile?
         """ Reads the persistent program settings
             

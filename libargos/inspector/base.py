@@ -21,10 +21,11 @@ import logging
 from libargos.info import DEBUGGING
 from libargos.qt import QtGui, QtSlot
 from libargos.utils.cls import type_name
-from libargos.widgets.constants import DOCK_SPACING, DOCK_MARGIN, LEFT_DOCK_WIDTH
+from libargos.widgets.constants import DOCK_SPACING, DOCK_MARGIN
 from libargos.widgets.display import MessageDisplay
 
 logger = logging.getLogger(__name__)
+
 
 
 class BaseInspector(QtGui.QStackedWidget):
@@ -41,6 +42,8 @@ class BaseInspector(QtGui.QStackedWidget):
         
         super(BaseInspector, self).__init__(parent)
         
+        self.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        
         self._collector = collector
         
         self.errorWidget = MessageDisplay()
@@ -56,22 +59,51 @@ class BaseInspector(QtGui.QStackedWidget):
         
         self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
 
+    def finalize(self):
+        """ Is called before destruction. Can be used to clean-up resources
+        """
+        logger.debug("Finalizing: {}".format(self))
+
     @classmethod
     def classLabel(cls):
         """ Returns a short string that describes this class. For use in menus, headers, etc. 
         """
         return cls._label
     
+    @classmethod
+    def descriptionHtml(cls):
+        """ A long description that will be displayed as help in the inspector-open dialog box.
+        """
+        return ""    
+    
+    @classmethod
+    def axesNames(cls):
+        """ The names of the axes that this inspector visualizes.    
+            
+            This determines the dimensionality of the inspector (e.g. an inspector that shows
+            an image, and has axes names 'X' and 'Y', is 2-dimensional.
+            
+            The names should not include the string "Axis"; the fullAxesNames returns that.
+            The fullAxesNames are used by the data collector to create its combo boxes. 
+        """
+        return tuple()
+    
+    @classmethod
+    def fullAxesNames(cls):
+        """ The full names of the axes that this inspector visualizes.  
+            
+            This is the axis name plus the literal string '-Axis'. 
+            
+            Descendants do not need to override this method but should override axesNames instead.
+            See also the axesNames documentation.
+        """
+        return tuple(axisName + '-Axis' for axisName in cls.axesNames)
+    
     @property
     def collector(self):
         """ The data collector from where this inspector gets its data
         """
         return self._collector
-     
-#        
-#    def sizeHint(self):
-#        """ The recommended size for the widget."""
-#        return QtCore.QSize(LEFT_DOCK_WIDTH, 250)
         
     
     @QtSlot()
