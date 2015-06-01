@@ -26,6 +26,7 @@ from __future__ import division
 import logging
 
 from libargos.widgets.aboutdialog import AboutDialog
+from libargos.widgets.constants import CENTRAL_MARGIN, CENTRAL_SPACING
 
 from libargos.collect.collector import Collector
 from libargos.config.configtreeview import ConfigTreeView
@@ -108,6 +109,14 @@ class MainWindow(QtGui.QMainWindow):
         self.repoTreeView = RepoTreeView(self.argosApplication.repo, self.collector)
         self.configTreeView = ConfigTreeView(self._config)
         
+        # Define a central widget that will be the parent of the inspector widget.
+        # We don't set the inspector directly as the central widget to retain the size when the
+        # inspector is changed.
+        widget = QtGui.QWidget()
+        layout = QtGui.QVBoxLayout(widget)
+        layout.setContentsMargins(CENTRAL_MARGIN, CENTRAL_MARGIN, CENTRAL_MARGIN, CENTRAL_MARGIN)
+        layout.setSpacing(CENTRAL_SPACING)
+        self.setCentralWidget(widget)
         self.setInspector(DebugInspector(self.collector))
         
         # Must be after setInspector since that already draws the inspector
@@ -236,14 +245,22 @@ class MainWindow(QtGui.QMainWindow):
     def setInspector(self, inspector):
         """ Sets the central inspector widget
         """
-        if self.inspector is not None: # can be None at start-up
-            self.inspector.finalize()
-            
-        self.inspector = inspector
         self.setUpdatesEnabled(False)
-        self.setCentralWidget(inspector)
-        self.setUpdatesEnabled(True)
-        self.inspector.draw()
+        try:
+            centralLayout = self.centralWidget().layout()
+            logger.debug("centralLayout: {} (count={})".format(centralLayout, centralLayout.count()))
+            
+            if self.inspector is not None: # can be None at start-up
+                self.inspector.finalize()
+                centralLayout.removeWidget(self.inspector)
+                self.inspector.deleteLater()
+                
+            self.inspector = inspector
+            centralLayout.addWidget(self.inspector)
+            self.inspector.draw()
+        finally:
+            self.setUpdatesEnabled(True)
+
         
         
     def openInspector(self):
@@ -344,8 +361,14 @@ class MainWindow(QtGui.QMainWindow):
         """ Function for testing """
         logger.debug("myTest for window: {}".format(self._instanceNr))
         
+        inspector = DebugInspector(self.collector)
+        self.setInspector(inspector)
+            
         from libargos.qt import printChildren
-        printChildren(self)
+        printChildren(self.centralWidget())
+        print()
+        print()
+        
         
 #        self.argosApplication.raiseAllWindows()
 #        import gc
