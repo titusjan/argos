@@ -63,7 +63,7 @@ class ArgosApplication(object):
 
 
     def setup(self):
-        """ Called once directly after the eventloop starts. 
+        """ Called once directly after the event loop starts. 
         """
         logger.debug("ArgosApplication.setup called")
         
