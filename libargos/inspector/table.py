@@ -33,7 +33,7 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         self._collector = collector
         self._nRows = 0
         self._nCols = 0   
-        self._slicedArray = None     
+        self._slicedArray = None
         
         
     def setSlicedArray(self, slicedArray):
@@ -116,7 +116,7 @@ class TableInspector(BaseInspector):
         """ The names of the axes that this inspector visualizes.
             See the parent class documentation for a more detailed explanation.
         """
-        return tuple(['X, Y'])
+        return tuple(['X', 'Y'])
     
     def _drawContents(self):
         """ Draws the inspector widget when no input is available.
