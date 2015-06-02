@@ -44,6 +44,13 @@ def python2():
     return major_version == 2
     
 
+def configBasicLogging(level = 'DEBUG'):
+    """ Setup basic config logging. Useful for debugging to quickly setup a useful logger.
+    """
+    fmt = '%(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s'
+    logging.basicConfig(level=level, format=fmt)
+
+
 def remove_process_serial_number(arg_list):
     """ Creates a copy of a list (typically sys.argv) where the strings that
         start with '-psn_0_' are removed.
@@ -62,7 +69,6 @@ def prepend_point_to_extension(extension):
         return extension
     else:
         return '.' + extension
-
     
 
 def string_to_identifier(s):

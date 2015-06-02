@@ -19,7 +19,7 @@
 """
 import logging, platform
 
-from libargos.info import DEBUGGING
+from libargos.info import DEBUGGING, DEFAULT_PROFILE
 from libargos.inspector import registerDefaultInspectorPlugins
 from libargos.inspector.registry import InspectorRegistry
 from libargos.qt import getQApplicationInstance, QtCore
@@ -31,6 +31,42 @@ from libargos.widgets.mainwindow import MainWindow
 
 
 logger = logging.getLogger(__name__)
+
+    
+def browse(fileNames = None, 
+           profile=DEFAULT_PROFILE, 
+           resetProfile=False, 
+           resetAllProfiles=False): 
+    """ Opens a main window and executes the application
+    """
+    #if DEBUGGING: # TODO temporary
+    #    _gcMon = createGcMonitor()
+    argosApp = ArgosApplication()
+    if DEBUGGING:
+        __addTestData(argosApp)
+    argosApp.loadFiles(fileNames)
+    if resetProfile:
+        argosApp.deleteProfile(profile)
+    if resetAllProfiles:
+        argosApp.deleteAllProfiles()
+    argosApp.loadProfile(profile=profile)
+    return argosApp.execute()
+
+
+def __addTestData(argosApp):
+    """ Temporary function to add test data
+    """
+    import numpy as np
+    from libargos.repo.memoryrtis import MappingRti
+    myDict = {}
+    myDict['name'] = 'Pac Man'
+    myDict['age'] = 34
+    myDict['ghosts'] = ['Inky', 'Blinky', 'Pinky', 'Clyde']
+    myDict['array'] = np.arange(24).reshape(3, 8)
+    myDict['subDict'] = {'mean': np.ones(111), 'stddev': np.zeros(111, dtype=np.uint16)}
+    
+    mappingRti = MappingRti(myDict, nodeName="myDict", fileName='')
+    argosApp.repo.insertItem(mappingRti)
 
 
 class ArgosApplication(object):

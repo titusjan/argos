@@ -18,56 +18,10 @@
 """ Functionality for Argos
 
     This is the top level module and should not be imported by sub modules.
-    The only way is up in that respect.
+    The only way is up in that respect. It imports a few symbols itself for convenience. This
+    allows users, for instance, to call libargos.browse().
 """
-import logging
 from .info import VERSION as __version__
-from .info import DEBUGGING, DEFAULT_PROFILE
-from .application import ArgosApplication
-
-logger = logging.getLogger(__name__)
-
-
-def configBasicLogging(level = 'DEBUG'):
-    """ Setup basic config logging. Useful for debugging to quickly setup a useful logger
-    """
-    fmt = '%(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s'
-    logging.basicConfig(level=level, format=fmt)
-
-    
-def browse(fileNames = None, 
-           profile=DEFAULT_PROFILE, 
-           resetProfile=False, 
-           resetAllProfiles=False): 
-    """ Opens a main window and executes the application
-    """
-    #if DEBUGGING: # TODO temporary
-    #    _gcMon = createGcMonitor()
-    argosApp = ArgosApplication()
-    if DEBUGGING:
-        __addTestData(argosApp)
-    argosApp.loadFiles(fileNames)
-    if resetProfile:
-        argosApp.deleteProfile(profile)
-    if resetAllProfiles:
-        argosApp.deleteAllProfiles()
-    argosApp.loadProfile(profile=profile)
-    return argosApp.execute()
-
-
-def __addTestData(argosApp):
-    """ Temporary function to add test data
-    """
-    import numpy as np
-    from libargos.repo.memoryrtis import MappingRti
-    myDict = {}
-    myDict['name'] = 'Pac Man'
-    myDict['age'] = 34
-    myDict['ghosts'] = ['Inky', 'Blinky', 'Pinky', 'Clyde']
-    myDict['array'] = np.arange(24).reshape(3, 8)
-    myDict['subDict'] = {'mean': np.ones(111), 'stddev': np.zeros(111, dtype=np.uint16)}
-    
-    mappingRti = MappingRti(myDict, nodeName="myDict", fileName='')
-    argosApp.repo.insertItem(mappingRti)
-
+from .application import browse
+from .utils.misc import configBasicLogging
 
