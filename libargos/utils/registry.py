@@ -24,7 +24,7 @@ from libargos.utils.cls import import_symbol, check_is_a_string, type_name, chec
 logger = logging.getLogger(__name__)
 
 
-class RegisteredClass(object):
+class RegisteredClassItem(object):
     """ Represents an class that is registered in the registry. Each class has an identifier that
         must be unique and a class name with the location of the class.
         The underlying class is not imported by default; use tryImportClass or getClass() for this.
@@ -145,39 +145,59 @@ class RegisteredClass(object):
 
 
 
-class BaseRegistry(object):
+class ClassRegistry(object):
     """ Class that maintains the collection of registered classes.
         Each class has an identifier that must be unique in lower-case with spaces are removed.
     """
     def __init__(self):
         """ Constructor
         """
-        self._registeredClasses = {}
+        # We use an list to store the items in order and an index to find them in O(1)
+        # We cannot use an ordereddict for this as this uses linked-list internally and therefore
+        # does not allow to retrieve the Nth element in O(1) 
+        self._items = []
+        self._index = {}
     
-
-    def registeredClasses(self):
-        """ The registered classes. To be used as read-only.
-        """
-        return [value for _key, value in self.registeredItems()]
-            
-
-    def registeredItems(self):
-        """ The registered items (keys, class) tuples. To be used as read-only.
-        """
-        return sorted(self._registeredClasses.items())
     
-            
-    def addRegisteredClass(self, registeredClass):
-        """ Adds a RegisteredClass object to the registry.
+    @property
+    def items(self):
+        """ The registered class items
         """
-        check_class(registeredClass, RegisteredClass)
-        key = registeredClass.identifier
+        return self._items    
+            
+    
+    def getItemById(self, identifier):
+        """ The registered classes.
+        """
+        return self._index[identifier]
+
+            
+    def appendItem(self, item):
+        """ Adds a RegisteredClassItem object to the registry.
+        """
+        check_class(item, RegisteredClassItem)
+        key = item.identifier
         
-        if key in self._registeredClasses:
-            oldRegClass = self._registeredClasses[key]
+        if key in self._index:
+            oldRegClass = self._index[key]
             raise KeyError("Class key {} already registered as {}"
                            .format(key, oldRegClass.fullClassName))
             
-        logger.info("Registering {!r} with {}".format(key, registeredClass.fullClassName))
-        self._registeredClasses[key] = registeredClass
+        logger.info("Registering {!r} with {}".format(key, item.fullClassName))
+        self._items.append(item)
+        self._index[key] = item
+
+            
+    def removeItem(self, item):
+        """ Removes a RegisteredClassItem object to the registry.
+            Will raise a KeyError if the item is not registered.
+        """
+        check_class(item, RegisteredClassItem)
+        key = item.identifier
+            
+        logger.info("Removing {!r} with {}".format(key, item.fullClassName))
+        
+        del self._index[key]
+        idx = self._items.find(item)
+        del self._items[idx]
 

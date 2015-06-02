@@ -1,12 +1,27 @@
+# -*- coding: utf-8 -*-
+# This file is part of Argos.
+# 
+# Argos is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# Argos is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with Argos. If not, see <http://www.gnu.org/licenses/>.
+
 """ 
     OpenInspectorDialog dialog window that lets the user pick a new inspector.
 """
-from __future__ import absolute_import
 from __future__ import print_function
-from __future__ import division
 
 import logging
 
+from libargos.qt.registrytable import RegistryTableModel, RegistryTableView
 from libargos.qt import QtCore, QtGui, Qt, QtSlot
 
 
@@ -17,13 +32,13 @@ logger = logging.getLogger(__name__)
 # ancestors public methods and attributes.
 # pylint: disable=R0901, R0902, R0904, W0201 
 
-
 class OpenInspectorDialog(QtGui.QDialog): 
     """ Dialog window that shows the installed inspector plugins.
-    """
-    HEADERS = ['Name', 'Library', 'Dimensionality']
-    (COL_NAME, COL_LIB, COL_DIM) = range(len(HEADERS))
     
+        SIDE EFFECT: will try to import all underlying inspector classes into the local namespace.
+            This is done so that help and number of dimensions can be displayed.
+    """
+
     def __init__(self, registry, parent=None):
         """ Constructor
         """
@@ -37,33 +52,15 @@ class OpenInspectorDialog(QtGui.QDialog):
         layout.addWidget(splitter)
         
         # Table        
-        self.table = QtGui.QTableWidget()
+        attrNames = ('identifier', 'name', 'library', 'fullClassName', 'nDims')
+        self._tableModel = RegistryTableModel(self._registry, attrNames=attrNames, parent=self)
+        self.table = RegistryTableView(self._tableModel)
+                
+        selectionModel = self.table.selectionModel()
+        selectionModel.currentRowChanged.connect(self.currentInspectorChanged)
+                
         splitter.addWidget(self.table)
         splitter.setCollapsible(0, False)
-        
-        self.table.setWordWrap(True)
-        self.table.setColumnCount(len(self.HEADERS))
-        self.table.setHorizontalHeaderLabels(self.HEADERS)
-        #self.table.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        #self.table.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.table.verticalHeader().hide()        
-        self.table.setAlternatingRowColors(True)
-        self.table.setShowGrid(False)
-        
-        self.table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.table.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-        
-        self.table.currentItemChanged.connect(self.currentInspectorChanged)
-
-        tableHeader = self.table.horizontalHeader()
-        tableHeader.setDefaultAlignment(Qt.AlignVCenter | Qt.AlignLeft)
-        tableHeader.setResizeMode(QtGui.QHeaderView.Interactive) # don't set to stretch
-        tableHeader.resizeSection(self.COL_NAME, 250)
-        tableHeader.resizeSection(self.COL_LIB, 250)  
-        tableHeader.setStretchLastSection(True)
-
-        self.populateTable()                
         
         # Detail info widget
         font = QtGui.QFont()
@@ -89,22 +86,34 @@ class OpenInspectorDialog(QtGui.QDialog):
         layout.addWidget(buttonBox)
         
         # Double clicking is equivalent to selecting it and clicking Ok.
-        self.table.cellDoubleClicked.connect(self.accept)
+        self.table.doubleClicked.connect(self.accept)
         
         splitter.setSizes([300, 150])
         self.resize(QtCore.QSize(800, 600))
+        
+        self.tryImportAllInspectors()
         
         
     @property
     def registeredInspectors(self):
         "The inspectors that are registered in the inspector registry"
-        return self._registry.registeredClasses()
+        return self._registry.items
 
     
-    def currentRegisteredInspector(self):
-        """ Returns the RegisteredInspector that is currently selected in the table
+    def tryImportAllInspectors(self):
+        """ Tries to import all underlying inspector classes
+        """ 
+        # TODO: update table when importing
+        for regItem in self.registeredInspectors:
+            if not regItem.triedImport:
+                regItem.tryImportClass()
+            
+    
+    def getCurrentRegisteredItem(self):
+        """ Returns the inspector that is currently selected in the table. 
+            Can return None if there is no data in the table
         """
-        return self.registeredInspectors[self.table.currentRow()]
+        return self.table.getCurrentRegisteredItem()
     
     
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
@@ -112,31 +121,17 @@ class OpenInspectorDialog(QtGui.QDialog):
         """ Updates the description text widget when the user clicks on a selector in the table.
             The _currentIndex and _previousIndex parameters are ignored.
         """
-        regInt = self.currentRegisteredInspector()
+        self.editor.clear()
+        
+        regInt = self.getCurrentRegisteredItem()
         logger.debug("Selected {}".format(regInt))
+        
+        if regInt is None:
+            return
+        
         if regInt.descriptionHtml:
-            self.editor.setHtml(getattr(regInt, 'descriptionHtml'))
+            self.editor.setHtml(regInt.descriptionHtml)
         else:
-            self.editor.setPlainText(getattr(regInt, 'docString'))     
+            self.editor.setPlainText(str(regInt.nDims))     
         
         
-    def populateTable(self):
-        """ Populates the table with the installed inspectors
-        """
-        table = self.table
-        
-        table.setUpdatesEnabled(False)
-        try:
-            table.setRowCount(len(self.registeredInspectors))
-            for row, regInt in enumerate(self.registeredInspectors):
-                table.setItem(row, self.COL_NAME, QtGui.QTableWidgetItem(regInt.name))
-                table.setItem(row, self.COL_LIB,  QtGui.QTableWidgetItem(regInt.library))
-                table.setItem(row, self.COL_DIM,  QtGui.QTableWidgetItem(str(regInt.nDims)))
-        finally:
-            table.setUpdatesEnabled(True)
-        
-        
-        
-
-                
-

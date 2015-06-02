@@ -19,18 +19,18 @@
 
 import logging
 
-from libargos.utils.registry import RegisteredClass, BaseRegistry
+from libargos.utils.registry import RegisteredClassItem, ClassRegistry
 
 logger = logging.getLogger(__name__)
 
 
-class RegisteredInspector(RegisteredClass):
+class RegisteredInspector(RegisteredClassItem):
     """ Class to keep track of a registered Inspector.
         Has a create() method that functions as an Inspector factory.
     """
     
     def __init__(self, identifier, fullClassName):
-        """ Constructor. See the RegisteredClass class for the para
+        """ Constructor. See the RegisteredClassItem class doc string for the parameter help.
         """
         super(RegisteredInspector, self).__init__(identifier, fullClassName)
 
@@ -49,7 +49,7 @@ class RegisteredInspector(RegisteredClass):
 
     @property
     def nDims(self):
-        """ The number of axes of this inspector
+        """ The number of axes of this inspector.
         """
         return len(self.axesNames)
     
@@ -62,7 +62,7 @@ class RegisteredInspector(RegisteredClass):
         return cls(collector)
 
 
-class InspectorRegistry(BaseRegistry):
+class InspectorRegistry(ClassRegistry): # TODO: to application?
     """ Class that maintains the collection of registered inspector classes.
         See the base class documentation for more info.
     """
@@ -71,6 +71,6 @@ class InspectorRegistry(BaseRegistry):
         """ Registers an Inspector class.
         """
         regInspector = RegisteredInspector(identifier, fullClassName)
-        self.addRegisteredClass(regInspector)
+        self.appendItem(regInspector)
 
     

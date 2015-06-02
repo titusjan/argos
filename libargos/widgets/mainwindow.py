@@ -262,15 +262,16 @@ class MainWindow(QtGui.QMainWindow):
             self.setUpdatesEnabled(True)
 
         
-        
     def openInspector(self):
         """ Opens the inspector dialog box to let the user change the current inspector.
         """
         dialog = OpenInspectorDialog(self.argosApplication.inspectorRegistry, parent=self)
         dialog.exec_()
         if dialog.result():
-            inspector = dialog.currentRegisteredInspector().create(self.collector)
-            self.setInspector(inspector)
+            registeredItem = dialog.getCurrentRegisteredItem()
+            if registeredItem is not None: 
+                inspector = registeredItem.create(self.collector)
+                self.setInspector(inspector)
         
         
     def collectorContentsChanged(self):
