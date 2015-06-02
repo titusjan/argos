@@ -17,51 +17,35 @@
 """ Defines a global Inspector registry to register plugins.
 """
 
-import logging, inspect
-from libargos.utils.cls import import_symbol, check_is_a_string
+import logging
+
+from libargos.utils.registry import RegisteredClass, BaseRegistry
 
 logger = logging.getLogger(__name__)
 
 
-
-class RegisteredInspector(object):
+class RegisteredInspector(RegisteredClass):
     """ Class to keep track of a registered Inspector.
         Has a create() method that functions as an Inspector factory.
     """
-    def __init__(self, fullName, inspectorClass, library):
-        self.fullName = fullName
-        self.inspectorClass = inspectorClass
-        self.library = library
-        # TODO: register shortcuts?
-                
-    def __repr__(self):
-        return "<RegisteredInspector: {}>".format(self.shortName)
-        
-    @property
-    def shortName(self):
-        """ Short name for use in file dialogs, menus, etc.
+    
+    def __init__(self, identifier, fullClassName):
+        """ Constructor. See the RegisteredClass class for the para
         """
-        return self.inspectorClass.classLabel()
-        
+        super(RegisteredInspector, self).__init__(identifier, fullClassName)
+
+    
     @property
     def descriptionHtml(self):
         """ Short name for use in file dialogs, menus, etc.
         """
-        return self.inspectorClass.descriptionHtml()
-
-
-    @property
-    def docString(self):
-        """ A cleaned up version of the doc string. 
-            Can serve as backup in case descriptionHtml is empty.
-        """
-        return inspect.cleandoc(self.inspectorClass.__doc__)    
+        return '' if self.cls is None else self.cls.descriptionHtml()
         
     @property
     def axesNames(self):
         """ The axes names of the inspector.
         """
-        return self.inspectorClass.axesNames()
+        return [] if self.cls is None else self.cls.axesNames() 
 
     @property
     def nDims(self):
@@ -72,38 +56,21 @@ class RegisteredInspector(object):
     def create(self, collector):
         """ Creates an inspector of the registered and passes the collector to the constructor.
         """
-        return self.inspectorClass(collector)
+        cls = self.getClass()
+        assert self.successfullyImported, \
+            "Class not successfully imported: {}".format(cls.exception)
+        return cls(collector)
 
 
-
-class InspectorRegistry(object):
-    """ Class that can be used to register Inspectors.
-        Maintains a name to InspectorClass mapping. 
+class InspectorRegistry(BaseRegistry):
+    """ Class that maintains the collection of registered inspector classes.
+        See the base class documentation for more info.
     """
-    def __init__(self):
-        """ Constructor
-        """
-        self._registeredInspectors = []
-    
-    
-    @property
-    def registeredInspectors(self):
-        return self._registeredInspectors
-
             
-    def registerInspector(self, fullName, library=''):
-        """ Register which Inspector when a particular short cut is used.
-                
-            :param fullName: full name of the inspector. 
-                E.g.: 'libargos.plugins.inspector.ncdf.NcdfFileInspector'
-                The inspector should be a descendant of BaseInspector
-            :param library
+    def registerInspector(self, identifier, fullClassName):
+        """ Registers an Inspector class.
         """
-        logger.info("Registering {}".format(fullName))
-        
-        check_is_a_string(fullName)
-        inspectorClass = import_symbol(fullName) # TODO: check class? 
-        
-        regInspector = RegisteredInspector(fullName, inspectorClass, library=library)
-        self._registeredInspectors.append(regInspector)
+        regInspector = RegisteredInspector(identifier, fullClassName)
+        self.addRegisteredClass(regInspector)
+
     

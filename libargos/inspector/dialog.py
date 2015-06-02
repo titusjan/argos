@@ -98,7 +98,7 @@ class OpenInspectorDialog(QtGui.QDialog):
     @property
     def registeredInspectors(self):
         "The inspectors that are registered in the inspector registry"
-        return self._registry.registeredInspectors
+        return self._registry.registeredClasses()
 
     
     def currentRegisteredInspector(self):
@@ -115,9 +115,9 @@ class OpenInspectorDialog(QtGui.QDialog):
         regInt = self.currentRegisteredInspector()
         logger.debug("Selected {}".format(regInt))
         if regInt.descriptionHtml:
-            self.editor.setHtml(regInt.descriptionHtml)
+            self.editor.setHtml(getattr(regInt, 'descriptionHtml'))
         else:
-            self.editor.setPlainText(regInt.docString)     
+            self.editor.setPlainText(getattr(regInt, 'docString'))     
         
         
     def populateTable(self):
@@ -129,7 +129,7 @@ class OpenInspectorDialog(QtGui.QDialog):
         try:
             table.setRowCount(len(self.registeredInspectors))
             for row, regInt in enumerate(self.registeredInspectors):
-                table.setItem(row, self.COL_NAME, QtGui.QTableWidgetItem(regInt.shortName))
+                table.setItem(row, self.COL_NAME, QtGui.QTableWidgetItem(regInt.name))
                 table.setItem(row, self.COL_LIB,  QtGui.QTableWidgetItem(regInt.library))
                 table.setItem(row, self.COL_DIM,  QtGui.QTableWidgetItem(str(regInt.nDims)))
         finally:

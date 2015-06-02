@@ -21,6 +21,6 @@
 def registerDefaultInspectorPlugins(registry): # TODO: register extensions in QSettings
     """ Registers the default inspectors for Argos
     """
-    registry.registerInspector('libargos.inspector.debug.DebugInspector')
-    registry.registerInspector('libargos.inspector.table.TableInspector', library='')
+    registry.registerInspector('debug inspector', 'libargos.inspector.debug.DebugInspector')
+    registry.registerInspector('Qt/Table', 'libargos.inspector.table.TableInspector')
     

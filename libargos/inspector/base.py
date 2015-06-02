@@ -33,8 +33,7 @@ class BaseInspector(QtGui.QStackedWidget):
         Serves as an interface but can also be instantiated for debugging purposes.
         An inspector is a stacked widget; it has a contents page and and error page.
     """
-    _label = "Base Inspector"
-    
+    _fullName = "base" # see the fullName() class method for explanation
     ERROR_PAGE_IDX = 0
     CONTENTS_PAGE_IDX = 1
     
@@ -64,11 +63,6 @@ class BaseInspector(QtGui.QStackedWidget):
         """
         logger.debug("Finalizing: {}".format(self))
 
-    @classmethod
-    def classLabel(cls):
-        """ Returns a short string that describes this class. For use in menus, headers, etc. 
-        """
-        return cls._label
     
     @classmethod
     def descriptionHtml(cls):

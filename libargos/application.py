@@ -41,15 +41,23 @@ def browse(fileNames = None,
     """
     #if DEBUGGING: # TODO temporary
     #    _gcMon = createGcMonitor()
+    
+    # Creat
     argosApp = ArgosApplication()
+    
+    # Load data in common repository before windows are created.
+    argosApp.loadFiles(fileNames)
     if DEBUGGING:
         __addTestData(argosApp)
-    argosApp.loadFiles(fileNames)
+        
     if resetProfile:
         argosApp.deleteProfile(profile)
     if resetAllProfiles:
         argosApp.deleteAllProfiles()
+        
+    # Create windows for this profile.        
     argosApp.loadProfile(profile=profile)
+
     return argosApp.execute()
 
 
@@ -141,13 +149,13 @@ class ArgosApplication(object):
         return self._profile
     
     def focusChanged(self, old, now):
-        """ Is called when the focus changes. Useful for debugging
+        """ Is called when the focus changes. Useful for debugging.
         """
         logger.debug("Focus changed from {} to {}".format(old, now))
         
     @property
     def mainWindows(self):
-        """ Returns the number of MainWindows. For read-only purposes only.
+        """ Returns the list of MainWindows. For read-only purposes only.
         """
         return self._mainWindows
 
