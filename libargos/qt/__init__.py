@@ -86,13 +86,12 @@ def getQApplicationInstance():
 
     if app is None:
         app = QtGui.QApplication(sys.argv)
+        app.setApplicationName(info.REPO_NAME)
+        app.setApplicationVersion(info.VERSION)
+        app.setOrganizationName(info.ORGANIZATION_NAME)
+        app.setOrganizationDomain(info.ORGANIZATION_DOMAIN)
+            
     check_class(app, QtGui.QApplication)
-    
-    app.setApplicationName(info.REPO_NAME)
-    app.setApplicationVersion(info.VERSION)
-    app.setOrganizationName(info.ORGANIZATION_NAME)
-    app.setOrganizationDomain(info.ORGANIZATION_DOMAIN)    
-    
     return app
 
 
