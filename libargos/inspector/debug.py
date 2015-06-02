@@ -19,6 +19,7 @@
 """
 import logging
 
+from libargos.info import DEBUGGING
 from libargos.inspector.base import BaseInspector
 from libargos.qt import QtGui
 
@@ -28,10 +29,10 @@ logger = logging.getLogger(__name__)
 class DebugInspector(BaseInspector):
     """ Inspector for debugging purposes.
     
-        Displays the shape of the selected array.
+        Displays the shape of the selected array if Arogs is in debugging mode, otherwise
+        the widget is empty.
     """
     _label = "Debug"
-    
     
     def __init__(self, collector, parent=None):
         
@@ -54,5 +55,7 @@ class DebugInspector(BaseInspector):
             text = str(slicedArray.shape)
         
         logger.debug("_drawContents: {}".format(text))
-        self.label.setText(text)
+        
+        if DEBUGGING:
+            self.label.setText(text)
 
