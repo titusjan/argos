@@ -92,7 +92,8 @@ class DetailBasePane(QtGui.QStackedWidget):
             selectionModel.currentChanged.connect(self.currentChanged)
             self._isConntected = True
             currentIndex = selectionModel.currentIndex()
-            self.currentChanged(currentIndex)
+            if currentIndex:
+                self.currentChanged(currentIndex)
         else:
             # At start-up the pane be be hidden but the signals are not connected.
             # A disconnect would fail in that case so we test for isConnected == True.
