@@ -105,6 +105,9 @@ def handleException(exc_type, exc_value, exc_traceback):
     if info.DEBUGGING:
         sys.exit(1)
     else:
+        # Constructing a QApplication in case this hasn't been done yet.
+        _app = getQApplicationInstance()
+         
         msgBox = QtGui.QMessageBox()
         msgBox.setText("Bug: unexpected {}".format(exc_type.__name__))
         msgBox.setInformativeText(str(exc_value))
