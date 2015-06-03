@@ -163,7 +163,7 @@ class RepoTreeView(ArgosTreeView):
             and removes it from the list.
         """
         logger.debug("removeCurrentFile")
-        currentIndex = self.getCurrentIndex()
+        currentIndex = self.getRowCurrentIndex()
         if not currentIndex.isValid():
             return
 
@@ -177,7 +177,7 @@ class RepoTreeView(ArgosTreeView):
             Reloading is done by removing the repo tree item and inserting a new one.
         """
         logger.debug("reloadFileOfCurrentItem")
-        currentIndex = self.getCurrentIndex()
+        currentIndex = self.getRowCurrentIndex()
         if not currentIndex.isValid():
             return
         
