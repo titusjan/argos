@@ -162,9 +162,10 @@ class MainWindow(QtGui.QMainWindow):
         action.setShortcut(QtGui.QKeySequence("Ctrl+O"))
         
         openAsMenu = fileMenu.addMenu("Open As")
-        for regRti in self.argosApplication.rtiRegistry.registeredRtis:
-            rtiClass = regRti.rtiClass
+        for regRti in self.argosApplication.rtiRegistry.items:
+            rtiClass = regRti.getClass(tryImport=True)
             action = QtGui.QAction("{}...".format(rtiClass.classLabel()), self,
+                enabled=regRti.successfullyImported, 
                 triggered=lambda: self.openFiles(rtiClass=rtiClass, 
                                                  fileMode = QtGui.QFileDialog.ExistingFiles, 
                                                  caption="Open {}".format(rtiClass.classLabel())))

@@ -18,36 +18,30 @@
 """
 
 import logging
-from libargos.utils.cls import import_symbol, check_is_a_string
+from libargos.utils.cls import check_is_a_string, check_class
 from libargos.utils.misc import prepend_point_to_extension
-
+from libargos.utils.registry import RegisteredClassItem, ClassRegistry
 
 logger = logging.getLogger(__name__)
 
 
-
-class _RegisteredRti(object):
+class RegisteredRti(RegisteredClassItem):
     """ Class to keep track of a registered Repo Tree Item.
-        For internal use only.
     """
-    def __init__(self, rtiFullName, rtiClass, extensions):
-        self.rtiFullName = rtiFullName
-        self.rtiClass = rtiClass
-        self.extensions = extensions
-        # TODO: register shortcuts?
-        
-        
-    def __repr__(self):
-        return "<_RegisteredRti: {}>".format(self.rtiShortName)
-        
-        
-    @property
-    def rtiShortName(self):
-        """ Short name for use in file dialogs, menus, etc.
+    def __init__(self, identifier, fullClassName, extensions):
+        """ Constructor. See the RegisteredClassItem class doc string for the parameter help.
         """
-        return self.rtiFullName.rsplit('.', 1)[1]
-    
+        super(RegisteredRti, self).__init__(identifier, fullClassName)
+        self._extensions = [prepend_point_to_extension(ext) for ext in extensions]
+        
 
+    @property
+    def extensions(self):
+        """ Extensions that will automatically open as this RTI.
+        """
+        return self._extensions
+    
+    
     def getFileDialogFilter(self):
         """ Returns a filters that can be used to construct file dialogs filters, 
             for example: 'Txt (*.txt;*.text)'    
@@ -56,59 +50,56 @@ class _RegisteredRti(object):
         return '{} ({})'.format(self.rtiShortName, extStr)
     
 
-class RtiRegistry(object):
+class RtiRegistry(ClassRegistry):
     """ Class that can be used to register repository tree items (RTIs).
     
-        Maintains a name to RtiClass mapping and an extension to RtiClass mapping. 
+        Maintains a name to RtiClass mapping and an extension to RtiClass mapping.
+        The extension in the extensionToRti assure that a unique RTI is used as default mapping, 
+        the extensions in the RegisteredRti class do not have to be unique and are used in the
+        filter in the getFileDialogFilter function. 
     """
     def __init__(self):
         """ Constructor
         """
-        self._extensionToRti = {}
-        self._registeredRtis = []
-    
-    @property
-    def registeredRtis(self):
-        return self._registeredRtis
+        super(RtiRegistry, self).__init__()
+        self._extensionMap = {}
     
     
-    def _registerExtension(self, extension, rtiClass):
+    def _registerExtension(self, extension, registeredRti):
         """ Links an file name extension to a repository tree item. 
         """
+        check_is_a_string(extension)
+        check_class(registeredRti, RegisteredRti)
+         
+        logger.debug("_____Registering {} for extension {!r}".format(registeredRti, extension))        
+        
         # TODO: type checking
-        if extension in self._extensionToRti:
+        if extension in self._extensionMap:
             logger.warn("Overriding {} with {} for extension {!r}"
-                        .format(self._extensionToRti[extension], rtiClass, extension))
-        self._extensionToRti[extension] = rtiClass
+                        .format(self._extensionMap[extension], registeredRti, extension))
+        self._extensionMap[extension] = registeredRti
             
             
-    def registerRti(self, rtiFullName, extensions=None):
-        """ Register which Repo Tree Item should be used to open a particular file type.
-                
-            :param rtiFullName: full name of the repo tree item. 
-                E.g.: 'libargos.repo.rtiplugins.ncdf.NcdfFileRti'
-                The rti should be a descendant of BaseRti
-            :param extensions: optional list of extensions that will be linked to this RTI
-                a point will be prepended to the extensions if not already present.
+    def registerRti(self, identifier, fullClassName, extensions=None):
+        """ Class that maintains the collection of registered inspector classes.
+            Maintains a lit of file extensions that open the RTI by default. 
         """
         extensions = extensions if extensions is not None else []
         extensions = [prepend_point_to_extension(ext) for ext in extensions]
-        logger.info("Registering {} for extensions: {}".format(rtiFullName, extensions))
-        
-        check_is_a_string(rtiFullName)
-        rtiClass = import_symbol(rtiFullName) # TODO: check class? 
-        
-        regRti = _RegisteredRti(rtiFullName, rtiClass, extensions)
-        self._registeredRtis.append(regRti)
+
+        regRti = RegisteredRti(identifier, fullClassName, extensions)
+        self.appendItem(regRti)
         
         for ext in regRti.extensions:
-            self._registerExtension(ext, regRti.rtiClass)
+            self._registerExtension(ext, regRti) 
 
         
     def getRtiByExtension(self, extension):
         """ Returns the RepoTreeItem classes registered for that extension
         """
-        return self._extensionToRti[extension]
+        registeredRti = self._extensionMap[extension]
+        rti = registeredRti.getClass(tryImport=True)
+        return rti
     
     
     def getFileDialogFilter(self):

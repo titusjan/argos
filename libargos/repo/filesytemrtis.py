@@ -95,6 +95,7 @@ def detectRtiFromFileName(fileName):
     else:
         try:
             cls = globalRtiRegistry().getRtiByExtension(extension)
+            assert cls, "getRtiByExtension returns None. Please report this bug."
         except KeyError:
             cls = UnknownFileRti
             

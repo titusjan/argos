@@ -21,8 +21,8 @@
 def registerDefaultRtiPlugins(registry): # TODO: register extensions in QSettings
     """ Registers the default RTI plugins for Argos
     """
-    registry.registerRti('libargos.repo.rtiplugins.ncdf.NcdfFileRti', 
+    registry.registerRti('NCDF file', 'libargos.repo.rtiplugins.ncdf.NcdfFileRti', 
                          extensions=['nc', 'nc3', 'nc4'])
-    registry.registerRti('libargos.repo.rtiplugins.nptextfile.NumpyTextFileRti', 
+    registry.registerRti('NumPy text file', 'libargos.repo.rtiplugins.nptextfile.NumpyTextFileRti', 
                          extensions=['txt', 'text'])
     

@@ -125,6 +125,7 @@ class RegisteredClassItem(object):
         """ Tries to import the registered class. 
             Will set the exception property if and error occurred.
         """
+        logger.debug("......Importing: {}".format(self.fullClassName))
         self._triedImport = True
         self._exception = None
         self._cls = None
