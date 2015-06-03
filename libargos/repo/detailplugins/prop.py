@@ -58,6 +58,9 @@ class PropertiesPane(DetailTablePane):
             table.clearContents()
             verticalHeader = table.verticalHeader()
             verticalHeader.setResizeMode(QtGui.QHeaderView.Fixed)
+            
+            if currentRti is None:
+                return
 
             # Each column in the repo tree corresponds to a row in this detail pane.
             repoModel = self._repoTreeView.model() 
