@@ -36,6 +36,8 @@ logger = logging.getLogger(__name__)
 
 class RegistryTableModel(QtCore.QAbstractTableModel):
     
+    SORT_ROLE = Qt.UserRole
+    
     def __init__(self, registry, attrNames = ('identifier', ), parent=None):
         """ Constructor.
         
@@ -62,16 +64,26 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
     def data(self, index, role):
         """ Returns the data stored under the given role for the item referred to by the index.
         """    
-        if not index.isValid() or role != QtCore.Qt.DisplayRole:
+        if not index.isValid():
+            return None
+        
+        if role != QtCore.Qt.DisplayRole and role != self.SORT_ROLE:
             return None
         
         row = index.row()
         col = index.column()
-        
         item = self.registry.items[row]
         attrName = self.attrNames[col]
-        return str(getattr(item, attrName))
-
+        
+        if role == QtCore.Qt.DisplayRole:
+            return str(getattr(item, attrName))
+        
+        elif role == self.SORT_ROLE:
+            # Use the identifier column as a tie-breaker
+            return (getattr(item, attrName), item.identifier) 
+        else:
+            raise ValueError("Invalid role: {}".format(role))           
+        
 
     def headerData(self, section, orientation, role):
         """ Returns the header for a section (row or column depending on orientation).
@@ -86,12 +98,25 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
             return None
 
     
-class RegistryTableView(ToggleColumnTableView):
-    """ QTableView that shows the contents of a registry
+class RegistryTableProxModel(QtGui.QSortFilterProxyModel):
+    """ Proxy model that overrides the sorting.
+        Needed to use the StatsTableModel.SORT_ROLE.
     """
-#    HEADERS = ['Name', 'Library', 'Dimensionality']
-#    (COL_NAME, COL_LIB, COL_DIM) = range(len(HEADERS))
+    def lessThan(self, leftIndex, rightIndex):
+        """ Returns true if the value of the item referred to by the given index left is less than 
+            the value of the item referred to by the given index right, otherwise returns false.
+        """
+        leftData  = self.sourceModel().data(leftIndex,  RegistryTableModel.SORT_ROLE)
+        rightData = self.sourceModel().data(rightIndex, RegistryTableModel.SORT_ROLE)
+        
+        return leftData < rightData
     
+    
+class RegistryTableView(ToggleColumnTableView):
+    """ QTableView that shows the contents of a registry. 
+        Uses QSortFilterProxyModel as a wrapper over the model.
+        Will wrap a QSortFilterProxyModel over the RegistryTableModel model to enable sorting.
+    """
     def __init__(self, model=None, parent=None):
         """ Constructor
         """
@@ -105,6 +130,7 @@ class RegistryTableView(ToggleColumnTableView):
         self.verticalHeader().hide()        
         self.setAlternatingRowColors(True)
         self.setShowGrid(False)
+        self.setSortingEnabled(True)
         
         self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
@@ -114,19 +140,33 @@ class RegistryTableView(ToggleColumnTableView):
         tableHeader = self.horizontalHeader()
         tableHeader.setDefaultAlignment(Qt.AlignVCenter | Qt.AlignLeft)
         tableHeader.setResizeMode(QtGui.QHeaderView.Interactive) # don't set to stretch
-        #tableHeader.resizeSection(self.COL_NAME, 250)
-        #tableHeader.resizeSection(self.COL_LIB, 250)  
-
         tableHeader.setStretchLastSection(True)
 
+
+    def setModel(self, model):
+        """ Wraps a QSortFilterProxyModel over the RegistryTableModel model to enable sorting.
+        """
+        # Replacing a current model is not (yet) implemented. We would have to delete the old
+        # proxy and selection model (and test this). See the AbstractItemView.setModel docs.
+        assert self.model() is None, "Model already defined"
+        
+        check_class(model, RegistryTableModel)
+        proxyTableModel = RegistryTableProxModel(parent=self)
+        proxyTableModel.setSourceModel(model)
+        proxyTableModel.setSortRole(RegistryTableModel.SORT_ROLE)
+        proxyTableModel.setDynamicSortFilter(False) # Auto update, not necessary. 
+        proxyTableModel.setSortCaseSensitivity(Qt.CaseInsensitive)
+        
+        super(RegistryTableView, self).setModel(proxyTableModel)
+        
 
     def getCurrentRegisteredItem(self): 
         """ Find the current tree item (and the current index while we're at it)
             Returns a tuple with the current item, and its index.
             See also the notes at the top of this module on current item vs selected item(s).
         """
-        currentIndex = self.currentIndex()
-        registryItems = self.model().registry.items
-        return registryItems[currentIndex.row()]
+        currentSourceIndex = self.model().mapToSource(self.currentIndex())
+        registryItems = self.model().sourceModel().registry.items
+        return registryItems[currentSourceIndex.row()]
 
                 
