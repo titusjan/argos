@@ -52,9 +52,13 @@ class OpenInspectorDialog(QtGui.QDialog):
         layout.addWidget(splitter)
         
         # Table        
-        attrNames = ('identifier', 'name', 'library', 'fullClassName', 'nDims')
+        attrNames = ('name', 'library', 'nDims')
         self._tableModel = RegistryTableModel(self._registry, attrNames=attrNames, parent=self)
         self.table = RegistryTableView(self._tableModel)
+        
+        tableHeader = self.table.horizontalHeader()
+        tableHeader.resizeSection(0, 250)
+        tableHeader.resizeSection(1, 250)          
                 
         selectionModel = self.table.selectionModel()
         selectionModel.currentRowChanged.connect(self.currentInspectorChanged)
