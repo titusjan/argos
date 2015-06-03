@@ -83,3 +83,7 @@ BUGS:
 	Why doesn't value attribute show in 
 	/Users/titusjan/Data/argos/2015_04_21T01_00_34_LaserSunIsrfStraySts/quicklook_000_minutes-000-020
 	
+	Show default value in config tree gives error
+	When item us unvisited, the detail panes must be updated.
+	
+	
