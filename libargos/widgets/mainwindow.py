@@ -75,7 +75,7 @@ class MainWindow(QtGui.QMainWindow):
         
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setUnifiedTitleAndToolBarOnMac(True)
-        self.setDocumentMode(True) # Look of tabs as Safari on OS-X
+        #self.setDocumentMode(True) # Look of tabs as Safari on OS-X (disabled, ugly)
         self.resize(1300, 700)  # Assumes minimal resolution of 1366 x 768
         self.setWindowTitle("{}-{} (#{})".format(PROJECT_NAME, self.argosApplication.profile, 
                                                  self._instanceNr))
