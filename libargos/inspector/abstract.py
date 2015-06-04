@@ -28,9 +28,8 @@ logger = logging.getLogger(__name__)
 
 
 
-class BaseInspector(QtGui.QStackedWidget):
-    """ Base class for inspectors.
-        Serves as an interface but can also be instantiated for debugging purposes.
+class AbstractInspector(QtGui.QStackedWidget):
+    """ Abstract base class for inspectors.
         An inspector is a stacked widget; it has a contents page and and error page.
     """
     _fullName = "base" # see the fullName() class method for explanation
@@ -39,7 +38,7 @@ class BaseInspector(QtGui.QStackedWidget):
     
     def __init__(self, collector, parent=None):
         
-        super(BaseInspector, self).__init__(parent)
+        super(AbstractInspector, self).__init__(parent)
         
         self.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         
@@ -120,7 +119,7 @@ class BaseInspector(QtGui.QStackedWidget):
             The default implementation shows an empty page (no widgets). Descendants should 
             override this.
         """
-        pass
+        raise NotImplementedError()
         
 
     def _drawError(self, msg="", title="Error"):

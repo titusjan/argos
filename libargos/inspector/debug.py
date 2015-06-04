@@ -20,13 +20,13 @@
 import logging
 
 from libargos.info import DEBUGGING
-from libargos.inspector.base import BaseInspector
+from libargos.inspector.abstract import AbstractInspector
 from libargos.qt import QtGui
 
 logger = logging.getLogger(__name__)
 
 
-class DebugInspector(BaseInspector):
+class DebugInspector(AbstractInspector):
     """ Inspector for debugging purposes.
     
         Displays the shape of the selected array if Arogs is in debugging mode, otherwise
