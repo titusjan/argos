@@ -128,7 +128,7 @@ class RtiRegistry(ClassRegistry):
         """ Returns a filter that can be used in open file dialogs, 
             for example: 'All files (*);;Txt (*.txt;*.text);;netCDF(*.nc;*.nc4)'    
         """
-        filters = ['All files (*)']
+        filters = []
         for regRti in self.items:
             filters.append(regRti.getFileDialogFilter())
         return ';;'.join(filters)

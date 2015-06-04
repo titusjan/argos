@@ -177,13 +177,18 @@ class MainWindow(QtGui.QMainWindow):
         action.setShortcut(QtGui.QKeySequence("Ctrl+O"))
         
         openAsMenu = fileMenu.addMenu("Open As")
-        for regRti in self.argosApplication.rtiRegistry.items:
-            rtiClass = regRti.getClass(tryImport=True)
-            action = QtGui.QAction("{}...".format(rtiClass.classLabel()), self,
-                enabled=regRti.successfullyImported, 
-                triggered=lambda: self.openFiles(rtiClass=rtiClass, 
-                                                 fileMode = QtGui.QFileDialog.ExistingFiles, 
-                                                 caption="Open {}".format(rtiClass.classLabel())))
+        for rtiRegItem in self.argosApplication.rtiRegistry.items:
+            
+            def createTrigger():
+                "Function to create a closure with the regItem"
+                _rtiRegItem = rtiRegItem # keep reference in closure
+                return lambda: self.openFiles(rtiRegItem=_rtiRegItem, 
+                                              fileMode = QtGui.QFileDialog.ExistingFiles, 
+                                              caption="Open {}".format(_rtiRegItem.name))
+                
+            action = QtGui.QAction("{}...".format(rtiRegItem.name), self,
+                enabled=rtiRegItem.successfullyImported, 
+                triggered=createTrigger())
             openAsMenu.addAction(action)
 
         for action in self.repoTreeView.topLevelItemActionGroup.actions():
@@ -313,19 +318,27 @@ class MainWindow(QtGui.QMainWindow):
 
     # TODO: to repotreemodel? Note that the functionality will be common to selectors.
     @QtSlot() 
-    def openFiles(self, fileNames=None, rtiClass=None, caption=None, fileMode=None):
+    def openFiles(self, fileNames=None, rtiRegItem=None, caption=None, fileMode=None):
         """ Lets the user select on or more files and opens it.
 
             :param fileNames: If None an open-file dialog allows the user to select files,
                 otherwise the files are opened directly.
-            :param rtiClass: Open the files as this type of repository tree item. None=autodetect.
+            :param rtiRegItem: Open the files as this type of registered RTI. None=autodetect.
             :param caption: Optional caption for the file dialog.
             :param fileMode: is passed to the file dialog.
             :rtype fileMode: QtGui.QFileDialog.FileMode constant 
         """
         if fileNames is None:
             dialog = QtGui.QFileDialog(self, caption=caption)
-            dialog.setNameFilter(self.argosApplication.rtiRegistry.getFileDialogFilter())
+            
+            if rtiRegItem is None:
+                nameFilter = 'All files (*);;' # Default show all files.
+                nameFilter += self.argosApplication.rtiRegistry.getFileDialogFilter()
+            else:
+                nameFilter = rtiRegItem.getFileDialogFilter()
+                nameFilter += ';;All files (*)'
+            dialog.setNameFilter(nameFilter)
+            
             if fileMode:
                 dialog.setFileMode(fileMode)
                 
@@ -335,6 +348,7 @@ class MainWindow(QtGui.QMainWindow):
                 fileNames = []
             
         for fileName in fileNames:
+            rtiClass = rtiRegItem.getClass(tryImport=True) if rtiRegItem else None
             fileRootIndex = self.argosApplication.repo.loadFile(fileName, rtiClass=rtiClass)
             self.repoTreeView.setExpanded(fileRootIndex, True)
             
