@@ -21,8 +21,8 @@ from __future__ import print_function
 
 import logging
 
-from libargos.qt.registrytable import RegistryTableModel, RegistryTableView
-from libargos.qt import QtCore, QtGui, Qt, QtSlot
+from libargos.qt import QtCore, QtGui
+from libargos.widgets.pluginsdialog import RegistryTab
 
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 # pylint: disable=R0901, R0902, R0904, W0201 
 
 class OpenInspectorDialog(QtGui.QDialog): 
-    """ Dialog window that shows the installed inspector plugins.
+    """ Dialog window that allows the user to open an inspector plugins.
     
         SIDE EFFECT: will try to import all underlying inspector classes.
             This is done so that help and number of dimensions can be displayed.
@@ -45,43 +45,19 @@ class OpenInspectorDialog(QtGui.QDialog):
         super(OpenInspectorDialog, self).__init__(parent=parent)
 
         self._registry = registry
-                
+        
+        self.setWindowTitle('Open Inspector')
         self.setModal(True)
         layout = QtGui.QVBoxLayout(self)
-        splitter = QtGui.QSplitter(Qt.Vertical)
-        layout.addWidget(splitter)
         
-        # Table        
-        attrNames = ('name', 'library', 'nDims')
-        self.tableModel = RegistryTableModel(self._registry, attrNames=attrNames, parent=self)
-        self.table = RegistryTableView(self.tableModel)
-        self.table.sortByColumn(1, Qt.AscendingOrder) # Sort by library by default.
+        self.tabWidget = QtGui.QTabWidget()
+        layout.addWidget(self.tabWidget)
         
-        tableHeader = self.table.horizontalHeader()
-        tableHeader.resizeSection(0, 250)
-        tableHeader.resizeSection(1, 250)
-                
-        selectionModel = self.table.selectionModel()
-        selectionModel.currentRowChanged.connect(self.currentInspectorChanged)
-                
-        splitter.addWidget(self.table)
-        splitter.setCollapsible(0, False)
+        attrNames = ['name', 'library', 'nDims']
+        headerSizes = [250, 250, None]
         
-        # Detail info widget
-        font = QtGui.QFont()
-        font.setFamily('Courier')
-        font.setFixedPitch(True)
-        font.setPointSize(13)
-
-        self.editor = QtGui.QTextEdit()
-        self.editor = QtGui.QTextEdit()
-        self.editor.setReadOnly(True)
-        self.editor.setFont(font)
-        self.editor.setWordWrapMode(QtGui.QTextOption.NoWrap)
-        self.editor.clear()
-        self.editor.setPlainText("Inspector info...")        
-        splitter.addWidget(self.editor)
-        splitter.setCollapsible(1, False) # True?
+        self.inspectorTab = RegistryTab(registry, attrNames=attrNames, headerSizes=headerSizes)
+        self.tabWidget.addTab(self.inspectorTab, "Inspectors")
         
         # Buttons
         buttonBox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok |
@@ -91,52 +67,14 @@ class OpenInspectorDialog(QtGui.QDialog):
         layout.addWidget(buttonBox)
         
         # Double clicking is equivalent to selecting it and clicking Ok.
-        self.table.doubleClicked.connect(self.accept)
-        
-        splitter.setSizes([300, 150])
+        self.inspectorTab.table.doubleClicked.connect(self.accept)
+
         self.resize(QtCore.QSize(800, 600))
         
-        self.tryImportAllInspectors()
         
-        
-    @property
-    def registeredInspectors(self):
-        "The inspectors that are registered in the inspector registry"
-        return self._registry.items
-
-    
-    def tryImportAllInspectors(self):
-        """ Tries to import all underlying inspector classes
-        """ 
-        # TODO: update table when importing
-        for regItem in self.registeredInspectors:
-            if not regItem.triedImport:
-                regItem.tryImportClass()
-            
-    
     def getCurrentRegisteredItem(self):
         """ Returns the inspector that is currently selected in the table. 
             Can return None if there is no data in the table
         """
-        return self.table.getCurrentRegisteredItem()
-    
-    
-    @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
-    def currentInspectorChanged(self, _currentIndex=None, _previousIndex=None):
-        """ Updates the description text widget when the user clicks on a selector in the table.
-            The _currentIndex and _previousIndex parameters are ignored.
-        """
-        self.editor.clear()
-        
-        regInt = self.getCurrentRegisteredItem()
-        logger.debug("Selected {}".format(regInt))
-        
-        if regInt is None:
-            return
-        
-        if regInt.descriptionHtml:
-            self.editor.setHtml(regInt.descriptionHtml)
-        else:
-            self.editor.setPlainText(regInt.docString)     
-        
+        return self.inspectorTab.getCurrentRegisteredItem()
         
