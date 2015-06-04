@@ -58,8 +58,8 @@ class RegistryTab(QtGui.QWidget):
         layout.addWidget(splitter)
         
         # Table
-        self._tableModel = RegistryTableModel(self._registry, attrNames=attrNames, parent=self)
-        self.table = RegistryTableView(self._tableModel)
+        self.tableModel = RegistryTableModel(self._registry, attrNames=attrNames, parent=self)
+        self.table = RegistryTableView(self.tableModel)
         self.table.sortByColumn(1, Qt.AscendingOrder) # Sort by library by default.
         
         tableHeader = self.table.horizontalHeader()
@@ -90,7 +90,7 @@ class RegistryTab(QtGui.QWidget):
         splitter.setSizes([300, 150])
     
         self.tryImportAllInspectors()
-
+        
 
     @property
     def registeredInspectors(self):
@@ -154,8 +154,8 @@ class PluginsDialog(QtGui.QDialog):
 
         layout = QtGui.QVBoxLayout(self)
         
-        tabWidget = QtGui.QTabWidget()
-        layout.addWidget(tabWidget)
+        self.tabWidget = QtGui.QTabWidget()
+        layout.addWidget(self.tabWidget)
         
         attrNames = ['identifier', 'fullClassName'] 
         headerSizes = [300, 300]
@@ -163,12 +163,12 @@ class PluginsDialog(QtGui.QDialog):
         if inspectorRegistry:
             inspectorTab = RegistryTab(inspectorRegistry, 
                                        attrNames=attrNames, headerSizes=headerSizes)
-            tabWidget.addTab(inspectorTab, "Inspectors")     
+            self.tabWidget.addTab(inspectorTab, "Inspectors")     
         
         if rtiRegistry:
             rtiTab = RegistryTab(rtiRegistry, 
                                  attrNames=attrNames, headerSizes=headerSizes)
-            tabWidget.addTab(rtiTab, "File Formats")     
+            self.tabWidget.addTab(rtiTab, "File Formats")     
 
         # Buttons
         buttonBox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok)
@@ -177,4 +177,12 @@ class PluginsDialog(QtGui.QDialog):
         
         self.resize(QtCore.QSize(800, 600))
         
+    
+    def refresh(self):
+        """ Refreshes the tables of all tables by resetting the underlying models
+        """
+        logger.debug("Resetting: {}".format(self))
+        for tabNr in range(self.tabWidget.count()):
+            tab = self.tabWidget.widget(tabNr)
+            tab.tableModel.reset()
         

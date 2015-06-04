@@ -53,8 +53,8 @@ class OpenInspectorDialog(QtGui.QDialog):
         
         # Table        
         attrNames = ('name', 'library', 'nDims')
-        self._tableModel = RegistryTableModel(self._registry, attrNames=attrNames, parent=self)
-        self.table = RegistryTableView(self._tableModel)
+        self.tableModel = RegistryTableModel(self._registry, attrNames=attrNames, parent=self)
+        self.table = RegistryTableView(self.tableModel)
         self.table.sortByColumn(1, Qt.AscendingOrder) # Sort by library by default.
         
         tableHeader = self.table.horizontalHeader()

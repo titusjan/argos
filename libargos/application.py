@@ -107,9 +107,9 @@ class ArgosApplication(object):
         self._mainWindows = []
         self._settingsSaved = False  # boolean to prevent saving settings twice
         
-#        self.pluginsDialog = PluginsDialog(parent=None,
-#                                inspectorRegistry=self.inspectorRegistry, 
-#                                rtiRegistry=self.rtiRegistry)
+        self.pluginsDialog = PluginsDialog(parent=None,
+                                inspectorRegistry=self.inspectorRegistry, 
+                                rtiRegistry=self.rtiRegistry)
                 
         self.qApplication.lastWindowClosed.connect(self.quit) 
         
@@ -125,6 +125,8 @@ class ArgosApplication(object):
         # Raising all window because in OS-X window 0 is not shown.
         #self.raiseAllWindows()
         self.mainWindows[0].activateWindow() # also solves the issue
+        
+        self.pluginsDialog.refresh()
         
         
     @property

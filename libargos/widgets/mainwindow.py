@@ -39,7 +39,6 @@ from libargos.repo.repotreeview import RepoTreeView
 from libargos.info import DEBUGGING, PROJECT_NAME
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
 from libargos.utils.misc import string_to_identifier
-from libargos.widgets.pluginsdialog import PluginsDialog
 
 
 logger = logging.getLogger(__name__)
@@ -122,10 +121,6 @@ class MainWindow(QtGui.QMainWindow):
         
         # Must be after setInspector since that already draws the inspector
         self.collector.contentsChanged.connect(self.collectorContentsChanged)
-        
-        self.pluginsDialog = PluginsDialog(parent=None,
-                                           inspectorRegistry=self.argosApplication.inspectorRegistry, 
-                                           rtiRegistry=self.argosApplication.rtiRegistry)
 
                               
     def __setupMenu(self):
@@ -286,8 +281,7 @@ class MainWindow(QtGui.QMainWindow):
     def openPluginsDialog(self):
         """ Shows the plugins dialog with the registered plugins
         """
-        #self.argosApplication.pluginsDialog.show()
-        self.pluginsDialog.show()
+        self.argosApplication.pluginsDialog.show()
         
         
     def collectorContentsChanged(self):
