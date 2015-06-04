@@ -19,27 +19,25 @@
     Main window functionality
 
 """
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import division
-
-import logging
-
-from libargos.widgets.aboutdialog import AboutDialog
-from libargos.widgets.constants import CENTRAL_MARGIN, CENTRAL_SPACING
-
+from __future__ import absolute_import, division, print_function
 from libargos.collect.collector import Collector
-from libargos.config.configtreeview import ConfigTreeView
 from libargos.config.configtreemodel import ConfigTreeModel
-from libargos.inspector.dialog import OpenInspectorDialog
-from libargos.inspector.registry import RegisteredInspector
-from libargos.repo.detailplugins.prop import PropertiesPane 
-from libargos.repo.detailplugins.attr import AttributesPane 
-from libargos.repo.repotreeview import RepoTreeView
+from libargos.config.configtreeview import ConfigTreeView
 from libargos.info import DEBUGGING, PROJECT_NAME
+from libargos.inspector.dialog import OpenInspectorDialog
+from libargos.inspector.registry import InspectorRegItem
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
+from libargos.repo.detailplugins.attr import AttributesPane
+from libargos.repo.detailplugins.prop import PropertiesPane
+from libargos.repo.repotreeview import RepoTreeView
 from libargos.utils.cls import check_class
 from libargos.utils.misc import string_to_identifier
+from libargos.widgets.aboutdialog import AboutDialog
+from libargos.widgets.constants import CENTRAL_MARGIN, CENTRAL_SPACING
+import logging
+
+
+
 
 
 logger = logging.getLogger(__name__)
@@ -64,7 +62,7 @@ class MainWindow(QtGui.QMainWindow):
         
         self._collector = None
         self._inspector = None
-        self._inspectorRegItem = None # The registered inspector item a RegisteredInspector) 
+        self._inspectorRegItem = None # The registered inspector item a InspectorRegItem) 
                 
         self._detailDockWidgets = []
         self._argosApplication = argosApplication
@@ -269,7 +267,7 @@ class MainWindow(QtGui.QMainWindow):
     def setInspectorFromRegItem(self, inspectorRegItem):
         """ Sets the central inspector widget given a inspectorRegItem.
         """
-        check_class(inspectorRegItem, RegisteredInspector)
+        check_class(inspectorRegItem, InspectorRegItem)
         self.setUpdatesEnabled(False)
         try:
             centralLayout = self.centralWidget().layout()
@@ -292,12 +290,12 @@ class MainWindow(QtGui.QMainWindow):
         """ Opens the inspector dialog box to let the user change the current inspector.
         """
         dialog = OpenInspectorDialog(self.argosApplication.inspectorRegistry, parent=self)
-        dialog.setCurrentRegisteredInspector(self.inspectorRegItem)
+        dialog.setCurrentInspectorRegItem(self.inspectorRegItem)
         dialog.exec_()
         if dialog.result():
-            registeredItem = dialog.getCurrentRegisteredInspector()
-            if registeredItem is not None: 
-                self.setInspectorFromRegItem(registeredItem)
+            inspectorRegItem = dialog.getCurrentInspectorRegItem()
+            if inspectorRegItem is not None: 
+                self.setInspectorFromRegItem(inspectorRegItem)
         
     
     def openPluginsDialog(self):
@@ -327,6 +325,7 @@ class MainWindow(QtGui.QMainWindow):
         """
         if fileNames is None:
             dialog = QtGui.QFileDialog(self, caption=caption)
+            dialog.setNameFilter(self.argosApplication.rtiRegistry.getFileDialogFilter())
             if fileMode:
                 dialog.setFileMode(fileMode)
                 

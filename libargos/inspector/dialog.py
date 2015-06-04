@@ -22,7 +22,7 @@ from __future__ import print_function
 import logging
 
 from libargos.qt import QtCore, QtGui
-from libargos.inspector.registry import RegisteredInspector
+from libargos.inspector.registry import InspectorRegItem
 from libargos.utils.cls import check_class
 from libargos.widgets.pluginsdialog import RegistryTab
 
@@ -74,18 +74,18 @@ class OpenInspectorDialog(QtGui.QDialog):
         self.resize(QtCore.QSize(800, 600))
         
         
-    def getCurrentRegisteredInspector(self):
+    def getCurrentInspectorRegItem(self):
         """ Returns the inspector that is currently selected in the table. 
             Can return None if there is no data in the table
         """
-        return self.inspectorTab.getCurrentRegisteredItem()
+        return self.inspectorTab.getCurrentRegItem()
         
         
-    def setCurrentRegisteredInspector(self, regItem):
+    def setCurrentInspectorRegItem(self, regItem):
         """ Sets the current inspector given an InspectorRegItem 
         """
-        check_class(regItem, RegisteredInspector, allow_none=True)
-        self.inspectorTab.setCurrentRegisteredItem(regItem)
+        check_class(regItem, InspectorRegItem, allow_none=True)
+        self.inspectorTab.setCurrentRegItem(regItem)
     
     
     

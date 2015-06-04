@@ -22,7 +22,7 @@ from __future__ import print_function
 import logging
 
 from libargos.qt import QtCore, QtGui, Qt
-from libargos.qt.registry import ClassRegistry, RegisteredClassItem
+from libargos.qt.registry import ClassRegistry, ClassRegItem
 from libargos.qt.togglecolumn import ToggleColumnTableView
 from libargos.utils.cls import check_class
 
@@ -171,7 +171,7 @@ class RegistryTableView(ToggleColumnTableView):
         super(RegistryTableView, self).setModel(proxyTableModel)
         
 
-    def getCurrentRegisteredItem(self): 
+    def getCurrentRegItem(self): 
         """ Find the current tree item (and the current index while we're at it)
             Returns a tuple with the current item, and its index.
             See also the notes at the top of this module on current item vs selected item(s).
@@ -181,12 +181,12 @@ class RegistryTableView(ToggleColumnTableView):
         return registryItems[currentSourceIndex.row()]
 
         
-    def setCurrentRegisteredItem(self, regItem): 
+    def setCurrentRegItem(self, regItem): 
         """ Find the current tree item (and the current index while we're at it)
             Returns a tuple with the current item, and its index.
             See also the notes at the top of this module on current item vs selected item(s).
         """
-        check_class(regItem, RegisteredClassItem, allow_none=True)
+        check_class(regItem, ClassRegItem, allow_none=True)
         model = self.model().sourceModel()
         sourceRowIndex = model.getRowIndexForItem(regItem)
         rowIndex = self.model().mapFromSource(sourceRowIndex)

@@ -26,7 +26,7 @@ from libargos.utils.cls import import_symbol, check_is_a_string, type_name, chec
 logger = logging.getLogger(__name__)
 
 
-class RegisteredClassItem(object):
+class ClassRegItem(object):
     """ Represents an class that is registered in the registry. Each class has an identifier that
         must be unique and a fullClassName with name the class (inclusive package and module part).
         The underlying class is not imported by default; use tryImportClass or getClass() for this.
@@ -167,7 +167,7 @@ class RegisteredClassItem(object):
         
     def asDict(self):
         """ Returns a dictionary for serialization. We don't use JSON since all items are
-            quite simple and the registry will always contain the same type of RegisteredClassItem
+            quite simple and the registry will always contain the same type of ClassRegItem
         """
         return {'identifier': self.identifier, 'fullClassName': self.fullClassName}
 
@@ -176,8 +176,8 @@ class ClassRegistry(object):
     """ Class that maintains the collection of registered classes.
         Each class has an identifier that must be unique in lower-case with spaces are removed.
         
-        The ClassRegistry can only store items of one type (RegisteredClassItem). Descendants will
-        store their own type. For instance the InspectorRegistry will store RegisteredInspector 
+        The ClassRegistry can only store items of one type (ClassRegItem). Descendants will
+        store their own type. For instance the InspectorRegistry will store InspectorRegItem 
         items. This makes serialization easier.
         
         An optional QSettings group name can be specified so that the registry knows where to 
@@ -195,7 +195,7 @@ class ClassRegistry(object):
         self._index = {}
         
         # The registry can only contain items of this type.
-        self._itemClass = RegisteredClassItem
+        self._itemClass = ClassRegItem
     
     
     @property
@@ -219,9 +219,9 @@ class ClassRegistry(object):
 
             
     def registerItem(self, item):
-        """ Adds a RegisteredClassItem object to the registry.
+        """ Adds a ClassRegItem object to the registry.
         """
-        check_class(item, RegisteredClassItem)
+        check_class(item, ClassRegItem)
         key = item.identifier
         
         if key in self._index:
@@ -235,10 +235,10 @@ class ClassRegistry(object):
 
             
     def removeItem(self, item):
-        """ Removes a RegisteredClassItem object to the registry.
+        """ Removes a ClassRegItem object to the registry.
             Will raise a KeyError if the item is not registered.
         """
-        check_class(item, RegisteredClassItem)
+        check_class(item, ClassRegItem)
         key = item.identifier
             
         logger.info("Removing {!r} with {}".format(key, item.fullClassName))

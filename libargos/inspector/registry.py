@@ -19,20 +19,20 @@
 
 import logging
 
-from libargos.qt.registry import RegisteredClassItem, ClassRegistry
+from libargos.qt.registry import ClassRegItem, ClassRegistry
 
 logger = logging.getLogger(__name__)
 
 
-class RegisteredInspector(RegisteredClassItem): # TODO: rename to InspectorRegItem? InspectorPlugin?
+class InspectorRegItem(ClassRegItem): # TODO: rename to InspectorRegItem? InspectorPlugin?
     """ Class to keep track of a registered Inspector.
         Has a create() method that functions as an Inspector factory.
     """
     
     def __init__(self, identifier, fullClassName):
-        """ Constructor. See the RegisteredClassItem class doc string for the parameter help.
+        """ Constructor. See the ClassRegItem class doc string for the parameter help.
         """
-        super(RegisteredInspector, self).__init__(identifier, fullClassName)
+        super(InspectorRegItem, self).__init__(identifier, fullClassName)
 
         
     @property
@@ -64,13 +64,13 @@ class InspectorRegistry(ClassRegistry):
         """ Constructor
         """
         super(InspectorRegistry, self).__init__(settingsGroupName=settingsGroupName)
-        self._itemClass = RegisteredInspector
+        self._itemClass = InspectorRegItem
             
             
     def registerInspector(self, identifier, fullClassName):
         """ Registers an Inspector class.
         """
-        regInspector = RegisteredInspector(identifier, fullClassName)
+        regInspector = InspectorRegItem(identifier, fullClassName)
         self.registerItem(regInspector)
 
     
@@ -78,6 +78,6 @@ class InspectorRegistry(ClassRegistry):
         """ Returns a list with the default plugins in the inspector registry.
         """
         return [    
-            RegisteredInspector('Empty inspector', 'libargos.inspector.empty.EmptyInspector'), 
-            RegisteredInspector('Qt/Table', 'libargos.inspector.table.TableInspector')]
+            InspectorRegItem('Empty inspector', 'libargos.inspector.empty.EmptyInspector'), 
+            InspectorRegItem('Qt/Table', 'libargos.inspector.table.TableInspector')]
 

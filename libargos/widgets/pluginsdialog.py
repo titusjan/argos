@@ -21,7 +21,7 @@ from __future__ import print_function
 
 import logging
 
-from libargos.qt.registry import RegisteredClassItem
+from libargos.qt.registry import ClassRegItem
 from libargos.qt.registrytable import RegistryTableModel, RegistryTableView
 from libargos.qt import QtCore, QtGui, Qt, QtSlot
 from libargos.utils.cls import check_class
@@ -109,19 +109,19 @@ class RegistryTab(QtGui.QWidget):
                 regItem.tryImportClass()
             
     
-    def getCurrentRegisteredItem(self):
+    def getCurrentRegItem(self):
         """ Returns the item that is currently selected in the table. 
             Can return None if there is no data in the table
         """
-        return self.table.getCurrentRegisteredItem()
+        return self.table.getCurrentRegItem()
     
     
-    def setCurrentRegisteredItem(self, regItem):
+    def setCurrentRegItem(self, regItem):
         """ Returns the item that is currently selected in the table. 
             Can return None if there is no data in the table
         """
-        check_class(regItem, RegisteredClassItem, allow_none=True)
-        return self.table.setCurrentRegisteredItem(regItem)
+        check_class(regItem, ClassRegItem, allow_none=True)
+        return self.table.setCurrentRegItem(regItem)
     
     
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
@@ -131,7 +131,7 @@ class RegistryTab(QtGui.QWidget):
         """
         self.editor.clear()
         
-        regInt = self.getCurrentRegisteredItem()
+        regInt = self.getCurrentRegItem()
         logger.debug("Selected {}".format(regInt))
         
         if regInt is None:

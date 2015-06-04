@@ -20,18 +20,18 @@
 import logging
 from libargos.utils.cls import check_is_a_string, check_class
 from libargos.utils.misc import prepend_point_to_extension
-from libargos.qt.registry import RegisteredClassItem, ClassRegistry
+from libargos.qt.registry import ClassRegItem, ClassRegistry
 
 logger = logging.getLogger(__name__)
 
 
-class RegisteredRti(RegisteredClassItem):
+class RtiRegItem(ClassRegItem):
     """ Class to keep track of a registered Repo Tree Item.
     """
     def __init__(self, identifier, fullClassName, extensions):
-        """ Constructor. See the RegisteredClassItem class doc string for the parameter help.
+        """ Constructor. See the ClassRegItem class doc string for the parameter help.
         """
-        super(RegisteredRti, self).__init__(identifier, fullClassName)
+        super(RtiRegItem, self).__init__(identifier, fullClassName)
         self._extensions = [prepend_point_to_extension(ext) for ext in extensions]
         
 
@@ -44,10 +44,10 @@ class RegisteredRti(RegisteredClassItem):
     
     def getFileDialogFilter(self):
         """ Returns a filters that can be used to construct file dialogs filters, 
-            for example: 'Txt (*.txt;*.text)'    
+            for example: 'Text File (*.txt;*.text)'    
         """
         extStr = ';'.join(['*' + ext for ext in self.extensions])
-        return '{} ({})'.format(self.rtiShortName, extStr)
+        return '{} ({})'.format(self.name, extStr)
     
         
     def asDict(self):
@@ -63,14 +63,14 @@ class RtiRegistry(ClassRegistry):
     
         Maintains a name to RtiClass mapping and an extension to RtiClass mapping.
         The extension in the extensionToRti assure that a unique RTI is used as default mapping, 
-        the extensions in the RegisteredRti class do not have to be unique and are used in the
+        the extensions in the RtiRegItem class do not have to be unique and are used in the
         filter in the getFileDialogFilter function. 
     """
     def __init__(self, settingsGroupName=None):
         """ Constructor
         """
         super(RtiRegistry, self).__init__(settingsGroupName=settingsGroupName)
-        self._itemClass = RegisteredRti
+        self._itemClass = RtiRegItem
         self._extensionMap = {}
         
         
@@ -81,23 +81,23 @@ class RtiRegistry(ClassRegistry):
         self._extensionMap = {}
     
     
-    def _registerExtension(self, extension, registeredRti):
+    def _registerExtension(self, extension, rtiRegItem):
         """ Links an file name extension to a repository tree item. 
         """
         check_is_a_string(extension)
-        check_class(registeredRti, RegisteredRti)
+        check_class(rtiRegItem, RtiRegItem)
          
-        logger.debug("_____Registering {} for extension {!r}".format(registeredRti, extension))        
+        logger.debug("_____Registering {} for extension {!r}".format(rtiRegItem, extension))        
         
         # TODO: type checking
         if extension in self._extensionMap:
             logger.warn("Overriding {} with {} for extension {!r}"
-                        .format(self._extensionMap[extension], registeredRti, extension))
-        self._extensionMap[extension] = registeredRti
+                        .format(self._extensionMap[extension], rtiRegItem, extension))
+        self._extensionMap[extension] = rtiRegItem
     
             
     def registerItem(self, item):
-        """ Adds a RegisteredClassItem object to the registry.
+        """ Adds a ClassRegItem object to the registry.
         """
         super(RtiRegistry, self).registerItem(item)
                 
@@ -112,16 +112,15 @@ class RtiRegistry(ClassRegistry):
         extensions = extensions if extensions is not None else []
         extensions = [prepend_point_to_extension(ext) for ext in extensions]
 
-        regRti = RegisteredRti(identifier, fullClassName, extensions)
+        regRti = RtiRegItem(identifier, fullClassName, extensions)
         self.registerItem(regRti)
-
 
         
     def getRtiByExtension(self, extension):
         """ Returns the RepoTreeItem classes registered for that extension
         """
-        registeredRti = self._extensionMap[extension]
-        rti = registeredRti.getClass(tryImport=True)
+        rtiRegItem = self._extensionMap[extension]
+        rti = rtiRegItem.getClass(tryImport=True)
         return rti
     
     
@@ -130,7 +129,7 @@ class RtiRegistry(ClassRegistry):
             for example: 'All files (*);;Txt (*.txt;*.text);;netCDF(*.nc;*.nc4)'    
         """
         filters = ['All files (*)']
-        for regRti in self._registeredRtis:
+        for regRti in self.items:
             filters.append(regRti.getFileDialogFilter())
         return ';;'.join(filters)
     
@@ -139,11 +138,11 @@ class RtiRegistry(ClassRegistry):
         """ Returns a list with the default plugins in the repo tree item registry.
         """
         return [
-            RegisteredRti('NCDF file', 
+            RtiRegItem('NCDF file', 
                           'libargos.repo.rtiplugins.ncdf.NcdfFileRti', 
                           extensions=['nc', 'nc3', 'nc4']),
                    
-            RegisteredRti('NumPy text file', 
+            RtiRegItem('NumPy text file', 
                           'libargos.repo.rtiplugins.nptextfile.NumpyTextFileRti', 
                           extensions=['txt', 'text'])]
         
