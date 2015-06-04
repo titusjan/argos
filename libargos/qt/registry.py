@@ -200,7 +200,7 @@ class ClassRegistry(object):
     
     @property
     def items(self):
-        """ The registered class items
+        """ The registered class items. Use as read-only
         """
         return self._items    
             

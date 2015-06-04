@@ -32,12 +32,13 @@ from libargos.collect.collector import Collector
 from libargos.config.configtreeview import ConfigTreeView
 from libargos.config.configtreemodel import ConfigTreeModel
 from libargos.inspector.dialog import OpenInspectorDialog
-from libargos.inspector.empty import EmptyInspector
+from libargos.inspector.registry import RegisteredInspector
 from libargos.repo.detailplugins.prop import PropertiesPane 
 from libargos.repo.detailplugins.attr import AttributesPane 
 from libargos.repo.repotreeview import RepoTreeView
 from libargos.info import DEBUGGING, PROJECT_NAME
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
+from libargos.utils.cls import check_class
 from libargos.utils.misc import string_to_identifier
 
 
@@ -61,8 +62,9 @@ class MainWindow(QtGui.QMainWindow):
         self._instanceNr = MainWindow.__numInstances # Used only for debugging
         MainWindow.__numInstances += 1
         
-        self.collector = None
-        self.inspector = None
+        self._collector = None
+        self._inspector = None
+        self._inspectorRegItem = None # The registered inspector item a RegisteredInspector) 
                 
         self._detailDockWidgets = []
         self._argosApplication = argosApplication
@@ -96,6 +98,25 @@ class MainWindow(QtGui.QMainWindow):
 
 
     @property
+    def inspectorRegItem(self):
+        """ The inspector registry item that has been selected. Contains an inspector.
+            Can be None (e.g. at start-up).
+        """
+        return self._inspectorRegItem
+
+    @property
+    def inspector(self):
+        """ The inspector widget of this window. Can be None (e.g. at start-up).
+        """
+        return self._inspector
+
+    @property
+    def collector(self):
+        """ The collector widget of this window
+        """
+        return self._collector
+
+    @property
     def argosApplication(self):
         """ The ArgosApplication to which this window belongs.
         """
@@ -105,7 +126,7 @@ class MainWindow(QtGui.QMainWindow):
     def __setupViews(self):
         """ Creates the UI widgets. 
         """
-        self.collector = Collector()
+        self._collector = Collector()
         self.repoTreeView = RepoTreeView(self.argosApplication.repo, self.collector)
         self.configTreeView = ConfigTreeView(self._config)
         
@@ -117,7 +138,6 @@ class MainWindow(QtGui.QMainWindow):
         layout.setContentsMargins(CENTRAL_MARGIN, CENTRAL_MARGIN, CENTRAL_MARGIN, CENTRAL_MARGIN)
         layout.setSpacing(CENTRAL_SPACING)
         self.setCentralWidget(widget)
-        self.setInspector(EmptyInspector(self.collector))
         
         # Must be after setInspector since that already draws the inspector
         self.collector.contentsChanged.connect(self.collectorContentsChanged)
@@ -246,9 +266,10 @@ class MainWindow(QtGui.QMainWindow):
         return dockWidget
 
     
-    def setInspector(self, inspector):
-        """ Sets the central inspector widget
+    def setInspectorFromRegItem(self, inspectorRegItem):
+        """ Sets the central inspector widget given a inspectorRegItem.
         """
+        check_class(inspectorRegItem, RegisteredInspector)
         self.setUpdatesEnabled(False)
         try:
             centralLayout = self.centralWidget().layout()
@@ -259,7 +280,8 @@ class MainWindow(QtGui.QMainWindow):
                 centralLayout.removeWidget(self.inspector)
                 self.inspector.deleteLater()
                 
-            self.inspector = inspector
+            self._inspectorRegItem = inspectorRegItem
+            self._inspector = inspectorRegItem.create(self.collector)  
             centralLayout.addWidget(self.inspector)
             self.inspector.draw()
         finally:
@@ -270,12 +292,12 @@ class MainWindow(QtGui.QMainWindow):
         """ Opens the inspector dialog box to let the user change the current inspector.
         """
         dialog = OpenInspectorDialog(self.argosApplication.inspectorRegistry, parent=self)
+        dialog.setCurrentRegisteredInspector(self.inspectorRegItem)
         dialog.exec_()
         if dialog.result():
-            registeredItem = dialog.getCurrentRegisteredItem()
+            registeredItem = dialog.getCurrentRegisteredInspector()
             if registeredItem is not None: 
-                inspector = registeredItem.create(self.collector)
-                self.setInspector(inspector)
+                self.setInspectorFromRegItem(registeredItem)
         
     
     def openPluginsDialog(self):
@@ -287,7 +309,8 @@ class MainWindow(QtGui.QMainWindow):
     def collectorContentsChanged(self):
         """ Slot that updates the UI whenever the contents of the collector has changed. 
         """
-        self.inspector.draw()
+        if self.inspector:
+            self.inspector.draw()
     
 
     # TODO: to repotreemodel? Note that the functionality will be common to selectors.
@@ -372,9 +395,6 @@ class MainWindow(QtGui.QMainWindow):
         """ Function for testing """
         logger.debug("myTest for window: {}".format(self._instanceNr))
         
-        inspector = EmptyInspector(self.collector)
-        self.setInspector(inspector)
-            
         from libargos.qt import printChildren
         printChildren(self.centralWidget())
         print()

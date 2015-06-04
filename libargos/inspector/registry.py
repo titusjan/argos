@@ -24,7 +24,7 @@ from libargos.qt.registry import RegisteredClassItem, ClassRegistry
 logger = logging.getLogger(__name__)
 
 
-class RegisteredInspector(RegisteredClassItem):
+class RegisteredInspector(RegisteredClassItem): # TODO: rename to InspectorRegItem? InspectorPlugin?
     """ Class to keep track of a registered Inspector.
         Has a create() method that functions as an Inspector factory.
     """

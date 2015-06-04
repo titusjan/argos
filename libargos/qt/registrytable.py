@@ -22,7 +22,7 @@ from __future__ import print_function
 import logging
 
 from libargos.qt import QtCore, QtGui, Qt
-from libargos.qt.registry import ClassRegistry
+from libargos.qt.registry import ClassRegistry, RegisteredClassItem
 from libargos.qt.togglecolumn import ToggleColumnTableView
 from libargos.utils.cls import check_class
 
@@ -97,6 +97,17 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
         else:
             return None
 
+
+    def getRowIndexForItem(self, regItem):
+        """ Gets the index (with column=0) for the row that contains the regItem
+        """
+        try:
+            row = self.registry.items.index(regItem)
+        except ValueError:
+            return QtCore.QModelIndex()
+        else:
+            return self.index(row, 0)
+        
     
 class RegistryTableProxModel(QtGui.QSortFilterProxyModel):
     """ Proxy model that overrides the sorting.
@@ -169,4 +180,17 @@ class RegistryTableView(ToggleColumnTableView):
         registryItems = self.model().sourceModel().registry.items
         return registryItems[currentSourceIndex.row()]
 
+        
+    def setCurrentRegisteredItem(self, regItem): 
+        """ Find the current tree item (and the current index while we're at it)
+            Returns a tuple with the current item, and its index.
+            See also the notes at the top of this module on current item vs selected item(s).
+        """
+        check_class(regItem, RegisteredClassItem, allow_none=True)
+        model = self.model().sourceModel()
+        sourceRowIndex = model.getRowIndexForItem(regItem)
+        rowIndex = self.model().mapFromSource(sourceRowIndex)
+        if not rowIndex.isValid():
+            logger.warn("Can't select {!r} in table".format(regItem))
+        self.setCurrentIndex(rowIndex)
                 
