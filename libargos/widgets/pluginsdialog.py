@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 class RegistryTab(QtGui.QWidget):
     """ Tab that shows the contents of a single plugin registry.
     
-        SIDE EFFECT: will try to import all underlying inspector classes.
+        SIDE EFFECT: will try to import all underlying classes.
             This is done so that error information can be displayed when import was unsuccessful.
     """
     def __init__(self, registry, parent=None, 
@@ -68,7 +68,7 @@ class RegistryTab(QtGui.QWidget):
                 tableHeader.resizeSection(col, headerSize)
                 
         selectionModel = self.table.selectionModel()
-        selectionModel.currentRowChanged.connect(self.currentInspectorChanged)
+        selectionModel.currentRowChanged.connect(self.currentItemChanged)
                 
         splitter.addWidget(self.table)
         splitter.setCollapsible(0, False)
@@ -89,33 +89,33 @@ class RegistryTab(QtGui.QWidget):
         splitter.setCollapsible(1, False) # True?
         splitter.setSizes([300, 150])
     
-        self.tryImportAllInspectors()
+        self.tryImportAllPlugins()
         
 
     @property
-    def registeredInspectors(self):
-        "The inspectors that are registered in the inspector registry"
+    def registeredItems(self):
+        "Returns the items from the registry"
         return self._registry.items
 
     
-    def tryImportAllInspectors(self):
-        """ Tries to import all underlying inspector classes
+    def tryImportAllPlugins(self):
+        """ Tries to import all underlying plugin classes
         """ 
         # TODO: update table when importing
-        for regItem in self.registeredInspectors:
+        for regItem in self.registeredItems:
             if not regItem.triedImport:
                 regItem.tryImportClass()
             
     
     def getCurrentRegisteredItem(self):
-        """ Returns the inspector that is currently selected in the table. 
+        """ Returns the item that is currently selected in the table. 
             Can return None if there is no data in the table
         """
         return self.table.getCurrentRegisteredItem()
     
     
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
-    def currentInspectorChanged(self, _currentIndex=None, _previousIndex=None):
+    def currentItemChanged(self, _currentIndex=None, _previousIndex=None):
         """ Updates the description text widget when the user clicks on a selector in the table.
             The _currentIndex and _previousIndex parameters are ignored.
         """
@@ -135,9 +135,9 @@ class RegistryTab(QtGui.QWidget):
         
         
 class PluginsDialog(QtGui.QDialog): 
-    """ Dialog window that shows the installed inspector plugins.
+    """ Dialog window that shows the installed plugins.
     
-        SIDE EFFECT: will try to import all underlying inspector classes.
+        SIDE EFFECT: will try to import all underlying classes.
             This is done so that error information can be displayed when import was unsuccessful.
     """
 

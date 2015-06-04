@@ -58,7 +58,7 @@ TODO Long term or nice to have:
 	clean-up the settings reading/writing 
 	Qt::SizeHintRole in toggleTreeView?
 	http://snorf.net/blog/2014/08/09/validating-user-input-in-pyqt4-using-qvalidator/
-	Register plugins without having to restart.
+	Register plugins without having to restart (merge ClassRegistry and RegistryTableModel).
 	
 THINK:
 	use QObject.blockSignals
