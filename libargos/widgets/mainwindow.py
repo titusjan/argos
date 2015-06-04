@@ -345,7 +345,7 @@ class MainWindow(QtGui.QMainWindow):
         """ Called when closing this window.
         """
         logger.debug("closeEvent")
-        self.argosApplication.saveProfileIfNeeded()
+        self.argosApplication.saveSettingsIfNeeded()
         self.argosApplication.removeMainWindow(self)
         event.accept()
         logger.debug("closeEvent accepted")

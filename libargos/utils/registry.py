@@ -17,16 +17,18 @@
 """ Defines a global Inspector registry to register plugins.
 """
 
-import logging, inspect, os
+import logging, inspect, os, ast
 from libargos.info import DEBUGGING
 from libargos.utils.cls import import_symbol, check_is_a_string, type_name, check_class
+
+from libargos.qt import QtCore # TODO: this module must to the qt package.
 
 logger = logging.getLogger(__name__)
 
 
 class RegisteredClassItem(object):
     """ Represents an class that is registered in the registry. Each class has an identifier that
-        must be unique and a class name with the location of the class.
+        must be unique and a fullClassName with name the class (inclusive package and module part).
         The underlying class is not imported by default; use tryImportClass or getClass() for this.
     """
     def __init__(self, identifier, fullClassName):
@@ -144,11 +146,26 @@ class RegisteredClassItem(object):
             
         return self._cls
 
+    @classmethod
+    def createFromDict(cls, dct):
+        """ Create an object of type cls with the dct as the kwargs
+        """
+        return cls(**dct)
+        
+    def asDict(self):
+        """ Returns a dictionary for serialization. We don't use JSON since all items are
+            quite simple and the registry will always contain the same type of RegisteredClassItem
+        """
+        return {'identifier': self.identifier, 'fullClassName': self.fullClassName}
 
 
 class ClassRegistry(object):
     """ Class that maintains the collection of registered classes.
         Each class has an identifier that must be unique in lower-case with spaces are removed.
+        
+        The ClassRegistry can only store items of one type (RegisteredClassItem). Descendants will
+        store their own type. For instance the InspectorRegistry will store RegisteredInspector 
+        items. This makes serialization easier.
     """
     def __init__(self):
         """ Constructor
@@ -158,6 +175,9 @@ class ClassRegistry(object):
         # does not allow to retrieve the Nth element in O(1) 
         self._items = []
         self._index = {}
+        
+        # The registry can only contain items of this type.
+        self._itemClass = RegisteredClassItem
     
     
     @property
@@ -167,8 +187,15 @@ class ClassRegistry(object):
         return self._items    
             
     
+    def clear(self):
+        """ Empties the registry
+        """
+        self._items = []
+        self._index = {}
+        
+    
     def getItemById(self, identifier):
-        """ The registered classes.
+        """ Gets a registered item given its identifier.
         """
         return self._index[identifier]
 
@@ -202,3 +229,39 @@ class ClassRegistry(object):
         idx = self._items.find(item)
         del self._items[idx]
 
+
+    def loadSettings(self, groupName):
+        """ Reads the registry items from the persistent settings store.
+        """ 
+        settings = QtCore.QSettings()
+        logger.info("Reading {!r} from: {}".format(groupName, settings.fileName()))
+        
+        settings.beginGroup(groupName)
+        self.clear()
+        try:
+            for key in settings.childKeys():
+                if key.startswith('item'):
+                    dct = ast.literal_eval(settings.value(key))
+                    regItem = self._itemClass.createFromDict(dct)
+                    self.appendItem(regItem)
+        finally:
+            settings.endGroup()
+            
+            
+    def saveSettings(self, groupName):
+        """ Writes the registry items into the persistent settings store.
+        """
+        settings = QtCore.QSettings()
+        logger.info("Saving {} to: {}".format(groupName, settings.fileName()))
+        
+        settings.remove(groupName) # start with a clean slate
+        settings.beginGroup(groupName)
+        try:
+            for itemNr, item in enumerate(self.items):
+                key = "item-{:03d}".format(itemNr)
+                value = repr(item.asDict())
+                settings.setValue(key, value)
+        finally:
+            settings.endGroup()
+            
+            

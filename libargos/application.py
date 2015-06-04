@@ -20,42 +20,47 @@
 import logging, platform
 
 from libargos.info import DEBUGGING, DEFAULT_PROFILE
-from libargos.inspector import registerDefaultInspectorPlugins
 from libargos.inspector.registry import InspectorRegistry
 from libargos.qt import getQApplicationInstance, QtCore
 from libargos.repo.repotreemodel import RepoTreeModel
 from libargos.repo.registry import globalRtiRegistry
-from libargos.repo.rtiplugins import registerDefaultRtiPlugins
 from libargos.utils.misc import string_to_identifier
 from libargos.widgets.mainwindow import MainWindow
 
 
 logger = logging.getLogger(__name__)
 
-    
+
 def browse(fileNames = None, 
            profile=DEFAULT_PROFILE, 
            resetProfile=False, 
-           resetAllProfiles=False): 
-    """ Opens a main window and executes the application
+           resetAllProfiles=False, 
+           resetRegistry=False): 
+    """ Opens the main window(s) for the persistent settings of the given profile, 
+        and executes the application.
     """
     #if DEBUGGING: # TODO temporary
     #    _gcMon = createGcMonitor()
     
-    # Creat
+    # Create
     argosApp = ArgosApplication()
-    
-    # Load data in common repository before windows are created.
-    argosApp.loadFiles(fileNames)
-    if DEBUGGING:
-        __addTestData(argosApp)
-        
+            
     if resetProfile:
         argosApp.deleteProfile(profile)
     if resetAllProfiles:
         argosApp.deleteAllProfiles()
+    if resetRegistry:
+        argosApp.deleteRegistries()
+
+    # Must be called before opening the files.
+    argosApp.loadRegistries()
         
-    # Create windows for this profile.        
+    # Load data in common repository before windows are created.
+    argosApp.loadFiles(fileNames)
+    if DEBUGGING:
+        __addTestData(argosApp)
+    
+    # Create windows for this profile.     
     argosApp.loadProfile(profile=profile)
 
     return argosApp.execute()
@@ -80,6 +85,10 @@ def __addTestData(argosApp):
 class ArgosApplication(object):
     """ The application singleton which holds global state.
     """
+    GRP_REGISTRY = 'registry'
+    GRP_REGISTRY_RTI = GRP_REGISTRY + '/rti'
+    GRP_REGISTRY_INSPECTORS = GRP_REGISTRY + '/inspectors'
+
     def __init__(self):
         """ Constructor
         """
@@ -90,16 +99,18 @@ class ArgosApplication(object):
         
         self._repo = RepoTreeModel()
         self._rtiRegistry = globalRtiRegistry()
-        registerDefaultRtiPlugins(self._rtiRegistry) # TODO: better solution
-        
         self._inspectorRegistry = InspectorRegistry()
-        registerDefaultInspectorPlugins(self._inspectorRegistry)
         
         self._profile = ''
         self._mainWindows = []
-        self._profileSaved = False  # boolean to prevent saving settings twice
+        self._settingsSaved = False  # boolean to prevent saving settings twice
         
-        #self.loadProfile(reset=resetSettings)
+#        # Load the registry from the persistent settings store. The profile is not loaded in the 
+#        # constructor because it creates the windows and we want to be able to instantiate an 
+#        # ArgosApplication object without opening windows. The loadPlugin method must be called
+#        #  by the user of the class. 
+#        self.loadRegistries()
+                
         self.qApplication.lastWindowClosed.connect(self.quit) 
         
         # Call setup when the event loop starts.
@@ -117,8 +128,8 @@ class ArgosApplication(object):
         
         
     @property
-    def qApplication(self): # TODO: QtGui.qApp does the same?
-        """ Returns the QApplication object
+    def qApplication(self):
+        """ Returns the QApplication object. Equivalent to QtGui.qApp.
         """
         return self._qApplication
 
@@ -166,8 +177,70 @@ class ArgosApplication(object):
         """
         for fileName in fileNames:
             self.repo.loadFile(fileName, rtiClass=rtiClass)
-                
+                                
+                        
+    def initInspectorRegistry(self):
+        """ Loads the default plugins in the inspector registry.
+        """
+        logger.info("Initializing Inspector registry with the default plugins")
+        reg = self.inspectorRegistry
+        reg.registerInspector('debug inspector', 'libargos.inspector.debug.DebugInspector')
+        reg.registerInspector('Qt/Table', 'libargos.inspector.table.TableInspector')
+      
 
+    def initRtiRegistry(self):
+        """ Loads the default plugins in the repo tree item registry.
+        """
+        logger.info("Initializing RTI registry with the default plugins")
+        reg = self.rtiRegistry
+        reg.registerRti('NCDF file', 'libargos.repo.rtiplugins.ncdf.NcdfFileRti', 
+                        extensions=['nc', 'nc3', 'nc4'])
+        reg.registerRti('NumPy text file', 'libargos.repo.rtiplugins.nptextfile.NumpyTextFileRti', 
+                        extensions=['txt', 'text'])
+
+
+    def deleteRegistries(self):
+        """ Deletes all registry information from the persistent store.
+        """
+        self.removeSettingsGroup(self.GRP_REGISTRY)
+        
+        
+        
+    def loadRegistries(self):
+        """ Reads the registry persistent program settings
+        """
+        settings = QtCore.QSettings()
+
+        if settings.contains(self.GRP_REGISTRY_RTI):
+            self.rtiRegistry.loadSettings(self.GRP_REGISTRY_RTI)
+        else:
+            logger.info("Group not found (using defaults): {}".format(self.GRP_REGISTRY_RTI))
+            self.initRtiRegistry()
+            self.rtiRegistry.saveSettings(self.GRP_REGISTRY_RTI)
+        
+        if settings.contains(self.GRP_REGISTRY_INSPECTORS):
+            self.inspectorRegistry.loadSettings(self.GRP_REGISTRY_INSPECTORS)
+        else:
+            logger.info("Group not found (using defaults): {}".format(self.GRP_REGISTRY_INSPECTORS))
+            self.initInspectorRegistry()
+            self.inspectorRegistry.saveSettings(self.GRP_REGISTRY_INSPECTORS)
+        
+
+#    def saveRegistries(self):
+#        """ Writes the view settings to the persistent store
+#        """
+#        self.rtiRegistry.saveSettings(self.GRP_REGISTRY_RTI)
+#        self.inspectorRegistry.saveSettings(self.GRP_REGISTRY_INSPECTORS)
+                        
+            
+    def removeSettingsGroup(self, groupName):
+        """ Removes a group from the persistent settings
+        """
+        logger.debug("Removing settings group: {}".format(groupName))
+        settings = QtCore.QSettings()
+        settings.remove(groupName)
+        
+        
     def _profileGroupName(self, profile):
         """ Returns the name of the QSetting group for this profile.
             Converts to lower case and removes whitespace, interpunction, etc.
@@ -196,7 +269,7 @@ class ArgosApplication(object):
         
         
     def loadProfile(self, profile):
-        """ Reads the persistent program settings
+        """ Reads the persistent program settings for the current profile.
         """ 
         settings = QtCore.QSettings()
         logger.info("Reading profile {!r} from: {}".format(profile, settings.fileName()))
@@ -223,14 +296,12 @@ class ArgosApplication(object):
         
 
     def saveProfile(self):
-        """ Writes the view settings to the persistent store
+        """ Writes the current profile settings to the persistent store
         """
         if not self.profile:
             logger.warning("No profile defined (no settings saved)")
             return
 
-        self._profileSaved = True                        
-                 
         settings = QtCore.QSettings()  
         logger.debug("Writing settings to: {}".format(settings.fileName()))
 
@@ -248,14 +319,28 @@ class ArgosApplication(object):
                     settings.endGroup()
         finally:
             settings.endGroup()
-                        
-                        
-    def saveProfileIfNeeded(self):
+
+
+    def saveSettings(self):
+        """ Saves the persistent settings. Only saves the profile.
+        """
+        try:
+            self.saveProfile()
+        except Exception as ex:
+            # Continue, even if saving the settings fails.
+            logger.warn(ex)
+            if DEBUGGING:
+                raise
+        finally:    
+            self._settingsSaved = True     
+                           
+                                                
+    def saveSettingsIfNeeded(self):
         """ Writes the persistent settings of this profile is this is the last window and
             the settings have not yet been saved.
         """
-        if not self._profileSaved and len(self.mainWindows) <= 1:
-            self.saveProfile()
+        if not self._settingsSaved and len(self.mainWindows) <= 1:
+            self.saveSettings()
             
             
     def addNewMainWindow(self, settings=None):
@@ -297,7 +382,7 @@ class ArgosApplication(object):
     def closeAllWindows(self):
         """ Closes all windows. Save windows state to persistent settings before closing them.
         """
-        self.saveProfile()
+        self.saveSettings()
         logger.debug("ArgosApplication: Closing all windows")
         self.qApplication.closeAllWindows()
         
@@ -319,21 +404,3 @@ class ArgosApplication(object):
         logger.info("Argos event loop finished with exit code: {}".format(exitCode))
         return exitCode
     
-            
-#def createArgosApplicationFunction():
-#    """ Closure to create the ArgosApplication singleton
-#    """
-#    globApp = ArgosApplication()
-#    
-#    def accessArgosApplication():
-#        return globApp
-#    
-#    return accessArgosApplication
-#
-## This is actually a function definition, not a constant
-##pylint: disable=C0103
-#
-#getArgosApplication = createArgosApplicationFunction()
-#getArgosApplication.__doc__ = "Function that returns the ArgosApplication singleton"
-
-

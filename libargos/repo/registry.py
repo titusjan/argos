@@ -49,6 +49,14 @@ class RegisteredRti(RegisteredClassItem):
         extStr = ';'.join(['*' + ext for ext in self.extensions])
         return '{} ({})'.format(self.rtiShortName, extStr)
     
+        
+    def asDict(self):
+        """ Returns a dictionary for serialization.
+        """
+        return {'identifier': self.identifier, 
+                'fullClassName': self.fullClassName, 
+                'extensions': self.extensions}
+        
 
 class RtiRegistry(ClassRegistry):
     """ Class that can be used to register repository tree items (RTIs).
@@ -62,6 +70,14 @@ class RtiRegistry(ClassRegistry):
         """ Constructor
         """
         super(RtiRegistry, self).__init__()
+        self._itemClass = RegisteredRti
+        self._extensionMap = {}
+        
+        
+    def clear(self):
+        """ Empties the registry
+        """
+        super(RtiRegistry, self).clear()
         self._extensionMap = {}
     
     

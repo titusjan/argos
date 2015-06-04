@@ -62,10 +62,16 @@ class RegisteredInspector(RegisteredClassItem):
         return cls(collector)
 
 
-class InspectorRegistry(ClassRegistry): # TODO: to application?
+class InspectorRegistry(ClassRegistry):
     """ Class that maintains the collection of registered inspector classes.
         See the base class documentation for more info.
     """
+    def __init__(self):
+        """ Constructor
+        """
+        super(InspectorRegistry, self).__init__()
+        self._itemClass = RegisteredInspector
+            
             
     def registerInspector(self, identifier, fullClassName):
         """ Registers an Inspector class.

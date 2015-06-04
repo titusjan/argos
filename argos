@@ -43,14 +43,16 @@ def main():
         help="Can be used to have different persistent settings for different use cases.")
     
     parser.add_argument('--reset', '--reset-profile', dest='reset_profile', action = 'store_true',  
-        help="If set, persistent settings will be reset for the current profile")
+        help="If set, persistent settings will be reset for the current profile.")
     
-    parser.add_argument('--reset-all', '--reset-all-profiles', 
-        dest='reset_all_profiles', action = 'store_true',  
-        help="If set, persistent settings will be reset for the all profiles")
+    parser.add_argument('--reset-all-profiles', dest='reset_all_profiles', action = 'store_true',  
+        help="If set, persistent settings will be reset for the all profiles.")
+
+    parser.add_argument('--reset-registry', dest='reset_registry', action = 'store_true',  
+        help="If set, the registry will be reset to contain only the default plugins.")
     
     parser.add_argument('-V', '--version', action = 'store_true',  
-        help="Prints the program version")    
+        help="Prints the program version.")    
         
     parser.add_argument('-L', '--log-level', dest='log_level', default='warn',
         help="Log level. Only log messages with a level higher or equal than this will be printed."
@@ -75,7 +77,8 @@ def main():
     browse(fileNames = args.fileNames,
            profile=args.profile,  
            resetProfile=args.reset_profile, 
-           resetAllProfiles=args.reset_all_profiles)
+           resetAllProfiles=args.reset_all_profiles, 
+           resetRegistry=args.reset_registry)
     logger.info('Done {}'.format(PROJECT_NAME))
   
 if __name__ == "__main__":
