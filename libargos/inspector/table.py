@@ -19,7 +19,7 @@
 """
 import logging
 
-from libargos.inspector.base import BaseInspector
+from libargos.inspector.abstract import AbstractInspector
 from libargos.qt import QtCore, QtGui
 
 logger = logging.getLogger(__name__)
@@ -97,7 +97,7 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
 
 
 
-class TableInspector(BaseInspector):
+class TableInspector(AbstractInspector):
     """ Shows the sliced array in a table.
     """
     _label = "Table"

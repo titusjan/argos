@@ -52,7 +52,7 @@ class RegisteredInspector(RegisteredClassItem):
         """
         cls = self.getClass()
         assert self.successfullyImported, \
-            "Class not successfully imported: {}".format(cls.exception)
+            "Class not successfully imported: {}".format(self.exception)
         return cls(collector)
 
 
@@ -78,6 +78,6 @@ class InspectorRegistry(ClassRegistry):
         """ Returns a list with the default plugins in the inspector registry.
         """
         return [    
-            RegisteredInspector('debug inspector', 'libargos.inspector.debug.DebugInspector'), 
+            RegisteredInspector('Empty inspector', 'libargos.inspector.empty.EmptyInspector'), 
             RegisteredInspector('Qt/Table', 'libargos.inspector.table.TableInspector')]
 

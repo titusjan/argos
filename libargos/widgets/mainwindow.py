@@ -32,7 +32,7 @@ from libargos.collect.collector import Collector
 from libargos.config.configtreeview import ConfigTreeView
 from libargos.config.configtreemodel import ConfigTreeModel
 from libargos.inspector.dialog import OpenInspectorDialog
-from libargos.inspector.debug import DebugInspector
+from libargos.inspector.empty import EmptyInspector
 from libargos.repo.detailplugins.prop import PropertiesPane 
 from libargos.repo.detailplugins.attr import AttributesPane 
 from libargos.repo.repotreeview import RepoTreeView
@@ -117,7 +117,7 @@ class MainWindow(QtGui.QMainWindow):
         layout.setContentsMargins(CENTRAL_MARGIN, CENTRAL_MARGIN, CENTRAL_MARGIN, CENTRAL_MARGIN)
         layout.setSpacing(CENTRAL_SPACING)
         self.setCentralWidget(widget)
-        self.setInspector(DebugInspector(self.collector))
+        self.setInspector(EmptyInspector(self.collector))
         
         # Must be after setInspector since that already draws the inspector
         self.collector.contentsChanged.connect(self.collectorContentsChanged)
@@ -363,7 +363,7 @@ class MainWindow(QtGui.QMainWindow):
         """ Function for testing """
         logger.debug("myTest for window: {}".format(self._instanceNr))
         
-        inspector = DebugInspector(self.collector)
+        inspector = EmptyInspector(self.collector)
         self.setInspector(inspector)
             
         from libargos.qt import printChildren

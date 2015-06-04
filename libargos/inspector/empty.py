@@ -26,7 +26,7 @@ from libargos.qt import QtGui
 logger = logging.getLogger(__name__)
 
 
-class DebugInspector(AbstractInspector):
+class EmptyInspector(AbstractInspector):
     """ Inspector for debugging purposes.
     
         Displays the shape of the selected array if Arogs is in debugging mode, otherwise
@@ -36,7 +36,7 @@ class DebugInspector(AbstractInspector):
     
     def __init__(self, collector, parent=None):
         
-        super(DebugInspector, self).__init__(collector, parent=parent)
+        super(EmptyInspector, self).__init__(collector, parent=parent)
         
         self.label = QtGui.QLabel()
         self.contentsLayout.addWidget(self.label)
@@ -46,7 +46,7 @@ class DebugInspector(AbstractInspector):
         """ Draws the inspector widget when no input is available.
             The default implementation shows an error message. Descendants should override this.
         """
-        logger.debug("DebugInspector._drawContents: {}".format(self))
+        logger.debug("EmptyInspector._drawContents: {}".format(self))
         
         slicedArray = self.collector.getSlicedArray()
         if slicedArray is None:
