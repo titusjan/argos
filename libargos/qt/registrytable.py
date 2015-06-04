@@ -22,9 +22,9 @@ from __future__ import print_function
 import logging
 
 from libargos.qt import QtCore, QtGui, Qt
+from libargos.qt.registry import ClassRegistry
 from libargos.qt.togglecolumn import ToggleColumnTableView
 from libargos.utils.cls import check_class
-from libargos.utils.registry import ClassRegistry
 
 logger = logging.getLogger(__name__)
 

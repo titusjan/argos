@@ -19,7 +19,7 @@
 
 import logging
 
-from libargos.utils.registry import RegisteredClassItem, ClassRegistry
+from libargos.qt.registry import RegisteredClassItem, ClassRegistry
 
 logger = logging.getLogger(__name__)
 

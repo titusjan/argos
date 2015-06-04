@@ -20,7 +20,7 @@
 import logging
 from libargos.utils.cls import check_is_a_string, check_class
 from libargos.utils.misc import prepend_point_to_extension
-from libargos.utils.registry import RegisteredClassItem, ClassRegistry
+from libargos.qt.registry import RegisteredClassItem, ClassRegistry
 
 logger = logging.getLogger(__name__)
 

@@ -14,14 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Defines a global Inspector registry to register plugins.
+""" Classes for registering plugins. 
+    This is part of the libargos.qt package since it uses QSettings for persistency. 
 """
 
 import logging, inspect, os, ast
-from libargos.info import DEBUGGING
-from libargos.utils.cls import import_symbol, check_is_a_string, type_name, check_class
 
-from libargos.qt import QtCore # TODO: this module must to the qt package.
+from libargos.qt import QtCore
+from libargos.utils.cls import import_symbol, check_is_a_string, type_name, check_class
 
 logger = logging.getLogger(__name__)
 
