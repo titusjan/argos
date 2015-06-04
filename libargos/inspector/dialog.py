@@ -137,6 +137,6 @@ class OpenInspectorDialog(QtGui.QDialog):
         if regInt.descriptionHtml:
             self.editor.setHtml(regInt.descriptionHtml)
         else:
-            self.editor.setPlainText(str(regInt.nDims))     
+            self.editor.setPlainText(regInt.docString)     
         
         

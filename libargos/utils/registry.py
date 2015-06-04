@@ -98,6 +98,19 @@ class RegisteredClassItem(object):
             Can serve as backup in case descriptionHtml is empty.
         """
         return inspect.cleandoc('' if self.cls is None else self.cls.__doc__) 
+    
+    
+    @property
+    def descriptionHtml(self):
+        """ HTML help describing the class. For use in the detail editor.
+        """
+        if self.cls is None:
+            return None
+        elif hasattr(self.cls, 'descriptionHtml'):
+            return self.cls.descriptionHtml()
+        else:
+            return ''
+    
 
     @property
     def triedImport(self):
@@ -166,10 +179,15 @@ class ClassRegistry(object):
         The ClassRegistry can only store items of one type (RegisteredClassItem). Descendants will
         store their own type. For instance the InspectorRegistry will store RegisteredInspector 
         items. This makes serialization easier.
+        
+        An optional QSettings group name can be specified so that the registry knows where to 
+        load/store its settings. This can also be specified with the method parameters.
     """
-    def __init__(self):
+    def __init__(self, settingsGroupName=None):
         """ Constructor
         """
+        self.settingsGroupName = settingsGroupName
+        
         # We use an list to store the items in order and an index to find them in O(1)
         # We cannot use an ordereddict for this as this uses linked-list internally and therefore
         # does not allow to retrieve the Nth element in O(1) 
@@ -200,7 +218,7 @@ class ClassRegistry(object):
         return self._index[identifier]
 
             
-    def appendItem(self, item):
+    def registerItem(self, item):
         """ Adds a RegisteredClassItem object to the registry.
         """
         check_class(item, RegisteredClassItem)
@@ -230,9 +248,27 @@ class ClassRegistry(object):
         del self._items[idx]
 
 
-    def loadSettings(self, groupName):
+    def loadOrInitSettings(self, groupName=None):
+        """ Reads the registry items from the persistent settings store, falls back on the 
+            default plugins if there are not settings in the store for this registry.
+            It there 
+        """ 
+        groupName = groupName if groupName else self.settingsGroupName
+        settings = QtCore.QSettings()
+        
+        if settings.contains(groupName):
+            self.loadSettings(groupName)
+        else:
+            logger.info("Group {!r} not found, falling back on default settings".format(groupName))
+            for item in self.getDefaultItems():
+                self.registerItem(item)
+            self.saveSettings(groupName)
+
+
+    def loadSettings(self, groupName=None):
         """ Reads the registry items from the persistent settings store.
         """ 
+        groupName = groupName if groupName else self.settingsGroupName
         settings = QtCore.QSettings()
         logger.info("Reading {!r} from: {}".format(groupName, settings.fileName()))
         
@@ -243,14 +279,15 @@ class ClassRegistry(object):
                 if key.startswith('item'):
                     dct = ast.literal_eval(settings.value(key))
                     regItem = self._itemClass.createFromDict(dct)
-                    self.appendItem(regItem)
+                    self.registerItem(regItem)
         finally:
             settings.endGroup()
             
             
-    def saveSettings(self, groupName):
+    def saveSettings(self, groupName=None):
         """ Writes the registry items into the persistent settings store.
         """
+        groupName = groupName if groupName else self.settingsGroupName
         settings = QtCore.QSettings()
         logger.info("Saving {} to: {}".format(groupName, settings.fileName()))
         
@@ -263,5 +300,14 @@ class ClassRegistry(object):
                 settings.setValue(key, value)
         finally:
             settings.endGroup()
+            
+            
+    def getDefaultItems(self):
+        """ Returns a list with the default plugins in the registry. 
+            This is used initialize the application plugins when there are no saved settings, 
+            for instance the first time the application is started.
+            The base implementation returns an empty list but other registries should override it.
+        """
+        return []
             
             

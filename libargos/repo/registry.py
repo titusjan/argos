@@ -66,10 +66,10 @@ class RtiRegistry(ClassRegistry):
         the extensions in the RegisteredRti class do not have to be unique and are used in the
         filter in the getFileDialogFilter function. 
     """
-    def __init__(self):
+    def __init__(self, settingsGroupName=None):
         """ Constructor
         """
-        super(RtiRegistry, self).__init__()
+        super(RtiRegistry, self).__init__(settingsGroupName=settingsGroupName)
         self._itemClass = RegisteredRti
         self._extensionMap = {}
         
@@ -94,6 +94,15 @@ class RtiRegistry(ClassRegistry):
             logger.warn("Overriding {} with {} for extension {!r}"
                         .format(self._extensionMap[extension], registeredRti, extension))
         self._extensionMap[extension] = registeredRti
+    
+            
+    def registerItem(self, item):
+        """ Adds a RegisteredClassItem object to the registry.
+        """
+        super(RtiRegistry, self).registerItem(item)
+                
+        for ext in item.extensions:
+            self._registerExtension(ext, item) 
             
             
     def registerRti(self, identifier, fullClassName, extensions=None):
@@ -104,10 +113,8 @@ class RtiRegistry(ClassRegistry):
         extensions = [prepend_point_to_extension(ext) for ext in extensions]
 
         regRti = RegisteredRti(identifier, fullClassName, extensions)
-        self.appendItem(regRti)
-        
-        for ext in regRti.extensions:
-            self._registerExtension(ext, regRti) 
+        self.registerItem(regRti)
+
 
         
     def getRtiByExtension(self, extension):
@@ -127,6 +134,19 @@ class RtiRegistry(ClassRegistry):
             filters.append(regRti.getFileDialogFilter())
         return ';;'.join(filters)
     
+
+    def getDefaultItems(self):
+        """ Returns a list with the default plugins in the repo tree item registry.
+        """
+        return [
+            RegisteredRti('NCDF file', 
+                          'libargos.repo.rtiplugins.ncdf.NcdfFileRti', 
+                          extensions=['nc', 'nc3', 'nc4']),
+                   
+            RegisteredRti('NumPy text file', 
+                          'libargos.repo.rtiplugins.nptextfile.NumpyTextFileRti', 
+                          extensions=['txt', 'text'])]
+        
 
 # The RTI registry is implemented as a singleton. This is necessary because
 # in DirectoryRti._fetchAllChildren we need access to the registry. 

@@ -34,12 +34,6 @@ class RegisteredInspector(RegisteredClassItem):
         """
         super(RegisteredInspector, self).__init__(identifier, fullClassName)
 
-    
-    @property
-    def descriptionHtml(self):
-        """ Short name for use in file dialogs, menus, etc.
-        """
-        return '' if self.cls is None else self.cls.descriptionHtml()
         
     @property
     def axesNames(self):
@@ -66,10 +60,10 @@ class InspectorRegistry(ClassRegistry):
     """ Class that maintains the collection of registered inspector classes.
         See the base class documentation for more info.
     """
-    def __init__(self):
+    def __init__(self, settingsGroupName=None):
         """ Constructor
         """
-        super(InspectorRegistry, self).__init__()
+        super(InspectorRegistry, self).__init__(settingsGroupName=settingsGroupName)
         self._itemClass = RegisteredInspector
             
             
@@ -77,6 +71,13 @@ class InspectorRegistry(ClassRegistry):
         """ Registers an Inspector class.
         """
         regInspector = RegisteredInspector(identifier, fullClassName)
-        self.appendItem(regInspector)
+        self.registerItem(regInspector)
 
     
+    def getDefaultItems(self):
+        """ Returns a list with the default plugins in the inspector registry.
+        """
+        return [    
+            RegisteredInspector('debug inspector', 'libargos.inspector.debug.DebugInspector'), 
+            RegisteredInspector('Qt/Table', 'libargos.inspector.table.TableInspector')]
+
