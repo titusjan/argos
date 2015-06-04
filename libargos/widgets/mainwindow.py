@@ -139,7 +139,7 @@ class MainWindow(QtGui.QMainWindow):
 
         fileMenu = menuBar.addMenu("&File")
 
-        action = fileMenu.addAction("&Set Inspector...", self.setInspector)
+        action = fileMenu.addAction("&Set Inspector...", self.openInspector)
         action.setShortcut(QtGui.QKeySequence("Ctrl+i")) 
         
         action = fileMenu.addAction("&New Window...", self.argosApplication.addNewMainWindow)
