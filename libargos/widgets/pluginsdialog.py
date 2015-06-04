@@ -15,7 +15,7 @@
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
 """ 
-    OpenInspectorDialog dialog window that lets the user pick a new inspector.
+    PluginsDialog window that shows which plugins are registered.
 """
 from __future__ import print_function
 
@@ -24,42 +24,48 @@ import logging
 from libargos.qt.registrytable import RegistryTableModel, RegistryTableView
 from libargos.qt import QtCore, QtGui, Qt, QtSlot
 
-
 logger = logging.getLogger(__name__)
-
 
 # The main window inherits from a Qt class, therefore it has many 
 # ancestors public methods and attributes.
 # pylint: disable=R0901, R0902, R0904, W0201 
 
-class OpenInspectorDialog(QtGui.QDialog): 
-    """ Dialog window that shows the installed inspector plugins.
+
+class RegistryTab(QtGui.QWidget):
+    """ Tab that shows the contents of a single plugin registry.
     
         SIDE EFFECT: will try to import all underlying inspector classes.
-            This is done so that help and number of dimensions can be displayed.
+            This is done so that error information can be displayed when import was unsuccessful.
     """
-
-    def __init__(self, registry, parent=None):
+    def __init__(self, registry, parent=None, 
+                 attrNames=None, headerNames=None, headerSizes=None):
         """ Constructor
         """
-        super(OpenInspectorDialog, self).__init__(parent=parent)
-
+        super(RegistryTab, self).__init__(parent=parent)
         self._registry = registry
-                
-        self.setModal(True)
+        
+        attrNames = [] if attrNames is None else attrNames
+        headerNames = attrNames if headerNames is None else headerNames
+        headerSizes = [] if headerSizes is None else headerSizes 
+        if headerSizes is None:
+            headerSizes = []
+        else:
+            assert len(headerSizes) == len(attrNames), \
+                "Size mismatch {} != {}".format(len(headerSizes), len(attrNames))
+
         layout = QtGui.QVBoxLayout(self)
         splitter = QtGui.QSplitter(Qt.Vertical)
         layout.addWidget(splitter)
         
-        # Table        
-        attrNames = ('name', 'library', 'nDims')
+        # Table
         self._tableModel = RegistryTableModel(self._registry, attrNames=attrNames, parent=self)
         self.table = RegistryTableView(self._tableModel)
         self.table.sortByColumn(1, Qt.AscendingOrder) # Sort by library by default.
         
         tableHeader = self.table.horizontalHeader()
-        tableHeader.resizeSection(0, 250)
-        tableHeader.resizeSection(1, 250)
+        for col, headerSize in enumerate(headerSizes):
+            if headerSize:
+                tableHeader.resizeSection(col, headerSize)
                 
         selectionModel = self.table.selectionModel()
         selectionModel.currentRowChanged.connect(self.currentInspectorChanged)
@@ -78,27 +84,14 @@ class OpenInspectorDialog(QtGui.QDialog):
         self.editor.setReadOnly(True)
         self.editor.setFont(font)
         self.editor.setWordWrapMode(QtGui.QTextOption.NoWrap)
-        self.editor.clear()
-        self.editor.setPlainText("Inspector info...")        
+        self.editor.clear()      
         splitter.addWidget(self.editor)
         splitter.setCollapsible(1, False) # True?
-        
-        # Buttons
-        buttonBox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok |
-                                           QtGui.QDialogButtonBox.Cancel)
-        buttonBox.accepted.connect(self.accept)
-        buttonBox.rejected.connect(self.reject)
-        layout.addWidget(buttonBox)
-        
-        # Double clicking is equivalent to selecting it and clicking Ok.
-        self.table.doubleClicked.connect(self.accept)
-        
         splitter.setSizes([300, 150])
-        self.resize(QtCore.QSize(800, 600))
-        
+    
         self.tryImportAllInspectors()
-        
-        
+
+
     @property
     def registeredInspectors(self):
         "The inspectors that are registered in the inspector registry"
@@ -138,5 +131,50 @@ class OpenInspectorDialog(QtGui.QDialog):
             self.editor.setHtml(regInt.descriptionHtml)
         else:
             self.editor.setPlainText(regInt.docString)     
+
+        
+        
+class PluginsDialog(QtGui.QDialog): 
+    """ Dialog window that shows the installed inspector plugins.
+    
+        SIDE EFFECT: will try to import all underlying inspector classes.
+            This is done so that error information can be displayed when import was unsuccessful.
+    """
+
+    def __init__(self, 
+                 inspectorRegistry=None, 
+                 rtiRegistry=None, 
+                 parent=None):
+        """ Constructor
+        """
+        super(PluginsDialog, self).__init__(parent=parent)
+
+        self.setWindowTitle("Installed Argos Plugins")
+        self.setModal(False)
+
+        layout = QtGui.QVBoxLayout(self)
+        
+        tabWidget = QtGui.QTabWidget()
+        layout.addWidget(tabWidget)
+        
+        attrNames = ['identifier', 'fullClassName'] 
+        headerSizes = [300, 300]
+        
+        if inspectorRegistry:
+            inspectorTab = RegistryTab(inspectorRegistry, 
+                                       attrNames=attrNames, headerSizes=headerSizes)
+            tabWidget.addTab(inspectorTab, "Inspectors")     
+        
+        if rtiRegistry:
+            rtiTab = RegistryTab(rtiRegistry, 
+                                 attrNames=attrNames, headerSizes=headerSizes)
+            tabWidget.addTab(rtiTab, "File Formats")     
+
+        # Buttons
+        buttonBox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok)
+        buttonBox.accepted.connect(self.accept)
+        layout.addWidget(buttonBox)
+        
+        self.resize(QtCore.QSize(800, 600))
         
         

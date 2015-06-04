@@ -154,7 +154,7 @@ class RegistryTableView(ToggleColumnTableView):
         proxyTableModel = RegistryTableProxModel(parent=self)
         proxyTableModel.setSourceModel(model)
         proxyTableModel.setSortRole(RegistryTableModel.SORT_ROLE)
-        proxyTableModel.setDynamicSortFilter(False) # Auto update, not necessary. 
+        proxyTableModel.setDynamicSortFilter(True) 
         proxyTableModel.setSortCaseSensitivity(Qt.CaseInsensitive)
         
         super(RegistryTableView, self).setModel(proxyTableModel)

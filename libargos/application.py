@@ -27,7 +27,7 @@ from libargos.repo.repotreemodel import RepoTreeModel
 from libargos.repo.registry import globalRtiRegistry
 from libargos.utils.misc import string_to_identifier
 from libargos.widgets.mainwindow import MainWindow
-
+from libargos.widgets.pluginsdialog import PluginsDialog
 
 logger = logging.getLogger(__name__)
 
@@ -106,6 +106,10 @@ class ArgosApplication(object):
         self._profile = ''
         self._mainWindows = []
         self._settingsSaved = False  # boolean to prevent saving settings twice
+        
+#        self.pluginsDialog = PluginsDialog(parent=None,
+#                                inspectorRegistry=self.inspectorRegistry, 
+#                                rtiRegistry=self.rtiRegistry)
                 
         self.qApplication.lastWindowClosed.connect(self.quit) 
         

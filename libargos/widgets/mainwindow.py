@@ -39,6 +39,7 @@ from libargos.repo.repotreeview import RepoTreeView
 from libargos.info import DEBUGGING, PROJECT_NAME
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
 from libargos.utils.misc import string_to_identifier
+from libargos.widgets.pluginsdialog import PluginsDialog
 
 
 logger = logging.getLogger(__name__)
@@ -122,6 +123,10 @@ class MainWindow(QtGui.QMainWindow):
         # Must be after setInspector since that already draws the inspector
         self.collector.contentsChanged.connect(self.collectorContentsChanged)
         
+        self.pluginsDialog = PluginsDialog(parent=None,
+                                           inspectorRegistry=self.argosApplication.inspectorRegistry, 
+                                           rtiRegistry=self.argosApplication.rtiRegistry)
+
                               
     def __setupMenu(self):
         """ Sets up the main menu.
@@ -139,16 +144,13 @@ class MainWindow(QtGui.QMainWindow):
 
         fileMenu = menuBar.addMenu("&File")
 
-        action = fileMenu.addAction("&Set Inspector...",  
-            self.openInspector)
-        action.setShortcut(QtGui.QKeySequence("Ctrl+I"))
+        action = fileMenu.addAction("&Set Inspector...", self.setInspector)
+        action.setShortcut(QtGui.QKeySequence("Ctrl+i")) 
         
-        action = fileMenu.addAction("&New Window...", # TODO 
-            self.argosApplication.addNewMainWindow)
-        action.setShortcut(QtGui.QKeySequence("Ctrl+N"))
+        action = fileMenu.addAction("&New Window...", self.argosApplication.addNewMainWindow)
+        action.setShortcut(QtGui.QKeySequence("Ctrl+N")) # TODO
         
-        action = fileMenu.addAction("&Clone Window", 
-            self.argosApplication.addNewMainWindow)
+        action = fileMenu.addAction("&Clone Window", self.argosApplication.addNewMainWindow)
         action.setShortcut(QtGui.QKeySequence("Ctrl+Shift+N"))
         
         fileMenu.addSeparator()
@@ -187,6 +189,12 @@ class MainWindow(QtGui.QMainWindow):
         ### View Menu ###
         
         self.viewMenu = menuBar.addMenu("&View")
+
+        action = self.viewMenu.addAction("Installed &Plugins...", self.openPluginsDialog)  
+        action.setShortcut(QtGui.QKeySequence("Ctrl+P"))
+        
+        self.viewMenu.addSeparator()
+        
                 
         ### Help Menu ###
                 
@@ -273,6 +281,13 @@ class MainWindow(QtGui.QMainWindow):
             if registeredItem is not None: 
                 inspector = registeredItem.create(self.collector)
                 self.setInspector(inspector)
+        
+    
+    def openPluginsDialog(self):
+        """ Shows the plugins dialog with the registered plugins
+        """
+        #self.argosApplication.pluginsDialog.show()
+        self.pluginsDialog.show()
         
         
     def collectorContentsChanged(self):
