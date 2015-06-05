@@ -7,19 +7,23 @@ import sys
 # sys.path.append("../../")
 
 import libargos
-from libargos.application import ArgosApplication
+from libargos.inspector.registry import InspectorRegistry
+from libargos.repo.registry import RtiRegistry
  
 def printReg(name, registry):
     print("{} registry....".format(name))
-    for nr, item in enumerate(registry.items):
-        print("  {0:03d}: {1.identifier:20} {1.fullClassName:30} ".format(nr, item))
+    for nr, regItem in enumerate(registry.items):
+        print("  {0:03d}: {1.identifier:20} {1.fullClassName:30} ".format(nr, regItem))
     print()
     
 def main():
-    argosApp = ArgosApplication()
-    argosApp.loadOrInitRegistries()
-    printReg("Inspector", argosApp.inspectorRegistry)
-    printReg("File format", argosApp.rtiRegistry)
+    inspectorRegistry = InspectorRegistry()
+    inspectorRegistry.loadOrInitSettings()
+    printReg("Inspector", inspectorRegistry)
+    
+    rtiRegistry = RtiRegistry()
+    rtiRegistry.loadOrInitSettings()
+    printReg("File format", rtiRegistry)
 
     
 if __name__ == "__main__":

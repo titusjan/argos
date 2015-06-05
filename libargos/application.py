@@ -86,10 +86,6 @@ def __addTestData(argosApp):
 class ArgosApplication(object):
     """ The application singleton which holds global state.
     """
-    GRP_REGISTRY = 'registry'
-    GRP_REGISTRY_RTI = GRP_REGISTRY + '/rti'
-    GRP_REGISTRY_INSPECTORS = GRP_REGISTRY + '/inspectors'
-
     def __init__(self):
         """ Constructor
         """
@@ -100,8 +96,7 @@ class ArgosApplication(object):
         
         self._repo = RepoTreeModel()
         self._rtiRegistry = globalRtiRegistry()
-        self._rtiRegistry.settingsGroupName = self.GRP_REGISTRY_RTI
-        self._inspectorRegistry = InspectorRegistry(settingsGroupName=self.GRP_REGISTRY_INSPECTORS)
+        self._inspectorRegistry = InspectorRegistry()
         
         self._profile = ''
         self._mainWindows = []

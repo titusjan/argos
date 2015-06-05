@@ -19,10 +19,11 @@
 
 import logging
 
-from libargos.qt.registry import ClassRegItem, ClassRegistry
+from libargos.qt.registry import ClassRegItem, ClassRegistry, GRP_REGISTRY
 
 logger = logging.getLogger(__name__)
 
+GRP_REGISTRY_INSPECTORS = GRP_REGISTRY + '/inspectors'
 
 class InspectorRegItem(ClassRegItem): # TODO: rename to InspectorRegItem? InspectorPlugin?
     """ Class to keep track of a registered Inspector.
@@ -60,7 +61,7 @@ class InspectorRegistry(ClassRegistry):
     """ Class that maintains the collection of registered inspector classes.
         See the base class documentation for more info.
     """
-    def __init__(self, settingsGroupName=None):
+    def __init__(self, settingsGroupName=GRP_REGISTRY_INSPECTORS):
         """ Constructor
         """
         super(InspectorRegistry, self).__init__(settingsGroupName=settingsGroupName)

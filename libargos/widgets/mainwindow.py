@@ -37,9 +37,6 @@ from libargos.widgets.constants import CENTRAL_MARGIN, CENTRAL_SPACING
 import logging
 
 
-
-
-
 logger = logging.getLogger(__name__)
         
 # The main window inherits from a Qt class, therefore it has many 

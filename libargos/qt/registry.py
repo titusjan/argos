@@ -27,6 +27,9 @@ from libargos.utils.cls import import_symbol, check_is_a_string, type_name, chec
 logger = logging.getLogger(__name__)
 
 
+GRP_REGISTRY = 'registry'
+
+    
 class ClassRegItem(object):
     """ Represents an class that is registered in the registry. Each class has an identifier that
         must be unique and a fullClassName with name the class (inclusive package and module part).
@@ -246,7 +249,6 @@ class ClassRegistry(object):
         logger.info("Removing {!r} containing {}".format(key, regItem.fullClassName))
         
         del self._index[key]
-        print (self._items)
         idx = self._items.index(regItem)
         del self._items[idx]
 
