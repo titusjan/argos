@@ -89,7 +89,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
             It calls _openResources. Descendants should usually override the latter 
             function instead of this one.
         """
-        self._clearException()
+        self.clearException()
         try:
             if self._isOpen:
                 logger.warn("Resources already open. Closing them first before opening.")
@@ -105,7 +105,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
             if DEBUGGING:
                 raise            
             logger.error("Error during tree item open: {}".format(ex))
-            self._setException(ex)
+            self.setException(ex)
             
         
     def _openResources(self):
@@ -121,7 +121,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
             It calls _closeResources. Descendants should usually override the latter 
             function instead of this one.
         """
-        self._clearException()
+        self.clearException()
         try: 
             if self._isOpen:
                 logger.debug("Closing {}".format(self))        
@@ -133,7 +133,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
             if DEBUGGING:
                 raise
             logger.error("Error during tree item close: {}".format(ex))
-            self._setException(ex)
+            self.setException(ex)
 
             
     def _closeResources(self):
@@ -152,19 +152,26 @@ class BaseRti(AbstractLazyLoadTreeItem):
         if self._fileName and not os.path.exists(self._fileName):
             msg = "File not found: {}".format(self._fileName)
             logger.error(msg)
-            self._setException(IOError(msg))
+            self.setException(IOError(msg))
             return False
         else:
             return True
         
-        
-    def _setException(self, ex):
-        """ Sets the exception attribute
+    @property
+    def exception(self):
+        """ The exception if an error has occurred during reading
         """
+        return self._exception
+    
+    # TODO: setter
+    def setException(self, ex):
+        """ Sets the exception attribute.
+        """
+        logger.debug("!!!!!!!!!!!! setting exception to: {}".format(ex))
         self._exception = ex
 
         
-    def _clearException(self):
+    def clearException(self):
         """ Forgets any stored exception to clear the possible error icon
         """
         self._exception = None    
@@ -175,7 +182,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
             Opens the tree item first if it's not yet open.
         """
         assert not self._childrenFetched, "canFetchChildren must be True"
-        self._clearException()
+        self.clearException()
 
         if not self.isOpen:
             self.open()
@@ -197,7 +204,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
             if DEBUGGING:
                 raise
             logger.error("Unable fetch tree item children: {}".format(ex))
-            self._setException(ex)
+            self.setException(ex)
         
         return childItems    
 

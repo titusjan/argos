@@ -145,7 +145,7 @@ class DetailTablePane(DetailBasePane):
         self.table = ToggleColumnTableWidget()
         self.contentsLayout.addWidget(self.table)
         
-        self.table.setWordWrap(True)
+        self.table.setWordWrap(False)
         #self.table.setTextElideMode(QtCore.Qt.ElideNone)
         self.table.setColumnCount(len(self.HEADERS))
         self.table.setHorizontalHeaderLabels(self.HEADERS)

@@ -88,18 +88,28 @@ def detectRtiFromFileName(fileName):
     """ Determines the type of RepoTreeItem to use given a file name.
         Uses a DirectoryRti for directories and an UnknownFileRti if the file
         extension doesn't match one of the registered RTI extensions.
+        
+        Returns (cls, regItem) tuple. Both the cls ond the regItem can be None.
+        If the file is a directory, (DirectoryRti, None) is returned.
+        If the file extension is not in the registry, (UnknownFileRti, None) is returned.
+        If the cls cannot be imported (None, regItem) returned. regItem.exception will be set.
+        Otherwise (cls, regItem) will be returned.
     """
     _, extension = os.path.splitext(fileName)
     if os.path.isdir(fileName):
+        rtiRegItem = None
         cls = DirectoryRti
     else:
         try:
-            cls = globalRtiRegistry().getRtiByExtension(extension)
-            assert cls, "getRtiByExtension returns None. Please report this bug."
-        except KeyError:
+            rtiRegItem = globalRtiRegistry().getRtiRegItemByExtension(extension)
+        except (KeyError):
+            logger.debug("No file RTI registered for extension: {}".format(extension))
+            rtiRegItem = None
             cls = UnknownFileRti
-            
-    return cls
+        else:
+            cls = rtiRegItem.getClass(tryImport=True) # cls can be None
+
+    return cls, rtiRegItem
 
 
 def createRtiFromFileName(fileName):
@@ -107,6 +117,15 @@ def createRtiFromFileName(fileName):
         Uses a DirectoryRti for directories and an UnknownFileRti if the file
         extension doesn't match one of the registered RTI extensions.
     """
-    cls = detectRtiFromFileName(fileName)
-    return cls.createFromFileName(fileName)
+    cls, rtiRegItem = detectRtiFromFileName(fileName)
+    if cls is None:
+        logger.warn("Unable to import plugin {}: {}"
+                    .format(rtiRegItem.identifier, rtiRegItem.exception))
+        rti = UnknownFileRti.createFromFileName(fileName)
+        rti.setException(rtiRegItem.exception)
+    else:
+        rti = cls.createFromFileName(fileName)
+        
+    assert rti, "Sanity check failed (createRtiFromFileName). Please report this bug."
+    return rti
 

@@ -77,6 +77,13 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         return None
 
 
+    def toolTipForColumn(self, treeItem, column):
+        """ Descendants should override this function to return the tooltip value of the item 
+            for the given column number.
+        """
+        return None
+
+
     def checkStateForColumn(self, treeItem, column):
         """ Descendants should override this function to return the check state of the item 
             for the given column number.
@@ -104,6 +111,10 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         elif role == Qt.EditRole:
             item = self.getItem(index, altItem=self.invisibleRootItem)
             return self.editValueForColumn(item, index.column())
+
+        elif role == Qt.ToolTipRole:
+            item = self.getItem(index, altItem=self.invisibleRootItem)
+            return self.toolTipForColumn(item, index.column())
         
         elif role == Qt.CheckStateRole:
             item = self.getItem(index, altItem=self.invisibleRootItem)

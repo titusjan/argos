@@ -118,12 +118,12 @@ class RtiRegistry(ClassRegistry):
         self.registerItem(regRti)
 
         
-    def getRtiByExtension(self, extension):
-        """ Returns the RepoTreeItem classes registered for that extension
+    def getRtiRegItemByExtension(self, extension):
+        """ Returns the RtiRegItem class registered for the extension.
+            Raise KeyError if no class registered for the extension.
         """
         rtiRegItem = self._extensionMap[extension]
-        rti = rtiRegItem.getClass(tryImport=True)
-        return rti
+        return rtiRegItem
     
     
     def getFileDialogFilter(self):

@@ -37,6 +37,7 @@ class AttributesPane(DetailTablePane):
     
     def __init__(self, repoTreeView, parent=None):
         super(AttributesPane, self).__init__(repoTreeView, parent=parent)
+        self.table.setWordWrap(True)
         self.table.addHeaderContextMenu(enabled = {'Name': False, 'Value': False}, 
                                         checked = {'Type': False}) 
     

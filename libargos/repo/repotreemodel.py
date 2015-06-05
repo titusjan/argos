@@ -20,8 +20,8 @@
 import logging
 from libargos.qt import QtCore
 from libargos.qt.treemodels import BaseTreeModel
-from libargos.info import DEBUGGING
-from libargos.repo.filesytemrtis import detectRtiFromFileName
+#from libargos.info import DEBUGGING
+from libargos.repo.filesytemrtis import createRtiFromFileName
 from libargos.repo.baserti import BaseRti
 from libargos.utils.cls import type_name
 
@@ -33,9 +33,10 @@ class RepoTreeModel(BaseTreeModel):
         for QTreeViews. The underlying data is stored as repository tree items (BaseRti 
         descendants).
     """
-    HEADERS = ["name", "path", "shape", "is open", "tree item", "elem type", "file name"]
+    HEADERS = ["name", "path", "shape", "is open", 
+               "tree item", "elem type", "file name", "exception"]
     (COL_NODE_NAME, COL_NODE_PATH, COL_SHAPE, COL_IS_OPEN, 
-     COL_RTI_TYPE, COL_ELEM_TYPE, COL_FILE_NAME) = range(len(HEADERS))
+     COL_RTI_TYPE, COL_ELEM_TYPE, COL_FILE_NAME, COL_EXCEPTION) = range(len(HEADERS))
      
     COL_ICON = 0   # Column number that contains the icon. None for no icons
     
@@ -66,8 +67,19 @@ class RepoTreeModel(BaseTreeModel):
             return treeItem.elementTypeName
         elif column == self.COL_FILE_NAME:
             return treeItem.fileName if hasattr(treeItem, 'fileName') else ''
+        elif column == self.COL_EXCEPTION:
+            return str(treeItem.exception) if treeItem.exception else ''        
         else:
             raise ValueError("Invalid column: {}".format(column))
+            
+
+    def toolTipForColumn(self, treeItem, column):
+        """ Shows the exception in the tool tip. No tool tip if there was no error. 
+        """
+        if treeItem.exception:
+            return str(treeItem.exception)
+        else:
+            return None
             
         
     def canFetchMore(self, parentIndex):
@@ -139,8 +151,9 @@ class RepoTreeModel(BaseTreeModel):
         """
         logger.info("Loading data from: {!r}".format(fileName))
         if rtiClass is None:
-            rtiClass = detectRtiFromFileName(fileName)
-        repoTreeItem = rtiClass.createFromFileName(fileName)
+            repoTreeItem = createRtiFromFileName(fileName)
+        else:
+            repoTreeItem = rtiClass.createFromFileName(fileName)
         assert repoTreeItem.parentItem is None, "repoTreeItem {!r}".format(repoTreeItem)
         return self.insertItem(repoTreeItem, position=position, parentIndex=parentIndex)
     
