@@ -240,7 +240,7 @@ class ArgosApplication(object):
             
         if len(self.mainWindows) == 0:
             logger.warn("No open windows in profile (creating one).")
-            self.addNewMainWindow()
+            self.addNewMainWindow(inspectorId='Qt/Table')
         
 
     def saveProfile(self):
@@ -299,7 +299,7 @@ class ArgosApplication(object):
             self.repo.loadFile(fileName, rtiClass=rtiClass)
             
             
-    def addNewMainWindow(self, settings=None):
+    def addNewMainWindow(self, settings=None, inspectorId=None):
         """ Creates and shows a new MainWindow.
         """
         mainWindow = MainWindow(self)
@@ -308,6 +308,9 @@ class ArgosApplication(object):
         if settings:
             mainWindow.readViewSettings(settings)
         
+        if inspectorId:
+            mainWindow.setInspectorById(inspectorId)
+            
         mainWindow.drawWindowContents()
         mainWindow.show()
         
