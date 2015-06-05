@@ -7,6 +7,7 @@ import sys
 # sys.path.append("../../")
 
 import libargos
+from libargos.application import getQApplicationInstance
 from libargos.inspector.registry import InspectorRegistry
 from libargos.repo.registry import RtiRegistry
  
@@ -17,6 +18,9 @@ def printReg(name, registry):
     print()
     
 def main():
+    # Important: instantiate a Qt application first to use the correct settings file/winreg. 
+    _app = getQApplicationInstance()
+        
     inspectorRegistry = InspectorRegistry()
     inspectorRegistry.loadOrInitSettings()
     printReg("Inspector", inspectorRegistry)
