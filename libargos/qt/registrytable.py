@@ -28,6 +28,9 @@ from libargos.utils.cls import check_class
 
 logger = logging.getLogger(__name__)
 
+QCOLOR_REGULAR = QtGui.QColor('black')
+QCOLOR_NOT_IMPORTED = QtGui.QColor('grey')
+QCOLOR_ERROR = QtGui.QColor('red')
 
 # The main window inherits from a Qt class, therefore it has many 
 # ancestors public methods and attributes.
@@ -49,6 +52,10 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
         check_class(registry, ClassRegistry)
         self.registry = registry
         self.attrNames = attrNames
+        
+        self.regularBrush = QtGui.QBrush(QCOLOR_REGULAR)    
+        self.notImportedBrush = QtGui.QBrush(QCOLOR_NOT_IMPORTED)    
+        self.errorBrush = QtGui.QBrush(QCOLOR_ERROR)        
 
 
     def rowCount(self, _parent):
@@ -67,7 +74,7 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
         if not index.isValid():
             return None
         
-        if role != QtCore.Qt.DisplayRole and role != self.SORT_ROLE:
+        if role not in (Qt.DisplayRole, self.SORT_ROLE,  Qt.ForegroundRole):
             return None
         
         row = index.row()
@@ -75,12 +82,20 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
         item = self.registry.items[row]
         attrName = self.attrNames[col]
         
-        if role == QtCore.Qt.DisplayRole:
+        if role == Qt.DisplayRole:
             return str(getattr(item, attrName))
         
         elif role == self.SORT_ROLE:
             # Use the identifier column as a tie-breaker
-            return (getattr(item, attrName), item.identifier) 
+            return (getattr(item, attrName), item.identifier)
+        
+        elif role == Qt.ForegroundRole:
+            if item.successfullyImported is None:
+                return self.notImportedBrush
+            elif item.successfullyImported:   
+                return self.regularBrush
+            else:
+                return self.errorBrush
         else:
             raise ValueError("Invalid role: {}".format(role))           
         

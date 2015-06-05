@@ -23,6 +23,7 @@ import logging
 
 from libargos.qt.registry import ClassRegItem
 from libargos.qt.registrytable import RegistryTableModel, RegistryTableView
+from libargos.qt.registrytable import QCOLOR_REGULAR, QCOLOR_NOT_IMPORTED, QCOLOR_ERROR
 from libargos.qt import QtCore, QtGui, Qt, QtSlot
 from libargos.utils.cls import check_class
 
@@ -130,17 +131,24 @@ class RegistryTab(QtGui.QWidget):
             The _currentIndex and _previousIndex parameters are ignored.
         """
         self.editor.clear()
+        self.editor.setTextColor(QCOLOR_REGULAR)
         
-        regInt = self.getCurrentRegItem()
-        logger.debug("Selected {}".format(regInt))
+        regItem = self.getCurrentRegItem()
+        logger.debug("Selected {}".format(regItem))
         
-        if regInt is None:
+        if regItem is None:
             return
         
-        if regInt.descriptionHtml:
-            self.editor.setHtml(regInt.descriptionHtml)
+        if regItem.successfullyImported is None:
+            self.editor.setTextColor(QCOLOR_NOT_IMPORTED)
+            self.editor.setPlainText('<plugin not yet imported>')     
+        elif regItem.successfullyImported is False:   
+            self.editor.setTextColor(QCOLOR_ERROR)
+            self.editor.setPlainText(str(regItem.exception))     
+        elif regItem.descriptionHtml:
+            self.editor.setHtml(regItem.descriptionHtml)
         else:
-            self.editor.setPlainText(regInt.docString)     
+            self.editor.setPlainText(regItem.docString)     
 
         
         
