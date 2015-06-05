@@ -104,6 +104,7 @@ class AbstractInspector(QtGui.QStackedWidget):
         """ Tries to draw the widget contents. 
             Shows the error page in case an exception is raised while drawing the contents.
         """
+        logger.debug("Drawing inspector: {}".format(self))
         try:
             self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
             self._drawContents()

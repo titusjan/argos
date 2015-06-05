@@ -308,7 +308,9 @@ class ArgosApplication(object):
         if settings:
             mainWindow.readViewSettings(settings)
         
+        mainWindow.drawWindowContents()
         mainWindow.show()
+        
         if platform.system() == 'Darwin':
             # Calling raise when before the QApplication.exec_ only shows the last window
             # that was added. Therefore we also call activeWindow. However, this may not

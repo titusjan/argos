@@ -264,11 +264,29 @@ class MainWindow(QtGui.QMainWindow):
         self._detailDockWidgets.append(dockWidget)
         return dockWidget
 
-    
+
+    def setInspectorById(self, identifier):
+        """ Sets the central inspector widget given a inspector ID.
+            If there is not inspector with this ID, the inspector is unset and a warning is logged.
+            
+            NOTE: does not draw the new inspector, this is the responsibility of the caller.
+        """
+        inspectorRegsitry = self.argosApplication.inspectorRegistry
+        try:
+            inspectorRegItem = inspectorRegsitry.getItemById(identifier)
+        except KeyError as ex:
+            logger.warn("No inspector with ID {!r}.: {}".format(identifier, ex))
+            inspectorRegItem = None
+            
+        self.setInspectorFromRegItem(inspectorRegItem)
+        
+        
     def setInspectorFromRegItem(self, inspectorRegItem):
         """ Sets the central inspector widget given a inspectorRegItem.
+            If inspectorRegItem is None, the inspector will be unset. 
+            NOTE: does not draw the new inspector, this is the responsibility of the caller.
         """
-        check_class(inspectorRegItem, InspectorRegItem)
+        check_class(inspectorRegItem, InspectorRegItem, allow_none=True)
         self.setUpdatesEnabled(False)
         try:
             centralLayout = self.centralWidget().layout()
@@ -280,9 +298,12 @@ class MainWindow(QtGui.QMainWindow):
                 self.inspector.deleteLater()
                 
             self._inspectorRegItem = inspectorRegItem
-            self._inspector = inspectorRegItem.create(self.collector)  
-            centralLayout.addWidget(self.inspector)
-            self.inspector.draw()
+            if inspectorRegItem:
+                self._inspector = inspectorRegItem.create(self.collector)
+                centralLayout.addWidget(self.inspector)
+            else:
+                self._inspector = None
+            
         finally:
             self.setUpdatesEnabled(True)
 
@@ -297,6 +318,7 @@ class MainWindow(QtGui.QMainWindow):
             inspectorRegItem = dialog.getCurrentInspectorRegItem()
             if inspectorRegItem is not None: 
                 self.setInspectorFromRegItem(inspectorRegItem)
+                self.drawWindowContents()
         
     
     def openPluginsDialog(self):
@@ -308,6 +330,13 @@ class MainWindow(QtGui.QMainWindow):
     def collectorContentsChanged(self):
         """ Slot that updates the UI whenever the contents of the collector has changed. 
         """
+        self.drawWindowContents()
+        
+            
+    def drawWindowContents(self):
+        """ Draws all contents of this windows inspector. This includes the inspector.
+        """
+        logger.debug("drawing contents of: {}".format(self.windowTitle()))
         if self.inspector:
             self.inspector.draw()
     
@@ -366,6 +395,8 @@ class MainWindow(QtGui.QMainWindow):
         self.configTreeView.readViewSettings('config_tree/header_state', settings)
         self._config.readModelSettings('config_model', settings)
         
+        self.setInspectorById(settings.value("inspector", None))
+        
 
     def saveProfile(self, settings=None):
         """ Writes the view settings to the persistent store
@@ -380,6 +411,9 @@ class MainWindow(QtGui.QMainWindow):
                     
         settings.setValue("geometry", self.saveGeometry())
         settings.setValue("state", self.saveState())
+        
+        identifier = self.inspectorRegItem.identifier if self.inspectorRegItem else ''
+        settings.setValue("inspector", identifier)
 
  
     def closeEvent(self, event):

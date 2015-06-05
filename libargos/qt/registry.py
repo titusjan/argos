@@ -157,7 +157,7 @@ class ClassRegItem(object):
         """ Tries to import the registered class. 
             Will set the exception property if and error occurred.
         """
-        logger.debug("......Importing: {}".format(self.fullClassName))
+        logger.info("Importing: {}".format(self.fullClassName))
         self._triedImport = True
         self._exception = None
         self._cls = None
@@ -236,7 +236,7 @@ class ClassRegistry(object):
         
     
     def getItemById(self, identifier):
-        """ Gets a registered item given its identifier.
+        """ Gets a registered item given its identifier. Raises KeyError if not found.
         """
         return self._index[identifier]
 
