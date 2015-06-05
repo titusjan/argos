@@ -96,13 +96,13 @@ class RtiRegistry(ClassRegistry):
         self._extensionMap[extension] = rtiRegItem
     
             
-    def registerItem(self, item):
+    def registerItem(self, regItem):
         """ Adds a ClassRegItem object to the registry.
         """
-        super(RtiRegistry, self).registerItem(item)
+        super(RtiRegistry, self).registerItem(regItem)
                 
-        for ext in item.extensions:
-            self._registerExtension(ext, item) 
+        for ext in regItem.extensions:
+            self._registerExtension(ext, regItem) 
             
             
     def registerRti(self, identifier, fullClassName, extensions=None):

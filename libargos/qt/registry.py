@@ -50,7 +50,7 @@ class ClassRegItem(object):
         
 
     def __repr__(self):
-        return "<{}: {}>".format(type_name(self), self.identifier)
+        return "<{} (Ox{:x}): {!r}>".format(type_name(self), id(self), self.identifier)
     
     @property
     def identifier(self):
@@ -219,33 +219,35 @@ class ClassRegistry(object):
         return self._index[identifier]
 
             
-    def registerItem(self, item):
+    def registerItem(self, regItem):
         """ Adds a ClassRegItem object to the registry.
         """
-        check_class(item, ClassRegItem)
-        key = item.identifier
+        check_class(regItem, ClassRegItem)
+        key = regItem.identifier
         
         if key in self._index:
-            oldRegClass = self._index[key]
-            raise KeyError("Class key {} already registered as {}"
-                           .format(key, oldRegClass.fullClassName))
+            oldRegItem = self._index[key]
+            logger.warn("Class key {!r} already registered as {}. Removing old regItem."
+                        .format(key, oldRegItem.fullClassName))
+            self.removeItem(oldRegItem)
             
-        logger.info("Registering {!r} with {}".format(key, item.fullClassName))
-        self._items.append(item)
-        self._index[key] = item
+        logger.info("Registering {!r} with {}".format(key, regItem.fullClassName))
+        self._items.append(regItem)
+        self._index[key] = regItem
 
             
-    def removeItem(self, item):
+    def removeItem(self, regItem):
         """ Removes a ClassRegItem object to the registry.
-            Will raise a KeyError if the item is not registered.
+            Will raise a KeyError if the regItem is not registered.
         """
-        check_class(item, ClassRegItem)
-        key = item.identifier
+        check_class(regItem, ClassRegItem)
+        key = regItem.identifier
             
-        logger.info("Removing {!r} with {}".format(key, item.fullClassName))
+        logger.info("Removing {!r} containing {}".format(key, regItem.fullClassName))
         
         del self._index[key]
-        idx = self._items.find(item)
+        print (self._items)
+        idx = self._items.index(regItem)
         del self._items[idx]
 
 
