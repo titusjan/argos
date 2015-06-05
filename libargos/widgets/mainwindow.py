@@ -94,10 +94,17 @@ class MainWindow(QtGui.QMainWindow):
 
     @property
     def inspectorRegItem(self):
-        """ The inspector registry item that has been selected. Contains an inspector.
+        """ The InspectorRegItem that has been selected. Contains an InspectorRegItem.
             Can be None (e.g. at start-up).
         """
         return self._inspectorRegItem
+
+    @property
+    def inspectorId(self):
+        """ The identifier of the inspector registry item that has been selected. 
+            E.g. 'Qt/Table'. Can be None (e.g. at start-up).
+        """
+        return self._inspectorRegItem.identifier if self._inspectorRegItem else None
 
     @property
     def inspector(self):
@@ -267,17 +274,12 @@ class MainWindow(QtGui.QMainWindow):
 
     def setInspectorById(self, identifier):
         """ Sets the central inspector widget given a inspector ID.
-            If there is not inspector with this ID, the inspector is unset and a warning is logged.
+            Will raise a KeyError if the ID is not found in the registry.
             
             NOTE: does not draw the new inspector, this is the responsibility of the caller.
         """
         inspectorRegsitry = self.argosApplication.inspectorRegistry
-        try:
-            inspectorRegItem = inspectorRegsitry.getItemById(identifier)
-        except KeyError as ex:
-            logger.warn("No inspector with ID {!r}.: {}".format(identifier, ex))
-            inspectorRegItem = None
-            
+        inspectorRegItem = inspectorRegsitry.getItemById(identifier)
         self.setInspectorFromRegItem(inspectorRegItem)
         
         
@@ -394,8 +396,14 @@ class MainWindow(QtGui.QMainWindow):
         self.repoTreeView.readViewSettings('repo_tree/header_state', settings)
         self.configTreeView.readViewSettings('config_tree/header_state', settings)
         self._config.readModelSettings('config_model', settings)
-        
-        self.setInspectorById(settings.value("inspector", None))
+
+        identifier = settings.value("inspector", None)
+        try:
+            if identifier:
+                self.setInspectorById(identifier)
+        except KeyError as ex:
+            logger.warn("No inspector with ID {!r}.: {}".format(identifier, ex))
+            
         
 
     def saveProfile(self, settings=None):

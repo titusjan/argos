@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 def browse(fileNames = None, 
+           inspectorId=None, 
            profile=DEFAULT_PROFILE, 
            resetProfile=False, 
            resetAllProfiles=False, 
@@ -62,7 +63,7 @@ def browse(fileNames = None,
         __addTestData(argosApp)
     
     # Create windows for this profile.     
-    argosApp.loadProfile(profile=profile)
+    argosApp.loadProfile(profile=profile, inspectorId=inspectorId)
 
     return argosApp.execute()
 
@@ -119,7 +120,8 @@ class ArgosApplication(object):
         
         # Raising all window because in OS-X window 0 is not shown.
         #self.raiseAllWindows()
-        self.mainWindows[0].activateWindow() # also solves the issue
+        # activateWindow also solves the issue but doesn't work with the --inspector option.
+        self.mainWindows[0].activateWindow() 
         
         self.pluginsDialog.refresh()
         
@@ -216,8 +218,11 @@ class ArgosApplication(object):
             settings.remove(profGroupName)
         
         
-    def loadProfile(self, profile):
+    def loadProfile(self, profile, inspectorId=None):
         """ Reads the persistent program settings for the current profile.
+        
+            If inspectorId is given, a window with this inspector will be created if it wasn't
+            already created in the profile. All windows with this inspector will be raised.
         """ 
         settings = QtCore.QSettings()
         logger.info("Reading profile {!r} from: {}".format(profile, settings.fileName()))
@@ -238,9 +243,23 @@ class ArgosApplication(object):
         finally:
             settings.endGroup()
             
+        if inspectorId is not None:
+            windows = [win for win in self._mainWindows if win.inspectorId == inspectorId]
+            if len(windows) == 0:
+                logger.info("Creating window for inspector: {!r}".format(inspectorId))
+                try:
+                    win = self.addNewMainWindow(inspectorId=inspectorId)
+                except KeyError:
+                    logger.warn("No inspector found with ID: {}".format(inspectorId))
+            else:
+                for win in windows:
+                    win.raise_()
+            
         if len(self.mainWindows) == 0:
             logger.warn("No open windows in profile (creating one).")
-            self.addNewMainWindow(inspectorId='Qt/Table')
+            #self.addNewMainWindow(inspectorId='Qt/Table')
+            self.addNewMainWindow(inspectorId='Empty inspector')
+            
         
 
     def saveProfile(self):
@@ -301,9 +320,11 @@ class ArgosApplication(object):
             
     def addNewMainWindow(self, settings=None, inspectorId=None):
         """ Creates and shows a new MainWindow.
+        
+            If inspectorId is set, it will set the identifier from that ID.
+            If the inspector identifier is not found in the registry, a KeyError is raised.
         """
         mainWindow = MainWindow(self)
-        self.mainWindows.append(mainWindow)
         
         if settings:
             mainWindow.readViewSettings(settings)
@@ -311,6 +332,7 @@ class ArgosApplication(object):
         if inspectorId:
             mainWindow.setInspectorById(inspectorId)
             
+        self.mainWindows.append(mainWindow)
         mainWindow.drawWindowContents()
         mainWindow.show()
         
@@ -339,7 +361,7 @@ class ArgosApplication(object):
             logger.debug("Raising {}".format(mainWindow._instanceNr))
             mainWindow.raise_()
             
-    
+            
     def closeAllWindows(self):
         """ Closes all windows. Save windows state to persistent settings before closing them.
         """
