@@ -18,7 +18,7 @@
     This is part of the libargos.qt package since it uses QSettings for persistency. 
 """
 
-import logging, inspect, os, ast
+import logging, inspect, os, ast, sys
 
 from libargos.qt import QtCore
 from libargos.qt.misc import containsSettingsGroup, removeSettingsGroup
@@ -35,7 +35,7 @@ class ClassRegItem(object):
         must be unique and a fullClassName with name the class (inclusive package and module part).
         The underlying class is not imported by default; use tryImportClass or getClass() for this.
     """
-    def __init__(self, identifier, fullClassName):
+    def __init__(self, identifier, fullClassName, pythonPath=''):
         """ Constructor.
         
             :param identifier: identifier comprising of library and name, separated by a slash.
@@ -43,15 +43,18 @@ class ClassRegItem(object):
                 Must be unique when spaces are removed and converted to lower case. 
             :param fullClassName: full name of the underlying class. 
                 E.g.: 'libargos.plugins.rti.ncdf.NcdfFileInspector'
+            :param pythonPath: directory that will be added to the sys.path before importing.
+                Can be multiple directories separated by a colon (:)
         """
         check_is_a_string(fullClassName)
         self._identifier = identifier
         self._fullClassName = fullClassName
+        self._pythonPath = pythonPath        
+
         self._cls = None # The underlying class. Not yet imported.
         self._triedImport = False
         self._exception = None # Any exception that occurs during the class import
         
-
     def __repr__(self):
         return "<{} (Ox{:x}): {!r}>".format(type_name(self), id(self), self.identifier)
     
@@ -83,11 +86,12 @@ class ClassRegItem(object):
         """
         return self._fullClassName
 
-    @property
-    def className(self):
-        """ The name of the underlying class. Is the last part of the fullClassName.
-        """
-        return self.fullClassName.rsplit('.', 1)[1]
+#    TODO: not used, remove?
+#    @property
+#    def className(self):
+#        """ The name of the underlying class. Is the last part of the fullClassName.
+#        """
+#        return self.fullClassName.rsplit('.', 1)[1]
 
     @property
     def cls(self):
@@ -95,6 +99,15 @@ class ClassRegItem(object):
             Returns None if the class was not imported or import failed.
         """
         return self._cls
+
+    
+    @property
+    def pythonPath(self):
+        """ Directory that will be added to the sys.path before importing.
+            Can be multiple directories separated by a colon (:)
+        """
+        return self._pythonPath
+
     
     @property
     def docString(self):
@@ -149,6 +162,10 @@ class ClassRegItem(object):
         self._exception = None
         self._cls = None
         try:
+            for pyPath in self.pythonPath.split(':'):
+                if pyPath not in sys.path:
+                    logger.debug("Appending {!r} to the PythonPath.".format(pyPath))
+                    sys.path.append(pyPath)
             self._cls = import_symbol(self.fullClassName) # TODO: check class?
         except Exception as ex:
             self._exception = ex
@@ -173,7 +190,9 @@ class ClassRegItem(object):
         """ Returns a dictionary for serialization. We don't use JSON since all items are
             quite simple and the registry will always contain the same type of ClassRegItem
         """
-        return {'identifier': self.identifier, 'fullClassName': self.fullClassName}
+        return {'identifier': self.identifier, 
+                'fullClassName': self.fullClassName, 
+                'pythonPath': self.pythonPath}
 
 
 class ClassRegistry(object):

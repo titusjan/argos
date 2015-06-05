@@ -5,7 +5,8 @@ import sys
 # Uncomment the next line to run the example from within the distribution
 # sys.path.append("../../")
 
-import libargos, logging
+import os, logging
+import libargos
 from libargos.application import getQApplicationInstance
 from libargos.repo.registry import RtiRegistry
 
@@ -20,8 +21,12 @@ def main():
         rtiRegistry.deleteSettings()
     rtiRegistry.loadOrInitSettings()
     
-    rtiRegistry.registerRti('HDF File', 'libargos.repo.rtiplugins.hdf.NcdfFileRti', extensions=['.nc', '.h5'])
-    rtiRegistry.registerRti('SVG File', 'titusjan.svg.SvgFile', extensions=['.svg'])
+    currentDir = os.path.dirname(os.path.realpath(__file__))
+    logger.debug("current dir: {}".format(currentDir))
+
+    rtiRegistry.registerRti('Python File', 'test_plugin.TestFileRti', extensions=['.py'],  
+                             pythonPath=currentDir)
+    rtiRegistry.registerRti('SVG File', 'does_not_exist.svg.SvgFile', extensions=['.svg'])
     rtiRegistry.saveSettings()
     
 if __name__ == "__main__":

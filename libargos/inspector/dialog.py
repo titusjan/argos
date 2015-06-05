@@ -52,14 +52,11 @@ class OpenInspectorDialog(QtGui.QDialog):
         self.setModal(True)
         layout = QtGui.QVBoxLayout(self)
         
-        self.tabWidget = QtGui.QTabWidget()
-        layout.addWidget(self.tabWidget)
-        
         attrNames = ['name', 'library', 'nDims']
         headerSizes = [250, 250, None]
         
         self.inspectorTab = RegistryTab(registry, attrNames=attrNames, headerSizes=headerSizes)
-        self.tabWidget.addTab(self.inspectorTab, "Inspectors")
+        layout.addWidget(self.inspectorTab)
         
         # Buttons
         buttonBox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok |

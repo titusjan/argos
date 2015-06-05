@@ -163,11 +163,10 @@ class BaseRti(AbstractLazyLoadTreeItem):
         """
         return self._exception
     
-    # TODO: setter
+
     def setException(self, ex):
         """ Sets the exception attribute.
         """
-        logger.debug("!!!!!!!!!!!! setting exception to: {}".format(ex))
         self._exception = ex
 
         

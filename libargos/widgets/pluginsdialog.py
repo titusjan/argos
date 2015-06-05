@@ -175,8 +175,8 @@ class PluginsDialog(QtGui.QDialog):
         self.tabWidget = QtGui.QTabWidget()
         layout.addWidget(self.tabWidget)
         
-        attrNames = ['identifier', 'fullClassName'] 
-        headerSizes = [300, 300]
+        attrNames = ['identifier', 'fullClassName', 'pythonPath'] 
+        headerSizes = [200, 300, None]
         
         if inspectorRegistry:
             inspectorTab = RegistryTab(inspectorRegistry, 
@@ -193,7 +193,7 @@ class PluginsDialog(QtGui.QDialog):
         buttonBox.accepted.connect(self.accept)
         layout.addWidget(buttonBox)
         
-        self.resize(QtCore.QSize(800, 600))
+        self.resize(QtCore.QSize(1100, 700))
         
     
     def refresh(self):

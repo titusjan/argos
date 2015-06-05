@@ -30,10 +30,10 @@ class InspectorRegItem(ClassRegItem): # TODO: rename to InspectorRegItem? Inspec
         Has a create() method that functions as an Inspector factory.
     """
     
-    def __init__(self, identifier, fullClassName):
+    def __init__(self, identifier, fullClassName, pythonPath=''):
         """ Constructor. See the ClassRegItem class doc string for the parameter help.
         """
-        super(InspectorRegItem, self).__init__(identifier, fullClassName)
+        super(InspectorRegItem, self).__init__(identifier, fullClassName, pythonPath=pythonPath)
 
         
     @property
