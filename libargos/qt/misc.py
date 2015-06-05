@@ -49,11 +49,11 @@ def containsSettingsGroup(groupName, settings=None):
                 try:
                     return _containsPath(tail, settings)
                 finally:
-                    settings.beginGroup(head)
+                    settings.endGroup()
                     
     # Body starts here
     path = os.path.split(groupName)
     logger.debug("Looking for path: {}".format(path))
-    
+    settings = QtCore.QSettings() if settings is None else settings
     return _containsPath(path, settings)
 
