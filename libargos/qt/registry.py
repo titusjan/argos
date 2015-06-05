@@ -21,6 +21,7 @@
 import logging, inspect, os, ast
 
 from libargos.qt import QtCore
+from libargos.qt.misc import containsSettingsGroup, removeSettingsGroup
 from libargos.utils.cls import import_symbol, check_is_a_string, type_name, check_class
 
 logger = logging.getLogger(__name__)
@@ -255,14 +256,19 @@ class ClassRegistry(object):
         """ 
         groupName = groupName if groupName else self.settingsGroupName
         settings = QtCore.QSettings()
+
+        #for key in sorted(settings.allKeys()):
+        #    print(key)
         
-        if settings.contains(groupName):
+        if containsSettingsGroup(groupName, settings):
             self.loadSettings(groupName)
         else:
             logger.info("Group {!r} not found, falling back on default settings".format(groupName))
             for item in self.getDefaultItems():
                 self.registerItem(item)
             self.saveSettings(groupName)
+            assert containsSettingsGroup(groupName, settings), \
+                "Sanity check failed. {} not found".format(groupName)
 
 
     def loadSettings(self, groupName=None):
@@ -300,6 +306,15 @@ class ClassRegistry(object):
                 settings.setValue(key, value)
         finally:
             settings.endGroup()
+            
+                                
+    def deleteSettings(self, groupName=None):
+        """ Deletes registry items from the persistent store.
+        """
+        groupName = groupName if groupName else self.settingsGroupName
+        settings = QtCore.QSettings()
+        logger.info("Deleting {} from: {}".format(groupName, settings.fileName()))        
+        removeSettingsGroup(groupName)            
             
             
     def getDefaultItems(self):

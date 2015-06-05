@@ -45,9 +45,9 @@ def python2():
     
 
 def configBasicLogging(level = 'DEBUG'):
-    """ Setup basic config logging. Useful for debugging to quickly setup a useful logger.
+    """ Setup basic config logging.
     """
-    fmt = '%(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s'
+    fmt = '%(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s'
     logging.basicConfig(level=level, format=fmt)
 
 

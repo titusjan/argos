@@ -17,16 +17,43 @@
 
 """ Miscellaneous Qt routines.
 """
-import logging
+import logging, os
 logger = logging.getLogger(__name__)
     
 from libargos.qt import QtCore
 
 
-def removeSettingsGroup(groupName):
+def removeSettingsGroup(groupName, settings=None):
     """ Removes a group from the persistent settings
     """
     logger.debug("Removing settings group: {}".format(groupName))
-    settings = QtCore.QSettings()
+    settings = QtCore.QSettings() if settings is None else settings
     settings.remove(groupName)
+       
         
+def containsSettingsGroup(groupName, settings=None):
+    """ Returns True if the settings contain a group with the name groupName.
+        Works recursively when the groupName is a slash separated path.
+    """
+    def _containsPath(path, settings):
+        "Aux function for containsSettingsGroup. Does the actual recursive search."
+        if len(path) == 0:
+            return True
+        else:
+            head = path[0]
+            tail = path[1:]
+            if head not in settings.childGroups():
+                return False
+            else:
+                settings.beginGroup(head)
+                try:
+                    return _containsPath(tail, settings)
+                finally:
+                    settings.beginGroup(head)
+                    
+    # Body starts here
+    path = os.path.split(groupName)
+    logger.debug("Looking for path: {}".format(path))
+    
+    return _containsPath(path, settings)
+

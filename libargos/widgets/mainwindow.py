@@ -178,14 +178,13 @@ class MainWindow(QtGui.QMainWindow):
         
         openAsMenu = fileMenu.addMenu("Open As")
         for rtiRegItem in self.argosApplication.rtiRegistry.items:
-            
+            rtiRegItem.tryImportClass()   
             def createTrigger():
                 "Function to create a closure with the regItem"
                 _rtiRegItem = rtiRegItem # keep reference in closure
                 return lambda: self.openFiles(rtiRegItem=_rtiRegItem, 
                                               fileMode = QtGui.QFileDialog.ExistingFiles, 
                                               caption="Open {}".format(_rtiRegItem.name))
-                
             action = QtGui.QAction("{}...".format(rtiRegItem.name), self,
                 enabled=rtiRegItem.successfullyImported, 
                 triggered=createTrigger())

@@ -18,7 +18,7 @@
 """
 
 import logging
-from libargos.utils.cls import check_is_a_string, check_class
+from libargos.utils.cls import check_is_a_string, check_class, check_is_a_sequence
 from libargos.utils.misc import prepend_point_to_extension
 from libargos.qt.registry import ClassRegItem, ClassRegistry
 
@@ -109,6 +109,7 @@ class RtiRegistry(ClassRegistry):
         """ Class that maintains the collection of registered inspector classes.
             Maintains a lit of file extensions that open the RTI by default. 
         """
+        check_is_a_sequence(extensions)
         extensions = extensions if extensions is not None else []
         extensions = [prepend_point_to_extension(ext) for ext in extensions]
 
