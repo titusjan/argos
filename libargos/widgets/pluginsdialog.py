@@ -41,10 +41,15 @@ class RegistryTab(QtGui.QWidget):
             This is done so that error information can be displayed when import was unsuccessful.
     """
     def __init__(self, registry, parent=None, 
-                 attrNames=None, headerNames=None, headerSizes=None):
-        """ Constructor
+                 attrNames=None, headerNames=None, headerSizes=None, 
+                 onlyShowImported=False):
+        """ Constructor.
+        
+            If onlyShowImported == True, regItems that are not (successfully) imported are 
+            filtered from the table.
         """
         super(RegistryTab, self).__init__(parent=parent)
+        self._onlyShowImported = onlyShowImported
         self._registry = registry
         
         attrNames = [] if attrNames is None else attrNames
@@ -62,8 +67,7 @@ class RegistryTab(QtGui.QWidget):
         
         # Table
         self.tableModel = RegistryTableModel(self._registry, attrNames=attrNames, parent=self)
-        self.table = RegistryTableView(self.tableModel)
-        self.table.sortByColumn(1, Qt.AscendingOrder) # Sort by library by default.
+        self.table = RegistryTableView(self.tableModel, onlyShowImported=self.onlyShowImported)
         
         tableHeader = self.table.horizontalHeader()
         for col, headerSize in enumerate(headerSizes):
@@ -96,6 +100,12 @@ class RegistryTab(QtGui.QWidget):
         
 
     @property
+    def onlyShowImported(self):
+        "If True, regItems that are not (successfully) imported are filtered from in the table"
+        return self._onlyShowImported
+            
+
+    @property
     def registeredItems(self):
         "Returns the items from the registry"
         return self._registry.items
@@ -104,10 +114,17 @@ class RegistryTab(QtGui.QWidget):
     def tryImportAllPlugins(self):
         """ Tries to import all underlying plugin classes
         """ 
-        # TODO: update table when importing
-        for regItem in self.registeredItems:
-            if not regItem.triedImport:
-                regItem.tryImportClass()
+        logger.debug("Importing all plugins in the table.")
+        
+        self.tableModel.beginResetModel()
+        try:
+            for regItem in self.registeredItems:
+                if not regItem.triedImport:
+                    regItem.tryImportClass()
+        finally:
+            self.tableModel.endResetModel()
+            
+        logger.debug("DOOOOOOONE Importing all plugins in the table.")            
             
     
     def getCurrentRegItem(self):
@@ -188,6 +205,10 @@ class PluginsDialog(QtGui.QDialog):
                                  attrNames=attrNames, headerSizes=headerSizes)
             self.tabWidget.addTab(rtiTab, "File Formats")     
 
+        # Sort by identifier by default.
+        for tabNr in range(self.tabWidget.count()):
+            self.tabWidget.widget(tabNr).table.sortByColumn(0, Qt.AscendingOrder) 
+
         # Buttons
         buttonBox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok)
         buttonBox.accepted.connect(self.accept)
@@ -196,11 +217,12 @@ class PluginsDialog(QtGui.QDialog):
         self.resize(QtCore.QSize(1100, 700))
         
     
-    def refresh(self):
-        """ Refreshes the tables of all tables by resetting the underlying models
+    def tryImportAllPlugins(self):
+        """ Refreshes the tables of all tables by importing the underlying classes
         """
         logger.debug("Resetting: {}".format(self))
         for tabNr in range(self.tabWidget.count()):
             tab = self.tabWidget.widget(tabNr)
-            tab.tableModel.reset()
-        
+            tab.tryImportAllPlugins()
+            
+            

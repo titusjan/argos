@@ -163,7 +163,7 @@ class ClassRegItem(object):
         self._cls = None
         try:
             for pyPath in self.pythonPath.split(':'):
-                if pyPath not in sys.path:
+                if pyPath and pyPath not in sys.path:
                     logger.debug("Appending {!r} to the PythonPath.".format(pyPath))
                     sys.path.append(pyPath)
             self._cls = import_symbol(self.fullClassName) # TODO: check class?

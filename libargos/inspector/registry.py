@@ -48,12 +48,15 @@ class InspectorRegItem(ClassRegItem): # TODO: rename to InspectorRegItem? Inspec
         """
         return len(self.axesNames)
     
-    def create(self, collector):
+    
+    def create(self, collector, tryImport=True):
         """ Creates an inspector of the registered and passes the collector to the constructor.
+            Tries to import the class if tryImport is True.
+            Raises ImportError if the class could not be imported.
         """
-        cls = self.getClass()
-        assert self.successfullyImported, \
-            "Class not successfully imported: {}".format(self.exception)
+        cls = self.getClass(tryImport=tryImport)
+        if not self.successfullyImported:
+            raise ImportError("Class not successfully imported: {}".format(self.exception))
         return cls(collector)
 
 
@@ -68,10 +71,10 @@ class InspectorRegistry(ClassRegistry):
         self._itemClass = InspectorRegItem
             
             
-    def registerInspector(self, identifier, fullClassName):
+    def registerInspector(self, identifier, fullClassName, pythonPath=''):
         """ Registers an Inspector class.
         """
-        regInspector = InspectorRegItem(identifier, fullClassName)
+        regInspector = InspectorRegItem(identifier, fullClassName, pythonPath=pythonPath)
         self.registerItem(regInspector)
 
     

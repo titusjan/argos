@@ -138,7 +138,7 @@ class ArgosApplication(object):
         # activateWindow also solves the issue but doesn't work with the --inspector option.
         self.mainWindows[0].activateWindow() 
         
-        self.pluginsDialog.refresh()
+        self.pluginsDialog.tryImportAllPlugins()
         
         
     @property

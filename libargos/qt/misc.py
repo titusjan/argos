@@ -22,8 +22,6 @@ import sys, logging, os, traceback
 
 from libargos import info
 
-from libargos.utils.cls import check_class
-
 logger = logging.getLogger(__name__)
                 
 #########################

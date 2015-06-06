@@ -285,30 +285,41 @@ class MainWindow(QtGui.QMainWindow):
         
     def setInspectorFromRegItem(self, inspectorRegItem):
         """ Sets the central inspector widget given a inspectorRegItem.
-            If inspectorRegItem is None, the inspector will be unset. 
+            
+            If inspectorRegItem is None, the inspector will be unset. Also, if the underlying class 
+            cannot be imported a warning is logged and the inspector is unset.
+              
             NOTE: does not draw the new inspector, this is the responsibility of the caller.
         """
         check_class(inspectorRegItem, InspectorRegItem, allow_none=True)
         self.setUpdatesEnabled(False)
         try:
             centralLayout = self.centralWidget().layout()
-            logger.debug("centralLayout: {} (count={})".format(centralLayout, centralLayout.count()))
+            logger.debug("centralLayout: {} (count={})"
+                         .format(centralLayout, centralLayout.count()))
             
+            # Delete old inspector
             if self.inspector is not None: # can be None at start-up
                 self.inspector.finalize()
                 centralLayout.removeWidget(self.inspector)
                 self.inspector.deleteLater()
                 
             self._inspectorRegItem = inspectorRegItem
-            if inspectorRegItem:
-                self._inspector = inspectorRegItem.create(self.collector)
-                inspectorType = type(self._inspector)
-                logger.debug("axes names: {}".format(self._inspector.axesNames()))
-                self.collector.clearAndSetComboBoxes(inspectorType.fullAxesNames())
-                centralLayout.addWidget(self.inspector)
-            else:
+            if inspectorRegItem is None:
                 self._inspector = None
+            else:
+                try:
+                    self._inspector = inspectorRegItem.create(self.collector, tryImport=True)
+                except ImportError as ex:
+                    logger.warn("Clearing inspector. Unable to create {!r} because {}"
+                                .format(inspectorRegItem.identifier, ex))
+                    self._inspector = None
+                
+            if self.inspector is None:
                 self.collector.clearAndSetComboBoxes([])
+            else:
+                self.collector.clearAndSetComboBoxes(self.inspector.axesNames())
+                centralLayout.addWidget(self.inspector)
             
         finally:
             self.setUpdatesEnabled(True)

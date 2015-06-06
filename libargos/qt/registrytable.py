@@ -125,9 +125,29 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
         
     
 class RegistryTableProxModel(QtGui.QSortFilterProxyModel):
-    """ Proxy model that overrides the sorting.
-        Needed to use the StatsTableModel.SORT_ROLE.
+    """ Proxy model that overrides the sorting and can filter out regItems that are not imported.
     """
+    def __init__(self, onlyShowImported=False, parent=None):
+        """ Constructor.
+            :param onlyShowImported: If true, only regItems that were successfully imported are 
+                displayed. Default is False.
+            :param parent: parent widget
+        """
+        super(RegistryTableProxModel, self).__init__(parent=parent)
+        self.onlyShowImported = onlyShowImported
+        
+    
+    def filterAcceptsRow(self, sourceRow, sourceParent):
+        """ If onlyShowImported is True, regItems that were not (successfully) imported are 
+            filtered out.
+        """
+        if not self.onlyShowImported:
+            return True
+        
+        item = self.sourceModel().registry.items[sourceRow]
+        return bool(item.successfullyImported)
+    
+    
     def lessThan(self, leftIndex, rightIndex):
         """ Returns true if the value of the item referred to by the given index left is less than 
             the value of the item referred to by the given index right, otherwise returns false.
@@ -143,11 +163,17 @@ class RegistryTableView(ToggleColumnTableView):
         Uses QSortFilterProxyModel as a wrapper over the model.
         Will wrap a QSortFilterProxyModel over the RegistryTableModel model to enable sorting.
     """
-    def __init__(self, model=None, parent=None):
+    def __init__(self, model=None, onlyShowImported=False, parent=None):
         """ Constructor
+
+            :param model: a RegistryTableModel that maps the regItems
+            :param onlyShowImported: If True, regItems that are not (successfully) imported are
+                filtered from the table. 
+            :param parent: the parent widget
         """
         super(RegistryTableView, self).__init__(parent)
         
+        self._onlyShowImported = onlyShowImported
         if model is not None:
             self.setModel(model)
             
@@ -169,6 +195,11 @@ class RegistryTableView(ToggleColumnTableView):
         tableHeader.setStretchLastSection(True)
 
 
+    @property
+    def onlyShowImported(self):
+        "If True, regItems that are not (successfully) imported are filtered from the table"
+        return self._onlyShowImported
+
     def setModel(self, model):
         """ Wraps a QSortFilterProxyModel over the RegistryTableModel model to enable sorting.
         """
@@ -177,7 +208,8 @@ class RegistryTableView(ToggleColumnTableView):
         assert self.model() is None, "Model already defined"
         
         check_class(model, RegistryTableModel)
-        proxyTableModel = RegistryTableProxModel(parent=self)
+        proxyTableModel = RegistryTableProxModel(parent=self, 
+                                                 onlyShowImported=self._onlyShowImported)
         proxyTableModel.setSourceModel(model)
         proxyTableModel.setSortRole(RegistryTableModel.SORT_ROLE)
         proxyTableModel.setDynamicSortFilter(True) 

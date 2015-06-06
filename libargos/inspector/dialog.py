@@ -21,7 +21,7 @@ from __future__ import print_function
 
 import logging
 
-from libargos.qt import QtCore, QtGui
+from libargos.qt import Qt, QtCore, QtGui
 from libargos.inspector.registry import InspectorRegItem
 from libargos.utils.cls import check_class
 from libargos.widgets.pluginsdialog import RegistryTab
@@ -55,7 +55,9 @@ class OpenInspectorDialog(QtGui.QDialog):
         attrNames = ['name', 'library', 'nDims']
         headerSizes = [250, 250, None]
         
-        self.inspectorTab = RegistryTab(registry, attrNames=attrNames, headerSizes=headerSizes)
+        self.inspectorTab = RegistryTab(registry, attrNames=attrNames, headerSizes=headerSizes, 
+                                        onlyShowImported=True)
+        self.inspectorTab.table.sortByColumn(1, Qt.AscendingOrder) # sort by library
         layout.addWidget(self.inspectorTab)
         
         # Buttons
