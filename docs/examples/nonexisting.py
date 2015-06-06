@@ -7,14 +7,14 @@ import sys
 
 import os, logging
 import libargos
-from libargos.application import getQApplicationInstance
+from libargos.qt import initQCoreApplication
 from libargos.repo.registry import RtiRegistry
 
 logger = logging.getLogger('libargos')
  
 def main():
     # Important: instantiate a Qt application first to use the correct settings file/winreg. 
-    _app = getQApplicationInstance()
+    _app = initQCoreApplication()
     
     rtiRegistry = RtiRegistry()
     if '--reset-registry' in sys.argv:

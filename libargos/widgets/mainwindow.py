@@ -450,7 +450,7 @@ class MainWindow(QtGui.QMainWindow):
         """ Function for testing """
         logger.debug("myTest for window: {}".format(self._instanceNr))
         
-        from libargos.qt import printChildren
+        from libargos.qt.misc import printChildren
         printChildren(self.centralWidget())
         print()
         print()

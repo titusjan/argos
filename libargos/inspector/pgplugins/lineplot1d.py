@@ -17,12 +17,13 @@
 
 """ PyQtGraph 1D line plot
 """
+from __future__ import division, print_function
+
 import logging
+import pyqtgraph as pg
+#from pyqtgraph.Qt import QtGui
 
 from libargos.inspector.abstract import AbstractInspector
-
-import pyqtgraph as pg
-from pyqtgraph.Qt import QtGui
 
 
 logger = logging.getLogger(__name__)

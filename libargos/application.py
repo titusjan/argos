@@ -17,12 +17,12 @@
 
 """ Version and other info for this program
 """
-import logging, platform
+import sys, logging, platform
 
 from libargos.info import DEBUGGING, DEFAULT_PROFILE
 from libargos.inspector.registry import InspectorRegistry
-from libargos.qt import getQApplicationInstance, QtCore
-from libargos.qt.misc import removeSettingsGroup
+from libargos.qt import QtCore
+from libargos.qt.misc import removeSettingsGroup, handleException, initQApplication
 from libargos.qt.registry import GRP_REGISTRY
 from libargos.repo.repotreemodel import RepoTreeModel
 from libargos.repo.registry import globalRtiRegistry
@@ -55,7 +55,7 @@ def browse(fileNames = None,
     if resetRegistry:
         argosApp.deleteRegistries()
 
-    # Must be called before opening the files.
+    # Must be called before opening the files so that file format are auto-detected.
     argosApp.loadOrInitRegistries()
         
     # Load data in common repository before windows are created.
@@ -88,12 +88,26 @@ def __addTestData(argosApp):
 class ArgosApplication(object):
     """ The application singleton which holds global state.
     """
-    def __init__(self):
+    def __init__(self, setExceptHook=True):
         """ Constructor
+        
+            :param setExceptHook: Sets the global sys.except hook so that Qt shows a dialog box 
+                when an exception is raised.
+    
+                In debugging mode, the program will just quit in case of an exception. This is 
+                standard Python behavior but PyQt and PySide swallow exceptions by default (only a 
+                log message is displayed). The practice of swallowing exceptions fosters bad 
+                programming IHMO as it is easy to miss errors. I strongly recommend that you set
+                the setExceptHook to True.
         """
-        # Call getQApplicationInstance() so that the users can call libargos.browse without 
+        # Call initQtGuiApplicationInstance() so that the users can call libargos.browse without 
         # having to call it themselves.
-        self._qApplication = getQApplicationInstance()
+        self._qApplication = initQApplication()
+        
+        if setExceptHook:
+            logger.debug("Setting sys.excepthook to Argos exception handling")
+            sys.excepthook = handleException
+        
         #self.qApplication.focusChanged.connect(self.focusChanged) # for debugging
         
         self._repo = RepoTreeModel()

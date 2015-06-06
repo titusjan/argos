@@ -20,8 +20,8 @@ from __future__ import print_function
 
 import logging
 from libargos.config.abstractcti import InvalidInputError
-from libargos.qt import Qt,  QtGui, widgetSubCheckBoxRect
-
+from libargos.qt import Qt,  QtGui
+from libargos.qt.misc import widgetSubCheckBoxRect
 
 logger = logging.getLogger(__name__)
 
