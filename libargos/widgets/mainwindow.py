@@ -302,9 +302,13 @@ class MainWindow(QtGui.QMainWindow):
             self._inspectorRegItem = inspectorRegItem
             if inspectorRegItem:
                 self._inspector = inspectorRegItem.create(self.collector)
+                inspectorType = type(self._inspector)
+                logger.debug("axes names: {}".format(self._inspector.axesNames()))
+                self.collector.clearAndSetComboBoxes(inspectorType.fullAxesNames())
                 centralLayout.addWidget(self.inspector)
             else:
                 self._inspector = None
+                self.collector.clearAndSetComboBoxes([])
             
         finally:
             self.setUpdatesEnabled(True)

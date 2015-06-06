@@ -15,45 +15,50 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Empty inspector.
+""" PyQtGraph 1D line plot
 """
 import logging
 
-from libargos.info import DEBUGGING
 from libargos.inspector.abstract import AbstractInspector
-from libargos.qt import QtGui
+
+import pyqtgraph as pg
+from pyqtgraph.Qt import QtGui
+
 
 logger = logging.getLogger(__name__)
 
 
-class EmptyInspector(AbstractInspector):
-    """ Empty inspector, mainly for debugging purposes.
-    
-        Displays the shape of the selected array if Argos is in debugging mode, otherwise
-        the widget is empty.
+class PgLinePlot1d(AbstractInspector):
+    """ Inspector that contains a PyQtGraph 1-dimensional line plot
     """
+    
     def __init__(self, collector, parent=None):
+        """ Constructor. See AbstractInspector constructor for parameters.
+        """
+        super(PgLinePlot1d, self).__init__(collector, parent=parent)
         
-        super(EmptyInspector, self).__init__(collector, parent=parent)
+        self.plotWidget = pg.PlotWidget(name='main_plot') 
+        self.contentsLayout.addWidget(self.plotWidget)
         
-        self.label = QtGui.QLabel()
-        self.contentsLayout.addWidget(self.label)
+        self.plotDataItem = self.plotWidget.plot()
+        self.plotDataItem.setPen((200,200,100)) # QPen
         
+        
+    @classmethod
+    def axesNames(cls):
+        """ The names of the axes that this inspector visualizes.
+            See the parent class documentation for a more detailed explanation.
+        """
+        return tuple(['Y'])
+            
 
     def _drawContents(self):
         """ Draws the inspector widget when no input is available.
             The default implementation shows an error message. Descendants should override this.
         """
-        logger.debug("EmptyInspector._drawContents: {}".format(self))
-        
         slicedArray = self.collector.getSlicedArray()
+        
         if slicedArray is None:
-            text = "<None>"
+            self.plotDataItem.setData([])
         else:
-            text = str(slicedArray.shape)
-        
-        logger.debug("_drawContents: {}".format(text))
-        
-        if DEBUGGING:
-            self.label.setText(text)
-
+            self.plotDataItem.setData(slicedArray)

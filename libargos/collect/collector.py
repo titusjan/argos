@@ -77,7 +77,7 @@ class Collector(QtGui.QWidget):
         self.buttonLayout.addStretch(stretch=1)
         self.layout.addLayout(self.buttonLayout, stretch=0)
                 
-        self.clearAndSetComboBoxes(['X-Axis', 'Y-Axis'])
+        #self.clearAndSetComboBoxes([])
         
         
     def sizeHint(self):
@@ -136,12 +136,14 @@ class Collector(QtGui.QWidget):
     def clearAndSetComboBoxes(self, comboLabels):
         """ Removes all VisItems before setting the new degree.
         """
+        logger.debug("Collector clearAndSetComboBoxes: {}".format(comboLabels))
         check_is_a_sequence(comboLabels)
         row = 0
         self._deleteComboBoxes(row)
         self.clear()
         self._setComboLabels(comboLabels)
         self._createComboBoxes(row)
+        self._updateWidgets()
 
 
     def _setComboLabels(self, comboLabels):
@@ -172,28 +174,34 @@ class Collector(QtGui.QWidget):
     def setRti(self, rti):
         """ Updates the current VisItem from the contents of the repo tree item.
         
-            Is a slot but the signal is usually connected to the Collector, which then call
+            Is a slot but the signal is usually connected to the Collector, which then calls
             this function directly.
         """
         check_class(rti, BaseRti)
         #assert rti.asArray is not None, "rti must have array" # TODO: maybe later
         
         self._rti = rti
+        self._updateWidgets()
         
+        
+    def _updateWidgets(self):
+        """ Updates the combo and spin boxes given the new rti or axes.
+            Emits the contentsChanged signal.
+        """
         row = 0
         model = self.tree.model()
-
-        self._deleteSpinBoxes(row)
         
         # Create path label
-        pathItem = QtGui.QStandardItem(rti.nodePath)
+        nodePath = '' if self.rti is None else self.rti.nodePath
+        pathItem = QtGui.QStandardItem(nodePath)
         pathItem.setEditable(False)
         model.setItem(row, 0, pathItem)
         
+        self._deleteSpinBoxes(row)
         self._populateComboBoxes(row)
         self._createSpinBoxes(row)
     
-        logging.debug("Emitting contentsChanged signal (rti changed)")
+        logging.debug("Emitting contentsChanged signal (_updateWidgets)")
         self.contentsChanged.emit()
         
                 
@@ -223,14 +231,14 @@ class Collector(QtGui.QWidget):
         model = self.tree.model()
         
         for col in range(self.COL_FIRST_COMBO, self.maxCombos):
-            logger.debug("Removing combobox at: {}, {}".format(row, col))
+            logger.debug("Removing combobox at: ({}, {})".format(row, col))
             tree.setIndexWidget(model.index(row, col), None)
                      
         self._comboBoxes = []
             
 
     def _populateComboBoxes(self, row):
-        """ Populates the comboboxes with values of the repo tree item
+        """ Populates the combo boxes with values of the repo tree item
         """
         logger.debug("_populateComboBoxes")
         for comboBox in self._comboBoxes:
@@ -383,7 +391,7 @@ class Collector(QtGui.QWidget):
             :returns: Numpy array with the same number of dimension as the number of 
                 comboboxes; returns None if no slice can be made.
         """
-        logging.debug("getSlicedArray")
+        logging.debug("getSlicedArray() called")
 
         if self.rti is None or self.rti.asArray is None:
             return None  
@@ -405,6 +413,8 @@ class Collector(QtGui.QWidget):
         for dimNr in range(slicedArray.ndim, self.maxCombos):
             logger.debug("Adding fake dimension: {}".format(dimNr))
             slicedArray = np.expand_dims(slicedArray, dimNr)
+        
+        logging.debug("slicedArray.shape: {}".format(slicedArray.shape))
         
         # Shuffle the dimensions to be in the order as specified by the combo boxes    
         comboDims = [self._comboBoxDimensionIndex(cb) for cb in self._comboBoxes]

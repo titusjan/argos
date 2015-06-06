@@ -79,6 +79,8 @@ class InspectorRegistry(ClassRegistry):
         """ Returns a list with the default plugins in the inspector registry.
         """
         return [    
-            InspectorRegItem('Empty inspector', 'libargos.inspector.empty.EmptyInspector'), 
-            InspectorRegItem('Qt/Table', 'libargos.inspector.table.TableInspector')]
-
+            InspectorRegItem('Empty Inspector', 'libargos.inspector.empty.EmptyInspector'), 
+            InspectorRegItem('Qt/Table', 'libargos.inspector.table.TableInspector'), 
+            InspectorRegItem('PyQtGraph/1D Line Plot', 
+                             'libargos.inspector.pgplugins.lineplot1d.PgLinePlot1d')]
+            

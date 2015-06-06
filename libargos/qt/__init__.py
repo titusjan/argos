@@ -82,6 +82,12 @@ def printAllWidgets(qApplication, ofType=None):
 def getQApplicationInstance():
     """ Returns the QApplication instance. Creates one if it doesn't exist.
     """
+    # PyQtGraph requires raster graphics system.
+    #graphicsSystem = "raster" # raster, native or opengl
+    graphicsSystem = "raster"
+    logger.info("Setting Qt graphics system to: {}".format(graphicsSystem))
+    QtGui.QApplication.setGraphicsSystem(graphicsSystem)
+    
     app = QtGui.QApplication.instance()
 
     if app is None:

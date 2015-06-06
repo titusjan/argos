@@ -37,6 +37,10 @@ class AbstractInspector(QtGui.QStackedWidget):
     CONTENTS_PAGE_IDX = 1
     
     def __init__(self, collector, parent=None):
+        """ Constructor
+            :param collector: the data collector from where this inspector gets its data
+            :param parent: parent widget.
+        """
         
         super(AbstractInspector, self).__init__(parent)
         
@@ -90,7 +94,7 @@ class AbstractInspector(QtGui.QStackedWidget):
             Descendants do not need to override this method but should override axesNames instead.
             See also the axesNames documentation.
         """
-        return tuple(axisName + '-Axis' for axisName in cls.axesNames)
+        return tuple(axisName + '-Axis' for axisName in cls.axesNames())
     
     @property
     def collector(self):
