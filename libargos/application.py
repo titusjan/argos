@@ -23,6 +23,7 @@ from libargos.info import DEBUGGING, DEFAULT_PROFILE
 from libargos.inspector.registry import InspectorRegistry
 from libargos.qt import getQApplicationInstance, QtCore
 from libargos.qt.misc import removeSettingsGroup
+from libargos.qt.registry import GRP_REGISTRY
 from libargos.repo.repotreemodel import RepoTreeModel
 from libargos.repo.registry import globalRtiRegistry
 from libargos.utils.misc import string_to_identifier
@@ -174,7 +175,7 @@ class ArgosApplication(object):
     def deleteRegistries(self):
         """ Deletes all registry information from the persistent store.
         """
-        removeSettingsGroup(self.GRP_REGISTRY)
+        removeSettingsGroup(GRP_REGISTRY)
                                 
 
     def loadOrInitRegistries(self):
