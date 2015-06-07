@@ -33,7 +33,13 @@ GRP_REGISTRY = 'registry'
 class ClassRegItem(object):
     """ Represents an class that is registered in the registry. Each class has an identifier that
         must be unique and a fullClassName with name the class (inclusive package and module part).
-        The underlying class is not imported by default; use tryImportClass or getClass() for this.
+        
+        Each registry item (RegItem) can import its class. If the import fails, the exception info 
+        is put into the exception property. The underlying class is not imported by default; 
+        use tryImportClass or getClass() for this.
+        
+        Some of the underlying class's attributes, such as the docstring, are made available as 
+        properties of the RegItem as well.
     """
     def __init__(self, identifier, fullClassName, pythonPath=''):
         """ Constructor.
@@ -195,19 +201,22 @@ class ClassRegItem(object):
                 'pythonPath': self.pythonPath}
 
 
+# TODO: Each class has an identifier that must be unique in lower-case with spaces are removed?
 class ClassRegistry(object):
-    """ Class that maintains the collection of registered classes.
-        Each class has an identifier that must be unique in lower-case with spaces are removed.
+    """ Class that maintains the collection of registered classes (plugins).
+        
+        It can load or store its classes in the persistent QSettings. It can also create a default
+        set of plugins that can be used initially, the first time the program is executed.
         
         The ClassRegistry can only store items of one type (ClassRegItem). Descendants will
         store their own type. For instance the InspectorRegistry will store InspectorRegItem 
         items. This makes serialization easier.
-        
-        An optional QSettings group name can be specified so that the registry knows where to 
-        load/store its settings. This can also be specified with the method parameters.
     """
     def __init__(self, settingsGroupName=None):
         """ Constructor
+        
+            An optional QSettings group name can be specified so that the registry knows where to 
+            load/store its settings. This can also be specified with the method parameters.
         """
         self.settingsGroupName = settingsGroupName
         
@@ -274,8 +283,7 @@ class ClassRegistry(object):
 
     def loadOrInitSettings(self, groupName=None):
         """ Reads the registry items from the persistent settings store, falls back on the 
-            default plugins if there are not settings in the store for this registry.
-            It there 
+            default plugins if there are no settings in the store for this registry.
         """ 
         groupName = groupName if groupName else self.settingsGroupName
         settings = QtCore.QSettings()

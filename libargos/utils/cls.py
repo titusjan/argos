@@ -149,7 +149,7 @@ def import_symbol(full_symbol_name):
         module_name, symbol_name = parts
         module_name = str(module_name) # convert from possible unicode
         symbol_name = str(symbol_name)
-        logger.debug("From module {} importing {!r}".format(module_name, symbol_name))
+        #logger.debug("From module {} importing {!r}".format(module_name, symbol_name))
         module = __import__(module_name, fromlist=[symbol_name])
         cls = getattr(module, symbol_name)
         return cls

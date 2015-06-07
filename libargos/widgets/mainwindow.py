@@ -292,6 +292,8 @@ class MainWindow(QtGui.QMainWindow):
             NOTE: does not draw the new inspector, this is the responsibility of the caller.
         """
         check_class(inspectorRegItem, InspectorRegItem, allow_none=True)
+        
+        logger.debug("setInspectorFromRegItem: {}. Disabling updates.".format(inspectorRegItem))
         self.setUpdatesEnabled(False)
         try:
             centralLayout = self.centralWidget().layout()
@@ -322,6 +324,7 @@ class MainWindow(QtGui.QMainWindow):
                 centralLayout.addWidget(self.inspector)
             
         finally:
+            logger.debug("setInspectorFromRegItem: {}. Enabling updates.".format(inspectorRegItem))
             self.setUpdatesEnabled(True)
 
         
@@ -347,13 +350,14 @@ class MainWindow(QtGui.QMainWindow):
     def collectorContentsChanged(self):
         """ Slot that updates the UI whenever the contents of the collector has changed. 
         """
+        logger.debug("collectorContentsChanged()")
         self.drawWindowContents()
         
             
     def drawWindowContents(self):
         """ Draws all contents of this windows inspector. This includes the inspector.
         """
-        logger.debug("drawing contents of: {}".format(self.windowTitle()))
+        logger.debug("#### Drawing window contents: {} ####".format(self.windowTitle()))
         if self.inspector:
             self.inspector.draw()
     

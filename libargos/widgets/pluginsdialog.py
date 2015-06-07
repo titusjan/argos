@@ -114,7 +114,7 @@ class RegistryTab(QtGui.QWidget):
     def tryImportAllPlugins(self):
         """ Tries to import all underlying plugin classes
         """ 
-        logger.debug("Importing all plugins in the table.")
+        logger.debug("Importing all plugins in the registry: {}".format(self._registry))
         
         self.tableModel.beginResetModel()
         try:
@@ -124,7 +124,7 @@ class RegistryTab(QtGui.QWidget):
         finally:
             self.tableModel.endResetModel()
             
-        logger.debug("DOOOOOOONE Importing all plugins in the table.")            
+        logger.debug("Importing finished.")            
             
     
     def getCurrentRegItem(self):
@@ -151,8 +151,7 @@ class RegistryTab(QtGui.QWidget):
         self.editor.setTextColor(QCOLOR_REGULAR)
         
         regItem = self.getCurrentRegItem()
-        logger.debug("Selected {}".format(regItem))
-        
+
         if regItem is None:
             return
         
