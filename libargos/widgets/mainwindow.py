@@ -74,8 +74,8 @@ class MainWindow(QtGui.QMainWindow):
         self.setUnifiedTitleAndToolBarOnMac(True)
         #self.setDocumentMode(True) # Look of tabs as Safari on OS-X (disabled, ugly)
         self.resize(1300, 700)  # Assumes minimal resolution of 1366 x 768
-        self.setWindowTitle("{}-{} (#{})".format(PROJECT_NAME, self.argosApplication.profile, 
-                                                 self._instanceNr))
+        self.setWindowTitle(self.constructWindowTitle())
+
         self.__setupViews()
         self.__setupMenu()
         self.__setupDockWidgets()
@@ -124,7 +124,7 @@ class MainWindow(QtGui.QMainWindow):
         """
         return self._argosApplication
 
-
+        
     def __setupViews(self):
         """ Creates the UI widgets. 
         """
@@ -272,6 +272,13 @@ class MainWindow(QtGui.QMainWindow):
         return dockWidget
 
 
+    def constructWindowTitle(self):
+        """ Constructs the window title given the current inspector and profile. 
+        """
+        return "{} (#{}) {}-{}".format(self.inspectorId, self._instanceNr, 
+                                       PROJECT_NAME, self.argosApplication.profile)
+
+
     def setInspectorById(self, identifier):
         """ Sets the central inspector widget given a inspector ID.
             Will raise a KeyError if the ID is not found in the registry.
@@ -315,6 +322,8 @@ class MainWindow(QtGui.QMainWindow):
                     logger.warn("Clearing inspector. Unable to create {!r} because {}"
                                 .format(inspectorRegItem.identifier, ex))
                     self._inspector = None
+
+            self.setWindowTitle(self.constructWindowTitle())
             
             # Update collector widgets
             oldBlockState = self.collector.blockSignals(True)
@@ -326,7 +335,6 @@ class MainWindow(QtGui.QMainWindow):
                     centralLayout.addWidget(self.inspector)
             finally:
                 self.collector.blockSignals(oldBlockState)
-            
         finally:
             logger.debug("setInspectorFromRegItem: {}. Enabling updates.".format(inspectorRegItem))
             self.setUpdatesEnabled(True)

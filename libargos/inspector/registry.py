@@ -85,5 +85,7 @@ class InspectorRegistry(ClassRegistry):
             InspectorRegItem('Empty Inspector', 'libargos.inspector.empty.EmptyInspector'), 
             InspectorRegItem('Qt/Table', 'libargos.inspector.table.TableInspector'), 
             InspectorRegItem('PyQtGraph/1D Line Plot', 
-                             'libargos.inspector.pgplugins.lineplot1d.PgLinePlot1d')]
+                             'libargos.inspector.pgplugins.lineplot1d.PgLinePlot1d'), 
+            InspectorRegItem('PyQtGraph/2D Image Viewer', 
+                             'libargos.inspector.pgplugins.imageview2d.PgImageView2d')]
             

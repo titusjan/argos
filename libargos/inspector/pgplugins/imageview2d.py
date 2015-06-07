@@ -21,7 +21,6 @@ from __future__ import division, print_function
 
 import logging
 import pyqtgraph as pg
-#from pyqtgraph.Qt import QtGui
 
 from libargos.info import DEBUGGING
 from libargos.inspector.abstract import AbstractInspector
@@ -30,28 +29,32 @@ from libargos.utils.cls import array_has_real_numbers
 logger = logging.getLogger(__name__)
 
 
-class PgLinePlot1d(AbstractInspector):
-    """ Inspector that contains a PyQtGraph 1-dimensional line plot
+class PgImageView2d(AbstractInspector):
+    """ Inspector that contains a PyQtGraph 2-dimensional image plot
     """
     
     def __init__(self, collector, parent=None):
         """ Constructor. See AbstractInspector constructor for parameters.
         """
-        super(PgLinePlot1d, self).__init__(collector, parent=parent)
+        super(PgImageView2d, self).__init__(collector, parent=parent)
         
-        self.plotWidget = pg.PlotWidget(name='1d_line_plot') 
-        self.contentsLayout.addWidget(self.plotWidget)
+        self.imageView = pg.ImageView()
+        self.contentsLayout.addWidget(self.imageView)
         
-        self.plotDataItem = self.plotWidget.plot()
-        self.plotDataItem.setPen((200,200,100)) # QPen
         
+    def finalize(self):
+        """ Is called before destruction. Can be used to clean-up resources
+        """
+        logger.debug("Finalizing: {}".format(self))
+        self.imageView.close()
+                
         
     @classmethod
     def axesNames(cls):
         """ The names of the axes that this inspector visualizes.
             See the parent class documentation for a more detailed explanation.
         """
-        return tuple(['Y'])
+        return tuple(['X', 'Y'])
             
 
     def _drawContents(self):
@@ -61,10 +64,11 @@ class PgLinePlot1d(AbstractInspector):
         slicedArray = self.collector.getSlicedArray()
         
         if slicedArray is None or not array_has_real_numbers(slicedArray):
-            self.plotDataItem.clear()
+            self.imageView.clear()
             if not DEBUGGING:
                 raise ValueError("No data available or it does not contain real numbers")
         else:
-            self.plotDataItem.setData(slicedArray)
-            
+            self.imageView.setImage(slicedArray)
+
+
         
