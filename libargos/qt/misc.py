@@ -84,11 +84,12 @@ def initQApplication():
         
         Returns the application.
     """
-    # PyQtGraph requires raster graphics system.
-    #graphicsSystem = "raster" # raster, native or opengl
-    graphicsSystem = "raster"
-    logger.info("Setting Qt graphics system to: {}".format(graphicsSystem))
-    QtGui.QApplication.setGraphicsSystem(graphicsSystem)
+    # PyQtGraph recommends raster graphics system for OS-X.
+    if 'darwin' in sys.platform:
+        #graphicsSystem = "raster" # raster, native or opengl
+        graphicsSystem = "raster"
+        logger.info("Setting Qt graphics system to: {}".format(graphicsSystem))
+        QtGui.QApplication.setGraphicsSystem(graphicsSystem)
 
     app = QtGui.QApplication(sys.argv)
     initArgosApplicationSettings(app)
