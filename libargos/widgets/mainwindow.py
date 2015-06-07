@@ -297,8 +297,6 @@ class MainWindow(QtGui.QMainWindow):
         self.setUpdatesEnabled(False)
         try:
             centralLayout = self.centralWidget().layout()
-            logger.debug("centralLayout: {} (count={})"
-                         .format(centralLayout, centralLayout.count()))
             
             # Delete old inspector
             if self.inspector is not None: # can be None at start-up
@@ -306,6 +304,7 @@ class MainWindow(QtGui.QMainWindow):
                 centralLayout.removeWidget(self.inspector)
                 self.inspector.deleteLater()
                 
+            # Set new inspector
             self._inspectorRegItem = inspectorRegItem
             if inspectorRegItem is None:
                 self._inspector = None
@@ -316,12 +315,17 @@ class MainWindow(QtGui.QMainWindow):
                     logger.warn("Clearing inspector. Unable to create {!r} because {}"
                                 .format(inspectorRegItem.identifier, ex))
                     self._inspector = None
-                
-            if self.inspector is None:
-                self.collector.clearAndSetComboBoxes([])
-            else:
-                self.collector.clearAndSetComboBoxes(self.inspector.axesNames())
-                centralLayout.addWidget(self.inspector)
+            
+            # Update collector widgets
+            oldBlockState = self.collector.blockSignals(True)
+            try:
+                if self.inspector is None:
+                    self.collector.clearAndSetComboBoxes([])
+                else:
+                    self.collector.clearAndSetComboBoxes(self.inspector.axesNames())
+                    centralLayout.addWidget(self.inspector)
+            finally:
+                self.collector.blockSignals(oldBlockState)
             
         finally:
             logger.debug("setInspectorFromRegItem: {}. Enabling updates.".format(inspectorRegItem))

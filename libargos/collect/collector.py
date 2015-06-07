@@ -114,6 +114,7 @@ class Collector(QtGui.QWidget):
         """ If block equals True, the signals of the combo boxes and spin boxes are blocked
             Returns the old blocking state.
         """
+        logger.debug("Blocking collector signals")
         for spinBox in self._spinBoxes:
             spinBox.blockSignals(block)
         for comboBox in self._comboBoxes:
@@ -201,7 +202,8 @@ class Collector(QtGui.QWidget):
         self._populateComboBoxes(row)
         self._createSpinBoxes(row)
     
-        logging.debug("Emitting contentsChanged signal (_updateWidgets)")
+        logging.debug("{} contentsChanged signal (_updateWidgets)"
+                      .format("Blocked" if self.signalsBlocked() else "Emitting"))
         self.contentsChanged.emit()
         
                 
@@ -366,7 +368,8 @@ class Collector(QtGui.QWidget):
                             
         self.blockChildrenSignals(blocked)
         
-        logging.debug("Emitting contentsChanged signal (comboBox)")
+        logging.debug("{} contentsChanged signal (comboBox)"
+                      .format("Blocked" if self.signalsBlocked() else "Emitting"))
         self.contentsChanged.emit()
         
         
@@ -381,7 +384,8 @@ class Collector(QtGui.QWidget):
             spinBox = self.sender()
         assert spinBox, "spinBox not defined and not the sender"
 
-        logging.debug("Emitting contentsChanged signal (spinBox)")
+        logging.debug("{} contentsChanged signal (spinBox)"
+                      .format("Blocked" if self.signalsBlocked() else "Emitting"))            
         self.contentsChanged.emit()
 
 
