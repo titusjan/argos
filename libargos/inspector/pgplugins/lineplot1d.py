@@ -23,8 +23,9 @@ import logging
 import pyqtgraph as pg
 #from pyqtgraph.Qt import QtGui
 
+from libargos.info import DEBUGGING
 from libargos.inspector.abstract import AbstractInspector
-
+from libargos.utils.cls import array_has_real_numbers
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +60,11 @@ class PgLinePlot1d(AbstractInspector):
         """
         slicedArray = self.collector.getSlicedArray()
         
-        if slicedArray is None:
-            self.plotDataItem.setData([])
+        if slicedArray is None or not array_has_real_numbers(slicedArray):
+            self.plotDataItem.clear()
+            if not DEBUGGING:
+                raise ValueError("No data available or it does not contain real numbers")
         else:
             self.plotDataItem.setData(slicedArray)
+            
+        

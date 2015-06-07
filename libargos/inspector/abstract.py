@@ -113,6 +113,8 @@ class AbstractInspector(QtGui.QStackedWidget):
             self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
             self._drawContents()
         except Exception as ex:
+            logger.error("Error while drawing the inspector: {}".format(ex))
+            #logger.execption(ex)
             self.setCurrentIndex(self.ERROR_PAGE_IDX)
             self._drawError(msg=str(ex), title=type_name(ex))
             if DEBUGGING:

@@ -118,8 +118,8 @@ def handleException(exc_type, exc_value, exc_traceback):
 
     traceback.format_exception(exc_type, exc_value, exc_traceback)
     
-    logger.error("Bug: unexpected {}".format(exc_type), 
-                 exc_info=(exc_type, exc_value, exc_traceback))
+    logger.critical("Bug: uncaught {}".format(exc_type.__name__), 
+                    exc_info=(exc_type, exc_value, exc_traceback))
     if info.DEBUGGING:
         sys.exit(1)
     else:
@@ -128,7 +128,7 @@ def handleException(exc_type, exc_value, exc_traceback):
             _app = QtGui.QApplication()
          
         msgBox = QtGui.QMessageBox()
-        msgBox.setText("Bug: unexpected {}".format(exc_type.__name__))
+        msgBox.setText("Bug: uncaught {}".format(exc_type.__name__))
         msgBox.setInformativeText(str(exc_value))
         lst = traceback.format_exception(exc_type, exc_value, exc_traceback)
         msgBox.setDetailedText("".join(lst))

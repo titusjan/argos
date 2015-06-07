@@ -103,6 +103,27 @@ def check_is_an_array(var, allow_none=False):
                         .format(type(var)))
     
 
+def array_has_real_numbers(array):
+    """ Uses the dtype kind of the numpy array to determine if it represents real numbers. 
+    
+        That is, the array kind should be one of: i u f
+        
+        Possible dtype.kind values.
+        b     boolean
+        i     signed integer
+        u     unsigned integer
+        f     floating-point
+        c     complex floating-point
+        O     object
+        S     (byte-)string
+        U     Unicode
+        V     void
+    """
+    kind = array.dtype.kind
+    assert kind in 'biufcOSUV', "Unexpected array kind: {}".format(kind)
+    return kind in 'iuf'    
+
+
 def check_class(obj, target_class, allow_none = False):
     """ Checks that the  obj is a (sub)type of target_class. 
         Raises a TypeError if this is not the case.
