@@ -119,7 +119,7 @@ class ConfigTreeModel(BaseTreeModel):
             return True
         
 
-    def _checkStateForColumn(self, treeItem, column):
+    def checkStateForColumn(self, treeItem, column):
         """ Returns the check state of the item given the column number.
             for the given column number.
             :rtype: Qt.CheckState or None
