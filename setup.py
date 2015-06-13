@@ -2,9 +2,18 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+# To make a release follow these steps:
+#   python setup.py sdist --formats=zip
+
+# See also https://packaging.python.org/en/latest/distributing.html
+# TODO: still can't make a wheel even following the instructions in the link below.
+# http://stackoverflow.com/questions/26664102/why-can-i-not-create-a-wheel-in-python
+
 try:
     from setuptools import setup
 except ImportError:
+    print("Using distutils to import setup. No wheels enabled")
+    assert False, "stopped"
     from distutils.core import setup
 
 from libargos import info
@@ -34,7 +43,7 @@ setup(
     author_email=info.EMAIL,
     url=info.PROJECT_URL,
     packages=[
-        info.PACKAGE_NAME, entry points
+        info.PACKAGE_NAME
     ],
     package_dir={info.PACKAGE_NAME: info.PACKAGE_NAME},
     scripts = ['argos'], 
