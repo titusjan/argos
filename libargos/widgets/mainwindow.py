@@ -502,6 +502,7 @@ class MainWindow(QtGui.QMainWindow):
     def __addTestItems(self):
         """ Temporary function to add test CTIs
         """
+        from libargos.config.emptycti import EmptyCti
         from libargos.config.untypedcti import UntypedCti
         from libargos.config.stringcti import StringCti
         from libargos.config.intcti import IntCti
@@ -509,14 +510,17 @@ class MainWindow(QtGui.QMainWindow):
         from libargos.config.choicecti import ChoiceCti
         from libargos.config.colorcti import ColorCti
         
+        grpItem = EmptyCti(nodeName="group")
+        grpIndex = self._config.insertItem(grpItem)
+        self.configTreeView.setExpanded(grpIndex, True) # does not work because of read settings
+        
         lcItem = UntypedCti(nodeName='line color', defaultData=123)
-        lcIndex = self._config.insertItem(lcItem)
-        self.configTreeView.setExpanded(lcIndex, True) # does not work because of read settings
+        grpItem.insertChild(lcItem)
 
         # this only works b
         #rootItem.insertChild(IntCti(nodeName='line-1 color', defaultData=-7, minValue = -5, stepSize=2))
         self._config.insertItem(IntCti(nodeName='line-1 color', defaultData=-7, minValue = -5, stepSize=2), 
-                                parentIndex=lcIndex)
+                                parentIndex=grpIndex)
         
         self._config.insertItem(StringCti(nodeName='letter', defaultData='aa', maxLength = 1))
         self._config.insertItem(BoolCti(nodeName='grid', defaultData=True))

@@ -31,8 +31,8 @@ class UntypedCti(AbstractCti):
     """ Config Tree Item to store a any type of data as long as it can be edited with a QLineEdit.
     
         Typically it's better to use 'typed' CTIs, where the data is always internally stored in
-        the same type (enforcec by _enforceDataType). This class is currently only used in the
-        invisible root item of the ConfigTreeModel, and may become obsolete in the future.
+        the same type (enforcec by _enforceDataType). This class is currently not used and may 
+        become obsolete in the future.
     """
     def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=''):
         """ Constructor. For the parameters see the AbstractCti constructor documentation.

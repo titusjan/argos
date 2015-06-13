@@ -357,8 +357,8 @@ class AbstractCti(BaseTreeItem):
                 childCti = self.childByNodeName(key)
             except IndexError as _ex:
                 logger.warn("Unable to set values for: {}".format(key))
-                
-            childCti.setValuesFromDict(childDct)
+            else:
+                childCti.setValuesFromDict(childDct)
     
 
 

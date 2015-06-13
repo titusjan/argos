@@ -23,7 +23,7 @@ from json import dumps, loads
 
 from libargos.qt import Qt, QtCore, QtSlot
 from libargos.qt.treemodels import BaseTreeModel
-from libargos.config.untypedcti import UntypedCti
+from libargos.config.emptycti import EmptyCti
 from libargos.utils.cls import type_name
 
 
@@ -42,7 +42,7 @@ class ConfigTreeModel(BaseTreeModel):
         """ Constructor
         """
         super(ConfigTreeModel, self).__init__(parent=parent)
-        self._invisibleRootItem = UntypedCti(nodeName='<invisible-root>')
+        self._invisibleRootItem = EmptyCti(nodeName='<invisible-root>')
         self.dataChanged.connect(self.debug)
 
 

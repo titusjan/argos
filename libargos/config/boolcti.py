@@ -19,7 +19,8 @@
 """
 import logging
 
-from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
+from libargos.config.abstractcti import AbstractCti
+from libargos.config.emptycti import EmptyCtiEditor
 from libargos.qt import Qt, QtGui
 from libargos.utils.misc import NOT_SPECIFIED
 
@@ -88,30 +89,3 @@ class BoolCti(AbstractCti):
         """
         return EmptyCtiEditor(self, delegate, parent=parent)
 
-
-        
-class EmptyCtiEditor(AbstractCtiEditor):
-    """ A CtiEditor which contains a hidden widget so only the reset button is shown. 
-    """
-    def __init__(self, cti, delegate, parent=None):
-        """ See the AbstractCtiEditor for more info on the parameters 
-        """
-        super(EmptyCtiEditor, self).__init__(cti, delegate, parent=parent)
-        
-        # Add hidden widget to store editor value
-        self.widget = self.addSubEditor(QtGui.QWidget()) 
-        self.widget.hide()
-        
-    
-    def setData(self, data):
-        """ Provides the main editor widget with a data to manipulate.
-        """
-        self.widget.setProperty("editor_data", data)
-
-        
-    def getData(self):
-        """ Gets data from the editor widget.
-        """
-        return self.widget.property("editor_data")
-        
-    

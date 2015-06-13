@@ -170,3 +170,4 @@ class AbstractInspector(QtGui.QStackedWidget):
         """
         self.errorWidget.setError(msg=msg, title=title)
         
+        
