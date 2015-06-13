@@ -39,11 +39,20 @@ class PgLinePlot1d(AbstractInspector):
         """
         super(PgLinePlot1d, self).__init__(collector, parent=parent)
         
-        self.plotWidget = pg.PlotWidget(name='1d_line_plot') 
+        self.plotWidget = pg.PlotWidget(name='1d_line_plot_#{}'.format(self.windowNumber),
+                                        title='Title',  enableMenu=False) 
         self.contentsLayout.addWidget(self.plotWidget)
+
+        self.plotWidget.setLabel('left', text='Hello <i>there</i>')
+        #self.plotWidget.setLabel('right', text='')
+        #self.plotWidget.setClipToView(True)
+        self.plotWidget.showAxis('right')
+        self.plotWidget.setLogMode(y=True)
         
         self.plotDataItem = self.plotWidget.plot()
-        self.plotDataItem.setPen((200,200,100)) # QPen
+        #self.plotDataItem.setPen((200,200,100)) # QPen (yellow)
+        self.plotDataItem.setPen((0,0,200)) # QPen (yellow)
+        
         
         
     @classmethod

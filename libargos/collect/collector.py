@@ -44,11 +44,12 @@ class Collector(QtGui.QWidget):
 
     contentsChanged = QtSignal()         
     
-    def __init__(self):
+    def __init__(self, windowNumber):
         """ Constructor
         """
         super(Collector, self).__init__()
-    
+        
+        self._windowNumber = windowNumber
         self._rti = None
         
         self._signalsBlocked = False
@@ -83,6 +84,12 @@ class Collector(QtGui.QWidget):
     def sizeHint(self):
         """ The recommended size for the widget."""
         return QtCore.QSize(300, TOP_DOCK_HEIGHT)
+
+    @property
+    def windowNumber(self):
+        """ The instance number of the window this collector belongs to.
+        """
+        return self._windowNumber    
     
     @property
     def rti(self):

@@ -38,7 +38,8 @@ class PgImageView2d(AbstractInspector):
         """
         super(PgImageView2d, self).__init__(collector, parent=parent)
         
-        self.imageView = pg.ImageView()
+        self.imageView = pg.ImageView(name='2d_image_view_#{}'.format(self.windowNumber),
+                                      title='Title',  enableMenu=False)
         self.contentsLayout.addWidget(self.imageView)
         
         

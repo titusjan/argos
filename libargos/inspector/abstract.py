@@ -66,6 +66,13 @@ class AbstractInspector(QtGui.QStackedWidget):
         """
         logger.debug("Finalizing: {}".format(self))
 
+        
+    @property
+    def windowNumber(self):
+        """ The instance number of the window this inspector belongs to.
+        """
+        return self.collector.windowNumber  
+    
     
     @classmethod
     def descriptionHtml(cls):

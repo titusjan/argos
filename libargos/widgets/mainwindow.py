@@ -54,7 +54,7 @@ class MainWindow(QtGui.QMainWindow):
             :param reset: If true the persistent settings, such as column widths, are reset. 
         """
         super(MainWindow, self).__init__()
-        self._instanceNr = MainWindow.__numInstances # Used only for debugging
+        self._windowNumber = MainWindow.__numInstances # Used only for debugging
         MainWindow.__numInstances += 1
         
         self._collector = None
@@ -91,6 +91,11 @@ class MainWindow(QtGui.QMainWindow):
             except Exception as ex:
                 logger.warn(ex)
 
+    @property
+    def windowNumber(self):
+        """ The instance number of this window.
+        """
+        return self._windowNumber
 
     @property
     def inspectorRegItem(self):
@@ -128,7 +133,7 @@ class MainWindow(QtGui.QMainWindow):
     def __setupViews(self):
         """ Creates the UI widgets. 
         """
-        self._collector = Collector()
+        self._collector = Collector(self.windowNumber)
         self.repoTreeView = RepoTreeView(self.argosApplication.repo, self.collector)
         self.configTreeView = ConfigTreeView(self._config)
         
@@ -205,7 +210,7 @@ class MainWindow(QtGui.QMainWindow):
         fileMenu.addAction("E&xit", self.argosApplication.closeAllWindows, QtGui.QKeySequence.Quit)
         if DEBUGGING:
             fileMenu.addSeparator()
-            fileMenu.addAction("&Test-{}".format(self._instanceNr), self.myTest, "Ctrl+T")
+            fileMenu.addAction("&Test-{}".format(self.windowNumber), self.myTest, "Ctrl+T")
                  
         ### View Menu ###
         
@@ -275,7 +280,7 @@ class MainWindow(QtGui.QMainWindow):
     def constructWindowTitle(self):
         """ Constructs the window title given the current inspector and profile. 
         """
-        return "{} (#{}) {}-{}".format(self.inspectorId, self._instanceNr, 
+        return "{} (#{}) {}-{}".format(self.inspectorId, self.windowNumber, 
                                        PROJECT_NAME, self.argosApplication.profile)
 
 
@@ -475,7 +480,7 @@ class MainWindow(QtGui.QMainWindow):
         
     def myTest(self):
         """ Function for testing """
-        logger.debug("myTest for window: {}".format(self._instanceNr))
+        logger.debug("myTest for window: {}".format(self.windowNumber))
         
         from libargos.qt.misc import printChildren
         printChildren(self.centralWidget())
