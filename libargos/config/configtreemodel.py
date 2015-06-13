@@ -85,7 +85,7 @@ class ConfigTreeModel(BaseTreeModel):
         elif column == self.COL_VALUE:
             return treeItem.displayValue
         elif column == self.COL_DEF_VALUE:
-            return str(treeItem.defaultValue)
+            return treeItem.displayDefaultValue
         elif column == self.COL_CTI_TYPE:
             return type_name(treeItem)
         elif column == self.COL_DEBUG:

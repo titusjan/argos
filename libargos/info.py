@@ -19,9 +19,9 @@
 """
 import os
 
-DEBUGGING = False
+DEBUGGING = True
 
-VERSION = '0.1.0'
+VERSION = '0.2.0-devel'
 REPO_NAME = "argos"
 SCRIPT_NAME = "argos"
 PACKAGE_NAME = "libargos"

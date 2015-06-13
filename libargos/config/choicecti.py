@@ -54,6 +54,12 @@ class ChoiceCti(AbstractCti):
         """ Returns the string representation of data for use in the tree view. 
         """
         return str(self.choices[self.data])
+
+    @property
+    def displayDefaultValue(self):
+        """ Returns the string representation of data for use in the tree view. 
+        """
+        return str(self.choices[self.defaultData])
     
     @property
     def debugInfo(self):

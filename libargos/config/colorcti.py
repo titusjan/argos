@@ -61,7 +61,13 @@ class ColorCti(AbstractCti):
         """ Returns a string with the RGB value in hexadecimal (e.g. '#00FF88') 
         """
         return self._data.name().upper()    
-    
+
+    @property
+    def displayDefaultValue(self):
+        """ Returns a string with the RGB value in hexadecimal (e.g. '#00FF88') 
+        """
+        return self._defaultData.name().upper()  
+        
     @property
     def debugInfo(self):
         """ Returns the string with debugging information

@@ -99,15 +99,15 @@ class AbstractCti(BaseTreeItem):
         string of the full path leading from the root node to the current node. For instance, the 
         path may be '/scale/x', the nodeName in that case is 'x'. 
         
-        CTIs are used to store a certain configuration value. It can be queried by the configValue
+        CTIs are used to store a certain configuration value. It can be queried by the value
         property. The type of this value differs between descendants of AbstractCti, but a sub class
-        should always return the same type. For example, the ColorCti.configValue always returns a
-        QColor object. The displayValue returns the string representation for use in the tables; 
-        by default this returns: str(configValue)
+        should always return the same type. For example, the ColorCti.value always returns a
+        QColor object. The displayValue returns the string representation for use in the tables;
+        by default this returns: str(self.value)   
         
         The underlying data is usually stored in that type as well but this is not necessarily so.
         A ChoiceCti, which represents a combo box, stores a list of choices and an index that is
-        actual choice made by the user. ChoiceCti.data contains the index while ChoiceCti.configData
+        actual choice made by the user. ChoiceCti.data contains the index while ChoiceCti.value      # TODO: value is not used?
         returns: choices[index]. Note that the constructor expects the data as input parameter. The
         constructor calls the _enforceDataType method to convert the data to the correct type.
         
@@ -157,18 +157,25 @@ class AbstractCti(BaseTreeItem):
     
     @property
     def displayValue(self):
-        """ Returns the string representation of data for use in the tree view. 
+        """ Returns the string representation of data for use in the tree view.
+            If a descendant overrides this, it should probably also override displayDefaultValue.
         """
-        return str(self.value)
+        return str(self.data)
     
     @property
-    def value(self):
-        """ Returns the configuration value of this item. 
-            By default this is the same as the underlying data but it can be overridden, 
-            e.g. when the data is an index in a combo box and the value returns the choice.
+    def displayDefaultValue(self):
+        """ Returns the string representation of default data for use in the tree view. 
         """
-        return self._data
+        return str(self.defaultData)
     
+#    @property
+#    def value(self):
+#        """ Returns the configuration value of this item. 
+#            By default this is the same as the underlying data but it can be overridden, 
+#            e.g. when the data is an index in a combo box and the value returns the choice.
+#        """
+#        return self._data
+#    
     @property
     def data(self):
         """ Returns the data of this item. 
