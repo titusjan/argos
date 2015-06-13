@@ -108,36 +108,65 @@ class AbstractInspector(QtGui.QStackedWidget):
         """ The data collector from where this inspector gets its data
         """
         return self._collector
-        
+
     
     @QtSlot()
-    def draw(self):
-        """ Tries to draw the widget contents. 
+    def initContents(self):
+        """ Tries to initialize the widget contents. 
+            Shows the error page in case an exception is raised during initialization.
+            Descendants should override _initContents, not initContents.
+        """
+        logger.debug("Initializing inspector: {}".format(self))
+        try:
+            self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
+            self._initContents()
+        except Exception as ex:
+            logger.error("Error while initializing the inspector: {}".format(ex))
+            #logger.execption(ex)
+            self.setCurrentIndex(self.ERROR_PAGE_IDX)
+            self._showError(msg=str(ex), title=type_name(ex))
+            if DEBUGGING:
+                raise
+                    
+        
+    def _initContents(self):
+        """ Is called by initContents to do the actual initialization. 
+            Descendants should override _initContents and not worry about exceptions; 
+            the initContents will show the error page if an exception is raised.
+        """
+        #raise NotImplementedError()
+        pass # TODO: abstract?
+    
+    
+    @QtSlot()
+    def updateRti(self):
+        """ Tries to draw the widget contents with the updated RTI. 
             Shows the error page in case an exception is raised while drawing the contents.
+            Descendants should override _updateRti, not updateRti.
         """
         logger.debug("Drawing inspector: {}".format(self))
         try:
             self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
-            self._drawContents()
+            self._updateRti()
         except Exception as ex:
             logger.error("Error while drawing the inspector: {}".format(ex))
             #logger.execption(ex)
             self.setCurrentIndex(self.ERROR_PAGE_IDX)
-            self._drawError(msg=str(ex), title=type_name(ex))
+            self._showError(msg=str(ex), title=type_name(ex))
             if DEBUGGING:
                 raise
             
     
-    def _drawContents(self):
-        """ Draws the inspector widget contents.
-            The default implementation shows an empty page (no widgets). Descendants should 
-            override this.
+    def _updateRti(self):
+        """ Is called by updateRti to do the actual drawing. 
+            Descendants should override _updateRti and not worry about exceptions; 
+            the updateRti will show the error page if an exception is raised.
         """
         raise NotImplementedError()
         
 
-    def _drawError(self, msg="", title="Error"):
-        """ Shows and error message.
+    def _showError(self, msg="", title="Error"):
+        """ Shows an error message.
         """
         self.errorWidget.setError(msg=msg, title=title)
         

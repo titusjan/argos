@@ -336,6 +336,7 @@ class MainWindow(QtGui.QMainWindow):
                 if self.inspector is None:
                     self.collector.clearAndSetComboBoxes([])
                 else:
+                    self.inspector.initContents() # TODO: call this here?
                     self.collector.clearAndSetComboBoxes(self.inspector.axesNames())
                     centralLayout.addWidget(self.inspector)
             finally:
@@ -376,7 +377,7 @@ class MainWindow(QtGui.QMainWindow):
         """
         logger.debug("#### Drawing window contents: {} ####".format(self.windowTitle()))
         if self.inspector:
-            self.inspector.draw()
+            self.inspector.updateRti()
     
 
     # TODO: to repotreemodel? Note that the functionality will be common to selectors.

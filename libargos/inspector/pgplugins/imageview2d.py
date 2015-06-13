@@ -38,8 +38,7 @@ class PgImageView2d(AbstractInspector):
         """
         super(PgImageView2d, self).__init__(collector, parent=parent)
         
-        self.imageView = pg.ImageView(name='2d_image_view_#{}'.format(self.windowNumber),
-                                      title='Title',  enableMenu=False)
+        self.imageView = pg.ImageView(name='2d_image_view_#{}'.format(self.windowNumber))
         self.contentsLayout.addWidget(self.imageView)
         
         
@@ -58,7 +57,7 @@ class PgImageView2d(AbstractInspector):
         return tuple(['X', 'Y'])
             
 
-    def _drawContents(self):
+    def _updateRti(self):
         """ Draws the inspector widget when no input is available.
             The default implementation shows an error message. Descendants should override this.
         """

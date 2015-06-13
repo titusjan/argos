@@ -100,8 +100,6 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
 class TableInspector(AbstractInspector):
     """ Shows the sliced array in a table.
     """
-    _label = "Table"
-    
     def __init__(self, collector, parent=None):
         
         super(TableInspector, self).__init__(collector, parent=parent)
@@ -118,11 +116,11 @@ class TableInspector(AbstractInspector):
         """
         return tuple(['X', 'Y'])
     
-    def _drawContents(self):
+    def _updateRti(self):
         """ Draws the inspector widget when no input is available.
             The default implementation shows an error message. Descendants should override this.
         """
-        logger.debug("TableInspector._drawContents: {}".format(self))
+        logger.debug("TableInspector._updateRti: {}".format(self))
         slicedArray = self.collector.getSlicedArray()
         self.model.setSlicedArray(slicedArray)
 
