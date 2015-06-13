@@ -3,12 +3,8 @@ Argos
 ===============================
 
 
-Argos Panoptes data inspector.
+Argos Panoptes data inspector. (Work in progress.)
 
-* Free software: BSD license
-* Documentation: https://argos.readthedocs.org.
+Requires: PyQtGraph (http://www.pyqtgraph.org/).
 
-Features
---------
-
-* TODO
+For more info, see: https://github.com/titusjan/argos
