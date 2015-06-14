@@ -319,7 +319,7 @@ class Collector(QtGui.QWidget):
             spinBox.setProperty("dim_nr", dimNr)
             
             # This must be done after setValue to prevent emitting too many signals
-            spinBox.valueChanged[int].connect(self._SpinboxValueChanged)
+            spinBox.valueChanged[int].connect(self._spinboxValueChanged)
 
             #spinboxLabel = QtGui.QLabel(self.dimensionNameByNumber(dimNr))
             #editor = LabeledWidget(spinboxLabel, spinBox)
@@ -339,8 +339,8 @@ class Collector(QtGui.QWidget):
         tree = self.tree
         model = self.tree.model()
         
-        for col, _spinBox in enumerate(self._spinBoxes, self.COL_FIRST_COMBO + self.maxCombos):
-            # TODO: disconnect spinbox.
+        for col, spinBox in enumerate(self._spinBoxes, self.COL_FIRST_COMBO + self.maxCombos):
+            spinBox.valueChanged[int].disconnect(self._spinboxValueChanged)
             tree.setIndexWidget(model.index(row, col), None)
         self._spinBoxes = [] 
 
@@ -381,7 +381,7 @@ class Collector(QtGui.QWidget):
         
         
     @QtSlot(int)
-    def _SpinboxValueChanged(self, index, spinBox=None):
+    def _spinboxValueChanged(self, index, spinBox=None):
         """ Is called when a spin box value was changed.
         
             Updates the spin boxes and sets other combo boxes having the same index to 
