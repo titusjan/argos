@@ -47,7 +47,7 @@ class PgLinePlot1d(AbstractInspector):
         super(PgLinePlot1d, self).__init__(collector, parent=parent)
         
         self.plotWidget = pg.PlotWidget(name='1d_line_plot_#{}'.format(self.windowNumber),
-                                        title='',  enableMenu=False) 
+                                        title='', enableMenu=False) 
         self.contentsLayout.addWidget(self.plotWidget)
         
         
@@ -64,13 +64,13 @@ class PgLinePlot1d(AbstractInspector):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
         rootItem = EmptyCti('inspector')
-        rootItem.insertChild(ColorCti('pen color', defaultData="#FF0000"))
+        rootItem.insertChild(ColorCti('pen color', defaultData="#3F8E3A"))
         
         # A pen line width of zero indicates a cosmetic pen. This means that the pen width is 
         # always drawn one pixel wide, independent of the transformation set on the painter.
-        # A non-cosmetic width doesn't give good results
-        #rootItem.insertChild(IntCti('pen width', defaultData=1, 
-        #                            minValue = 0, maxValue=100))
+        # A non-cosmetic width doesn't give good results so the minimum is 0.01
+        rootItem.insertChild(FloatCti('pen width', defaultData=1.0, 
+                                      minValue=0.1, maxValue=100, stepSize=0.1, decimals=1))
         
         rootItem.insertChild(ChoiceCti('pen style', defaultData=0, 
             choices=['solid line', 'dashed line', 'dotted line', 
@@ -84,8 +84,7 @@ class PgLinePlot1d(AbstractInspector):
         gridItem.insertChild(BoolCti('X-axis', defaultData=True))
         gridItem.insertChild(BoolCti('Y-axis', defaultData=True))
         gridItem.insertChild(FloatCti('alpha', defaultData=0.25, 
-                                      minValue=0.0, maxValue=1.0, stepSize=0.01))
-                 
+                                      minValue=0.0, maxValue=1.0, stepSize=0.01, decimals=2))
         return rootItem
     
                 
@@ -107,8 +106,9 @@ class PgLinePlot1d(AbstractInspector):
         self.plotDataItem = self.plotWidget.plot()
         
         pen = QtGui.QPen()
+        pen.setCosmetic(True)
         pen.setColor(self.configValue('pen color'))
-        #pen.setWidth(self.configValue('pen width'))
+        pen.setWidthF(self.configValue('pen width'))
         pen.setStyle(PEN_STYLES[self.configValue('pen style')])
         self.plotDataItem.setPen(pen)
 

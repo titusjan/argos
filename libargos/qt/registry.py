@@ -20,6 +20,7 @@
 
 import logging, inspect, os, ast, sys
 
+from libargos.info import DEBUGGING
 from libargos.qt import QtCore
 from libargos.qt.misc import containsSettingsGroup, removeSettingsGroup
 from libargos.utils.cls import import_symbol, check_is_a_string, type_name, check_class
@@ -192,6 +193,9 @@ class ClassRegItem(object):
             self._cls = import_symbol(self.fullClassName) # TODO: check class?
         except Exception as ex:
             self._exception = ex
+            logger.warn("Unable to import {!r}: {}".format(self.fullClassName, ex))
+            if DEBUGGING:
+                raise
 
 
     def getClass(self, tryImport=True):

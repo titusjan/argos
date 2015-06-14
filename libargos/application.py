@@ -272,7 +272,7 @@ class ArgosApplication(object):
                     win.raise_()
             
         if len(self.mainWindows) == 0:
-            logger.warn("No open windows in profile (creating one).")
+            logger.info("No open windows in profile (creating one).")
             #self.addNewMainWindow(inspectorFullName='Qt/Table')
             self.addNewMainWindow(inspectorFullName=DEFAULT_INSPECTOR)
             
