@@ -21,16 +21,19 @@ from __future__ import division, print_function
 
 import logging
 import pyqtgraph as pg
-#from pyqtgraph.Qt import QtGui
 
+from libargos.qt import Qt, QtGui
 from libargos.info import DEBUGGING
 from libargos.config.emptycti import EmptyCti
+from libargos.config.choicecti import ChoiceCti
 from libargos.config.colorcti import ColorCti
+from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector
 from libargos.utils.cls import array_has_real_numbers
 
 logger = logging.getLogger(__name__)
 
+PEN_STYLES = [Qt.SolidLine, Qt.DashLine, Qt.DotLine, Qt.DashDotLine, Qt.DashDotDotLine]
 
 class PgLinePlot1d(AbstractInspector):
     """ Inspector that contains a PyQtGraph 1-dimensional line plot
@@ -60,12 +63,22 @@ class PgLinePlot1d(AbstractInspector):
         """
         rootItem = EmptyCti(nodeName='inspector')
         rootItem.insertChild(ColorCti(nodeName='pen color', defaultData="#FF0000"))
+        
+        # A pen line width of zero indicates a cosmetic pen. This means that the pen width is 
+        # always drawn one pixel wide, independent of the transformation set on the painter.
+        # A non-cosmetic width doesn't give good results
+        #rootItem.insertChild(IntCti(nodeName='pen width', defaultData=1, 
+        #                            minValue = 0, maxValue=100))
+        
+        rootItem.insertChild(ChoiceCti(nodeName='pen style', defaultData=0, 
+            choices=['solid line', 'dashed line', 'dotted line', 
+                     'dash-dot line', 'dash-dot-dot line'])) 
         return rootItem
     
                 
     def _initContents(self):
         """ Draws the inspector widget when no input is available.
-            The default implementation shows an error message. Descendants should override this.
+            Creates an empty plot.
         """
         self.plotWidget.clear()
         self.plotWidget.setLabel('left', text='Hello <i>there</i>')
@@ -76,12 +89,11 @@ class PgLinePlot1d(AbstractInspector):
         
         self.plotDataItem = self.plotWidget.plot()
         
-        penColor = self.config.findByNodePath('pen color').data
-        logger.debug("Pen color: {}".format(penColor))
-        self.plotDataItem.setPen(penColor)
-        #self.plotDataItem.setPen((200,200,100)) # QPen (yellow)
-        #self.plotDataItem.setPen((0,0,200)) # QPen (yellow)
-        
+        pen = QtGui.QPen()
+        pen.setColor(self.configValue('pen color'))
+        #pen.setWidth(self.configValue('pen width'))
+        pen.setStyle(PEN_STYLES[self.configValue('pen style')])
+        self.plotDataItem.setPen(pen)
 
 
     def _updateRti(self):

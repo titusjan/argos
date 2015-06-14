@@ -76,7 +76,7 @@ class AbstractInspector(QtGui.QStackedWidget):
         """
         return self._config
     
-        
+
     @classmethod        
     def createConfig(cls):
         """ Creates a config tree item (CTI) hierarchy containing default children.
@@ -125,6 +125,12 @@ class AbstractInspector(QtGui.QStackedWidget):
         """ The data collector from where this inspector gets its data
         """
         return self._collector
+    
+    
+    def configValue(self, nodePath):
+        """ Returns the config value data at the node path
+        """
+        return self.config.findByNodePath(nodePath).data
 
     
     @QtSlot()

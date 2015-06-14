@@ -88,8 +88,8 @@ class PgImageView2d(AbstractInspector):
         else:
             # TODO: autoRange doesn't seem to do anything.
             # TODO: cache values?
-            autoRange = self.config.findByNodePath('auto range').data
-            autoLevels = self.config.findByNodePath('auto levels').data
+            autoRange = self.configValue('auto range')
+            autoLevels = self.configValue('auto levels')
             self.imageView.setImage(slicedArray, autoRange=autoRange, autoLevels=autoLevels)
 
 
