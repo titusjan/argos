@@ -150,6 +150,8 @@ class MainWindow(QtGui.QMainWindow):
         # Must be after setInspector since that already draws the inspector
         self.collector.contentsChanged.connect(self.collectorContentsChanged)
 
+        # TODO: dedicated signal?
+        self._configTreeModel.dataChanged.connect(self.configContentsChanged)
                               
     def __setupMenu(self):
         """ Sets up the main menu.
@@ -317,11 +319,6 @@ class MainWindow(QtGui.QMainWindow):
                 centralLayout.removeWidget(self.inspector)
                 self.inspector.deleteLater()
                 
-                # Store the old config values for persistence
-                assert self.inspectorRegItem is not None, "Sanity check: inspectorRegItem==None"
-                key = self.inspectorRegItem.identifier
-                self._persistentSettings[key] = self.inspector.config.getNonDefaultsDict()
-                
             # Set new inspector
             self._inspectorRegItem = inspectorRegItem
             if inspectorRegItem is None:
@@ -376,6 +373,21 @@ class MainWindow(QtGui.QMainWindow):
         self.argosApplication.pluginsDialog.show()
         
         
+    @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
+    def configContentsChanged(self, _topLeftIndex=None, _bottomRightIndex=None):
+        """ Slot is called whenever data of the config tree is set by the user (not 
+            programmatically)
+            The _topLeftIndex and _bottomRightIndex parameters are ignored.
+        """
+        logger.debug("configContentsChanged()")
+        
+        # Store the old config values for persistence
+        if self.inspectorRegItem and self.inspector:
+            key = self.inspectorRegItem.identifier
+            self._persistentSettings[key] = self.inspector.config.getNonDefaultsDict()
+                
+        
+    @QtSlot()
     def collectorContentsChanged(self):
         """ Slot that updates the UI whenever the contents of the collector has changed. 
         """
