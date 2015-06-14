@@ -106,11 +106,18 @@ class MainWindow(QtGui.QMainWindow):
         return self._inspectorRegItem
 
     @property
-    def inspectorId(self):
-        """ The identifier of the inspector registry item that has been selected. 
+    def inspectorName(self):
+        """ The name of the inspector registry item that has been selected. 
+            E.g. 'Table'. Can be None (e.g. at start-up).
+        """
+        return self._inspectorRegItem.name if self._inspectorRegItem else None
+
+    @property
+    def inspectorFullName(self):
+        """ The full name of the inspector registry item that has been selected. 
             E.g. 'Qt/Table'. Can be None (e.g. at start-up).
         """
-        return self._inspectorRegItem.identifier if self._inspectorRegItem else None
+        return self._inspectorRegItem.fullName if self._inspectorRegItem else None
 
     @property
     def inspector(self):
@@ -283,7 +290,7 @@ class MainWindow(QtGui.QMainWindow):
     def constructWindowTitle(self):
         """ Constructs the window title given the current inspector and profile. 
         """
-        return "{} (#{}) {}-{}".format(self.inspectorId, self.windowNumber, 
+        return "{} (#{}) {}-{}".format(self.inspectorName, self.windowNumber, 
                                        PROJECT_NAME, self.argosApplication.profile)
 
 

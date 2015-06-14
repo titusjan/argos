@@ -259,7 +259,8 @@ class ArgosApplication(object):
             settings.endGroup()
             
         if inspectorFullName is not None:
-            windows = [win for win in self._mainWindows if win.inspectorId == inspectorFullName]
+            windows = [win for win in self._mainWindows 
+                       if win.inspectorFullName == inspectorFullName]
             if len(windows) == 0:
                 logger.info("Creating window for inspector: {!r}".format(inspectorFullName))
                 try:
