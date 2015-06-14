@@ -65,7 +65,7 @@ class MainWindow(QtGui.QMainWindow):
                 
         self._detailDockWidgets = []
         self._argosApplication = argosApplication
-        self._config = ConfigTreeModel()
+        self._configTreeModel = ConfigTreeModel()
         self._persistentSettings = {}  # non-default values for all used plugins
 
         self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
@@ -136,7 +136,7 @@ class MainWindow(QtGui.QMainWindow):
         """
         self._collector = Collector(self.windowNumber)
         self.repoTreeView = RepoTreeView(self.argosApplication.repo, self.collector)
-        self.configTreeView = ConfigTreeView(self._config)
+        self.configTreeView = ConfigTreeView(self._configTreeModel)
         
         # Define a central widget that will be the parent of the inspector widget.
         # We don't set the inspector directly as the central widget to retain the size when the
@@ -340,13 +340,13 @@ class MainWindow(QtGui.QMainWindow):
             oldBlockState = self.collector.blockSignals(True)
             try:
                 if self.inspector is None:
-                    self._config.setInvisibleRootItem() # clear config tree
+                    self._configTreeModel.setInvisibleRootItem() # clear config tree
                     self.collector.clearAndSetComboBoxes([])
                 else:
                     key = self.inspectorRegItem.identifier
                     nonDefaults = self._persistentSettings.get(key, {})
                     self.inspector.config.setValuesFromDict(nonDefaults)
-                    self._config.setInvisibleRootItem(self.inspector.config)
+                    self._configTreeModel.setInvisibleRootItem(self.inspector.config)
                     self.inspector.initContents() # TODO: call this here?
                     self.collector.clearAndSetComboBoxes(self.inspector.axesNames())
                     centralLayout.addWidget(self.inspector)
@@ -444,7 +444,7 @@ class MainWindow(QtGui.QMainWindow):
         self.repoTreeView.readViewSettings('repo_tree/header_state', settings)
         self.configTreeView.readViewSettings('config_tree/header_state', settings)
 
-        #self._config.readModelSettings('config_model', settings)
+        #self._configTreeModel.readModelSettings('config_model', settings)
         settings.beginGroup('cfg_inspectors')
         try:
             for key in settings.childKeys():
