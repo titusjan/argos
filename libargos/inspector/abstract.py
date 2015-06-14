@@ -18,6 +18,7 @@
 """ Base class for inspectors
 """
 import logging
+from libargos.config.emptycti import EmptyCti
 from libargos.info import DEBUGGING
 from libargos.qt import QtGui, QtSlot
 from libargos.utils.cls import type_name
@@ -46,6 +47,7 @@ class AbstractInspector(QtGui.QStackedWidget):
         
         self.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         
+        self._config = self.createConfig()
         self._collector = collector
         
         self.errorWidget = MessageDisplay()
@@ -60,13 +62,28 @@ class AbstractInspector(QtGui.QStackedWidget):
         self.contentsWidget.setLayout(self.contentsLayout)
         
         self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
+        
 
     def finalize(self):
         """ Is called before destruction. Can be used to clean-up resources
         """
         logger.debug("Finalizing: {}".format(self))
 
+    
+    @property
+    def config(self):
+        """ The root config tree item for this inspector 
+        """
+        return self._config
+    
         
+    @classmethod        
+    def createConfig(cls):
+        """ Creates a config tree item (CTI) hierarchy containing default children.
+        """
+        return EmptyCti(nodeName='inspector')
+    
+            
     @property
     def windowNumber(self):
         """ The instance number of the window this inspector belongs to.

@@ -18,7 +18,7 @@
 """ Abstract base classes for modeling data tree items for use in the ConfigTreeModel
 """
 import logging, os
-from json import JSONEncoder, JSONDecoder, dumps
+from json import JSONEncoder, JSONDecoder, loads, dumps
 
 from libargos.info import DEBUGGING, icons_directory
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
@@ -44,9 +44,14 @@ class InvalidInputError(Exception):
 # JSON encoding #    
 #################
 
-def ctiDumps(obj, sort_keys=True, indent=4):
+
+def ctiLoads(json_str):
+    """ Loads a cti from JSON string """
+    return loads(json_str)
+
+def ctiDumps(obj, **kwargs):
     """ Dumps cti as JSON string """
-    return dumps(obj, sort_keys=sort_keys, cls=CtiEncoder, indent=indent)
+    return dumps(obj, cls=CtiEncoder, **kwargs)
 
 
 class CtiEncoder(JSONEncoder):

@@ -4,11 +4,12 @@ import logging
 from libargos.qt.treeitems import BaseTreeItem
 from libargos.info import DEBUGGING
 from libargos.qt import Qt, QtCore
-from libargos.utils.cls import check_is_a_string
+from libargos.utils.cls import check_is_a_string, check_class
 
 logger = logging.getLogger(__name__)
     
 
+INVISIBLE_ROOT_NAME = '<invisible-root>'
     
 class BaseTreeModel(QtCore.QAbstractItemModel):
     """ Tree model from the editabletreemodel.py example.
@@ -34,7 +35,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         # The root item also is returned by getItem in case of an invalid index. 
         # Finally, it is used to store the header data.
         #self._horizontalHeaders = [header for header in headers]
-        self._invisibleRootItem = BaseTreeItem(nodeName='<invisible-root>')
+        self._invisibleRootItem = BaseTreeItem(nodeName=INVISIBLE_ROOT_NAME)
         
 
     @property
@@ -392,6 +393,22 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         self.deleteItemByIndex(oldItemIndex)
         insertedIndex = self.insertItem(newItem, position=childNumber, parentIndex=parentIndex)
         return insertedIndex
+
+
+    def setInvisibleRootItem(self, baseTreeItem=None):
+        """ Will set the invisible root tree item and reset the model.        
+            All nodes will collapse because of the model reset.
+            
+            If baseTreeItem is None, a single BaseTreeItem will be added. This effectively
+            makes the model empty.
+        """
+        if baseTreeItem is None:
+            BaseTreeItem(nodeName=INVISIBLE_ROOT_NAME)
+        check_class(baseTreeItem, BaseTreeItem)
+
+        self.beginResetModel()
+        self._invisibleRootItem = baseTreeItem
+        self.endResetModel()
 
 
     def isTopLevelIndex(self, itemIndex):

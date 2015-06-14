@@ -19,8 +19,10 @@
     Main window functionality
 
 """
+
 from __future__ import absolute_import, division, print_function
 from libargos.collect.collector import Collector
+from libargos.config.abstractcti import ctiDumps, ctiLoads
 from libargos.config.configtreemodel import ConfigTreeModel
 from libargos.config.configtreeview import ConfigTreeView
 from libargos.info import DEBUGGING, PROJECT_NAME
@@ -64,6 +66,7 @@ class MainWindow(QtGui.QMainWindow):
         self._detailDockWidgets = []
         self._argosApplication = argosApplication
         self._config = ConfigTreeModel()
+        self._persistentSettings = {}  # non-default values for all used plugins
 
         self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
@@ -81,8 +84,6 @@ class MainWindow(QtGui.QMainWindow):
         self.__setupDockWidgets()
         
         if DEBUGGING:
-            self.__addTestItems()
-
             # Select test item
             path = "/trl1brb5g.lx.nc/BAND5/ICID_61347_GROUP_00000/OBSERVATIONS/signal"
             try:
@@ -290,8 +291,8 @@ class MainWindow(QtGui.QMainWindow):
             
             NOTE: does not draw the new inspector, this is the responsibility of the caller.
         """
-        inspectorRegsitry = self.argosApplication.inspectorRegistry
-        inspectorRegItem = inspectorRegsitry.getItemById(identifier)
+        inspectorRegistry = self.argosApplication.inspectorRegistry
+        inspectorRegItem = inspectorRegistry.getItemById(identifier)
         self.setInspectorFromRegItem(inspectorRegItem)
         
         
@@ -316,6 +317,11 @@ class MainWindow(QtGui.QMainWindow):
                 centralLayout.removeWidget(self.inspector)
                 self.inspector.deleteLater()
                 
+                # Store the old config values for persistence
+                assert self.inspectorRegItem is not None, "Sanity check: inspectorRegItem==None"
+                key = self.inspectorRegItem.identifier
+                self._persistentSettings[key] = self.inspector.config.getNonDefaultsDict()
+                
             # Set new inspector
             self._inspectorRegItem = inspectorRegItem
             if inspectorRegItem is None:
@@ -334,8 +340,13 @@ class MainWindow(QtGui.QMainWindow):
             oldBlockState = self.collector.blockSignals(True)
             try:
                 if self.inspector is None:
+                    self._config.setInvisibleRootItem() # clear config tree
                     self.collector.clearAndSetComboBoxes([])
                 else:
+                    key = self.inspectorRegItem.identifier
+                    nonDefaults = self._persistentSettings.get(key, {})
+                    self.inspector.config.setValuesFromDict(nonDefaults)
+                    self._config.setInvisibleRootItem(self.inspector.config)
                     self.inspector.initContents() # TODO: call this here?
                     self.collector.clearAndSetComboBoxes(self.inspector.axesNames())
                     centralLayout.addWidget(self.inspector)
@@ -432,7 +443,15 @@ class MainWindow(QtGui.QMainWindow):
                                  
         self.repoTreeView.readViewSettings('repo_tree/header_state', settings)
         self.configTreeView.readViewSettings('config_tree/header_state', settings)
-        self._config.readModelSettings('config_model', settings)
+
+        #self._config.readModelSettings('config_model', settings)
+        settings.beginGroup('cfg_inspectors')
+        try:
+            for key in settings.childKeys():
+                json = settings.value(key)
+                self._persistentSettings[key] = ctiLoads(json) 
+        finally:
+            settings.endGroup()
 
         identifier = settings.value("inspector", None)
         try:
@@ -450,7 +469,14 @@ class MainWindow(QtGui.QMainWindow):
             settings = QtCore.QSettings()  
         logger.debug("Writing settings to: {}".format(settings.group()))
         
-        self._config.saveProfile('config_model', settings)
+        settings.beginGroup('cfg_inspectors')
+        try:
+            for key, nonDefaults in self._persistentSettings.items():
+                if nonDefaults:
+                    settings.setValue(key, ctiDumps(nonDefaults)) # TODO: do we need JSON?
+        finally:
+            settings.endGroup()
+        
         self.configTreeView.saveProfile("config_tree/header_state", settings)
         self.repoTreeView.saveProfile("repo_tree/header_state", settings)
                     
@@ -499,34 +525,4 @@ class MainWindow(QtGui.QMainWindow):
 
 
 
-    def __addTestItems(self):
-        """ Temporary function to add test CTIs
-        """
-        from libargos.config.emptycti import EmptyCti
-        from libargos.config.untypedcti import UntypedCti
-        from libargos.config.stringcti import StringCti
-        from libargos.config.intcti import IntCti
-        from libargos.config.boolcti import BoolCti
-        from libargos.config.choicecti import ChoiceCti
-        from libargos.config.colorcti import ColorCti
-        
-        grpItem = EmptyCti(nodeName="group")
-        grpIndex = self._config.insertItem(grpItem)
-        self.configTreeView.setExpanded(grpIndex, True) # does not work because of read settings
-        
-        lcItem = UntypedCti(nodeName='line color', defaultData=123)
-        grpItem.insertChild(lcItem)
 
-        # this only works b
-        #rootItem.insertChild(IntCti(nodeName='line-1 color', defaultData=-7, minValue = -5, stepSize=2))
-        self._config.insertItem(IntCti(nodeName='line-1 color', defaultData=-7, minValue = -5, stepSize=2), 
-                                parentIndex=grpIndex)
-        
-        self._config.insertItem(StringCti(nodeName='letter', defaultData='aa', maxLength = 1))
-        self._config.insertItem(BoolCti(nodeName='grid', defaultData=True))
-
-        self._config.insertItem(ChoiceCti(nodeName='hobbit', defaultData=2, 
-                                          choices=['Frodo', 'Sam', 'Pippin', 'Merry']))
-
-        self._config.insertItem(ColorCti(nodeName='favorite color', defaultData="#22FF33"))
-        

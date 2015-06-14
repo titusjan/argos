@@ -71,16 +71,16 @@ def prepend_point_to_extension(extension):
         return '.' + extension
     
 
-def string_to_identifier(s):
+def string_to_identifier(s, white_space_becomes='_'):
     """ Takes a string and makes it suitable for use as an identifier
     
         Translates to lower case
-        Replaces spaces by underscores.
-        Removes whitespace and punctuation.
+        Replaces white space by the white_space_becomes character (default=underscore).
+        Removes and punctuation.
     """
     import re
     s = s.lower()
-    s = re.sub(r"\s+", "_", s) # replace whitespace with underscores
+    s = re.sub(r"\s+", white_space_becomes, s) # replace whitespace with underscores
     s = re.sub(r"-", "_", s) # replace hyphens with underscores
     s = re.sub(r"[^A-Za-z0-9_]", "", s) # remove everything that's not a character, a digit or a _
     return s

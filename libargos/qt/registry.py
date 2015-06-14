@@ -23,6 +23,7 @@ import logging, inspect, os, ast, sys
 from libargos.qt import QtCore
 from libargos.qt.misc import containsSettingsGroup, removeSettingsGroup
 from libargos.utils.cls import import_symbol, check_is_a_string, type_name, check_class
+from libargos.utils.misc import string_to_identifier
 
 logger = logging.getLogger(__name__)
 
@@ -247,14 +248,15 @@ class ClassRegistry(object):
     def getItemById(self, identifier):
         """ Gets a registered item given its identifier. Raises KeyError if not found.
         """
-        return self._index[identifier]
+        key = string_to_identifier(identifier, white_space_becomes='')
+        return self._index[key]
 
             
     def registerItem(self, regItem):
         """ Adds a ClassRegItem object to the registry.
         """
         check_class(regItem, ClassRegItem)
-        key = regItem.identifier
+        key = string_to_identifier(regItem.identifier, white_space_becomes='')
         
         if key in self._index:
             oldRegItem = self._index[key]
@@ -272,7 +274,7 @@ class ClassRegistry(object):
             Will raise a KeyError if the regItem is not registered.
         """
         check_class(regItem, ClassRegItem)
-        key = regItem.identifier
+        key = string_to_identifier(regItem.identifier, white_space_becomes='')
             
         logger.info("Removing {!r} containing {}".format(key, regItem.fullClassName))
         

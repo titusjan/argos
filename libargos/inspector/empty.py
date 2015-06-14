@@ -20,6 +20,7 @@
 import logging
 
 from libargos.info import DEBUGGING
+from libargos.config.emptycti import EmptyCti
 from libargos.inspector.abstract import AbstractInspector
 from libargos.qt import QtGui
 
@@ -38,6 +39,40 @@ class EmptyInspector(AbstractInspector):
         
         self.label = QtGui.QLabel()
         self.contentsLayout.addWidget(self.label)
+
+        
+    @classmethod        
+    def createConfig(cls):
+        """ Creates a config tree item (CTI) hierarchy containing default children.
+        """
+        rootItem = EmptyCti(nodeName='inspector')
+        
+        if DEBUGGING:
+            # Some test config items.
+            from libargos.config.untypedcti import UntypedCti
+            from libargos.config.stringcti import StringCti
+            from libargos.config.intcti import IntCti
+            from libargos.config.boolcti import BoolCti
+            from libargos.config.choicecti import ChoiceCti
+            from libargos.config.colorcti import ColorCti
+            
+            grpItem = EmptyCti(nodeName="group")
+            rootItem.insertChild(grpItem)
+            
+            lcItem = UntypedCti(nodeName='line color', defaultData=123)
+            grpItem.insertChild(lcItem)
+    
+            grpItem.insertChild(IntCti(nodeName='line-1 color', defaultData=-7, 
+                                       minValue = -5, stepSize=2))
+            rootItem.insertChild(StringCti(nodeName='letter', defaultData='aa', maxLength = 1))
+            rootItem.insertChild(BoolCti(nodeName='grid', defaultData=True))
+            rootItem.insertChild(ChoiceCti(nodeName='hobbit', defaultData=2, 
+                                              choices=['Frodo', 'Sam', 'Pippin', 'Merry']))
+            rootItem.insertChild(ColorCti(nodeName='favorite color', defaultData="#22FF33"))
+                    
+        return rootItem
+        
+        
         
 
     def _updateRti(self):
@@ -55,4 +90,13 @@ class EmptyInspector(AbstractInspector):
         
         if DEBUGGING:
             self.label.setText(text)
-
+            
+            
+            
+class EmptyInspectorConfig(AbstractInspector):
+    """ Empty inspector, mainly for debugging purposes.
+    
+        Displays the shape of the selected array if Argos is in debugging mode, otherwise
+        the widget is empty.
+    """
+    

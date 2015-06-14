@@ -20,7 +20,7 @@
 import sys, logging, platform
 
 from libargos.info import DEBUGGING, DEFAULT_PROFILE
-from libargos.inspector.registry import InspectorRegistry
+from libargos.inspector.registry import InspectorRegistry, DEFAULT_INSPECTOR
 from libargos.qt import QtCore
 from libargos.qt.misc import removeSettingsGroup, handleException, initQApplication
 from libargos.qt.registry import GRP_REGISTRY
@@ -209,9 +209,9 @@ class ArgosApplication(object):
     def _profileGroupName(self, profile):
         """ Returns the name of the QSetting group for this profile.
             Converts to lower case and removes whitespace, interpunction, etc.
-            Prepends __debugging__ if the debugging flag is set 
+            Prepends _debug_ if the debugging flag is set 
         """
-        profGroupName = '__debugging__' if DEBUGGING else '' 
+        profGroupName = '_debug_' if DEBUGGING else '' 
         profGroupName += string_to_identifier(profile)
         return profGroupName
         
@@ -273,7 +273,7 @@ class ArgosApplication(object):
         if len(self.mainWindows) == 0:
             logger.warn("No open windows in profile (creating one).")
             #self.addNewMainWindow(inspectorId='Qt/Table')
-            self.addNewMainWindow(inspectorId='Empty inspector')
+            self.addNewMainWindow(inspectorId=DEFAULT_INSPECTOR)
             
         
 

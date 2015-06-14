@@ -19,10 +19,9 @@
 """
 import logging
 
-from json import dumps, loads
-
 from libargos.qt import Qt, QtCore, QtSlot
 from libargos.qt.treemodels import BaseTreeModel
+from libargos.config.abstractcti import ctiDumps, ctiLoads
 from libargos.config.emptycti import EmptyCti
 from libargos.utils.cls import type_name
 
@@ -147,7 +146,7 @@ class ConfigTreeModel(BaseTreeModel):
                 return True
 
         
-    def readModelSettings(self, key, settings):
+    def __obsolete__readModelSettings(self, key, settings):
         """ Reads the persistent program settings.
         
             Will reset the model and thus collapse all nodes.
@@ -159,10 +158,10 @@ class ConfigTreeModel(BaseTreeModel):
         if settings is None:
             settings = QtCore.QSettings()     
             
-        values_json = settings.value(key, None)
+        valuesJson = settings.value(key, None)
         
-        if values_json:
-            values = loads(values_json)
+        if valuesJson:
+            values = ctiLoads(valuesJson)
             self.beginResetModel()
             self.invisibleRootItem.setValuesFromDict(values)
             self.endResetModel()
@@ -170,7 +169,7 @@ class ConfigTreeModel(BaseTreeModel):
             logger.warn("No settings found at: {}".format(key))
     
 
-    def saveProfile(self, key, settings=None):
+    def __obsolete__saveProfile(self, key, settings=None):
         """ Writes the view settings to the persistent store
             :param key: key where the setting will be read from
             :param settings: optional QSettings object which can have a group already opened.        
@@ -180,6 +179,6 @@ class ConfigTreeModel(BaseTreeModel):
             settings = QtCore.QSettings()
             
         values = self.invisibleRootItem.getNonDefaultsDict()
-        values_json = dumps(values)
+        values_json = ctiDumps(values)
         settings.setValue(key, values_json)
 

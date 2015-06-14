@@ -23,6 +23,8 @@ from libargos.qt.registry import ClassRegItem, ClassRegistry, GRP_REGISTRY
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_INSPECTOR = 'Empty Inspector'
+
 GRP_REGISTRY_INSPECTORS = GRP_REGISTRY + '/inspectors'
 
 class InspectorRegItem(ClassRegItem): # TODO: rename to InspectorRegItem? InspectorPlugin?
@@ -82,7 +84,7 @@ class InspectorRegistry(ClassRegistry):
         """ Returns a list with the default plugins in the inspector registry.
         """
         return [    
-            InspectorRegItem('Empty Inspector', 'libargos.inspector.empty.EmptyInspector'), 
+            InspectorRegItem(DEFAULT_INSPECTOR, 'libargos.inspector.empty.EmptyInspector'), 
             InspectorRegItem('Qt/Table', 'libargos.inspector.table.TableInspector'), 
             InspectorRegItem('PyQtGraph/1D Line Plot', 
                              'libargos.inspector.pgplugins.lineplot1d.PgLinePlot1d'), 
