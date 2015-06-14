@@ -72,8 +72,6 @@ class EmptyInspector(AbstractInspector):
                     
         return rootItem
         
-        
-        
 
     def _updateRti(self):
         """ Draws the inspector widget when an RTI is updated.
@@ -92,11 +90,3 @@ class EmptyInspector(AbstractInspector):
             self.label.setText(text)
             
             
-            
-class EmptyInspectorConfig(AbstractInspector):
-    """ Empty inspector, mainly for debugging purposes.
-    
-        Displays the shape of the selected array if Argos is in debugging mode, otherwise
-        the widget is empty.
-    """
-    

@@ -4,11 +4,53 @@
 
 import unittest, logging, sys
 
-from libargos.qt import QtGui
 from libargos.qt.treemodels import BaseTreeModel
 from libargos.qt.treeitems import BaseTreeItem    
 
 
+class TestTreeItemGetByPath(unittest.TestCase):
+
+
+    def setUp(self):
+        
+        self.rootItem = BaseTreeItem('root')
+        self.item0 = self.rootItem.insertChild(BaseTreeItem('item0'))
+        self.item1 = self.item0.insertChild(BaseTreeItem('item1'))
+        self.item1a = self.item0.insertChild(BaseTreeItem('item1a'))
+        self.item2 = self.item1.insertChild(BaseTreeItem('item2'))
+        self.item3 = self.rootItem.insertChild(BaseTreeItem('item3')) 
+        
+
+    def testStartAtItem(self):
+        
+        # Normal use
+        checkItem = self.rootItem.findByNodePath('item3')
+        self.assertIs(checkItem, self.item3)
+        
+        # Long path
+        checkItem = self.rootItem.findByNodePath('item0/item1/item2')
+        self.assertIs(checkItem, self.item2)
+                
+        # Leading slash
+        self.assertRaises(AssertionError, self.rootItem.findByNodePath, '/item3')
+        
+        # Trailing slash
+        checkItem = self.rootItem.findByNodePath('item3/')
+        self.assertIs(checkItem, self.item3)
+        
+        # Long path with double slashes
+        checkItem = self.rootItem.findByNodePath('item0///item1//')
+        self.assertIs(checkItem, self.item1)
+        
+        # Item not found
+        self.assertRaises(IndexError, self.rootItem.findByNodePath, 'item0/narf//')
+
+        # Empty string
+        self.assertRaises(IndexError, self.rootItem.findByNodePath, '')
+
+        # None-strings
+        self.assertRaises(TypeError, self.rootItem.findByNodePath, 444)
+                
 
 class TestGetByPath(unittest.TestCase):
 
@@ -78,7 +120,7 @@ class TestGetByPath(unittest.TestCase):
         # Empty string
         self.assertRaises(IndexError, self.getLastItem, '')
 
-        # None strings
+        # None-strings
         self.assertRaises(TypeError, self.getLastItem, 444)
 
 

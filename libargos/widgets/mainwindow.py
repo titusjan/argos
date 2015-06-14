@@ -371,7 +371,16 @@ class MainWindow(QtGui.QMainWindow):
         """ Shows the plugins dialog with the registered plugins
         """
         self.argosApplication.pluginsDialog.show()
+
         
+    @QtSlot()
+    def collectorContentsChanged(self):
+        """ Slot that updates the UI whenever the contents of the collector has changed. 
+        """
+        logger.debug("collectorContentsChanged()")
+        if self.inspector:
+            self.inspector.updateRti()
+
         
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
     def configContentsChanged(self, _topLeftIndex=None, _bottomRightIndex=None):
@@ -385,21 +394,16 @@ class MainWindow(QtGui.QMainWindow):
         if self.inspectorRegItem and self.inspector:
             key = self.inspectorRegItem.identifier
             self._persistentSettings[key] = self.inspector.config.getNonDefaultsDict()
-                
         
-    @QtSlot()
-    def collectorContentsChanged(self):
-        """ Slot that updates the UI whenever the contents of the collector has changed. 
-        """
-        logger.debug("collectorContentsChanged()")
         self.drawWindowContents()
-        
+                        
             
     def drawWindowContents(self):
         """ Draws all contents of this windows inspector. This includes the inspector.
         """
         logger.debug("#### Drawing window contents: {} ####".format(self.windowTitle()))
         if self.inspector:
+            self.inspector.initContents()
             self.inspector.updateRti()
     
 

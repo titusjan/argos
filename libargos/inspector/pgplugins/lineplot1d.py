@@ -24,6 +24,8 @@ import pyqtgraph as pg
 #from pyqtgraph.Qt import QtGui
 
 from libargos.info import DEBUGGING
+from libargos.config.emptycti import EmptyCti
+from libargos.config.colorcti import ColorCti
 from libargos.inspector.abstract import AbstractInspector
 from libargos.utils.cls import array_has_real_numbers
 
@@ -44,7 +46,6 @@ class PgLinePlot1d(AbstractInspector):
         self.contentsLayout.addWidget(self.plotWidget)
         
         
-        
     @classmethod
     def axesNames(cls):
         """ The names of the axes that this inspector visualizes.
@@ -52,12 +53,21 @@ class PgLinePlot1d(AbstractInspector):
         """
         return tuple(['Y'])
 
-            
+
+    @classmethod        
+    def createConfig(cls):
+        """ Creates a config tree item (CTI) hierarchy containing default children.
+        """
+        rootItem = EmptyCti(nodeName='inspector')
+        rootItem.insertChild(ColorCti(nodeName='pen color', defaultData="#FF0000"))
+        return rootItem
+    
+                
     def _initContents(self):
         """ Draws the inspector widget when no input is available.
             The default implementation shows an error message. Descendants should override this.
         """
-
+        self.plotWidget.clear()
         self.plotWidget.setLabel('left', text='Hello <i>there</i>')
         #self.plotWidget.setLabel('right', text='')
         #self.plotWidget.setClipToView(True)
@@ -65,8 +75,12 @@ class PgLinePlot1d(AbstractInspector):
         self.plotWidget.setLogMode(y=True)
         
         self.plotDataItem = self.plotWidget.plot()
+        
+        penColor = self.config.findByNodePath('pen color').data
+        logger.debug("Pen color: {}".format(penColor))
+        self.plotDataItem.setPen(penColor)
         #self.plotDataItem.setPen((200,200,100)) # QPen (yellow)
-        self.plotDataItem.setPen((0,0,200)) # QPen (yellow)
+        #self.plotDataItem.setPen((0,0,200)) # QPen (yellow)
         
 
 
