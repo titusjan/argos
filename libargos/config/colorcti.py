@@ -44,6 +44,12 @@ class ColorCti(AbstractCti):
             raise ValueError("Invalid color specification: {!r}".format(data))
         return qColor
         
+    @property
+    def decoration(self):
+        """ Returns the data (QColor) as to be displayed as decoration
+        """
+        return self.data
+    
     def _dataToJson(self, qColor):
         """ Converts data or defaultData to serializable json dictionary or scalar.
             Helper function that can be overridden; by default the input is returned.

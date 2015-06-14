@@ -36,6 +36,8 @@ class ConfigTreeModel(BaseTreeModel):
     (COL_NODE_NAME, COL_NODE_PATH, 
      COL_VALUE, COL_DEF_VALUE, 
      COL_CTI_TYPE, COL_DEBUG) = range(len(HEADERS))
+     
+    COL_DECORATION = COL_VALUE   # Column number that contains the decoration.
     
     def __init__(self, parent=None):
         """ Constructor

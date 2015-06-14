@@ -39,7 +39,14 @@ class BaseTreeItem(object):
         return ("<{}: {!r}, children:[{}]>".
                 format(type(self).__name__, self.nodePath, 
                        ', '.join([repr(child) for child in self.childItems])))
-        
+    
+    @property
+    def decoration(self):
+        """ An optional decoration (e.g. icon). 
+            The default implementation returns None (no decoration).
+        """
+        return None
+    
     @property
     def nodeName(self):
         """ The node name. Is used to construct the nodePath"""

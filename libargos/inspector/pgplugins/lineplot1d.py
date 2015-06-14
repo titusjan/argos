@@ -68,9 +68,9 @@ class PgLinePlot1d(AbstractInspector):
         
         # A pen line width of zero indicates a cosmetic pen. This means that the pen width is 
         # always drawn one pixel wide, independent of the transformation set on the painter.
-        # A non-cosmetic width doesn't give good results so the minimum is 0.01
+        # Therefore the minimum is 0.1. Note that line widths other than 1 may be slow.
         rootItem.insertChild(FloatCti('pen width', defaultData=1.0, 
-                                      minValue=0.1, maxValue=100, stepSize=0.1, decimals=1))
+                                      minValue=0.0, maxValue=100, stepSize=1, decimals=1))
         
         rootItem.insertChild(ChoiceCti('pen style', defaultData=0, 
             choices=['solid line', 'dashed line', 'dotted line', 

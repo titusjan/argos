@@ -23,7 +23,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         This BaseTreeModel has one column and can be instantiated for testing purposes.
     """
     HEADERS = tuple('<first column') # override in descendants
-    COL_ICON = None   # Column number that contains the icon. None for no icons
+    COL_DECORATION = None   # Column number that contains the decoration. None for no icons
     
     def __init__(self, parent=None):
         """ Constructor
@@ -122,9 +122,9 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             return self.checkStateForColumn(item, index.column())
         
         elif role == Qt.DecorationRole:
-            if index.column() == self.COL_ICON:
+            if index.column() == self.COL_DECORATION:
                 item = self.getItem(index, altItem=self.invisibleRootItem)
-                return item.icon
+                return item.decoration
         
         return None
 

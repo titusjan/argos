@@ -223,7 +223,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
         self.close()
 
     @property
-    def icon(self):
+    def decoration(self):
         """ The displayed icon.
          
             Shows open icon when node was visited (children are fetched). This allows users
