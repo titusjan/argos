@@ -40,7 +40,8 @@ def main():
     parser.add_argument('fileNames', metavar='FILE', nargs='*', help='Input files')
 
     parser.add_argument('-i', '--inspector', dest='inspector', 
-        help="The identifier of the inspector that will be opened at start up. E.g. 'Qt/Table'")
+        help="""The identifier or fullName of the inspector that will be opened at start up. 
+                E.g. 'Qt/Table'""")
     
     parser.add_argument('-p', '--profile', dest='profile', default=DEFAULT_PROFILE, 
         help="Can be used to have different persistent settings for different use cases.")
@@ -78,7 +79,7 @@ def main():
 
     # Browse will create an ArgosApplication with one MainWindow
     browse(fileNames = args.fileNames,
-           inspectorId=args.inspector, 
+           inspectorFullName=args.inspector, 
            profile=args.profile,  
            resetProfile=args.reset_profile, 
            resetAllProfiles=args.reset_all_profiles, 

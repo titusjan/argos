@@ -29,10 +29,10 @@ GRP_REGISTRY_RTI = GRP_REGISTRY + '/rti'
 class RtiRegItem(ClassRegItem):
     """ Class to keep track of a registered Repo Tree Item.
     """
-    def __init__(self, identifier, fullClassName, extensions, pythonPath=''):
+    def __init__(self, fullName, fullClassName, extensions, pythonPath=''):
         """ Constructor. See the ClassRegItem class doc string for the parameter help.
         """
-        super(RtiRegItem, self).__init__(identifier, fullClassName, pythonPath=pythonPath)
+        super(RtiRegItem, self).__init__(fullName, fullClassName, pythonPath=pythonPath)
         self._extensions = [prepend_point_to_extension(ext) for ext in extensions]
         
 
@@ -106,7 +106,7 @@ class RtiRegistry(ClassRegistry):
             self._registerExtension(ext, regItem) 
             
             
-    def registerRti(self, identifier, fullClassName, extensions=None, pythonPath=''):
+    def registerRti(self, fullName, fullClassName, extensions=None, pythonPath=''):
         """ Class that maintains the collection of registered inspector classes.
             Maintains a lit of file extensions that open the RTI by default. 
         """
@@ -114,7 +114,7 @@ class RtiRegistry(ClassRegistry):
         extensions = extensions if extensions is not None else []
         extensions = [prepend_point_to_extension(ext) for ext in extensions]
 
-        regRti = RtiRegItem(identifier, fullClassName, extensions, pythonPath=pythonPath)
+        regRti = RtiRegItem(fullName, fullClassName, extensions, pythonPath=pythonPath)
         self.registerItem(regRti)
 
         

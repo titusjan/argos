@@ -41,11 +41,11 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
     
     SORT_ROLE = Qt.UserRole
     
-    def __init__(self, registry, attrNames = ('identifier', ), parent=None):
+    def __init__(self, registry, attrNames = ('fullName', ), parent=None):
         """ Constructor.
         
             :param registry: Underlying registry. Must descent from ClassRegistry
-            :param attrNames: List of attributes that will be displayed (def. only the identifier).
+            :param attrNames: List of attributes that will be displayed (def. only the fullName).
             :param parent: Parent widget
         """
         super(RegistryTableModel, self).__init__(parent)
@@ -86,8 +86,8 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
             return str(getattr(item, attrName))
         
         elif role == self.SORT_ROLE:
-            # Use the identifier column as a tie-breaker
-            return (getattr(item, attrName), item.identifier)
+            # Use the fullName column as a tie-breaker
+            return (getattr(item, attrName), item.fullName)
         
         elif role == Qt.ForegroundRole:
             if item.successfullyImported is None:

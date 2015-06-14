@@ -23,7 +23,7 @@ from libargos.info import DEBUGGING, DEFAULT_PROFILE
 from libargos.inspector.registry import InspectorRegistry, DEFAULT_INSPECTOR
 from libargos.qt import QtCore
 from libargos.qt.misc import removeSettingsGroup, handleException, initQApplication
-from libargos.qt.registry import GRP_REGISTRY
+from libargos.qt.registry import GRP_REGISTRY, nameToIdentifier
 from libargos.repo.repotreemodel import RepoTreeModel
 from libargos.repo.registry import globalRtiRegistry
 from libargos.utils.misc import string_to_identifier
@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 
 def browse(fileNames = None, 
-           inspectorId=None, 
+           inspectorFullName=None, 
            profile=DEFAULT_PROFILE, 
            resetProfile=False, 
            resetAllProfiles=False, 
@@ -64,7 +64,7 @@ def browse(fileNames = None,
         __addTestData(argosApp)
     
     # Create windows for this profile.     
-    argosApp.loadProfile(profile=profile, inspectorId=inspectorId)
+    argosApp.loadProfile(profile=profile, inspectorFullName=inspectorFullName)
 
     return argosApp.execute()
 
@@ -233,10 +233,10 @@ class ArgosApplication(object):
             settings.remove(profGroupName)
         
         
-    def loadProfile(self, profile, inspectorId=None):
+    def loadProfile(self, profile, inspectorFullName=None):
         """ Reads the persistent program settings for the current profile.
         
-            If inspectorId is given, a window with this inspector will be created if it wasn't
+            If inspectorFullName is given, a window with this inspector will be created if it wasn't
             already created in the profile. All windows with this inspector will be raised.
         """ 
         settings = QtCore.QSettings()
@@ -258,22 +258,22 @@ class ArgosApplication(object):
         finally:
             settings.endGroup()
             
-        if inspectorId is not None:
-            windows = [win for win in self._mainWindows if win.inspectorId == inspectorId]
+        if inspectorFullName is not None:
+            windows = [win for win in self._mainWindows if win.inspectorId == inspectorFullName]
             if len(windows) == 0:
-                logger.info("Creating window for inspector: {!r}".format(inspectorId))
+                logger.info("Creating window for inspector: {!r}".format(inspectorFullName))
                 try:
-                    win = self.addNewMainWindow(inspectorId=inspectorId)
+                    win = self.addNewMainWindow(inspectorFullName=inspectorFullName)
                 except KeyError:
-                    logger.warn("No inspector found with ID: {}".format(inspectorId))
+                    logger.warn("No inspector found with ID: {}".format(inspectorFullName))
             else:
                 for win in windows:
                     win.raise_()
             
         if len(self.mainWindows) == 0:
             logger.warn("No open windows in profile (creating one).")
-            #self.addNewMainWindow(inspectorId='Qt/Table')
-            self.addNewMainWindow(inspectorId=DEFAULT_INSPECTOR)
+            #self.addNewMainWindow(inspectorFullName='Qt/Table')
+            self.addNewMainWindow(inspectorFullName=DEFAULT_INSPECTOR)
             
         
 
@@ -333,10 +333,10 @@ class ArgosApplication(object):
             self.repo.loadFile(fileName, rtiClass=rtiClass)
             
             
-    def addNewMainWindow(self, settings=None, inspectorId=None):
+    def addNewMainWindow(self, settings=None, inspectorFullName=None):
         """ Creates and shows a new MainWindow.
         
-            If inspectorId is set, it will set the identifier from that ID.
+            If inspectorFullName is set, it will set the identifier from that name.
             If the inspector identifier is not found in the registry, a KeyError is raised.
         """
         mainWindow = MainWindow(self)
@@ -344,7 +344,8 @@ class ArgosApplication(object):
         if settings:
             mainWindow.readViewSettings(settings)
         
-        if inspectorId:
+        if inspectorFullName:
+            inspectorId = nameToIdentifier(inspectorFullName)
             mainWindow.setInspectorById(inspectorId)
             
         self.mainWindows.append(mainWindow)

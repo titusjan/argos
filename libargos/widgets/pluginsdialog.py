@@ -191,7 +191,7 @@ class PluginsDialog(QtGui.QDialog):
         self.tabWidget = QtGui.QTabWidget()
         layout.addWidget(self.tabWidget)
         
-        attrNames = ['identifier', 'fullClassName', 'pythonPath'] 
+        attrNames = ['fullName', 'fullClassName', 'pythonPath'] 
         headerSizes = [200, 300, None]
         
         if inspectorRegistry:
@@ -204,7 +204,7 @@ class PluginsDialog(QtGui.QDialog):
                                  attrNames=attrNames, headerSizes=headerSizes)
             self.tabWidget.addTab(rtiTab, "File Formats")     
 
-        # Sort by identifier by default.
+        # Sort by fullName by default.
         for tabNr in range(self.tabWidget.count()):
             self.tabWidget.widget(tabNr).table.sortByColumn(0, Qt.AscendingOrder) 
 

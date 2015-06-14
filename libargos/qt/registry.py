@@ -30,22 +30,30 @@ logger = logging.getLogger(__name__)
 
 GRP_REGISTRY = 'registry'
 
+def nameToIdentifier(fullName):
+    """ Constructs the regItem identifier given its full name
+    """
+    return string_to_identifier(fullName, white_space_becomes='')
     
 class ClassRegItem(object):
-    """ Represents an class that is registered in the registry. Each class has an identifier that
-        must be unique and a fullClassName with name the class (inclusive package and module part).
+    """ Represents an class that is registered in the registry.
+        
+        Each regItem has a fullName (e.g. Qt/Table) that is used in menus, dialogs, etc. From the
+        fullName an identifier is constructed by converting to lower case and removing white space.
+        The identifier must be unique. The classFullName is the name of the underlying class, 
+        including package and module names. If must be accessible from the python-path.
         
         Each registry item (RegItem) can import its class. If the import fails, the exception info 
         is put into the exception property. The underlying class is not imported by default; 
         use tryImportClass or getClass() for this.
         
         Some of the underlying class's attributes, such as the docstring, are made available as 
-        properties of the RegItem as well.
+        properties of the RegItem as well. If the class is not yet imported, they return None.
     """
-    def __init__(self, identifier, fullClassName, pythonPath=''):
+    def __init__(self, fullName, fullClassName, pythonPath=''):
         """ Constructor.
         
-            :param identifier: identifier comprising of library and name, separated by a slash.
+            :param fullName: fullName comprising of library and name, separated by a slash.
                 Can contain spaces. E.g.: 'library name/My Widget'
                 Must be unique when spaces are removed and converted to lower case. 
             :param fullClassName: full name of the underlying class. 
@@ -54,7 +62,8 @@ class ClassRegItem(object):
                 Can be multiple directories separated by a colon (:)
         """
         check_is_a_string(fullClassName)
-        self._identifier = identifier
+        self._identifier = nameToIdentifier(fullName)
+        self._fullName = fullName
         self._fullClassName = fullClassName
         self._pythonPath = pythonPath        
 
@@ -63,28 +72,35 @@ class ClassRegItem(object):
         self._exception = None # Any exception that occurs during the class import
         
     def __repr__(self):
-        return "<{} (Ox{:x}): {!r}>".format(type_name(self), id(self), self.identifier)
+        return "<{} (Ox{:x}): {!r}>".format(type_name(self), id(self), self.fullName)
     
     @property
     def identifier(self):
-        """ Identifier comprising of library and name, separated by a slash.
+        """ Identifier that uniquely identifies the regItem
+            Can contain slashes. E.g.: 'libraryname/MyWidget'
+        """
+        return self._identifier
+    
+    @property
+    def fullName(self):
+        """ Full plugin name comprising of library and name, separated by a slash.
             Can contain spaces. E.g.: 'library name/My Widget'
             Must be unique when spaces are removed and converted to lower case. 
         """
-        return self._identifier
+        return self._fullName
 
     @property
     def name(self):
-        """ The last part of the identifier.
+        """ The last part of the fullName.
         """
-        return os.path.basename(self._identifier)
+        return os.path.basename(self._fullName)
 
     @property
     def library(self):
-        """ The identifier minus the last part (the name).
+        """ The fullName minus the last part (the name).
             Used to group libraries together, for instance in menus. 
         """
-        return os.path.dirname(self._identifier)
+        return os.path.dirname(self._fullName)
 
     @property
     def fullClassName(self):
@@ -197,7 +213,7 @@ class ClassRegItem(object):
         """ Returns a dictionary for serialization. We don't use JSON since all items are
             quite simple and the registry will always contain the same type of ClassRegItem
         """
-        return {'identifier': self.identifier, 
+        return {'fullName': self.fullName, 
                 'fullClassName': self.fullClassName, 
                 'pythonPath': self.pythonPath}
 
@@ -248,25 +264,22 @@ class ClassRegistry(object):
     def getItemById(self, identifier):
         """ Gets a registered item given its identifier. Raises KeyError if not found.
         """
-        key = string_to_identifier(identifier, white_space_becomes='')
-        return self._index[key]
+        return self._index[identifier]
 
             
     def registerItem(self, regItem):
         """ Adds a ClassRegItem object to the registry.
         """
         check_class(regItem, ClassRegItem)
-        key = string_to_identifier(regItem.identifier, white_space_becomes='')
-        
-        if key in self._index:
-            oldRegItem = self._index[key]
+        if regItem.identifier in self._index:
+            oldRegItem = self._index[regItem.identifier]
             logger.warn("Class key {!r} already registered as {}. Removing old regItem."
-                        .format(key, oldRegItem.fullClassName))
+                        .format(regItem.identifier, oldRegItem.fullClassName))
             self.removeItem(oldRegItem)
             
-        logger.info("Registering {!r} with {}".format(key, regItem.fullClassName))
+        logger.info("Registering {!r} with {}".format(regItem.identifier, regItem.fullClassName))
         self._items.append(regItem)
-        self._index[key] = regItem
+        self._index[regItem.identifier] = regItem
 
             
     def removeItem(self, regItem):
@@ -274,11 +287,9 @@ class ClassRegistry(object):
             Will raise a KeyError if the regItem is not registered.
         """
         check_class(regItem, ClassRegItem)
-        key = string_to_identifier(regItem.identifier, white_space_becomes='')
-            
-        logger.info("Removing {!r} containing {}".format(key, regItem.fullClassName))
+        logger.info("Removing {!r} containing {}".format(regItem.identifier, regItem.fullClassName))
         
-        del self._index[key]
+        del self._index[regItem.identifier]
         idx = self._items.index(regItem)
         del self._items[idx]
 
