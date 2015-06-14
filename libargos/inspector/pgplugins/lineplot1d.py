@@ -25,9 +25,11 @@ import pyqtgraph as pg
 from libargos.qt import Qt, QtGui
 from libargos.info import DEBUGGING
 from libargos.config.emptycti import EmptyCti
+from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.colorcti import ColorCti
-from libargos.config.intcti import IntCti
+from libargos.config.floatcti import FloatCti
+#from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector
 from libargos.utils.cls import array_has_real_numbers
 
@@ -61,18 +63,29 @@ class PgLinePlot1d(AbstractInspector):
     def createConfig(cls):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
-        rootItem = EmptyCti(nodeName='inspector')
-        rootItem.insertChild(ColorCti(nodeName='pen color', defaultData="#FF0000"))
+        rootItem = EmptyCti('inspector')
+        rootItem.insertChild(ColorCti('pen color', defaultData="#FF0000"))
         
         # A pen line width of zero indicates a cosmetic pen. This means that the pen width is 
         # always drawn one pixel wide, independent of the transformation set on the painter.
         # A non-cosmetic width doesn't give good results
-        #rootItem.insertChild(IntCti(nodeName='pen width', defaultData=1, 
+        #rootItem.insertChild(IntCti('pen width', defaultData=1, 
         #                            minValue = 0, maxValue=100))
         
-        rootItem.insertChild(ChoiceCti(nodeName='pen style', defaultData=0, 
+        rootItem.insertChild(ChoiceCti('pen style', defaultData=0, 
             choices=['solid line', 'dashed line', 'dotted line', 
-                     'dash-dot line', 'dash-dot-dot line'])) 
+                     'dash-dot line', 'dash-dot-dot line']))
+        
+        logAxesItem = rootItem.insertChild(EmptyCti('logarithmic'))
+        logAxesItem.insertChild(BoolCti('X-axis', defaultData=False))
+        logAxesItem.insertChild(BoolCti('Y-axis', defaultData=False))
+        
+        gridItem = rootItem.insertChild(EmptyCti('grid'))
+        gridItem.insertChild(BoolCti('X-axis', defaultData=True))
+        gridItem.insertChild(BoolCti('Y-axis', defaultData=True))
+        gridItem.insertChild(FloatCti('alpha', defaultData=0.25, 
+                                      minValue=0.0, maxValue=1.0, stepSize=0.01))
+                 
         return rootItem
     
                 
@@ -83,9 +96,13 @@ class PgLinePlot1d(AbstractInspector):
         self.plotWidget.clear()
         self.plotWidget.setLabel('left', text='Hello <i>there</i>')
         #self.plotWidget.setLabel('right', text='')
-        #self.plotWidget.setClipToView(True)
         self.plotWidget.showAxis('right')
-        self.plotWidget.setLogMode(y=True)
+        self.plotWidget.setLogMode(x=self.configValue('logarithmic/X-axis'), 
+                                   y=self.configValue('logarithmic/Y-axis'))
+
+        self.plotWidget.showGrid(x=self.configValue('grid/X-axis'), 
+                                 y=self.configValue('grid/Y-axis'), 
+                                 alpha=self.configValue('grid/alpha'))
         
         self.plotDataItem = self.plotWidget.plot()
         

@@ -45,7 +45,7 @@ class EmptyInspector(AbstractInspector):
     def createConfig(cls):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
-        rootItem = EmptyCti(nodeName='inspector')
+        rootItem = EmptyCti('inspector')
         
         if DEBUGGING:
             # Some test config items.
@@ -56,19 +56,18 @@ class EmptyInspector(AbstractInspector):
             from libargos.config.choicecti import ChoiceCti
             from libargos.config.colorcti import ColorCti
             
-            grpItem = EmptyCti(nodeName="group")
+            grpItem = EmptyCti("group")
             rootItem.insertChild(grpItem)
             
-            lcItem = UntypedCti(nodeName='line color', defaultData=123)
+            lcItem = UntypedCti('line color', defaultData=123)
             grpItem.insertChild(lcItem)
     
-            grpItem.insertChild(IntCti(nodeName='line-1 color', defaultData=-7, 
-                                       minValue = -5, stepSize=2))
-            rootItem.insertChild(StringCti(nodeName='letter', defaultData='aa', maxLength = 1))
-            rootItem.insertChild(BoolCti(nodeName='grid', defaultData=True))
-            rootItem.insertChild(ChoiceCti(nodeName='hobbit', defaultData=2, 
-                                              choices=['Frodo', 'Sam', 'Pippin', 'Merry']))
-            rootItem.insertChild(ColorCti(nodeName='favorite color', defaultData="#22FF33"))
+            grpItem.insertChild(IntCti('line-1 color', defaultData=-7, minValue = -5, stepSize=2))
+            rootItem.insertChild(StringCti('letter', defaultData='aa', maxLength = 1))
+            rootItem.insertChild(BoolCti('grid', defaultData=True))
+            rootItem.insertChild(ChoiceCti('hobbit', defaultData=2, 
+                                           choices=['Frodo', 'Sam', 'Pippin', 'Merry']))
+            rootItem.insertChild(ColorCti('favorite color', defaultData="#22FF33"))
                     
         return rootItem
         

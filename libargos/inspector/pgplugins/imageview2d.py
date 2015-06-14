@@ -64,8 +64,8 @@ class PgImageView2d(AbstractInspector):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
         rootItem = EmptyCti(nodeName='inspector')
-        rootItem.insertChild(BoolCti(nodeName='auto range', defaultData=True))
-        rootItem.insertChild(BoolCti(nodeName='auto levels', defaultData=True))
+        rootItem.insertChild(BoolCti('auto range', defaultData=True))
+        rootItem.insertChild(BoolCti('auto levels', defaultData=True))
         return rootItem
     
                 
