@@ -23,6 +23,8 @@ import logging
 import pyqtgraph as pg
 
 from libargos.info import DEBUGGING
+from libargos.config.emptycti import EmptyCti
+from libargos.config.boolcti import BoolCti
 from libargos.inspector.abstract import AbstractInspector
 from libargos.utils.cls import array_has_real_numbers
 
@@ -55,7 +57,23 @@ class PgImageView2d(AbstractInspector):
             See the parent class documentation for a more detailed explanation.
         """
         return tuple(['X', 'Y'])
-            
+           
+
+    @classmethod        
+    def createConfig(cls):
+        """ Creates a config tree item (CTI) hierarchy containing default children.
+        """
+        rootItem = EmptyCti(nodeName='inspector')
+        rootItem.insertChild(BoolCti(nodeName='auto range', defaultData=True))
+        rootItem.insertChild(BoolCti(nodeName='auto levels', defaultData=True))
+        return rootItem
+    
+                
+    def _initContents(self):
+        """ Draws the inspector widget when no input is available. 
+        """
+        pass
+
 
     def _updateRti(self):
         """ Draws the inspector widget when no input is available.
@@ -68,7 +86,11 @@ class PgImageView2d(AbstractInspector):
             if not DEBUGGING:
                 raise ValueError("No data available or it does not contain real numbers")
         else:
-            self.imageView.setImage(slicedArray)
+            # TODO: autoRange doesn't seem to do anything.
+            # TODO: cache values?
+            autoRange = self.config.findByNodePath('auto range').data
+            autoLevels = self.config.findByNodePath('auto levels').data
+            self.imageView.setImage(slicedArray, autoRange=autoRange, autoLevels=autoLevels)
 
 
         
