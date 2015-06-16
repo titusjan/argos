@@ -32,9 +32,10 @@ def setPgConfigOptions(**kwargs):
 
 
 # Sets some config options
-setPgConfigOptions(antialias=True, exitCleanup=False, crashWarning=True, 
-                   leftButtonPan=True,  ## If False, left button drags a rubber band for zooming
-                   foreground='k',      ## Default foreground color for axes, labels, etc.
-                   background='w')     ## Default background for GraphicsWidget 
+setPgConfigOptions(exitCleanup=False, crashWarning=True,
+                   antialias=False,     # Anti aliasing of lines having width > 1 may be slow (OS-X)
+                   leftButtonPan=True,  # If False, left button drags a rubber band for zooming
+                   foreground='k',      # Default foreground color for axes, labels, etc.
+                   background='w')      # Default background for GraphicsWidget 
 
 
