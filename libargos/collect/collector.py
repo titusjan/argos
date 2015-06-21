@@ -446,9 +446,8 @@ class Collector(QtGui.QWidget):
         return slicedArray
 
 
-
     def getSlicesString(self):
-        """ Returns a string describing the slices that are used to get the sliced array.
+        """ Returns a string representation of the slices that are used to get the sliced array.
             For example returns '[:, 5]' if the combo box selects dimension 9 and the spin box 5.
         """
         if self.rti is None or self.rti.asArray is None:
@@ -504,7 +503,26 @@ class Collector(QtGui.QWidget):
         return ''
 
     
-        
+    def getRtiInfo(self):
+        """ Returns a dictionary with information on the selected RTI (repo tree item).
+            This can be used in string formatting of config options. For instance: the plot title
+            can be specified as: '{path} {slices}', which will be expanded with the actual nodePath
+            and slices-string of the RTI.
+            
+            The dictionary has the following contents:
+                slices : a string representation of the selected slice indices.
+                name: the nodeName of the RTI
+                path: the nodePath of the RTI
+            
+            Returns an empty dict when no RTI is selected.
+        """
+        if self.rti is None:
+            return {}
+        else:
+            rti = self.rti
+            return {'slices': self.getSlicesString(),
+                    'name': rti.nodeName,  
+                    'path': rti.nodePath }
 
 
         

@@ -29,6 +29,7 @@ from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.colorcti import ColorCti
 from libargos.config.floatcti import FloatCti
+from libargos.config.stringcti import StringCti
 #from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector
 from libargos.utils.cls import array_has_real_numbers
@@ -71,6 +72,9 @@ class PgLinePlot1d(AbstractInspector):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
         rootItem = EmptyCti('inspector')
+        
+        rootItem.insertChild(StringCti('title', defaultData="{path} {slices}", maxLength=255))
+        
         rootItem.insertChild(ColorCti('pen color', defaultData="#3F8E3A"))
         
         # A pen line width of zero indicates a cosmetic pen. This means that the pen width is 
@@ -121,6 +125,21 @@ class PgLinePlot1d(AbstractInspector):
     def _updateRti(self):
         """ Draws the RTI
         """
+        slicedArray = self.collector.getSlicedArray()
+        if slicedArray is None or not array_has_real_numbers(slicedArray):
+            self.plotDataItem.clear()
+            if not DEBUGGING:
+                raise ValueError("No data available or it does not contain real numbers.")
+            return
+
+        assert self.collector.rti, "sanity check."
+        
+        self.plotDataItem.setData(slicedArray)
+        
+        logger.debug("self.collector.getRtiInfo(): {}".format(self.collector.getRtiInfo()))
+        title = self.configValue('title').format(**self.collector.getRtiInfo())
+        self.plotWidget.setTitle(title)
+
         ylabel = self.collector.dependentDimensionName()
         depUnit = self.collector.dependentDimensionUnit()
         if depUnit:
@@ -133,24 +152,7 @@ class PgLinePlot1d(AbstractInspector):
             xlabel += ' ({})'.format(indepUnit)
         self.plotWidget.setLabel('bottom', xlabel)
         
-        rti = self.collector.rti
-        rtiProps = {'rtiPath': rti.nodePath, 'slices': self.collector.getSlicesString()}
-        cfgTitle = "{rtiPath} {slices}"
-        try:
-            title = cfgTitle.format(**rtiProps) 
-        except Exception:
-            logger.warn("Unable set title {!r} from: {}".format(cfgTitle, rtiProps))
-            title = 'Unable to determine the title'
             
-        self.plotWidget.setTitle(title)
-            
-        slicedArray = self.collector.getSlicedArray()
         
-        if slicedArray is None or not array_has_real_numbers(slicedArray):
-            self.plotDataItem.clear()
-            if not DEBUGGING:
-                raise ValueError("No data available or it does not contain real numbers")
-        else:
-            self.plotDataItem.setData(slicedArray)
             
         
