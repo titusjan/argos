@@ -41,6 +41,14 @@ class EmptyInspector(AbstractInspector):
         self.contentsLayout.addWidget(self.label)
 
         
+    @classmethod
+    def axesNames(cls):
+        """ The names of the axes that this inspector visualizes.
+            See the parent class documentation for a more detailed explanation.
+        """
+        return tuple(['Y', 'X'])
+          
+            
     @classmethod        
     def createConfig(cls):
         """ Creates a config tree item (CTI) hierarchy containing default children.
@@ -83,9 +91,10 @@ class EmptyInspector(AbstractInspector):
         else:
             text = str(slicedArray.shape)
         
-        logger.debug("_drawContents: {}".format(text))
+        logger.debug("_updateRti shape: {}".format(text))
         
         if DEBUGGING:
-            self.label.setText(text)
+            self.label.setText("slice shape: {}".format(text))
+            
             
             

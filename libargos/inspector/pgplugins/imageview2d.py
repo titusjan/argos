@@ -40,7 +40,7 @@ class PgImageView2d(AbstractInspector):
         """
         super(PgImageView2d, self).__init__(collector, parent=parent)
         
-        self.imageView = pg.ImageView(name='2d_image_view_#{}'.format(self.windowNumber))
+        self.imageView = pg.ImageView(name='2d_image_view_#{}'.format(self.windowNumber)) 
         self.contentsLayout.addWidget(self.imageView)
         
         
@@ -56,7 +56,7 @@ class PgImageView2d(AbstractInspector):
         """ The names of the axes that this inspector visualizes.
             See the parent class documentation for a more detailed explanation.
         """
-        return tuple(['X', 'Y'])
+        return tuple(['Rows', 'Columns'])
            
 
     @classmethod        
@@ -64,15 +64,18 @@ class PgImageView2d(AbstractInspector):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
         rootItem = EmptyCti(nodeName='inspector')
-        rootItem.insertChild(BoolCti('auto range', defaultData=True))
         rootItem.insertChild(BoolCti('auto levels', defaultData=True))
+        rootItem.insertChild(BoolCti('auto range', defaultData=True))
+        rootItem.insertChild(BoolCti('lock aspect ratio', defaultData=False))
+
         return rootItem
     
                 
     def _initContents(self):
         """ Draws the inspector widget when no input is available. 
         """
-        pass
+        viewBox = self.imageView.view
+        viewBox.setAspectLocked(self.configValue('lock aspect ratio'))
 
 
     def _updateRti(self):
@@ -86,11 +89,14 @@ class PgImageView2d(AbstractInspector):
             if not DEBUGGING:
                 raise ValueError("No data available or it does not contain real numbers")
         else:
-            # TODO: autoRange doesn't seem to do anything.
-            # TODO: cache values?
+            # TODO: cache config values?
             autoRange = self.configValue('auto range')
             autoLevels = self.configValue('auto levels')
-            self.imageView.setImage(slicedArray, autoRange=autoRange, autoLevels=autoLevels)
-
+            
+            # Unfortunately, PyQtGraph uses the following dimension order: T, X, Y, Color.
+            # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0} 
+            # doesn't seem to do anything.
+            self.imageView.setImage(slicedArray.transpose(), 
+                                    autoRange=autoRange, autoLevels=autoLevels)
 
         

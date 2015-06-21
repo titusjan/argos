@@ -105,20 +105,19 @@ class AbstractInspector(QtGui.QStackedWidget):
             an image, and has axes names 'X' and 'Y', is 2-dimensional.
             
             The names should not include the string "Axis"; the fullAxesNames returns that.
-            The fullAxesNames are used by the data collector to create its combo boxes. 
         """
         return tuple()
     
-    @classmethod
-    def fullAxesNames(cls):
-        """ The full names of the axes that this inspector visualizes.  
-            
-            This is the axis name plus the literal string '-Axis'. 
-            
-            Descendants do not need to override this method but should override axesNames instead.
-            See also the axesNames documentation.
-        """
-        return tuple(axisName + '-Axis' for axisName in cls.axesNames())
+#    @classmethod OBSOLETE?
+#    def fullAxesNames(cls):
+#        """ The full names of the axes that this inspector visualizes.  
+#            
+#            This is the axis name plus the literal string '-Axis'. 
+#            
+#            Descendants do not need to override this method but should override axesNames instead.
+#            See also the axesNames documentation.
+#        """
+#        return tuple(axisName + '-Axis' for axisName in cls.axesNames())
     
     @property
     def collector(self):

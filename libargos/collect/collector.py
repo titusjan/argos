@@ -265,9 +265,10 @@ class Collector(QtGui.QWidget):
             for dimNr in range(nDims):
                 comboBox.addItem(self.dimensionNameByNumber(dimNr), userData=dimNr)
                         
-                # We set the nth combo-box index to the last item - n. This because the 
-                # NetCDF-CF conventions have the preferred dimension order of T, Z, Y, X. 
-                comboBox.setCurrentIndex(max(0, nDims - comboBoxNr))
+            # We set the nth combo-box index to the last item - n. This because the 
+            # NetCDF-CF conventions have the preferred dimension order of T, Z, Y, X. 
+            # The +1 below is from the fake dimension.
+            comboBox.setCurrentIndex(max(0, nDims + 1 - len(self._comboBoxes) + comboBoxNr))
             
             
     def _comboBoxDimensionIndex(self, comboBox):
@@ -408,7 +409,7 @@ class Collector(QtGui.QWidget):
             return None  
 
         # The dimensions that are selected in the combo boxes will be set to slice(None), 
-        # the values from the spinboxes will be set as a single integeger value      
+        # the values from the spinboxes will be set as a single integer value      
         nDims = self.rti.nDims
         sliceList = [slice(None)] * nDims 
                 
@@ -428,15 +429,15 @@ class Collector(QtGui.QWidget):
             logger.debug("Adding fake dimension: {}".format(dimNr))
             slicedArray = np.expand_dims(slicedArray, dimNr)
         
-        logging.debug("slicedArray.shape: {}".format(slicedArray.shape))
-        
         # Shuffle the dimensions to be in the order as specified by the combo boxes    
         comboDims = [self._comboBoxDimensionIndex(cb) for cb in self._comboBoxes]
         permutations = np.argsort(comboDims)
         logger.debug("Transposing dimensions: {}".format(permutations))
         slicedArray = np.transpose(slicedArray, permutations)
+
+        logging.debug("slicedArray.shape: {}".format(slicedArray.shape))
         
-        # Sanity check
+        # Post-condition check
         assert slicedArray.ndim == self.maxCombos, \
             "Bug: get_sliced_array should return a {:d}D array, got: {}D" \
             .format(self._num_comboboxes, slicedArray.ndim)

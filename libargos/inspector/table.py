@@ -114,7 +114,7 @@ class TableInspector(AbstractInspector):
         """ The names of the axes that this inspector visualizes.
             See the parent class documentation for a more detailed explanation.
         """
-        return tuple(['X', 'Y'])
+        return tuple(['Rows', 'Columns'])
     
     def _updateRti(self):
         """ Draws the inspector widget when no input is available.

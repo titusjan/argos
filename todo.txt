@@ -63,7 +63,6 @@ TODO Long term or nice to have:
 	http://pythonhosted.org/setuptools/setuptools.html#dynamic-discovery-of-services-and-plugins
 	
 THINK:
-	use QObject.blockSignals
 	use decorators in AbstractLazyLoadTreeItem?
 	createFromFileName does not work with memory RTI. Options:
 		1) Implement resource attribute.
@@ -75,7 +74,7 @@ THINK:
 		only work per repo tree viewer? 
 		# https://steveire.wordpress.com/2010/04/20/sharing-a-qitemselection-between-views-through-proxy-models/
 	
-	Collectors must be able to do small calculations (e.g. auto-signal = exp - dark)
+	Collectors must be able to do small calculations? (e.g. auto-signal = exp - dark). Probably not!
 	Inspectors can do calculations as well (e.g. image processing; select filter in combobox)
 	
 USE CASES:
@@ -87,6 +86,11 @@ BUGS:
 	/Users/titusjan/Data/argos/2015_04_21T01_00_34_LaserSunIsrfStraySts/quicklook_000_minutes-000-020
 	
 	When a floatCti has many decimals, the spin box doesn't cover the text behind it.
-	When item is unvisited, the detail panes must be updated.
+	When item is unvisited, the detail panes must be updated (also the collector). Check unvisiting.
+	
+PYQT_GRAPH:
+	ImageView without the menu
+	ImageView.setImage(axes) only seems to look at the 't' dimension.
+	 
 	
 	
