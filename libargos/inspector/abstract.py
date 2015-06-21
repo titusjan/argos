@@ -138,7 +138,7 @@ class AbstractInspector(QtGui.QStackedWidget):
             Shows the error page in case an exception is raised during initialization.
             Descendants should override _initContents, not initContents.
         """
-        logger.debug("## inspector initContents(): {}".format(self))
+        logger.debug("---- inspector initContents(): {} ----".format(self))
         try:
             self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
             self._initContents()
@@ -166,12 +166,12 @@ class AbstractInspector(QtGui.QStackedWidget):
             Shows the error page in case an exception is raised while drawing the contents.
             Descendants should override _updateRti, not updateRti.
         """
-        logger.debug("## inspector updateRti(): {}".format(self))
+        logger.debug("---- inspector updateRti(): {}".format(self))
         try:
             self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
             self._updateRti()
         except Exception as ex:
-            logger.error("Error while drawing the inspector: {}".format(ex))
+            logger.error("Error while drawing the inspector: {} ----".format(ex))
             #logger.execption(ex)
             self.setCurrentIndex(self.ERROR_PAGE_IDX)
             self._showError(msg=str(ex), title=type_name(ex))

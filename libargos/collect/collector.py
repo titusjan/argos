@@ -94,14 +94,15 @@ class Collector(QtGui.QWidget):
     @property
     def rti(self):
         """ The current repo tree item. Can be None.
-            Do not store references to this as it may be removed by the user!
         """
         return self._rti
 
 
     @property
-    def comboLabels(self):
-        """ Returns a copy of the combobox labels (since they are read only) """
+    def comboLabels(self): # TODO: rename?
+        """ Returns a copy of the combobox labels (since they are read only).
+            The combobox labels indicate the independent dimensions of the visualization.
+        """
         return tuple(self._comboLabels)    
 
 
@@ -403,13 +404,13 @@ class Collector(QtGui.QWidget):
             :returns: Numpy array with the same number of dimension as the number of 
                 comboboxes; returns None if no slice can be made.
         """
-        logging.debug("getSlicedArray() called")
+        #logging.debug("getSlicedArray() called")
 
         if self.rti is None or self.rti.asArray is None:
             return None  
 
         # The dimensions that are selected in the combo boxes will be set to slice(None), 
-        # the values from the spinboxes will be set as a single integer value      
+        # the values from the spin boxes will be set as a single integer value      
         nDims = self.rti.nDims
         sliceList = [slice(None)] * nDims 
                 
@@ -421,27 +422,89 @@ class Collector(QtGui.QWidget):
         # interpreted as an index. With a tuple array[(exp1, exp2, ..., expN)] is equivalent to 
         # array[exp1, exp2, ..., expN]. 
         # See: http://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
-        logging.debug("Array slice: {}".format(str(sliceList)))
+        #logging.debug("Array slice: {}".format(str(sliceList)))
         slicedArray = self.rti.asArray[tuple(sliceList)]
         
         # Add fake dimensions of length 1 so that result.ndim will equal the number of combo boxes
         for dimNr in range(slicedArray.ndim, self.maxCombos):
-            logger.debug("Adding fake dimension: {}".format(dimNr))
+            #logger.debug("Adding fake dimension: {}".format(dimNr))
             slicedArray = np.expand_dims(slicedArray, dimNr)
         
         # Shuffle the dimensions to be in the order as specified by the combo boxes    
         comboDims = [self._comboBoxDimensionIndex(cb) for cb in self._comboBoxes]
         permutations = np.argsort(comboDims)
-        logger.debug("Transposing dimensions: {}".format(permutations))
+        #logger.debug("Transposing dimensions: {}".format(permutations))
         slicedArray = np.transpose(slicedArray, permutations)
 
         logging.debug("slicedArray.shape: {}".format(slicedArray.shape))
         
         # Post-condition check
         assert slicedArray.ndim == self.maxCombos, \
-            "Bug: get_sliced_array should return a {:d}D array, got: {}D" \
-            .format(self._num_comboboxes, slicedArray.ndim)
+            "Bug: getSlicedArray should return a {:d}D array, got: {}D" \
+            .format(self.maxCombos, slicedArray.ndim)
 
         return slicedArray
 
 
+
+    def getSlicesString(self):
+        """ Returns a string describing the slices that are used to get the sliced array.
+            For example returns '[:, 5]' if the combo box selects dimension 9 and the spin box 5.
+        """
+        if self.rti is None or self.rti.asArray is None:
+            return ''  
+
+        # The dimensions that are selected in the combo boxes will be set to slice(None), 
+        # the values from the spin boxes will be set as a single integer value      
+        nDims = self.rti.nDims
+        sliceList = [':'] * nDims 
+                
+        for spinBox in self._spinBoxes:
+            dimNr = spinBox.property("dim_nr")
+            sliceList[dimNr] = str(spinBox.value())
+        
+        # Shuffle the dimensions to be in the order as specified by the combo boxes    
+        comboDims = [self._comboBoxDimensionIndex(cb) for cb in self._comboBoxes]
+        permutations = np.argsort(comboDims)
+        sliceList = np.transpose(sliceList, permutations)
+        
+        return "[" + ", ".join(sliceList) + "]"
+
+    
+    def independentDimensionNames(self):
+        """ Returns list of the names of the independent dimensions, which have been selected in 
+            the combo boxes.
+        """
+        return [combobox.currentText() for combobox in self._comboBoxes]
+
+        
+    def independentDimensionUnits(self):
+        """ Returns list of the units of the independent dimensions, which have been selected in 
+            the combo boxes. At the moment return '' for each independent dimension.
+        """
+        return ['' for _combobox in self._comboBoxes]
+
+
+    def dependentDimensionName(self):
+        """ Returns list of the names of the dependent dimensions. 
+            A good default is the name of the RTI.
+        """
+        return self.rti.nodeName
+
+    
+    def dependentDimensionUnit(self):
+        """ Returns list of the units of the dependent dimensions. 
+            A good default is the unit or units attribute name of the RTI.
+            Returns  empty string if the unit cannot be determined from the RTI attributes.
+        """
+        attributes = self.rti.attributes
+        for key in ('units', 'unit'):
+            if key in attributes:
+                return attributes[key]
+        return ''
+
+    
+        
+
+
+        

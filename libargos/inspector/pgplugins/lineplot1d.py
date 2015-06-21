@@ -51,12 +51,19 @@ class PgLinePlot1d(AbstractInspector):
         self.contentsLayout.addWidget(self.plotWidget)
         
         
+    def finalize(self):
+        """ Is called before destruction. Can be used to clean-up resources
+        """
+        logger.debug("Finalizing: {}".format(self))
+        self.plotWidget.close()
+                
+        
     @classmethod
     def axesNames(cls):
         """ The names of the axes that this inspector visualizes.
             See the parent class documentation for a more detailed explanation.
         """
-        return tuple(['Y'])
+        return tuple(['X-axis'])
 
 
     @classmethod        
@@ -68,7 +75,7 @@ class PgLinePlot1d(AbstractInspector):
         
         # A pen line width of zero indicates a cosmetic pen. This means that the pen width is 
         # always drawn one pixel wide, independent of the transformation set on the painter.
-        # Therefore the minimum is 0.1. Note that line widths other than 1 may be slow.
+        # Note that line widths other than 1 may be slow when anti aliasing is on.
         rootItem.insertChild(FloatCti('pen width', defaultData=1.0, 
                                       minValue=0.0, maxValue=100, stepSize=1, decimals=1))
         
@@ -93,16 +100,14 @@ class PgLinePlot1d(AbstractInspector):
             Creates an empty plot.
         """
         self.plotWidget.clear()
-        self.plotWidget.setLabel('left', text='Hello <i>there</i>')
-        #self.plotWidget.setLabel('right', text='')
-        self.plotWidget.showAxis('right')
+        #self.plotWidget.showAxis('right')
         self.plotWidget.setLogMode(x=self.configValue('logarithmic/X-axis'), 
                                    y=self.configValue('logarithmic/Y-axis'))
 
         self.plotWidget.showGrid(x=self.configValue('grid/X-axis'), 
                                  y=self.configValue('grid/Y-axis'), 
                                  alpha=self.configValue('grid/alpha'))
-        
+
         self.plotDataItem = self.plotWidget.plot()
         
         pen = QtGui.QPen()
@@ -116,6 +121,29 @@ class PgLinePlot1d(AbstractInspector):
     def _updateRti(self):
         """ Draws the RTI
         """
+        ylabel = self.collector.dependentDimensionName()
+        depUnit = self.collector.dependentDimensionUnit()
+        if depUnit:
+            ylabel += ' ({})'.format(depUnit)
+        self.plotWidget.setLabel('left', ylabel)
+
+        xlabel = self.collector.independentDimensionNames()[0]
+        indepUnit = self.collector.independentDimensionUnits()[0]
+        if indepUnit:
+            xlabel += ' ({})'.format(indepUnit)
+        self.plotWidget.setLabel('bottom', xlabel)
+        
+        rti = self.collector.rti
+        rtiProps = {'rtiPath': rti.nodePath, 'slices': self.collector.getSlicesString()}
+        cfgTitle = "{rtiPath} {slices}"
+        try:
+            title = cfgTitle.format(**rtiProps) 
+        except Exception:
+            logger.warn("Unable set title {!r} from: {}".format(cfgTitle, rtiProps))
+            title = 'Unable to determine the title'
+            
+        self.plotWidget.setTitle(title)
+            
         slicedArray = self.collector.getSlicedArray()
         
         if slicedArray is None or not array_has_real_numbers(slicedArray):

@@ -351,8 +351,8 @@ class MainWindow(QtGui.QMainWindow):
                     nonDefaults = self._persistentSettings.get(key, {})
                     self.inspector.config.setValuesFromDict(nonDefaults)
                     self._configTreeModel.setInvisibleRootItem(self.inspector.config)
-                    self.inspector.initContents() # TODO: call this here?
                     self.collector.clearAndSetComboBoxes(self.inspector.axesNames())
+                    self.inspector.initContents() # TODO: call this here?
                     centralLayout.addWidget(self.inspector)
             finally:
                 self.collector.blockSignals(oldBlockState)

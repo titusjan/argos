@@ -77,6 +77,8 @@ THINK:
 	Collectors must be able to do small calculations? (e.g. auto-signal = exp - dark). Probably not!
 	Inspectors can do calculations as well (e.g. image processing; select filter in combobox)
 	
+	If a new RTI is selected, does the plot range need to be updated? Yes, the unit will change.
+	
 USE CASES:
 	Select 3 lines of a wavelength map (at 0 and extreme swath angles), then select another detector.
 	Compare irrads
