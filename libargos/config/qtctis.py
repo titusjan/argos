@@ -32,14 +32,14 @@ def createPenStyleCti(nodeName, data=NOT_SPECIFIED, defaultData=0):
     """ Creates a ChoiceCti with Qt PenStyles
     """
     return ChoiceCti(nodeName, data=data, defaultData=defaultData, 
-                     choices=['solid line', 'dashed line', 'dotted line', 
-                              'dash-dot line', 'dash-dot-dot line'], 
-                     userData=[Qt.SolidLine, Qt.DashLine, Qt.DotLine, 
-                               Qt.DashDotLine, Qt.DashDotDotLine])
+                     displayValues=['solid line', 'dashed line', 'dotted line', 
+                                    'dash-dot line', 'dash-dot-dot line'], 
+                     configValues=[Qt.SolidLine, Qt.DashLine, Qt.DotLine, 
+                                   Qt.DashDotLine, Qt.DashDotDotLine])
 
                 
 
-def createPenCti(nodeName):
+def createPenCti(nodeName, data=NOT_SPECIFIED, defaultData=0):
     """ Creates a ChoiceCti with Qt PenStyles
     """
     return ChoiceCti(nodeName, data=data, defaultData=defaultData, 

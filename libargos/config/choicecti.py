@@ -33,18 +33,23 @@ logger = logging.getLogger(__name__)
 class ChoiceCti(AbstractCti):
     """ Config Tree Item to store a choice between strings.
     """
-    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=0, choices=None, userData=None):
+    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=0, 
+                 displayValues=None, configValues=None):
         """ Constructor.
         
-            The data and defaultData properties are used to store the currentIndex.
-            choices must be a list of string.
+            The data and defaultData are integers that are used to store the currentIndex.
+            The displayValues parameter must be a list of strings, which will be displayed in the 
+            combo box. The _configValues should be a list of the same size with the _configValues
+            that each 'choice' represents, e.g. choice 'dashed' maps to configValue Qt.DashLine.
+            If _configValues is None, the displayValues are used as the _configValues themselves.
                     
             For the (other) parameters see the AbstractCti constructor documentation.
         """
         super(ChoiceCti, self).__init__(nodeName, data=data, defaultData=defaultData)
-        self.choices = [] if choices is None else choices
-        self.userData = [] if userData is None else userData
-        assert len(self.userData) == 0 or len(self.userData) == len(self.choices), "size mismatch"
+        self._displayValues = [] if displayValues is None else displayValues
+        self._configValues = [] if configValues is None else configValues
+        assert len(self._configValues) == 0 or len(self._configValues) == len(self._displayValues),\
+            "If set, _configValues must have the same length as displayValues."
         
     
     def _enforceDataType(self, data):
@@ -55,31 +60,32 @@ class ChoiceCti(AbstractCti):
     
     @property
     def configValue(self):
-        if self.userData:
-            return self.userData[self.data]
+        if self._configValues:
+            return self._configValues[self.data]
         else:
-            return self.choices[self.data]
+            return self._displayValues[self.data]
          
 
     @property
     def displayValue(self):
         """ Returns the string representation of data for use in the tree view. 
         """
-        return str(self.choices[self.data])
+        return str(self._displayValues[self.data])
         
 
     @property
     def displayDefaultValue(self):
         """ Returns the string representation of data for use in the tree view. 
         """
-        return str(self.choices[self.defaultData])        
+        return str(self._displayValues[self.defaultData])        
         
             
     @property
     def debugInfo(self):
         """ Returns the string with debugging information
         """
-        return repr(self.choices)
+        return repr(self._displayValues)
+    
     
     def createEditor(self, delegate, parent, option):
         """ Creates a ChoiceCtiEditor. 
@@ -98,9 +104,11 @@ class ChoiceCtiEditor(AbstractCtiEditor):
         super(ChoiceCtiEditor, self).__init__(cti, delegate, parent=parent)
         
         comboBox = QtGui.QComboBox()
-        comboBox.addItems(cti.choices)
-        for idx, userDatum in enumerate(cti.userData):
-            comboBox.setItemData(idx, userDatum, role=Qt.UserRole)
+        comboBox.addItems(cti._displayValues)
+        
+        # Store the configValue in the combo box, although it's not currently used.
+        for idx, configValue in enumerate(cti._configValues):
+            comboBox.setItemData(idx, configValue, role=Qt.UserRole)
         
         comboBox.activated.connect(self.commitAndClose)
         
@@ -117,21 +125,12 @@ class ChoiceCtiEditor(AbstractCtiEditor):
     def setData(self, data):
         """ Provides the main editor widget with a data to manipulate.
         """
-        if False and self.cti.userData:
-            idx = self.cti.userData.index(data)
-            logger.debug("setData: data={} -> idx = {}".format(data, idx))
-        else:
-            idx = data
-        self.comboBox.setCurrentIndex(idx)    
+        self.comboBox.setCurrentIndex(data)    
 
         
     def getData(self):
         """ Gets data from the editor widget.
         """
-        idx = self.comboBox.currentIndex()
-        if False and self.cti.userData:
-            return self.cti.userData[idx]
-        else:
-            return idx
+        return self.comboBox.currentIndex()
     
     

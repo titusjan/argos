@@ -112,9 +112,10 @@ class AbstractCti(BaseTreeItem):
         
         The underlying data is usually stored in that type as well but this is not necessarily so.
         A ChoiceCti, which represents a combo box, stores a list of choices and an index that is
-        actual choice made by the user. ChoiceCti.data contains the index while ChoiceCti.value      # TODO: value is not used?
-        returns: choices[index]. Note that the constructor expects the data as input parameter. The
-        constructor calls the _enforceDataType method to convert the data to the correct type.
+        actual choice made by the user. ChoiceCti.data contains the index while 
+        ChoiceCti.configValue returns: choices[index]. Note that the constructor expects the data 
+        as input parameter. The constructor calls the _enforceDataType method to convert the data 
+        to the correct type.
         
         The purpose of the defaultData is to reset a config data to its initial value when the 
         user clicks on the reset button during editing. The getNonDefaultsDict returns a dictionary 

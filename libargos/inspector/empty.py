@@ -74,7 +74,7 @@ class EmptyInspector(AbstractInspector):
             rootItem.insertChild(StringCti('letter', defaultData='aa', maxLength = 1))
             rootItem.insertChild(BoolCti('grid', defaultData=True))
             rootItem.insertChild(ChoiceCti('hobbit', defaultData=2, 
-                                           choices=['Frodo', 'Sam', 'Pippin', 'Merry']))
+                                           displayValues=['Frodo', 'Sam', 'Pippin', 'Merry']))
             rootItem.insertChild(ColorCti('favorite color', defaultData="#22FF33"))
                     
         return rootItem

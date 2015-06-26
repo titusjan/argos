@@ -86,7 +86,7 @@ class FloatCtiEditor(AbstractCtiEditor):
     """ A CtiEditor which contains a QDoubleSpinbox for editing FloatCti objects. 
     """
     def __init__(self, cti, delegate, parent=None, 
-                 minValue = None, maxValue = None, 
+                 minValue = None, maxValue = None, # TODO: why separate min/maxValue parameters?
                  stepSize = 1.0, decimals=2):
         """ See the AbstractCtiEditor for more info on the parameters 
         """
