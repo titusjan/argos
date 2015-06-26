@@ -20,7 +20,7 @@
 import logging
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
-from libargos.qt import  QtGui
+from libargos.qt import  Qt, QtGui
 from libargos.utils.misc import NOT_SPECIFIED
 
 
@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 class ChoiceCti(AbstractCti):
     """ Config Tree Item to store a choice between strings.
     """
-    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=0, choices=None):
+    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=0, choices=None, userData=None):
         """ Constructor.
         
             The data and defaultData properties are used to store the currentIndex.
@@ -43,24 +43,38 @@ class ChoiceCti(AbstractCti):
         """
         super(ChoiceCti, self).__init__(nodeName, data=data, defaultData=defaultData)
         self.choices = [] if choices is None else choices
+        self.userData = [] if userData is None else userData
+        assert len(self.userData) == 0 or len(self.userData) == len(self.choices), "size mismatch"
+        
     
     def _enforceDataType(self, data):
         """ Converts to int so that this CTI always stores that type. 
         """
         return int(data)
 
+    
+    @property
+    def configValue(self):
+        if self.userData:
+            return self.userData[self.data]
+        else:
+            return self.choices[self.data]
+         
+
     @property
     def displayValue(self):
         """ Returns the string representation of data for use in the tree view. 
         """
         return str(self.choices[self.data])
+        
 
     @property
     def displayDefaultValue(self):
         """ Returns the string representation of data for use in the tree view. 
         """
-        return str(self.choices[self.defaultData])
-    
+        return str(self.choices[self.defaultData])        
+        
+            
     @property
     def debugInfo(self):
         """ Returns the string with debugging information
@@ -71,20 +85,23 @@ class ChoiceCti(AbstractCti):
         """ Creates a ChoiceCtiEditor. 
             For the parameters see the AbstractCti constructor documentation.
         """
-        return ChoiceCtiEditor(self, delegate, self.choices, parent=parent) 
+        return ChoiceCtiEditor(self, delegate, parent=parent) 
     
     
         
 class ChoiceCtiEditor(AbstractCtiEditor):
     """ A CtiEditor which contains a QCombobox for editing ChoiceCti objects. 
     """
-    def __init__(self, cti, delegate, choices, parent=None):
+    def __init__(self, cti, delegate, parent=None):
         """ See the AbstractCtiEditor for more info on the parameters 
         """
         super(ChoiceCtiEditor, self).__init__(cti, delegate, parent=parent)
         
         comboBox = QtGui.QComboBox()
-        comboBox.addItems(choices)
+        comboBox.addItems(cti.choices)
+        for idx, userDatum in enumerate(cti.userData):
+            comboBox.setItemData(idx, userDatum, role=Qt.UserRole)
+        
         comboBox.activated.connect(self.commitAndClose)
         
         self.comboBox = self.addSubEditor(comboBox, isFocusProxy=True)
@@ -100,11 +117,21 @@ class ChoiceCtiEditor(AbstractCtiEditor):
     def setData(self, data):
         """ Provides the main editor widget with a data to manipulate.
         """
-        self.comboBox.setCurrentIndex(data)    
+        if False and self.cti.userData:
+            idx = self.cti.userData.index(data)
+            logger.debug("setData: data={} -> idx = {}".format(data, idx))
+        else:
+            idx = data
+        self.comboBox.setCurrentIndex(idx)    
 
         
     def getData(self):
         """ Gets data from the editor widget.
         """
-        return self.comboBox.currentIndex()
+        idx = self.comboBox.currentIndex()
+        if False and self.cti.userData:
+            return self.cti.userData[idx]
+        else:
+            return idx
+    
     

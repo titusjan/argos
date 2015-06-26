@@ -23,6 +23,7 @@ http://pygal.org/chart_types/#idworldmap-charts
 http://docs.enthought.com/chaco/quickstart.html
 http://scikit-image.org/docs/dev/auto_examples/plot_canny.html
 http://vispy.org/
+https://www.getdatajoy.com/examples/python-plots/vector-fields
 
 # color palette
 http://tools.medialab.sciences-po.fr/iwanthue/tutorial.php

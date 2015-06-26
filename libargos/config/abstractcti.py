@@ -173,6 +173,10 @@ class AbstractCti(BaseTreeItem):
         """
         return str(self.defaultData)
     
+    @property
+    def configValue(self):
+        return self.data
+        
 #    @property
 #    def value(self):
 #        """ Returns the configuration value of this item. 

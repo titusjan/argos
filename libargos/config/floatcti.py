@@ -83,7 +83,7 @@ class FloatCti(AbstractCti):
 
         
 class FloatCtiEditor(AbstractCtiEditor):
-    """ A CtiEditor which contains a QDoubleSpinbox for editing IntCti objects. 
+    """ A CtiEditor which contains a QDoubleSpinbox for editing FloatCti objects. 
     """
     def __init__(self, cti, delegate, parent=None, 
                  minValue = None, maxValue = None, 

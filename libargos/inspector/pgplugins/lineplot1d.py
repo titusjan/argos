@@ -26,7 +26,7 @@ from libargos.qt import Qt, QtGui
 from libargos.info import DEBUGGING
 from libargos.config.emptycti import EmptyCti
 from libargos.config.boolcti import BoolCti
-from libargos.config.choicecti import ChoiceCti
+from libargos.config.qtctis import createPenStyleCti
 from libargos.config.colorcti import ColorCti
 from libargos.config.floatcti import FloatCti
 from libargos.config.stringcti import StringCti
@@ -36,7 +36,7 @@ from libargos.utils.cls import array_has_real_numbers
 
 logger = logging.getLogger(__name__)
 
-PEN_STYLES = [Qt.SolidLine, Qt.DashLine, Qt.DotLine, Qt.DashDotLine, Qt.DashDotDotLine]
+
 
 class PgLinePlot1d(AbstractInspector):
     """ Inspector that contains a PyQtGraph 1-dimensional line plot
@@ -83,9 +83,7 @@ class PgLinePlot1d(AbstractInspector):
         rootItem.insertChild(FloatCti('pen width', defaultData=1.0, 
                                       minValue=0.0, maxValue=100, stepSize=1, decimals=1))
         
-        rootItem.insertChild(ChoiceCti('pen style', defaultData=0, 
-            choices=['solid line', 'dashed line', 'dotted line', 
-                     'dash-dot line', 'dash-dot-dot line']))
+        rootItem.insertChild(createPenStyleCti('pen style'))
         
         logAxesItem = rootItem.insertChild(EmptyCti('logarithmic'))
         logAxesItem.insertChild(BoolCti('X-axis', defaultData=False))
@@ -118,7 +116,7 @@ class PgLinePlot1d(AbstractInspector):
         pen.setCosmetic(True)
         pen.setColor(self.configValue('pen color'))
         pen.setWidthF(self.configValue('pen width'))
-        pen.setStyle(PEN_STYLES[self.configValue('pen style')])
+        pen.setStyle(self.configValue('pen style'))
         self.plotDataItem.setPen(pen)
 
 

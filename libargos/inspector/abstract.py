@@ -129,7 +129,7 @@ class AbstractInspector(QtGui.QStackedWidget):
     def configValue(self, nodePath):
         """ Returns the config value data at the node path
         """
-        return self.config.findByNodePath(nodePath).data
+        return self.config.findByNodePath(nodePath).configValue
 
     
     @QtSlot()

@@ -403,7 +403,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             makes the model empty.
         """
         if baseTreeItem is None:
-            BaseTreeItem(nodeName=INVISIBLE_ROOT_NAME)
+            baseTreeItem = BaseTreeItem(nodeName=INVISIBLE_ROOT_NAME)
         check_class(baseTreeItem, BaseTreeItem)
 
         self.beginResetModel()
