@@ -60,6 +60,8 @@ class ChoiceCti(AbstractCti):
     
     @property
     def configValue(self):
+        """ The currently selected configValue
+        """
         if self._configValues:
             return self._configValues[self.data]
         else:

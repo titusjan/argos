@@ -26,8 +26,7 @@ from libargos.qt import Qt, QtGui
 from libargos.info import DEBUGGING
 from libargos.config.emptycti import EmptyCti
 from libargos.config.boolcti import BoolCti
-from libargos.config.qtctis import createPenStyleCti
-from libargos.config.colorcti import ColorCti
+from libargos.config.qtctis import PenCti
 from libargos.config.floatcti import FloatCti
 from libargos.config.stringcti import StringCti
 #from libargos.config.intcti import IntCti
@@ -75,15 +74,7 @@ class PgLinePlot1d(AbstractInspector):
         
         rootItem.insertChild(StringCti('title', defaultData="{path} {slices}", maxLength=255))
         
-        rootItem.insertChild(ColorCti('pen color', defaultData="#3F8E3A"))
-        
-        # A pen line width of zero indicates a cosmetic pen. This means that the pen width is 
-        # always drawn one pixel wide, independent of the transformation set on the painter.
-        # Note that line widths other than 1 may be slow when anti aliasing is on.
-        rootItem.insertChild(FloatCti('pen width', defaultData=1.0, 
-                                      minValue=0.0, maxValue=100, stepSize=1, decimals=1))
-        
-        rootItem.insertChild(createPenStyleCti('pen style'))
+        rootItem.insertChild(PenCti("pen"))
         
         logAxesItem = rootItem.insertChild(EmptyCti('logarithmic'))
         logAxesItem.insertChild(BoolCti('X-axis', defaultData=False))
@@ -112,11 +103,7 @@ class PgLinePlot1d(AbstractInspector):
 
         self.plotDataItem = self.plotWidget.plot()
         
-        pen = QtGui.QPen()
-        pen.setCosmetic(True)
-        pen.setColor(self.configValue('pen color'))
-        pen.setWidthF(self.configValue('pen width'))
-        pen.setStyle(self.configValue('pen style'))
+        pen = self.configValue('pen')
         self.plotDataItem.setPen(pen)
 
 

@@ -21,6 +21,10 @@ import logging
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor, InvalidInputError
 from libargos.config.choicecti import ChoiceCti
+from libargos.config.floatcti import FloatCti
+from libargos.config.emptycti import EmptyCti
+
+
 from libargos.qt import Qt, QtCore, QtGui
 from libargos.utils.misc import NOT_SPECIFIED
 
@@ -37,18 +41,7 @@ def createPenStyleCti(nodeName, data=NOT_SPECIFIED, defaultData=0):
                      configValues=[Qt.SolidLine, Qt.DashLine, Qt.DotLine, 
                                    Qt.DashDotLine, Qt.DashDotDotLine])
 
-                
-
-def createPenCti(nodeName, data=NOT_SPECIFIED, defaultData=0):
-    """ Creates a ChoiceCti with Qt PenStyles
-    """
-    return ChoiceCti(nodeName, data=data, defaultData=defaultData, 
-                     choices=['solid line', 'dashed line', 'dotted line', 
-                              'dash-dot line', 'dash-dot-dot line'], 
-                     userData=[Qt.SolidLine, Qt.DashLine, Qt.DotLine, 
-                               Qt.DashDotLine, Qt.DashDotDotLine])
-                    
-
+   
 class ColorCti(AbstractCti):
     """ Config Tree Item to store a color. 
     """
@@ -178,3 +171,39 @@ class ColorCtiEditor(AbstractCtiEditor):
 
         return  QtGui.QColor(text)         
 
+             
+             
+class PenCti(EmptyCti):
+    """ Config Tree Item to configure a QPen for drawing lines. 
+    
+        It will create children for the pen color, width and style. It will not create a child
+        for the brush.
+    """
+    def __init__(self, nodeName):
+        """ Constructor. 
+            For the (other) parameters see the AbstractCti constructor documentation.
+        """
+        super(PenCti, self).__init__(nodeName)
+        self.insertChild(ColorCti('color', defaultData="#3F8E3A"))
+        
+        # A pen line width of zero indicates a cosmetic pen. This means that the pen width is 
+        # always drawn one pixel wide, independent of the transformation set on the painter.
+        # Note that line widths other than 1 may be slow when anti aliasing is on.
+        self.insertChild(FloatCti('width', defaultData=1.0, 
+                                  minValue=0.0, maxValue=100, stepSize=1, decimals=1))
+        
+        self.insertChild(createPenStyleCti('style'))
+        
+        
+    @property
+    def configValue(self):
+        """ A QPen made of the childrens config values
+        """        
+        pen = QtGui.QPen()
+        pen.setCosmetic(True)
+        pen.setColor(self.findByNodePath('color').configValue)
+        pen.setWidthF(self.findByNodePath('width').configValue)
+        pen.setStyle(self.findByNodePath('style').configValue)
+
+        return pen
+                    
