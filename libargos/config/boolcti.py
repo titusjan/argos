@@ -49,7 +49,7 @@ class BoolCti(AbstractCti):
         """
         return ""
     
-   
+    
     @property
     def valueColumnItemFlags(self):
         """ Returns Qt.ItemIsUserCheckable so that a check box will be drawn in the config tree.

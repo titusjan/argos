@@ -41,25 +41,20 @@ class EmptyCti(AbstractCti):
         """
         return data
     
-    @property
-    def displayValue(self):
-        """ Returns empty string since a checkbox will displayed in the value column instead.  
+    
+    def _dataToString(self, data):
+        """ Conversion function used to convert the (default)data to the display value.
+            Returns an empty string.
         """
         return ""
-   
-    @property
-    def displayDefaultValue(self):
-        """ Returns empty string since a checkbox will displayed in the value column instead.  
+    
+    
+    def createEditor(self, delegate, parent, _option):
+        """ Creates a hidden widget so that only the reset button is visible during editing.
+            :type option: QStyleOptionViewItem        
         """
-        return ""
-   
-#    @property
-#    def valueColumnItemFlags(self):
-#        """ Returns Qt.NoItemFlags, the item is not editable.
-#        """
-#        return Qt.NoItemFlags # no extra flags
-#    
-
+        return EmptyCtiEditor(self, delegate, parent=parent)
+    
         
 class EmptyCtiEditor(AbstractCtiEditor):
     """ A CtiEditor which contains a hidden widget. 

@@ -34,14 +34,14 @@ class ChoiceCti(AbstractCti):
     """ Config Tree Item to store a choice between strings.
     """
     def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=0, 
-                 displayValues=None, configValues=None):
+                 configValues=None, displayValues=None):
         """ Constructor.
         
             The data and defaultData are integers that are used to store the currentIndex.
             The displayValues parameter must be a list of strings, which will be displayed in the 
             combo box. The _configValues should be a list of the same size with the _configValues
             that each 'choice' represents, e.g. choice 'dashed' maps to configValue Qt.DashLine.
-            If _configValues is None, the displayValues are used as the _configValues themselves.
+            If displayValues is None, the configValues are used as the displayValues.
                     
             For the (other) parameters see the AbstractCti constructor documentation.
         """
@@ -71,21 +71,14 @@ class ChoiceCti(AbstractCti):
             return self._configValues[self.data]
         else:
             return self._displayValues[self.data]
+        
+        
+    def _dataToString(self, data):
+        """ Conversion function used to convert the (default)data to the display value.
+        """
+        choices = self._displayValues if self._displayValues else self._configValues
+        return str(choices[data])
          
-
-    @property
-    def displayValue(self):
-        """ Returns the string representation of data for use in the tree view. 
-        """
-        return str(self._displayValues[self.data])
-        
-
-    @property
-    def displayDefaultValue(self):
-        """ Returns the string representation of data for use in the tree view. 
-        """
-        return str(self._displayValues[self.defaultData])        
-        
             
     @property
     def debugInfo(self):

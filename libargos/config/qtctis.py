@@ -59,6 +59,11 @@ class ColorCti(AbstractCti):
             raise ValueError("Invalid color specification: {!r}".format(data))
         return qColor
         
+    def _dataToString(self, data):
+        """ Conversion function used to convert the (default)data to the display value.
+        """
+        return data.name().upper()   
+            
     @property
     def decoration(self):
         """ Returns the data (QColor) as to be displayed as decoration
@@ -76,24 +81,7 @@ class ColorCti(AbstractCti):
             Helper function that can be overridden; by default the input is returned.
         """
         return QtGui.QColor(json) 
-    
-    @property
-    def displayValue(self):
-        """ Returns a string with the RGB value in hexadecimal (e.g. '#00FF88') 
-        """
-        return self._data.name().upper()    
-
-    @property
-    def displayDefaultValue(self):
-        """ Returns a string with the RGB value in hexadecimal (e.g. '#00FF88') 
-        """
-        return self._defaultData.name().upper()  
         
-    @property
-    def debugInfo(self):
-        """ Returns the string with debugging information
-        """
-        return ""
     
     def createEditor(self, delegate, parent, option):
         """ Creates a ColorCtiEditor. 
@@ -207,13 +195,7 @@ class PenCti(EmptyCti):
         pen.setStyle(self.findByNodePath('style').configValue)
 
         return pen
-    
-    
-    def createEditor(self, delegate, parent, _option):
-        """ Creates a hidden widget so that only the reset button is visible during editing.
-            :type option: QStyleOptionViewItem        
-        """
-        return EmptyCtiEditor(self, delegate, parent=parent)
+
     
         
     def _dataToString(self, qPen):

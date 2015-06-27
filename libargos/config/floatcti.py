@@ -55,21 +55,17 @@ class FloatCti(AbstractCti):
         """
         return float(data)
     
-    @property
-    def displayValue(self):
-        """ The string representation of the data"""
-        return "{:.{decimals}f}".format(self.data, decimals=self.decimals)
-    
-    @property
-    def displayDefaultValue(self):
-        """ The string representation of the default data"""
-        return "{:.{decimals}f}".format(self.defaultData, decimals=self.decimals)
+    def _dataToString(self, data):
+        """ Conversion function used to convert the (default)data to the display value.
+        """
+        return "{:.{decimals}f}".format(data, decimals=self.decimals)
         
     @property
     def debugInfo(self):
         """ Returns the string with debugging information
         """
-        return "min = {}, max = {}, step = {}".format(self.minValue, self.maxValue, self.stepSize)
+        return ("min = {}, max = {}, step = {}, decimals = {}"
+                .format(self.minValue, self.maxValue, self.stepSize, self.decimals))
     
     
     def createEditor(self, delegate, parent, option):
