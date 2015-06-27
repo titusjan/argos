@@ -62,7 +62,7 @@ class EmptyInspector(AbstractInspector):
             from libargos.config.intcti import IntCti
             from libargos.config.boolcti import BoolCti
             from libargos.config.choicecti import ChoiceCti
-            from libargos.config.colorcti import ColorCti
+            from libargos.config.qtctis import ColorCti
             
             grpItem = EmptyCti("group")
             rootItem.insertChild(grpItem)
