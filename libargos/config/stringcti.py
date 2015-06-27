@@ -57,26 +57,28 @@ class StringCti(AbstractCti):
         """ Creates a StringCtiEditor. 
             For the parameters see the AbstractCti constructor documentation.
         """
-        return StringCtiEditor(self, delegate, parent=parent, maxLength=self.maxLength) 
+        return StringCtiEditor(self, delegate, parent=parent) 
     
 
         
 class StringCtiEditor(AbstractCtiEditor):
     """ A CtiEditor which contains a QLineEdit for editing StringCti objects. 
     """
-    def __init__(self, cti, delegate, parent=None, maxLength=None):
+    def __init__(self, cti, delegate, parent=None):
         """ See the AbstractCtiEditor for more info on the parameters 
         """
         super(StringCtiEditor, self).__init__(cti, delegate, parent=parent)
         self.lineEditor = self.addSubEditor(QtGui.QLineEdit(), isFocusProxy=True)
         
-        if maxLength is not None:
-            self.lineEditor.setMaxLength(maxLength)    
+        if cti.maxLength is not None:
+            self.lineEditor.setMaxLength(cti.maxLength)    
+    
     
     def setData(self, data):
         """ Provides the main editor widget with a data to manipulate.
         """
         self.lineEditor.setText(str(data))
+        
         
     def getData(self):
         """ Gets data from the editor widget.

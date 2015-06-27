@@ -72,36 +72,32 @@ class FloatCti(AbstractCti):
         """ Creates a IntCtiEditor. 
             For the parameters see the AbstractCti constructor documentation.
         """
-        return FloatCtiEditor(self, delegate, parent=parent, 
-                              minValue=self.minValue, maxValue=self.maxValue, 
-                              stepSize=self.stepSize, decimals=self.decimals)
+        return FloatCtiEditor(self, delegate, parent=parent)
         
 
         
 class FloatCtiEditor(AbstractCtiEditor):
     """ A CtiEditor which contains a QDoubleSpinbox for editing FloatCti objects. 
     """
-    def __init__(self, cti, delegate, parent=None, 
-                 minValue = None, maxValue = None, # TODO: why separate min/maxValue parameters?
-                 stepSize = 1.0, decimals=2):
+    def __init__(self, cti, delegate, parent=None):
         """ See the AbstractCtiEditor for more info on the parameters 
         """
         super(FloatCtiEditor, self).__init__(cti, delegate, parent=parent)
         
         spinBox = QtGui.QDoubleSpinBox(parent)
 
-        if minValue is None:
+        if cti.minValue is None:
             spinBox.setMinimum(np.finfo('d').min)
         else: 
-            spinBox.setMinimum(minValue) 
+            spinBox.setMinimum(cti.minValue) 
 
-        if maxValue is None:
+        if cti.maxValue is None:
             spinBox.setMaximum(np.finfo('d').max)
         else: 
-            spinBox.setMaximum(maxValue) 
+            spinBox.setMaximum(cti.maxValue) 
 
-        spinBox.setSingleStep(stepSize)
-        spinBox.setDecimals(decimals)
+        spinBox.setSingleStep(cti.stepSize)
+        spinBox.setDecimals(cti.decimals)
 
         self.spinBox = self.addSubEditor(spinBox, isFocusProxy=True)
         

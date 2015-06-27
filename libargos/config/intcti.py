@@ -64,34 +64,31 @@ class IntCti(AbstractCti):
         """ Creates a IntCtiEditor. 
             For the parameters see the AbstractCti constructor documentation.
         """
-        return IntCtiEditor(self, delegate, parent=parent, 
-                            minValue = self.minValue, maxValue = self.maxValue, 
-                            stepSize = self.stepSize)
+        return IntCtiEditor(self, delegate, parent=parent)
         
 
         
 class IntCtiEditor(AbstractCtiEditor):
     """ A CtiEditor which contains a QSpinbox for editing IntCti objects. 
     """
-    def __init__(self, cti, delegate, parent=None, 
-                 minValue = None, maxValue = None, stepSize = 1):
+    def __init__(self, cti, delegate, parent=None):
         """ See the AbstractCtiEditor for more info on the parameters 
         """
         super(IntCtiEditor, self).__init__(cti, delegate, parent=parent)
         
         spinBox = QtGui.QSpinBox(parent)
 
-        if minValue is None:
+        if cti.minValue is None:
             spinBox.setMinimum(np.iinfo('i').min)
         else: 
-            spinBox.setMinimum(minValue) 
+            spinBox.setMinimum(cti.minValue) 
 
-        if maxValue is None:
+        if cti.maxValue is None:
             spinBox.setMaximum(np.iinfo('i').max)
         else: 
-            spinBox.setMaximum(maxValue) 
+            spinBox.setMaximum(cti.maxValue) 
 
-        spinBox.setSingleStep(stepSize)
+        spinBox.setSingleStep(cti.stepSize)
         
         self.spinBox = self.addSubEditor(spinBox, isFocusProxy=True)
         
