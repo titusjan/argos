@@ -22,7 +22,7 @@ import logging
 from libargos.qt import Qt, QtCore, QtSlot
 from libargos.qt.treemodels import BaseTreeModel
 from libargos.config.abstractcti import ctiDumps, ctiLoads
-from libargos.config.emptycti import EmptyCti
+from libargos.config.groupcti import GroupCti
 from libargos.utils.cls import type_name
 
 
@@ -43,7 +43,7 @@ class ConfigTreeModel(BaseTreeModel):
         """ Constructor
         """
         super(ConfigTreeModel, self).__init__(parent=parent)
-        self._invisibleRootItem = EmptyCti(nodeName='<invisible-root>')
+        self._invisibleRootItem = GroupCti(nodeName='<invisible-root>')
         self.dataChanged.connect(self.debug)
 
 

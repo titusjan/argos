@@ -15,12 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Contains the Config and EmptyCtiEditor classes 
+""" Contains the Config and GroupCtiEditor classes 
 """
 import logging
 
 from libargos.config.abstractcti import AbstractCti
-from libargos.config.emptycti import EmptyCtiEditor
+from libargos.config.groupcti import GroupCtiEditor
 from libargos.qt import Qt, QtGui
 from libargos.utils.misc import NOT_SPECIFIED
 
@@ -87,5 +87,5 @@ class BoolCti(AbstractCti):
         """ Creates a hidden widget so that only the reset button is visible during editing.
             :type option: QStyleOptionViewItem        
         """
-        return EmptyCtiEditor(self, delegate, parent=parent)
+        return GroupCtiEditor(self, delegate, parent=parent)
 

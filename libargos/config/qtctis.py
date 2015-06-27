@@ -22,7 +22,7 @@ import logging
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor, InvalidInputError
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.floatcti import FloatCti
-from libargos.config.emptycti import EmptyCti, EmptyCtiEditor
+from libargos.config.groupcti import GroupCti, GroupCtiEditor
 
 
 from libargos.qt import Qt, QtCore, QtGui
@@ -161,7 +161,7 @@ class ColorCtiEditor(AbstractCtiEditor):
 
              
              
-class PenCti(EmptyCti):
+class PenCti(GroupCti):
     """ Config Tree Item to configure a QPen for drawing lines. 
     
         It will create children for the pen color, width and style. It will not create a child
@@ -196,12 +196,5 @@ class PenCti(EmptyCti):
 
         return pen
 
-    
-        
-    def _dataToString(self, qPen):
-        """ Conversion function used to convert the (default)data to the display value.
-        """
-        return "Color: {}, width={})".format(qPen.color().name().upper(), qPen.width())
-        
-    
+
     

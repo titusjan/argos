@@ -15,25 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Contains the Config and EmptyCtiEditor classes 
+""" Contains the Config and GroupCtiEditor classes 
 """
 import logging
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
-from libargos.qt import Qt, QtGui, QtSlot
+from libargos.qt import QtGui, QtSlot
 from libargos.utils.misc import NOT_SPECIFIED
 
 logger = logging.getLogger(__name__)
 
 
 
-class EmptyCti(AbstractCti):
+class GroupCti(AbstractCti):
     """ Read only config Tree Item that only stores None. It can be used to group CTIs
     """
     def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=None):
         """ Constructor. For the parameters see the AbstractCti constructor documentation.
         """
-        super(EmptyCti, self).__init__(nodeName, data=data, defaultData=defaultData)
+        super(GroupCti, self).__init__(nodeName, data=data, defaultData=defaultData)
 
     
     def _enforceDataType(self, data):
@@ -53,17 +53,17 @@ class EmptyCti(AbstractCti):
         """ Creates a hidden widget so that only the reset button is visible during editing.
             :type option: QStyleOptionViewItem        
         """
-        return EmptyCtiEditor(self, delegate, parent=parent)
+        return GroupCtiEditor(self, delegate, parent=parent)
     
         
-class EmptyCtiEditor(AbstractCtiEditor):
+class GroupCtiEditor(AbstractCtiEditor):
     """ A CtiEditor which contains a hidden widget. 
         If the item is editable, the reset button is shown. 
     """
     def __init__(self, cti, delegate, parent=None):
         """ See the AbstractCtiEditor for more info on the parameters 
         """
-        super(EmptyCtiEditor, self).__init__(cti, delegate, parent=parent)
+        super(GroupCtiEditor, self).__init__(cti, delegate, parent=parent)
         
         # Add hidden widget to store editor value
         self.widget = self.addSubEditor(QtGui.QWidget()) 
@@ -92,7 +92,7 @@ class EmptyCtiEditor(AbstractCtiEditor):
             child.data = child.defaultData
         # Calling the super reset function to commit the parent node. 
         # This will commit the children as well. 
-        super(EmptyCtiEditor, self).resetEditorValue(checked=checked)
+        super(GroupCtiEditor, self).resetEditorValue(checked=checked)
 
         
     

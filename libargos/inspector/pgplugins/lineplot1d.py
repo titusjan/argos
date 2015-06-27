@@ -22,9 +22,8 @@ from __future__ import division, print_function
 import logging
 import pyqtgraph as pg
 
-from libargos.qt import Qt, QtGui
 from libargos.info import DEBUGGING
-from libargos.config.emptycti import EmptyCti
+from libargos.config.groupcti import GroupCti
 from libargos.config.boolcti import BoolCti
 from libargos.config.qtctis import PenCti
 from libargos.config.floatcti import FloatCti
@@ -70,17 +69,17 @@ class PgLinePlot1d(AbstractInspector):
     def createConfig(cls):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
-        rootItem = EmptyCti('inspector')
+        rootItem = GroupCti('inspector')
         
         rootItem.insertChild(StringCti('title', defaultData="{path} {slices}", maxLength=255))
         
         rootItem.insertChild(PenCti("pen"))
         
-        logAxesItem = rootItem.insertChild(EmptyCti('logarithmic'))
+        logAxesItem = rootItem.insertChild(GroupCti('logarithmic'))
         logAxesItem.insertChild(BoolCti('X-axis', defaultData=False))
         logAxesItem.insertChild(BoolCti('Y-axis', defaultData=False))
         
-        gridItem = rootItem.insertChild(EmptyCti('grid'))
+        gridItem = rootItem.insertChild(GroupCti('grid'))
         gridItem.insertChild(BoolCti('X-axis', defaultData=True))
         gridItem.insertChild(BoolCti('Y-axis', defaultData=True))
         gridItem.insertChild(FloatCti('alpha', defaultData=0.25, 
