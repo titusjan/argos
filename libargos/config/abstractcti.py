@@ -161,31 +161,31 @@ class AbstractCti(BaseTreeItem):
         """
         return ""
     
+    def _dataToString(self, data):
+        """ Conversion function used to convert the (default)data to the display value.
+        """
+        return str(data)
+    
     @property
     def displayValue(self):
         """ Returns the string representation of data for use in the tree view.
             If a descendant overrides this, it should probably also override displayDefaultValue.
         """
-        return str(self.data)
+        return self._dataToString(self.data)
     
     @property
     def displayDefaultValue(self):
         """ Returns the string representation of default data for use in the tree view. 
         """
-        return str(self.defaultData)
+        return self._dataToString(self.defaultData)
     
     @property
     def configValue(self):
+        """ Returns the configuration value of this item. 
+            By default this is the same as the underlying data but it can be overridden, 
+        """
         return self.data
-        
-#    @property
-#    def value(self):
-#        """ Returns the configuration value of this item. 
-#            By default this is the same as the underlying data but it can be overridden, 
-#            e.g. when the data is an index in a combo box and the value returns the choice.
-#        """
-#        return self._data
-#    
+
     @property
     def data(self):
         """ Returns the data of this item. 

@@ -20,7 +20,7 @@
 import logging
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
-from libargos.qt import Qt, QtGui
+from libargos.qt import Qt, QtGui, QtSlot
 from libargos.utils.misc import NOT_SPECIFIED
 
 logger = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ class EmptyCti(AbstractCti):
 
     
     def _enforceDataType(self, data):
-        """ Converts to bool so that self.data always is of that type.
+        """ Passes the data as is; no conversion.
         """
         return data
     
@@ -53,12 +53,12 @@ class EmptyCti(AbstractCti):
         """
         return ""
    
-    @property
-    def valueColumnItemFlags(self):
-        """ Returns Qt.NoItemFlags, the item is not editable.
-        """
-        return Qt.NoItemFlags # no extra flags
-    
+#    @property
+#    def valueColumnItemFlags(self):
+#        """ Returns Qt.NoItemFlags, the item is not editable.
+#        """
+#        return Qt.NoItemFlags # no extra flags
+#    
 
         
 class EmptyCtiEditor(AbstractCtiEditor):
@@ -78,6 +78,8 @@ class EmptyCtiEditor(AbstractCtiEditor):
     def setData(self, data):
         """ Provides the main editor widget with a data to manipulate.
         """
+        # Set the data in the 'editor_data' property of the widget to that getData
+        # can pass the same value back into the CTI.
         self.widget.setProperty("editor_data", data)
 
         
@@ -85,5 +87,17 @@ class EmptyCtiEditor(AbstractCtiEditor):
         """ Gets data from the editor widget.
         """
         return self.widget.property("editor_data")
+    
+    
+    @QtSlot(bool)
+    def resetEditorValue(self, checked=False):
+        """ Resets the editor to the default value. Also resets the children.
+        """
+        for child in self.cti.childItems:   # TODO: recursive
+            child.data = child.defaultData
+        # Calling the super reset function to commit the parent node. 
+        # This will commit the children as well. 
+        super(EmptyCtiEditor, self).resetEditorValue(checked=checked)
+
         
     

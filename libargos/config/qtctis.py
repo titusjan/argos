@@ -22,7 +22,7 @@ import logging
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor, InvalidInputError
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.floatcti import FloatCti
-from libargos.config.emptycti import EmptyCti
+from libargos.config.emptycti import EmptyCti, EmptyCtiEditor
 
 
 from libargos.qt import Qt, QtCore, QtGui
@@ -184,7 +184,8 @@ class PenCti(EmptyCti):
             For the (other) parameters see the AbstractCti constructor documentation.
         """
         super(PenCti, self).__init__(nodeName)
-        self.insertChild(ColorCti('color', defaultData="#3F8E3A"))
+        
+        self.insertChild(ColorCti('color', defaultData='#000000'))
         
         # A pen line width of zero indicates a cosmetic pen. This means that the pen width is 
         # always drawn one pixel wide, independent of the transformation set on the painter.
@@ -197,7 +198,7 @@ class PenCti(EmptyCti):
         
     @property
     def configValue(self):
-        """ A QPen made of the childrens config values
+        """ A QPen made of the children's config values
         """        
         pen = QtGui.QPen()
         pen.setCosmetic(True)
@@ -206,4 +207,19 @@ class PenCti(EmptyCti):
         pen.setStyle(self.findByNodePath('style').configValue)
 
         return pen
-                    
+    
+    
+    def createEditor(self, delegate, parent, _option):
+        """ Creates a hidden widget so that only the reset button is visible during editing.
+            :type option: QStyleOptionViewItem        
+        """
+        return EmptyCtiEditor(self, delegate, parent=parent)
+    
+        
+    def _dataToString(self, qPen):
+        """ Conversion function used to convert the (default)data to the display value.
+        """
+        return "Color: {}, width={})".format(qPen.color().name().upper(), qPen.width())
+        
+    
+    

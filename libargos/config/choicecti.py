@@ -45,17 +45,22 @@ class ChoiceCti(AbstractCti):
                     
             For the (other) parameters see the AbstractCti constructor documentation.
         """
-        super(ChoiceCti, self).__init__(nodeName, data=data, defaultData=defaultData)
         self._displayValues = [] if displayValues is None else displayValues
         self._configValues = [] if configValues is None else configValues
         assert len(self._configValues) == 0 or len(self._configValues) == len(self._displayValues),\
             "If set, _configValues must have the same length as displayValues."
         
+        # Set after self._displayValues are defined. The parent constructor call _enforceDataType
+        super(ChoiceCti, self).__init__(nodeName, data=data, defaultData=defaultData)
+        
     
     def _enforceDataType(self, data):
         """ Converts to int so that this CTI always stores that type. 
         """
-        return int(data)
+        idx = int(data)
+        assert 0 <= idx < len(self._displayValues), \
+            "Index should be >= 0 and < {}. Got {}".format(len(self._displayValues), idx)
+        return idx
 
     
     @property
