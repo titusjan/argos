@@ -88,22 +88,11 @@ class GroupCtiEditor(AbstractCtiEditor):
     def resetEditorValue(self, checked=False):
         """ Resets the editor to the default value. Also resets the children.
         """
+        for child in self.cti.childItems:   # TODO: recursive
+            child.data = child.defaultData
+        # Calling the super reset function to commit the parent node. 
+        # This will commit the children as well. 
+        super(GroupCtiEditor, self).resetEditorValue(checked=checked)        
         logger.debug("GroupCtiEditor.resetEditorValue: {} {}".format(self, self.cti))
-        
-        msgBox = QtGui.QMessageBox()
-        msgBox.setText("Please confirm reset")
-        msgBox.setInformativeText("Do you want to reset the configuration value, "
-                                  "and all of its children, to the default?")
-        msgBox.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.Yes)
-        msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
-        reply = msgBox.exec_()
-
-        if reply == QtGui.QMessageBox.Yes:
-            self.cti.resetToDefault(resetChildren=True)
     
-            # Calling the super reset function to commit the parent node. 
-            # This will commit the children as well. 
-            super(GroupCtiEditor, self).resetEditorValue(checked=checked)
-
-        
     
