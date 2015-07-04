@@ -61,7 +61,7 @@ class EmptyInspector(AbstractInspector):
             from libargos.config.stringcti import StringCti
             from libargos.config.intcti import IntCti
             from libargos.config.floatcti import FloatCti
-            from libargos.config.boolcti import BoolCti
+            from libargos.config.boolcti import BoolCti, TriBoolCti
             from libargos.config.choicecti import ChoiceCti
             from libargos.config.qtctis import PenCti
             
@@ -76,6 +76,7 @@ class EmptyInspector(AbstractInspector):
             grpItem.insertChild(FloatCti('width', defaultData=0, minValue =5, 
                                          stepSize=0.45, decimals=3))
             rootItem.insertChild(BoolCti('grid', defaultData=True))
+            rootItem.insertChild(TriBoolCti('call me', defaultData=None))
             rootItem.insertChild(ChoiceCti('hobbit', defaultData=2, 
                                            displayValues=['Frodo', 'Sam', 'Pippin', 'Merry']))
             myPen = QtGui.QPen(QtGui.QColor('#FF0066'))
