@@ -235,6 +235,15 @@ class AbstractCti(BaseTreeItem):
         """
         raise NotImplementedError()
 
+    def resetToDefault(self, resetChildren=True):
+        """ Resets the data to the default data. By default the children will be reset as well
+        """
+        self.data = self.defaultData
+        if resetChildren:
+            for child in self.childItems:
+                child.resetToDefault(resetChildren=True)
+                
+
     ########################
     # Editor look and feel #
     ########################
@@ -273,7 +282,7 @@ class AbstractCti(BaseTreeItem):
     #################
 
     @classmethod        
-    def createFromJsonDict(cls, dct):
+    def __not_used__createFromJsonDict(cls, dct):
         """ Creates a CTI given a dictionary, which usually comes from a JSON decoder.
         """
         cti = cls(dct['nodeName'])
@@ -290,6 +299,16 @@ class AbstractCti(BaseTreeItem):
                 "_class_ should be: {}, got: {}".format(get_full_class_name(cti), dct['_class_'])             
         return cti
 
+    
+    def __not_used__asJsonDict(self):
+        """ Returns a dictionary representation to be used in a JSON encoder,
+        """
+        return {'_class_': get_full_class_name(self),
+                'nodeName': self.nodeName, 
+                'data': self._dataToJson(self.data), 
+                'defaultData': self._dataToJson(self.defaultData), 
+                'childItems': self.childItems}
+        
 
     def _dataToJson(self, data):
         """ Converts data or defaultData to serializable json dictionary or scalar.
@@ -303,24 +322,14 @@ class AbstractCti(BaseTreeItem):
             Helper function that can be overridden; by default the input is returned.
         """
         return json
-    
-
-    def asJsonDict(self):
-        """ Returns a dictionary representation to be used in a JSON encoder,
-        """
-        return {'_class_': get_full_class_name(self),
-                'nodeName': self.nodeName, 
-                'data': self._dataToJson(self.data), 
-                'defaultData': self._dataToJson(self.defaultData), 
-                'childItems': self.childItems}
         
 
     def getNonDefaultsDict(self):
         """ Recursively retrieves values as a dictionary to be used for persistence.
-            Does not save defaultData and other properties.
-            Only stores values if they differ from the defaultData. If the CTI and none of its 
-            children differ from their default, a completely empty dictionary is returned. 
-            This is to achieve a smaller json representation.
+            Does not save defaultData and other properties, only stores values if they differ from 
+            the defaultData. If the CTI and none of its children differ from their default, a 
+            completely empty dictionary is returned. This is to achieve a smaller json 
+            representation.
         """
         dct = {}
         if self.data != self.defaultData:

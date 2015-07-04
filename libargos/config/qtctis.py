@@ -31,15 +31,17 @@ from libargos.utils.misc import NOT_SPECIFIED
 logger = logging.getLogger(__name__)
           
 
+PEN_STYLE_DISPLAY_VALUES = ['solid line', 'dashed line', 'dotted line', 
+                            'dash-dot line', 'dash-dot-dot line']
+PEN_STYLE_CONFIG_VALUES = [Qt.SolidLine, Qt.DashLine, Qt.DotLine, 
+                           Qt.DashDotLine, Qt.DashDotDotLine]
+
 
 def createPenStyleCti(nodeName, data=NOT_SPECIFIED, defaultData=0):
     """ Creates a ChoiceCti with Qt PenStyles
     """
     return ChoiceCti(nodeName, data=data, defaultData=defaultData, 
-                     displayValues=['solid line', 'dashed line', 'dotted line', 
-                                    'dash-dot line', 'dash-dot-dot line'], 
-                     configValues=[Qt.SolidLine, Qt.DashLine, Qt.DotLine, 
-                                   Qt.DashDotLine, Qt.DashDotDotLine])
+                     displayValues=PEN_STYLE_DISPLAY_VALUES, configValues=PEN_STYLE_CONFIG_VALUES)
 
    
 class ColorCti(AbstractCti):
@@ -167,26 +169,37 @@ class PenCti(GroupCti):
         It will create children for the pen color, width and style. It will not create a child
         for the brush.
     """
-    def __init__(self, nodeName):
-        """ Constructor. 
-            For the (other) parameters see the AbstractCti constructor documentation.
+    def __init__(self, nodeName, resetTo=None):
+        """ Sets the children's default value using the resetTo value.
+        
+            The resetTo value must be a QPen or value that can be converted to QPen. It is used
+            to initialize the child nodes' defaultValues. If resetTo is None, the default QPen
+            will be used, which is a black solid pen of width 1.0.
+            
+            (resetTo is not called 'defaultData' since the PenCti itself always has a data and 
+            defaultData of None. That is, it does not store the data itself but relies on its 
+            child nodes).
         """
         super(PenCti, self).__init__(nodeName)
         
-        self.insertChild(ColorCti('color', defaultData='#000000'))
+        # We don't need a similar initFrom parameter, you can
+        qPen = QtGui.QPen(resetTo)
+        
+        self.insertChild(ColorCti('color', defaultData=qPen.color()))
         
         # A pen line width of zero indicates a cosmetic pen. This means that the pen width is 
         # always drawn one pixel wide, independent of the transformation set on the painter.
         # Note that line widths other than 1 may be slow when anti aliasing is on.
-        self.insertChild(FloatCti('width', defaultData=1.0, 
+        self.insertChild(FloatCti('width', defaultData=qPen.width(), 
                                   minValue=0.0, maxValue=100, stepSize=1, decimals=1))
         
-        self.insertChild(createPenStyleCti('style'))
+        defaultIndex = PEN_STYLE_CONFIG_VALUES.index(qPen.style())
+        self.insertChild(createPenStyleCti('style', defaultData=defaultIndex))
         
         
     @property
     def configValue(self):
-        """ A QPen made of the children's config values
+        """ Creates a QPen made of the children's config values. 
         """        
         pen = QtGui.QPen()
         pen.setCosmetic(True)

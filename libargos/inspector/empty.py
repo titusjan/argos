@@ -22,7 +22,7 @@ import logging
 from libargos.info import DEBUGGING
 from libargos.config.groupcti import GroupCti
 from libargos.inspector.abstract import AbstractInspector
-from libargos.qt import QtGui
+from libargos.qt import Qt, QtGui
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +63,7 @@ class EmptyInspector(AbstractInspector):
             from libargos.config.floatcti import FloatCti
             from libargos.config.boolcti import BoolCti
             from libargos.config.choicecti import ChoiceCti
-            from libargos.config.qtctis import ColorCti
+            from libargos.config.qtctis import PenCti
             
             grpItem = GroupCti("group")
             rootItem.insertChild(grpItem)
@@ -78,7 +78,10 @@ class EmptyInspector(AbstractInspector):
             rootItem.insertChild(BoolCti('grid', defaultData=True))
             rootItem.insertChild(ChoiceCti('hobbit', defaultData=2, 
                                            displayValues=['Frodo', 'Sam', 'Pippin', 'Merry']))
-            rootItem.insertChild(ColorCti('favorite color', defaultData="#22FF33"))
+            myPen = QtGui.QPen(QtGui.QColor('#FF0066'))
+            myPen.setWidth(2)
+            myPen.setStyle(Qt.DashDotDotLine)
+            rootItem.insertChild(PenCti('line', resetTo=myPen)) 
                     
         return rootItem
         
