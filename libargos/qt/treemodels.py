@@ -3,7 +3,7 @@ import logging
 
 from libargos.qt.treeitems import BaseTreeItem
 from libargos.info import DEBUGGING
-from libargos.qt import Qt, QtCore
+from libargos.qt import Qt, QtCore, QtSignal
 from libargos.utils.cls import check_is_a_string, check_class
 
 logger = logging.getLogger(__name__)
@@ -25,6 +25,9 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
     HEADERS = tuple('<first column') # override in descendants
     COL_DECORATION = None   # Column number that contains the decoration. None for no icons
     
+    # Can be connected to a QTreeView.update() as to update a single cell
+    update = QtSignal(QtCore.QModelIndex)    
+        
     def __init__(self, parent=None):
         """ Constructor
         """
@@ -263,27 +266,29 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         try:
             if role == Qt.CheckStateRole:
                 result = self.setCheckStateForColumn(treeItem, index.column(), value)
+                if result:
+                    # A check box can have a tristate checkbox as parent which state depends
+                    # on the state of this child check box. Therefore we update the parentIndex 
+                    # and the descendants. 
+                    parentIndex = index.parent()
+                    uncleIndex = parentIndex.sibling(parentIndex.row(), index.column())
+                    self.update.emit(uncleIndex)
+                    self.emitUpdateForBranch(index)
             else:
                 result = self.setEditValueForColumn(treeItem, index.column(), value)
                 
+            if result:
+                self.dataChanged.emit(index, index)
+            return result
+                    
         except Exception as ex:
+            # When does this still happen? Can we remove it?
             logger.warn("Unable to set data: {}".format(ex))
             if DEBUGGING:
                 raise
-            result = False
-#            msg = "{}\nDo you want to try again?".format(ex)
-#            buttonPressed = QtGui.QMessageBox.question(None, "Confirm", msg, 
-#                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, 
-#                defaultButton = QtGui.QMessageBox.Yes)
-#            
-#            if buttonPressed == QtGui.QMessageBox.Yes:
-#                result = self.setData(index, value, role=Qt.EditRole)
-#            else:
-#                result = False
+            return False
+
             
-        if result:
-            self.dataChanged.emit(index, index)
-        return result
     
 
     ##################################################################
@@ -484,3 +489,14 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             raise IndexError("Item not found: {!r}. No start item!".format(path))
             
         return _auxGetByPath(path.split('/'), startItem, startIndex)
+
+
+    def emitUpdateForBranch(self, parentIndex):
+        """ Emits the update signal for parentIndex and all its children.
+        """
+        self.update.emit(parentIndex)
+        for rowNr in range(self.rowCount(parentIndex)):
+            childIndex = self.index(rowNr, parentIndex.column(), parentIndex=parentIndex)
+            self.emitUpdateForBranch(childIndex)
+        
+

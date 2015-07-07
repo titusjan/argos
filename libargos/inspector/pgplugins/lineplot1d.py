@@ -22,9 +22,10 @@ from __future__ import division, print_function
 import logging
 import pyqtgraph as pg
 
+from libargos.qt import QtGui
 from libargos.info import DEBUGGING
 from libargos.config.groupcti import GroupCti
-from libargos.config.boolcti import BoolCti
+from libargos.config.boolcti import BoolGroupCti, BoolCti
 from libargos.config.qtctis import PenCti
 from libargos.config.floatcti import FloatCti
 from libargos.config.stringcti import StringCti
@@ -73,13 +74,13 @@ class PgLinePlot1d(AbstractInspector):
         
         rootItem.insertChild(StringCti('title', defaultData="{path} {slices}", maxLength=255))
         
-        rootItem.insertChild(PenCti("pen"))
+        rootItem.insertChild(PenCti("pen", resetTo=QtGui.QPen(QtGui.QColor('#1C8857'))))
         
         logAxesItem = rootItem.insertChild(GroupCti('logarithmic'))
         logAxesItem.insertChild(BoolCti('X-axis', defaultData=False))
         logAxesItem.insertChild(BoolCti('Y-axis', defaultData=False))
         
-        gridItem = rootItem.insertChild(GroupCti('grid'))
+        gridItem = rootItem.insertChild(BoolGroupCti('grid'))
         gridItem.insertChild(BoolCti('X-axis', defaultData=True))
         gridItem.insertChild(BoolCti('Y-axis', defaultData=True))
         gridItem.insertChild(FloatCti('alpha', defaultData=0.25, 

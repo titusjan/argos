@@ -21,7 +21,7 @@ import logging
 
 from libargos.config.abstractcti import AbstractCti
 from libargos.config.groupcti import GroupCtiEditor
-from libargos.qt import Qt, QtGui
+from libargos.qt import Qt
 from libargos.utils.misc import NOT_SPECIFIED
 
 logger = logging.getLogger(__name__)
@@ -60,8 +60,7 @@ class BoolCti(AbstractCti):
 
     @property
     def checkState(self):
-        """ Returns how the checkbox for this cti should look like. Returns None for no checkbox. 
-            :rtype: QtCheckState or None 
+        """ Returns Qt.Checked or Qt.Unchecked.
         """
         if self.data is True:
             return Qt.Checked
@@ -73,7 +72,7 @@ class BoolCti(AbstractCti):
 
     @checkState.setter
     def checkState(self, checkState):
-        """ Allows the data to be set given a Qt.CheckState.
+        """ Sets the data to given a Qt.CheckState (Qt.Checked or Qt.Unchecked).
         """
         if checkState == Qt.Checked:
             self.data = True
@@ -92,19 +91,19 @@ class BoolCti(AbstractCti):
 
 
 
-class TriBoolCti(AbstractCti):
+class BoolGroupCti(AbstractCti):
     """ Config Tree Item to store a nullable boolean (True, False or None).
      
         It can be edited using a tri-state check box. However, the user can not set the value
         to partially checked directly, it will only be partially checked if some of its children
-        are checked and others are not! This is a bug/feature of Qt.
+        are checked and others are not! This is a bug/behavior of Qt that won't be fixed.
         See: https://bugreports.qt.io/browse/QTBUG-7674 and 
              http://comments.gmane.org/gmane.comp.lib.qt.general/925
     """
-    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=False):
+    def __init__(self, nodeName):
         """ Constructor. For the parameters see the AbstractCti constructor documentation.
         """
-        super(TriBoolCti, self).__init__(nodeName, data=data, defaultData=defaultData)
+        super(BoolGroupCti, self).__init__(nodeName)
 
     
     def _enforceDataType(self, data):
@@ -130,36 +129,46 @@ class TriBoolCti(AbstractCti):
 
     @property
     def checkState(self):
-        """ Returns how the checkbox for this cti should look like. Returns None for no checkbox. 
-            :rtype: QtCheckState or None 
+        """ Returns Qt.Checked or Qt.Unchecked if all children are checked or unchecked, else
+            returns Qt.PartiallyChecked
         """
-        #logger.debug("checkState getter: data = {}".format(self.data))
-        if self.data is True:
+        #commonData = self.childItems[0].data if self.childItems else Qt.PartiallyChecked
+        commonData = None
+        
+        for child in self.childItems:
+            if isinstance(child, BoolCti): 
+                if commonData is not None and child.data != commonData:
+                    return Qt.PartiallyChecked
+                commonData = child.data
+            
+        if commonData is True:
             return Qt.Checked
-        elif self.data is False:
+        elif commonData is False:
             return Qt.Unchecked
-        elif self.data is None:
-            return Qt.PartiallyChecked
         else:
-            raise ValueError("Unexpected data: {!r}".format(self.data))
+            raise AssertionError("Please report this bug: commonData: {!r}".format(commonData))
 
 
     @checkState.setter
     def checkState(self, checkState):
-        """ Allows the data to be set given a Qt.CheckState.
+        """ Sets the data to given a Qt.CheckState (Qt.Checked or Qt.Unchecked).
         """
         logger.debug("checkState setter: {}".format(checkState))
         if checkState == Qt.Checked:
-            self.data = True
+            commonData = True
         elif checkState == Qt.Unchecked:
-            self.data = False
+            commonData = False
         elif checkState == Qt.PartiallyChecked:
             # This never occurs, see remarks above in the classes' docstring
             assert False, "This never happens. Please report if it does."
-            self.data = None
+            commonData = None
         else:
             raise ValueError("Unexpected check state: {!r}".format(checkState))
 
+        for child in self.childItems:
+            if isinstance(child, BoolCti):
+                child.data = commonData
+            
     
     def createEditor(self, delegate, parent, _option):
         """ Creates a hidden widget so that only the reset button is visible during editing.

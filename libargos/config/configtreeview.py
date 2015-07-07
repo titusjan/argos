@@ -40,6 +40,7 @@ class ConfigTreeView(ArgosTreeView):
         """
         super(ConfigTreeView, self).__init__(treeModel=configTreeModel, parent=parent)
 
+        configTreeModel.update.connect(self.update)
         self.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
         
         treeHeader = self.header()

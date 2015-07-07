@@ -51,13 +51,13 @@ class ConfigTreeModel(BaseTreeModel):
     def debug(self, topLeftIndex, bottomRightIndex):
         """ Temporary debug to test the dataChanged signal
         """
-        topRow = topLeftIndex.row()
-        bottomRow = bottomRightIndex.row()
-        
-        for row in range(topRow, bottomRow + 1):
-            index = topLeftIndex.sibling(row, 0)
-            childItem = self.getItem(index)
-            logger.debug("Data changed in: {}".format(childItem.nodePath))
+        if topLeftIndex.isValid() and bottomRightIndex.isValid():
+            topRow = topLeftIndex.row()
+            bottomRow = bottomRightIndex.row()
+            for row in range(topRow, bottomRow + 1):
+                index = topLeftIndex.sibling(row, 0)
+                childItem = self.getItem(index)
+                logger.debug("Data changed in: {}".format(childItem.nodePath))
 
         
     def flags(self, index):
