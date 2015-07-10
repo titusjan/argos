@@ -21,7 +21,7 @@ import logging
 import numpy as np
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
-from libargos.qt import QtGui
+from libargos.qt import QtGui, QtSlot
 from libargos.utils.misc import NOT_SPECIFIED
 
 logger = logging.getLogger(__name__)
@@ -89,8 +89,25 @@ class IntCtiEditor(AbstractCtiEditor):
             spinBox.setMaximum(cti.maxValue) 
 
         spinBox.setSingleStep(cti.stepSize)
+        spinBox.setKeyboardTracking(False)
         
         self.spinBox = self.addSubEditor(spinBox, isFocusProxy=True)
+        self.spinBox.valueChanged.connect(self.commitChangedValue)
+
+        
+    def finalize(self):
+        """ Called at clean up. Is used to disconnect signals.
+        """
+        self.spinBox.valueChanged.disconnect(self.commitChangedValue)
+        super(IntCtiEditor, self).finalize()
+
+        
+    @QtSlot(int)
+    def commitChangedValue(self, value):
+        """ Commits the new value to the delegate so the inspector can be updated
+        """
+        #logger.debug("Value changed: {}".format(value))
+        self.delegate.commitData.emit(self)
         
     
     def setData(self, data):

@@ -182,7 +182,7 @@ class PenCti(GroupCti):
         """
         super(PenCti, self).__init__(nodeName)
         
-        # We don't need a similar initFrom parameter, you can
+        # We don't need a similar initFrom parameter.
         qPen = QtGui.QPen(resetTo)
         
         self.insertChild(ColorCti('color', defaultData=qPen.color()))
@@ -191,7 +191,7 @@ class PenCti(GroupCti):
         # always drawn one pixel wide, independent of the transformation set on the painter.
         # Note that line widths other than 1 may be slow when anti aliasing is on.
         self.insertChild(FloatCti('width', defaultData=qPen.width(), 
-                                  minValue=0.0, maxValue=100, stepSize=1, decimals=1))
+                                  minValue=0.0, maxValue=100, stepSize=0.1, decimals=1))
         
         defaultIndex = PEN_STYLE_CONFIG_VALUES.index(qPen.style())
         self.insertChild(createPenStyleCti('style', defaultData=defaultIndex))
