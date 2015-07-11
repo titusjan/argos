@@ -22,7 +22,7 @@ import logging
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor, InvalidInputError
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.floatcti import FloatCti
-from libargos.config.groupcti import GroupCti, GroupCtiEditor
+from libargos.config.groupcti import GroupCti
 
 
 from libargos.qt import Qt, QtCore, QtGui
@@ -31,8 +31,7 @@ from libargos.utils.misc import NOT_SPECIFIED
 logger = logging.getLogger(__name__)
           
 
-PEN_STYLE_DISPLAY_VALUES = ['solid line', 'dashed line', 'dotted line', 
-                            'dash-dot line', 'dash-dot-dot line']
+PEN_STYLE_DISPLAY_VALUES = ['solid', 'dashed', 'dotted', 'dash-dot', 'dash-dot-dot']
 PEN_STYLE_CONFIG_VALUES = [Qt.SolidLine, Qt.DashLine, Qt.DotLine, 
                            Qt.DashDotLine, Qt.DashDotDotLine]
 
@@ -194,7 +193,7 @@ class PenCti(GroupCti):
                                   minValue=0.0, maxValue=100, stepSize=0.1, decimals=1))
         
         defaultIndex = PEN_STYLE_CONFIG_VALUES.index(qPen.style())
-        self.insertChild(createPenStyleCti('style', defaultData=defaultIndex))
+        self.insertChild(createPenStyleCti('line style', defaultData=defaultIndex))
         
         
     @property
@@ -205,7 +204,7 @@ class PenCti(GroupCti):
         pen.setCosmetic(True)
         pen.setColor(self.findByNodePath('color').configValue)
         pen.setWidthF(self.findByNodePath('width').configValue)
-        pen.setStyle(self.findByNodePath('style').configValue)
+        pen.setStyle(self.findByNodePath('line style').configValue)
 
         return pen
 

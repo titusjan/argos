@@ -26,10 +26,11 @@ from libargos.qt import QtGui
 from libargos.info import DEBUGGING
 from libargos.config.groupcti import GroupCti
 from libargos.config.boolcti import BoolGroupCti, BoolCti
+from libargos.config.choicecti import ChoiceCti
 from libargos.config.qtctis import PenCti
 from libargos.config.floatcti import FloatCti
 from libargos.config.stringcti import StringCti
-#from libargos.config.intcti import IntCti
+from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector
 from libargos.utils.cls import array_has_real_numbers
 
@@ -76,6 +77,12 @@ class PgLinePlot1d(AbstractInspector):
         
         rootItem.insertChild(PenCti("pen", resetTo=QtGui.QPen(QtGui.QColor('#1C8857'))))
         
+        symbolItem = rootItem.insertChild(BoolCti("symbols", defaultData=False)) 
+        symbolItem.insertChild(ChoiceCti("shape", defaultData=0, 
+           displayValues=['circle', 'square', 'triangle', 'diamond', 'plus'],  
+           configValues=['o', 's', 't', 'd', '+']))
+        symbolItem.insertChild(IntCti('size', defaultData=5, minValue=0, maxValue=100, stepSize=1))
+        
         logAxesItem = rootItem.insertChild(GroupCti('logarithmic'))
         logAxesItem.insertChild(BoolCti('X-axis', defaultData=False))
         logAxesItem.insertChild(BoolCti('Y-axis', defaultData=False))
@@ -105,7 +112,14 @@ class PgLinePlot1d(AbstractInspector):
         
         pen = self.configValue('pen')
         self.plotDataItem.setPen(pen)
-
+        
+        if self.configValue('symbols'):
+            self.plotDataItem.setSymbol(self.configValue('symbols/shape'))
+            self.plotDataItem.setSymbolSize(self.configValue('symbols/size'))
+            self.plotDataItem.setSymbolPen(pen)
+            self.plotDataItem.setSymbolBrush(QtGui.QBrush(pen.color()))
+            #self.plotDataItem.opts['pxMode'] = False # Not documented and requires FloatCti
+        
 
     def _updateRti(self):
         """ Draws the RTI
