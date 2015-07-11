@@ -142,7 +142,7 @@ class PgLinePlot1d(AbstractInspector):
         symbolBrush = QtGui.QBrush(color) if drawSymbols else None
 
         self.plotDataItem = self.plotWidget.plot(pen=pen, shadowPen=shadowPen, 
-                                                 symbolShape=symbolShape, symbolSize=symbolSize,
+                                                 symbol=symbolShape, symbolSize=symbolSize,
                                                  symbolPen=symbolPen, symbolBrush=symbolBrush,
                                                  antialias=antiAlias)
             

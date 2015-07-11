@@ -519,6 +519,11 @@ class AbstractCtiEditor(QtGui.QWidget):
     def resetEditorValue(self, checked=False):
         """ Resets the editor to the default value. Also resets the children.
         """
+        # Block all signals to prevent duplicate inspector updates.
+        # No need to restore, the editors will be deleted after the reset.
+        for subEditor in self._subEditors:
+            subEditor.blockSignals(True)
+            
         self.cti.resetToDefault(resetChildren=True)
         # This will commit the children as well. 
         self.setData(self.cti.defaultData)
