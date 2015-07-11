@@ -124,6 +124,7 @@ class AbstractCti(BaseTreeItem):
         version, the new value will be updated in the UI unless the user has explicitly changed the
         value himself.
     """
+    # TODO: defaultData should be the second argument. Be mandatory?
     def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=None):
         """ Constructor
             :param nodeName: name of this node (used to construct the node path).
@@ -513,15 +514,16 @@ class AbstractCtiEditor(QtGui.QWidget):
         self.delegate.commitData.emit(self)
         self.delegate.closeEditor.emit(self, QtGui.QAbstractItemDelegate.NoHint)   # CLOSES SELF!
         
-
+    
     @QtSlot(bool)
     def resetEditorValue(self, checked=False):
-        """ Resets the editor to the default value of the config tree item
+        """ Resets the editor to the default value. Also resets the children.
         """
-        logger.debug("resetEditorValue: {}".format(checked))
+        self.cti.resetToDefault(resetChildren=True)
+        # This will commit the children as well. 
         self.setData(self.cti.defaultData)
         self.commitAndClose()
-    
+            
     
     def paintEvent(self, event):
         """ Reimplementation of paintEvent to allow for style sheets

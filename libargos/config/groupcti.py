@@ -82,17 +82,6 @@ class GroupCtiEditor(AbstractCtiEditor):
         """ Gets data from the editor widget.
         """
         return self.widget.property("editor_data")
-    
-    
-    @QtSlot(bool)
-    def resetEditorValue(self, checked=False):
-        """ Resets the editor to the default value. Also resets the children.
-        """
-        for child in self.cti.childItems:   # TODO: recursive
-            child.data = child.defaultData
-        # Calling the super reset function to commit the parent node. 
-        # This will commit the children as well. 
-        super(GroupCtiEditor, self).resetEditorValue(checked=checked)        
-        logger.debug("GroupCtiEditor.resetEditorValue: {} {}".format(self, self.cti))
+
     
     
