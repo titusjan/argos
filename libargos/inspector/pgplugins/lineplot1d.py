@@ -27,7 +27,7 @@ from libargos.info import DEBUGGING
 from libargos.config.groupcti import GroupCti
 from libargos.config.boolcti import BoolGroupCti, BoolCti
 from libargos.config.choicecti import ChoiceCti
-from libargos.config.qtctis import PenCti
+from libargos.config.qtctis import PenCti, ColorCti, createPenStyleCti, createPenWidthCti
 from libargos.config.floatcti import FloatCti
 from libargos.config.stringcti import StringCti
 from libargos.config.intcti import IntCti
@@ -73,25 +73,38 @@ class PgLinePlot1d(AbstractInspector):
         """
         rootItem = GroupCti('inspector')
         
+        # Titles and labels
         rootItem.insertChild(StringCti('title', defaultData="{path} {slices}", maxLength=255))
         
-        rootItem.insertChild(PenCti("pen", resetTo=QtGui.QPen(QtGui.QColor('#1C8857'))))
-        
-        symbolItem = rootItem.insertChild(BoolCti("symbols", defaultData=False)) 
-        symbolItem.insertChild(ChoiceCti("shape", defaultData=0, 
-           displayValues=['circle', 'square', 'triangle', 'diamond', 'plus'],  
-           configValues=['o', 's', 't', 'd', '+']))
-        symbolItem.insertChild(IntCti('size', defaultData=5, minValue=0, maxValue=100, stepSize=1))
-        
-        logAxesItem = rootItem.insertChild(GroupCti('logarithmic'))
-        logAxesItem.insertChild(BoolCti('X-axis', defaultData=False))
-        logAxesItem.insertChild(BoolCti('Y-axis', defaultData=False))
-        
+        # Axes
         gridItem = rootItem.insertChild(BoolGroupCti('grid'))
         gridItem.insertChild(BoolCti('X-axis', defaultData=True))
         gridItem.insertChild(BoolCti('Y-axis', defaultData=True))
         gridItem.insertChild(FloatCti('alpha', defaultData=0.25, 
                                       minValue=0.0, maxValue=1.0, stepSize=0.01, decimals=2))
+        # Grid
+        logAxesItem = rootItem.insertChild(GroupCti('logarithmic'))
+        logAxesItem.insertChild(BoolCti('X-axis', defaultData=False))
+        logAxesItem.insertChild(BoolCti('Y-axis', defaultData=False))
+                
+        # Pen
+        penItem = rootItem.insertChild(GroupCti('pen'))
+        penItem.insertChild(ColorCti('color', defaultData=QtGui.QColor('#1C8857')))
+        lineItem = penItem.insertChild(BoolCti('line', defaultData=True))
+        lineItem.insertChild(createPenStyleCti('style'))
+        lineItem.insertChild(createPenWidthCti('width'))
+        defaultShadowPen = QtGui.QPen(QtGui.QColor('#BFBFBF'))
+        defaultShadowPen.setWidth(3)
+        lineItem.insertChild(PenCti("shadow", resetTo=QtGui.QPen(defaultShadowPen)))
+
+        symbolItem = penItem.insertChild(BoolCti("symbol", defaultData=False)) 
+        symbolItem.insertChild(ChoiceCti("shape", defaultData=0, 
+           displayValues=['circle', 'square', 'triangle', 'diamond', 'plus'],  
+           configValues=['o', 's', 't', 'd', '+']))
+        symbolItem.insertChild(IntCti('size', defaultData=5, minValue=0, maxValue=100, stepSize=1))
+        
+        rootItem.insertChild(BoolCti("anti-alias", defaultData=False))
+        
         return rootItem
     
                 
@@ -108,18 +121,31 @@ class PgLinePlot1d(AbstractInspector):
                                  y=self.configValue('grid/Y-axis'), 
                                  alpha=self.configValue('grid/alpha'))
 
-        self.plotDataItem = self.plotWidget.plot()
+        antiAlias = self.configValue('anti-alias')
+        color = self.configValue('pen/color')
         
-        pen = self.configValue('pen')
-        self.plotDataItem.setPen(pen)
+        if self.configValue('pen/line'):
+            pen = QtGui.QPen()
+            pen.setCosmetic(True)
+            pen.setColor(color)
+            pen.setWidthF(self.configValue('pen/line/width'))
+            pen.setStyle(self.configValue('pen/line/style'))
+            shadowPen = self.configValue('pen/line/shadow')
+        else:
+            pen = None
+            shadowPen = None
         
-        if self.configValue('symbols'):
-            self.plotDataItem.setSymbol(self.configValue('symbols/shape'))
-            self.plotDataItem.setSymbolSize(self.configValue('symbols/size'))
-            self.plotDataItem.setSymbolPen(pen)
-            self.plotDataItem.setSymbolBrush(QtGui.QBrush(pen.color()))
-            #self.plotDataItem.opts['pxMode'] = False # Not documented and requires FloatCti
-        
+        drawSymbols = self.configValue('pen/symbol')
+        symbolShape = self.configValue('pen/symbol/shape') if drawSymbols else None
+        symbolSize  = self.configValue('pen/symbol/size') if drawSymbols else 0.0
+        symbolPen   = pen if drawSymbols else None
+        symbolBrush = QtGui.QBrush(color) if drawSymbols else None
+
+        self.plotDataItem = self.plotWidget.plot(pen=pen, shadowPen=shadowPen, 
+                                                 symbolShape=symbolShape, symbolSize=symbolSize,
+                                                 symbolPen=symbolPen, symbolBrush=symbolBrush,
+                                                 antialias=antiAlias)
+            
 
     def _updateRti(self):
         """ Draws the RTI

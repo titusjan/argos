@@ -20,9 +20,9 @@
 import logging
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor, InvalidInputError
+from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.floatcti import FloatCti
-from libargos.config.groupcti import GroupCti
 
 
 from libargos.qt import Qt, QtCore, QtGui
@@ -42,6 +42,16 @@ def createPenStyleCti(nodeName, data=NOT_SPECIFIED, defaultData=0):
     return ChoiceCti(nodeName, data=data, defaultData=defaultData, 
                      displayValues=PEN_STYLE_DISPLAY_VALUES, configValues=PEN_STYLE_CONFIG_VALUES)
 
+             
+def createPenWidthCti(nodeName, defaultData=1.0):
+    """ Creates a FloatCti with defaults for configuring a QPen width.
+    """             
+    # A pen line width of zero indicates a cosmetic pen. This means that the pen width is 
+    # always drawn one pixel wide, independent of the transformation set on the painter.
+    # Note that line widths other than 1 may be slow when anti aliasing is on.
+    return FloatCti('width', defaultData=defaultData, 
+                    minValue=0.0, maxValue=100, stepSize=0.1, decimals=1)
+        
    
 class ColorCti(AbstractCti):
     """ Config Tree Item to store a color. 
@@ -160,9 +170,9 @@ class ColorCtiEditor(AbstractCtiEditor):
 
         return  QtGui.QColor(text)         
 
+
              
-             
-class PenCti(GroupCti):
+class PenCti(BoolCti):
     """ Config Tree Item to configure a QPen for drawing lines. 
     
         It will create children for the pen color, width and style. It will not create a child
@@ -185,28 +195,24 @@ class PenCti(GroupCti):
         qPen = QtGui.QPen(resetTo)
         
         self.insertChild(ColorCti('color', defaultData=qPen.color()))
-        
-        # A pen line width of zero indicates a cosmetic pen. This means that the pen width is 
-        # always drawn one pixel wide, independent of the transformation set on the painter.
-        # Note that line widths other than 1 may be slow when anti aliasing is on.
-        self.insertChild(FloatCti('width', defaultData=qPen.width(), 
-                                  minValue=0.0, maxValue=100, stepSize=0.1, decimals=1))
-        
         defaultIndex = PEN_STYLE_CONFIG_VALUES.index(qPen.style())
-        self.insertChild(createPenStyleCti('line style', defaultData=defaultIndex))
+        self.insertChild(createPenStyleCti('style', defaultData=defaultIndex))
+        self.insertChild(createPenWidthCti('width', defaultData=qPen.width()))
         
-        
+                         
     @property
     def configValue(self):
         """ Creates a QPen made of the children's config values. 
-        """        
-        pen = QtGui.QPen()
-        pen.setCosmetic(True)
-        pen.setColor(self.findByNodePath('color').configValue)
-        pen.setWidthF(self.findByNodePath('width').configValue)
-        pen.setStyle(self.findByNodePath('line style').configValue)
-
-        return pen
+        """
+        if not self.data:
+            return None
+        else:
+            pen = QtGui.QPen()
+            pen.setCosmetic(True)
+            pen.setColor(self.findByNodePath('color').configValue)
+            pen.setStyle(self.findByNodePath('style').configValue)
+            pen.setWidthF(self.findByNodePath('width').configValue)
+            return pen
 
 
     
