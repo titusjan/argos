@@ -39,7 +39,7 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
     def __init__(self, parent=None):
         super(ConfigItemDelegate, self).__init__(parent=parent)
         
-        self.commitData.connect(self._onCommitData) # just for debugging.
+        self.commitData.connect(self._prepareCommit) 
         
     
     def createEditor(self, parent, option, index):
@@ -66,6 +66,12 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
             Therefore a AbstractCtiEditor maintains a reference to its config tree item (cti).
         """
         editor.finalize()
+        
+    
+    def _prepareCommit(self, editor):
+        """ Called when commitData signal is emitted. Calls the prepareCommit of the editor.
+        """
+        editor.prepareCommit()
 
 
     def setEditorData(self, editor, index):
@@ -114,10 +120,6 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
             displayRect.adjust(offset, 0, 0, 0)
 
         editor.setGeometry(displayRect)
-    
-    
-    def _onCommitData(self, editor):
-        """ Logs when commitData signal is emitted. For debugging purposes """
-        logger.debug("commitData signal emitted")
+
     
     

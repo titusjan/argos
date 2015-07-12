@@ -20,7 +20,7 @@
 import logging
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
-from libargos.qt import  Qt, QtGui
+from libargos.qt import  Qt, QtCore, QtGui, QtSlot
 from libargos.utils.misc import NOT_SPECIFIED
 
 
@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 class ChoiceCti(AbstractCti):
     """ Config Tree Item to store a choice between strings.
     """
-    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=0, 
+    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=0, editable=False,  
                  configValues=None, displayValues=None):
         """ Constructor.
         
@@ -41,14 +41,21 @@ class ChoiceCti(AbstractCti):
             The displayValues parameter must be a list of strings, which will be displayed in the 
             combo box. The _configValues should be a list of the same size with the _configValues
             that each 'choice' represents, e.g. choice 'dashed' maps to configValue Qt.DashLine.
-            If displayValues is None, the configValues are used as the displayValues.
+            If displayValues is None, the configValues are used as displayValues.
                     
             For the (other) parameters see the AbstractCti constructor documentation.
         """
-        self._displayValues = [] if displayValues is None else displayValues
+        self.editable = editable
         self._configValues = [] if configValues is None else configValues
-        assert len(self._configValues) == 0 or len(self._configValues) == len(self._displayValues),\
-            "If set, _configValues must have the same length as displayValues."
+        if displayValues is None:
+            self._displayValues = list(self._configValues) 
+        else:
+            assert not editable, "No separate displayValues may be set if the CTI is editable"
+            self._displayValues = displayValues
+            
+        assert len(self._configValues) == len(self._displayValues),\
+            "If set, configValues must have the same length as displayValues."
+
         
         # Set after self._displayValues are defined. The parent constructor call _enforceDataType
         super(ChoiceCti, self).__init__(nodeName, data=data, defaultData=defaultData)
@@ -67,16 +74,13 @@ class ChoiceCti(AbstractCti):
     def configValue(self):
         """ The currently selected configValue
         """
-        if self._configValues:
-            return self._configValues[self.data]
-        else:
-            return self._displayValues[self.data]
+        return self._configValues[self.data]
         
         
     def _dataToString(self, data):
         """ Conversion function used to convert the (default)data to the display value.
         """
-        choices = self._displayValues if self._displayValues else self._configValues
+        choices = self._displayValues
         return str(choices[data])
          
             
@@ -94,6 +98,15 @@ class ChoiceCti(AbstractCti):
         return ChoiceCtiEditor(self, delegate, parent=parent) 
     
     
+    def insertValue(self, pos, configValue, displayValue=None):
+        """ Will insert the configValue in the configValues and the displayValue in the 
+            displayValues list. 
+            If displayValue is None, the configValue is set in the displayValues as well
+        """
+        self._configValues.insert(pos, configValue)
+        self._displayValues.insert(pos, displayValue if displayValue is not None else configValue)
+    
+        
         
 class ChoiceCtiEditor(AbstractCtiEditor):
     """ A CtiEditor which contains a QCombobox for editing ChoiceCti objects. 
@@ -104,21 +117,29 @@ class ChoiceCtiEditor(AbstractCtiEditor):
         super(ChoiceCtiEditor, self).__init__(cti, delegate, parent=parent)
         
         comboBox = QtGui.QComboBox()
+        comboBox.setEditable(cti.editable)
         comboBox.addItems(cti._displayValues)
         
         # Store the configValue in the combo box, although it's not currently used.
         for idx, configValue in enumerate(cti._configValues):
             comboBox.setItemData(idx, configValue, role=Qt.UserRole)
         
-        comboBox.activated.connect(self.commitAndClose)
+        #comboBox.activated.connect(self.commitAndClose)
         
+        comboBox.highlighted.connect(self.comboBoxHighlighted)
+        comboBox.currentIndexChanged.connect(self.comboBoxIndexChanged)
+        comboBox.activated.connect(self.comboBoxActivated)
+        comboBox.editTextChanged.connect(self.comboBoxTextChanged)
+        comboBox.model().rowsInserted.connect(self.comboBoxRowsInserted)
         self.comboBox = self.addSubEditor(comboBox, isFocusProxy=True)
 
 
     def finalize(self):
         """ Is called when the editor is closed. Disconnect signals.
         """
-        self.comboBox.activated.disconnect(self.commitAndClose)
+        logger.debug("finalize, count={}".format(self.comboBox.count()))
+        self.comboBox.editTextChanged.disconnect(self.comboBoxTextChanged)
+        #self.comboBox.activated.disconnect(self.commitAndClose)
         super(ChoiceCtiEditor, self).finalize()   
         
     
@@ -131,6 +152,50 @@ class ChoiceCtiEditor(AbstractCtiEditor):
     def getData(self):
         """ Gets data from the editor widget.
         """
+        logger.debug("getData: (count={})".format(self.comboBox.count())) 
         return self.comboBox.currentIndex()
+            
+    
+    @QtSlot(int)
+    def comboBoxHighlighted(self, index):
+        """ Called when an item in the combobox popup list is highlighted by the user.
+        """
+        logger.debug("comboBoxHighlighted: {}".format(index))
+            
+    
+    @QtSlot(int)
+    def comboBoxIndexChanged(self, index):
+        """ Called whenever the currentIndex in the combobox changes either through 
+            user interaction or programmatically. The item's index is passed or -1 if the combobox 
+            becomes empty or the currentIndex was reset. 
+        """
+        logger.debug("comboBoxIndexChanged: {}".format(index))
+    
+    
+    @QtSlot(int)
+    def comboBoxActivated(self, index):
+        """ Is called when the user chooses an item in the combo box. The item's index is passed. 
+            Note that this signal is sent even when the choice is not changed. 
+        """
+        logger.debug("comboBoxActivated: {}".format(index))
+
+    
+    @QtSlot(str)
+    def comboBoxTextChanged(self, text):
+        """ Called when the user edits the text in the combo box.
+        """
+        logger.debug("comboBoxTextChanged: {} (count={})".format(text, self.comboBox.count()))
+    
+        
+    @QtSlot(QtCore.QModelIndex, int, int)
+    def comboBoxRowsInserted(self, _parent, start, end):
+        """ Called when the user has entered a new value in the combobox.
+            Puts the combobox values back into the cti.
+        """
+        assert start == end, "Bug, please report: more than one row inserted"
+        configValue = self.comboBox.itemText(start)
+        logger.debug("Inserting {!r} at position {} in {}"
+                     .format(configValue, start, self.cti.nodePath))
+        self.cti.insertValue(start, configValue)
     
     

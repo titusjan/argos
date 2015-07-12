@@ -431,7 +431,9 @@ class AbstractCtiEditor(QtGui.QWidget):
                 
 
     def finalize(self):
-        """ Called at clean up. Can be used to disconnect signals.
+        """ Called at clean up, when the editor is closed. Can be used to disconnect signals.
+            This is often called after the client (e.g. the inspector) is updated. If you want to 
+            take action before the  update, override prepareCommit instead.
             Be sure to call the finalize of the super class if you override this function. 
         """
         for subEditor in self._subEditors:
@@ -441,6 +443,14 @@ class AbstractCtiEditor(QtGui.QWidget):
         self.cti = None # just to make sure it's not used again.
         self.delegate = None
 
+    
+    @QtSlot()        
+    def prepareCommit(self):
+        """ Called just before the data is committed. 
+            Can be used to take action before the client (e.g. the inspector) is updated.
+        """
+        logger.debug("Committing data from: {}".format(self.cti.nodePath))
+        
         
     def addSubEditor(self, subEditor, isFocusProxy=False):
         """ Adds a sub editor to the layout (at the right but before the reset button)
@@ -500,8 +510,8 @@ class AbstractCtiEditor(QtGui.QWidget):
                 return False
 
         return super(AbstractCtiEditor, self).eventFilter(watchedObject, event) 
-    
-    
+        
+
     @QtSlot()
     def commitAndClose(self):
         """ Commits the data of the sub editor and instructs the delegate to close this ctiEditor.

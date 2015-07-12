@@ -34,7 +34,6 @@ http://vis4.net/blog/posts/avoid-equidistant-hsv-colors/
 
 TODO:
 	confirm on error when editing cell
-	read/write config to yaml, QSettings. 
 	Masked arrays and fill values.
 	Compound data types
 	
@@ -52,11 +51,13 @@ Test:
 	Memory leaks
 
 TODO Long term or nice to have:
+	make argos assert and assertEqual function for sanity checks (consistent "please report thig bug" text)
+	read/write config to yaml, QSettings. 
 	thinks how to stretch last line when toggling columns on/off (recalc column size?)
 	let repo tree view work with multile selected items
 	example RTI using XML file.
 	fits format
-	tiff format (attributes). Other image formats.
+	geotiff format (attributes). Other image formats.
 	
 	Change profile from menu?
 	Plugin management window

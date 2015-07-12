@@ -80,8 +80,8 @@ class EmptyInspector(AbstractInspector):
             gridItem.insertChild(BoolCti('X-Axis', defaultData=True))
             gridItem.insertChild(BoolCti('Y-Axis', defaultData=False))
             
-            rootItem.insertChild(ChoiceCti('hobbit', defaultData=2, 
-                                           displayValues=['Frodo', 'Sam', 'Pippin', 'Merry']))
+            rootItem.insertChild(ChoiceCti('hobbit', defaultData=2, editable=True, 
+                                           configValues=['Frodo', 'Sam', 'Pippin', 'Merry']))
             myPen = QtGui.QPen(QtGui.QColor('#FF0066'))
             myPen.setWidth(2)
             myPen.setStyle(Qt.DashDotDotLine)
