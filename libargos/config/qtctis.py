@@ -36,11 +36,17 @@ PEN_STYLE_CONFIG_VALUES = [Qt.SolidLine, Qt.DashLine, Qt.DotLine,
                            Qt.DashDotLine, Qt.DashDotDotLine]
 
 
-def createPenStyleCti(nodeName, data=NOT_SPECIFIED, defaultData=0):
-    """ Creates a ChoiceCti with Qt PenStyles
+def createPenStyleCti(nodeName, data=NOT_SPECIFIED, defaultData=0, includeNone=False):
+    """ Creates a ChoiceCti with Qt PenStyles.
+        If includeEmtpy is True, the first option will be None.
     """
+    displayValues=PEN_STYLE_DISPLAY_VALUES
+    configValues=PEN_STYLE_CONFIG_VALUES
+    if includeNone:
+        displayValues.insert(0, '')
+        configValues.insert(0, None)
     return ChoiceCti(nodeName, data=data, defaultData=defaultData, 
-                     displayValues=PEN_STYLE_DISPLAY_VALUES, configValues=PEN_STYLE_CONFIG_VALUES)
+                     displayValues=displayValues, configValues=configValues)
 
              
 def createPenWidthCti(nodeName, defaultData=1.0):
@@ -178,7 +184,7 @@ class PenCti(BoolCti):
         It will create children for the pen color, width and style. It will not create a child
         for the brush.
     """
-    def __init__(self, nodeName, resetTo=None):
+    def __init__(self, nodeName, resetTo=None, includeNoneStyle=False):
         """ Sets the children's default value using the resetTo value.
         
             The resetTo value must be a QPen or value that can be converted to QPen. It is used
@@ -188,6 +194,8 @@ class PenCti(BoolCti):
             (resetTo is not called 'defaultData' since the PenCti itself always has a data and 
             defaultData of None. That is, it does not store the data itself but relies on its 
             child nodes).
+            
+            If includeNonStyle is True, an None-option will be prepended to the style choice
         """
         super(PenCti, self).__init__(nodeName)
         
@@ -196,7 +204,8 @@ class PenCti(BoolCti):
         
         self.insertChild(ColorCti('color', defaultData=qPen.color()))
         defaultIndex = PEN_STYLE_CONFIG_VALUES.index(qPen.style())
-        self.insertChild(createPenStyleCti('style', defaultData=defaultIndex))
+        self.insertChild(createPenStyleCti('style', defaultData=defaultIndex, 
+                                           includeNone=includeNoneStyle))
         self.insertChild(createPenWidthCti('width', defaultData=qPen.width()))
         
                          
@@ -210,9 +219,23 @@ class PenCti(BoolCti):
             pen = QtGui.QPen()
             pen.setCosmetic(True)
             pen.setColor(self.findByNodePath('color').configValue)
-            pen.setStyle(self.findByNodePath('style').configValue)
+            style = self.findByNodePath('style').configValue
+            if style is not None:
+                pen.setStyle(self.findByNodePath('style').configValue)
             pen.setWidthF(self.findByNodePath('width').configValue)
             return pen
+        
+        
+    def createPen(self, altStyle=None):
+        """ Creates a pen from the config values with the style overridden by altStyle if the 
+            None-option is selected in the combo box.
+        """
+        pen = self.configValue
+        style = self.findByNodePath('style').configValue
+        if style is None and altStyle is not None:
+            pen.setStyle(altStyle)
+        return pen
+    
 
 
     
