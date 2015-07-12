@@ -31,12 +31,15 @@ class IntCti(AbstractCti):
     """ Config Tree Item to store an integer. It can be edited using a QSpinBox.
     """
     def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=0, 
-                 minValue = None, maxValue = None, stepSize = 1):
+                 minValue = None, maxValue = None, stepSize = 1, 
+                 specialValueText=None):
         """ Constructor.
             
             :param minValue: minimum data allowed when editing (use None for no minimum)
             :param maxValue: maximum data allowed when editing (use None for no maximum)
-            :param stepSize: steps between values when ediging (default = 1)
+            :param stepSize: steps between values when editing (default = 1)
+            :param specialValueText: if set, this text will be displayed when the the minValue 
+                is selected. It is up to the cti user to interpret this as a special case.            
                     
             For the (other) parameters see the AbstractCti constructor documentation.
         """
@@ -45,19 +48,30 @@ class IntCti(AbstractCti):
         self.minValue = minValue
         self.maxValue = maxValue
         self.stepSize = stepSize
-    
+        self.specialValueText = specialValueText
+        
     
     def _enforceDataType(self, data):
         """ Converts to int so that this CTI always stores that type. 
         """
         return int(data)
     
+
+    def _dataToString(self, data):
+        """ Conversion function used to convert the (default)data to the display value.
+        """
+        if self.specialValueText is not None and data == self.minValue:
+            return self.specialValueText
+        else:
+            return str(data)    
+    
     
     @property
     def debugInfo(self):
         """ Returns the string with debugging information
         """
-        return "min = {}, max = {}, step = {}".format(self.minValue, self.maxValue, self.stepSize)
+        return ("min = {}, max = {}, step = {}, specVal = {}"
+                .format(self.minValue, self.maxValue, self.stepSize, self.specialValueText))
     
     
     def createEditor(self, delegate, parent, option):
@@ -91,6 +105,9 @@ class IntCtiEditor(AbstractCtiEditor):
         spinBox.setSingleStep(cti.stepSize)
         spinBox.setKeyboardTracking(False)
         
+        if cti.specialValueText is not None:
+            spinBox.setSpecialValueText(cti.specialValueText)
+                    
         self.spinBox = self.addSubEditor(spinBox, isFocusProxy=True)
         self.spinBox.valueChanged.connect(self.commitChangedValue)
 

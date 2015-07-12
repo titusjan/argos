@@ -409,7 +409,8 @@ class MainWindow(QtGui.QMainWindow):
     def drawWindowContents(self):
         """ Draws all contents of this windows inspector. This includes the inspector.
         """
-        logger.debug("#### Drawing window contents: {} ####".format(self.windowTitle()))
+        logger.debug("")
+        logger.debug("-------- Drawing window contents: {} --------".format(self.windowTitle()))
         if self.inspector:
             self.inspector.initContents()
             self.inspector.updateRti()

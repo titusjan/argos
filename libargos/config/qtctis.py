@@ -42,21 +42,25 @@ def createPenStyleCti(nodeName, data=NOT_SPECIFIED, defaultData=0, includeNone=F
     """
     displayValues=PEN_STYLE_DISPLAY_VALUES
     configValues=PEN_STYLE_CONFIG_VALUES
-    if includeNone:
+    if False and includeNone: # TODO: remove False clause
         displayValues.insert(0, '')
         configValues.insert(0, None)
     return ChoiceCti(nodeName, data=data, defaultData=defaultData, 
                      displayValues=displayValues, configValues=configValues)
 
              
-def createPenWidthCti(nodeName, defaultData=1.0):
+def createPenWidthCti(nodeName, defaultData=1.0, zeroValueText=None):
     """ Creates a FloatCti with defaults for configuring a QPen width.
-    """             
+    
+        If specialValueZero is set, this string will be displayed when 0.0 is selected.
+        If specialValueZero is None, the minValue will be 0.1
+    """
     # A pen line width of zero indicates a cosmetic pen. This means that the pen width is 
     # always drawn one pixel wide, independent of the transformation set on the painter.
     # Note that line widths other than 1 may be slow when anti aliasing is on.
-    return FloatCti('width', defaultData=defaultData, 
-                    minValue=0.0, maxValue=100, stepSize=0.1, decimals=1)
+    return FloatCti('width', defaultData=defaultData, specialValueText=zeroValueText, 
+                    minValue=0.1 if zeroValueText is None else 0.0, 
+                    maxValue=100, stepSize=0.1, decimals=1)
         
    
 class ColorCti(AbstractCti):
@@ -184,7 +188,7 @@ class PenCti(BoolCti):
         It will create children for the pen color, width and style. It will not create a child
         for the brush.
     """
-    def __init__(self, nodeName, resetTo=None, includeNoneStyle=False):
+    def __init__(self, nodeName, resetTo=None, includeNoneStyle=False, includeZeroWidth=False):
         """ Sets the children's default value using the resetTo value.
         
             The resetTo value must be a QPen or value that can be converted to QPen. It is used
@@ -198,7 +202,6 @@ class PenCti(BoolCti):
             If includeNonStyle is True, an None-option will be prepended to the style choice
         """
         super(PenCti, self).__init__(nodeName)
-        
         # We don't need a similar initFrom parameter.
         qPen = QtGui.QPen(resetTo)
         
@@ -206,7 +209,8 @@ class PenCti(BoolCti):
         defaultIndex = PEN_STYLE_CONFIG_VALUES.index(qPen.style())
         self.insertChild(createPenStyleCti('style', defaultData=defaultIndex, 
                                            includeNone=includeNoneStyle))
-        self.insertChild(createPenWidthCti('width', defaultData=qPen.width()))
+        self.insertChild(createPenWidthCti('width', defaultData=qPen.widthF(), 
+                                           zeroValueText=' ' if includeZeroWidth else None))
         
                          
     @property
@@ -226,14 +230,22 @@ class PenCti(BoolCti):
             return pen
         
         
-    def createPen(self, altStyle=None):
+    def createPen(self, altStyle=None, altWidth=None):
         """ Creates a pen from the config values with the style overridden by altStyle if the 
             None-option is selected in the combo box.
         """
         pen = self.configValue
-        style = self.findByNodePath('style').configValue
-        if style is None and altStyle is not None:
-            pen.setStyle(altStyle)
+        if pen is not None:
+            
+            style = self.findByNodePath('style').configValue
+            if style is None and altStyle is not None:
+                pen.setStyle(altStyle)
+                
+            width = self.findByNodePath('width').configValue
+            if width == 0.0 and altWidth is not None:
+                logger.debug("Setting altWidth = {!r}".format(altWidth))
+                pen.setWidthF(altWidth)
+                 
         return pen
     
 

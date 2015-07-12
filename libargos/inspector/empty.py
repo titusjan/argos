@@ -71,10 +71,11 @@ class EmptyInspector(AbstractInspector):
             lcItem = UntypedCti('line color', defaultData=123)
             grpItem.insertChild(lcItem)
     
-            grpItem.insertChild(IntCti('line-1 color', defaultData=-7, minValue = -5, stepSize=2))
+            grpItem.insertChild(IntCti('line-1 color', defaultData=7, minValue = -5, stepSize=2, 
+                                       specialValueText="I'm special"))
             rootItem.insertChild(StringCti('letter', defaultData='aa', maxLength = 1))
-            grpItem.insertChild(FloatCti('width', defaultData=0, minValue =5, 
-                                         stepSize=0.45, decimals=3))
+            grpItem.insertChild(FloatCti('width', defaultData=2, minValue =5, stepSize=0.45, 
+                                         decimals=3, specialValueText="so very special"))
             gridItem = rootItem.insertChild(BoolGroupCti('grid'))
             gridItem.insertChild(BoolCti('X-Axis', defaultData=True))
             gridItem.insertChild(BoolCti('Y-Axis', defaultData=False))

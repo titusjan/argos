@@ -96,7 +96,7 @@ class PgLinePlot1d(AbstractInspector):
         defaultShadowPen = QtGui.QPen(QtGui.QColor('#BFBFBF'))
         defaultShadowPen.setWidth(3)
         lineItem.insertChild(PenCti("shadow", resetTo=QtGui.QPen(defaultShadowPen), 
-                                    includeNoneStyle=True))
+                                    includeNoneStyle=True, includeZeroWidth=True))
 
         symbolItem = penItem.insertChild(BoolCti("symbol", defaultData=False)) 
         symbolItem.insertChild(ChoiceCti("shape", defaultData=0, 
@@ -132,7 +132,7 @@ class PgLinePlot1d(AbstractInspector):
             pen.setWidthF(self.configValue('pen/line/width'))
             pen.setStyle(self.configValue('pen/line/style'))
             shadowCti = self.config.findByNodePath('pen/line/shadow')
-            shadowPen = shadowCti.createPen(altStyle=pen.style())
+            shadowPen = shadowCti.createPen(altStyle=pen.style(), altWidth=2.0 * pen.widthF())
         else:
             pen = None
             shadowPen = None

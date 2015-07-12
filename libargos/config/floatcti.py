@@ -31,7 +31,8 @@ class FloatCti(AbstractCti):
     """ Config Tree Item to store a floating point number. It can be edited using a QDoubleSpinBox.
     """
     def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=0, 
-                 minValue = None, maxValue = None, stepSize = 1.0, decimals = 2):
+                 minValue = None, maxValue = None, stepSize = 1.0, decimals = 2, 
+                 specialValueText=None):
         """ Constructor.
             
             :param minValue: minimum data allowed when editing (use None for no minimum)
@@ -39,6 +40,8 @@ class FloatCti(AbstractCti):
             :param stepSize: steps between values when editing (default = 1)
             :param decimals: Sets how many decimals the spin box will use for displaying.
                 Note: The maximum, minimum and value might change as a result of changing this.
+            :param specialValueText: if set, this text will be displayed when the the minValue 
+                is selected. It is up to the cti user to interpret this as a special case.
                     
             For the (other) parameters see the AbstractCti constructor documentation.
         """
@@ -48,6 +51,7 @@ class FloatCti(AbstractCti):
         self.minValue = minValue
         self.maxValue = maxValue
         self.stepSize = stepSize
+        self.specialValueText = specialValueText
     
         
     def _enforceDataType(self, data):
@@ -55,21 +59,27 @@ class FloatCti(AbstractCti):
         """
         return float(data)
     
+    
     def _dataToString(self, data):
         """ Conversion function used to convert the (default)data to the display value.
         """
-        return "{:.{decimals}f}".format(data, decimals=self.decimals)
+        if self.specialValueText is not None and data == self.minValue:
+            return self.specialValueText
+        else:
+            return "{:.{decimals}f}".format(data, decimals=self.decimals)
+        
         
     @property
     def debugInfo(self):
         """ Returns the string with debugging information
         """
-        return ("min = {}, max = {}, step = {}, decimals = {}"
-                .format(self.minValue, self.maxValue, self.stepSize, self.decimals))
+        return ("min = {}, max = {}, step = {}, decimals = {}, specVal = {}"
+                .format(self.minValue, self.maxValue, self.stepSize, 
+                        self.decimals, self.specialValueText))
     
     
     def createEditor(self, delegate, parent, option):
-        """ Creates a IntCtiEditor. 
+        """ Creates a FloatCtiEditor. 
             For the parameters see the AbstractCti constructor documentation.
         """
         return FloatCtiEditor(self, delegate, parent=parent)
@@ -99,6 +109,9 @@ class FloatCtiEditor(AbstractCtiEditor):
         spinBox.setSingleStep(cti.stepSize)
         spinBox.setDecimals(cti.decimals)
         spinBox.setKeyboardTracking(False)
+        
+        if cti.specialValueText is not None:
+            spinBox.setSpecialValueText(cti.specialValueText)
 
         self.spinBox = self.addSubEditor(spinBox, isFocusProxy=True)
         self.spinBox.valueChanged.connect(self.commitChangedValue)
@@ -115,7 +128,7 @@ class FloatCtiEditor(AbstractCtiEditor):
     def commitChangedValue(self, value):
         """ Commits the new value to the delegate so the inspector can be updated
         """
-        logger.debug("Value changed%%%%%%: {}".format(value))
+        #logger.debug("Value changed: {}".format(value))
         self.delegate.commitData.emit(self)
         
     
