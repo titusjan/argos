@@ -146,13 +146,8 @@ class ChoiceCtiEditor(AbstractCtiEditor):
         # Store the configValue in the combo box, although it's not currently used.
         for idx, configValue in enumerate(cti._configValues):
             comboBox.setItemData(idx, configValue, role=Qt.UserRole)
-        
-        #comboBox.activated.connect(self.commitAndClose)
-        
-        comboBox.highlighted.connect(self.comboBoxHighlighted)
-        comboBox.currentIndexChanged.connect(self.comboBoxIndexChanged)
+
         comboBox.activated.connect(self.comboBoxActivated)
-        comboBox.editTextChanged.connect(self.comboBoxTextChanged)
         comboBox.model().rowsInserted.connect(self.comboBoxRowsInserted)
         self.comboBox = self.addSubEditor(comboBox, isFocusProxy=True)
 
@@ -160,9 +155,8 @@ class ChoiceCtiEditor(AbstractCtiEditor):
     def finalize(self):
         """ Is called when the editor is closed. Disconnect signals.
         """
-        logger.debug("finalize, count={}".format(self.comboBox.count()))
-        self.comboBox.editTextChanged.disconnect(self.comboBoxTextChanged)
-        #self.comboBox.activated.disconnect(self.commitAndClose)
+        self.comboBox.model().rowsInserted.disconnect(self.comboBoxRowsInserted)
+        self.comboBox.activated.disconnect(self.comboBoxActivated)
         super(ChoiceCtiEditor, self).finalize()   
         
     
@@ -175,24 +169,7 @@ class ChoiceCtiEditor(AbstractCtiEditor):
     def getData(self):
         """ Gets data from the editor widget.
         """
-        logger.debug("getData: (count={})".format(self.comboBox.count())) 
         return self.comboBox.currentIndex()
-            
-    
-    @QtSlot(int)
-    def comboBoxHighlighted(self, index):
-        """ Called when an item in the combobox popup list is highlighted by the user.
-        """
-        logger.debug("comboBoxHighlighted: {}".format(index))
-            
-    
-    @QtSlot(int)
-    def comboBoxIndexChanged(self, index):
-        """ Called whenever the currentIndex in the combobox changes either through 
-            user interaction or programmatically. The item's index is passed or -1 if the combobox 
-            becomes empty or the currentIndex was reset. 
-        """
-        logger.debug("comboBoxIndexChanged: {}".format(index))
     
     
     @QtSlot(int)
@@ -200,14 +177,7 @@ class ChoiceCtiEditor(AbstractCtiEditor):
         """ Is called when the user chooses an item in the combo box. The item's index is passed. 
             Note that this signal is sent even when the choice is not changed. 
         """
-        logger.debug("comboBoxActivated: {}".format(index))
-
-    
-    @QtSlot(str)
-    def comboBoxTextChanged(self, text):
-        """ Called when the user edits the text in the combo box.
-        """
-        logger.debug("comboBoxTextChanged: {} (count={})".format(text, self.comboBox.count()))
+        self.delegate.commitData.emit(self)        
     
         
     @QtSlot(QtCore.QModelIndex, int, int)

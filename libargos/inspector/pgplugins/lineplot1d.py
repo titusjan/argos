@@ -74,7 +74,8 @@ class PgLinePlot1d(AbstractInspector):
         rootItem = GroupCti('inspector')
         
         # Titles and labels
-        rootItem.insertChild(StringCti('title', defaultData="{path} {slices}", maxLength=255))
+        rootItem.insertChild(ChoiceCti('title', defaultData=0, editable=True, 
+                                       configValues=["{path} {slices}", "{name} {slices}"]))
         
         # Axes
         gridItem = rootItem.insertChild(BoolGroupCti('grid'))
@@ -94,7 +95,7 @@ class PgLinePlot1d(AbstractInspector):
         lineItem.insertChild(createPenStyleCti('style'))
         lineItem.insertChild(createPenWidthCti('width'))
         defaultShadowPen = QtGui.QPen(QtGui.QColor('#BFBFBF'))
-        defaultShadowPen.setWidth(3)
+        defaultShadowPen.setWidth(0)
         lineItem.insertChild(PenCti("shadow", resetTo=QtGui.QPen(defaultShadowPen), 
                                     includeNoneStyle=True, includeZeroWidth=True))
 
