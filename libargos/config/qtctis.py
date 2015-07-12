@@ -31,9 +31,9 @@ from libargos.utils.misc import NOT_SPECIFIED
 logger = logging.getLogger(__name__)
           
 
-PEN_STYLE_DISPLAY_VALUES = ['solid', 'dashed', 'dotted', 'dash-dot', 'dash-dot-dot']
-PEN_STYLE_CONFIG_VALUES = [Qt.SolidLine, Qt.DashLine, Qt.DotLine, 
-                           Qt.DashDotLine, Qt.DashDotDotLine]
+PEN_STYLE_DISPLAY_VALUES = ('solid', 'dashed', 'dotted', 'dash-dot', 'dash-dot-dot')
+PEN_STYLE_CONFIG_VALUES = (Qt.SolidLine, Qt.DashLine, Qt.DotLine, 
+                           Qt.DashDotLine, Qt.DashDotDotLine)
 
 
 def createPenStyleCti(nodeName, data=NOT_SPECIFIED, defaultData=0, includeNone=False):
@@ -42,9 +42,9 @@ def createPenStyleCti(nodeName, data=NOT_SPECIFIED, defaultData=0, includeNone=F
     """
     displayValues=PEN_STYLE_DISPLAY_VALUES
     configValues=PEN_STYLE_CONFIG_VALUES
-    if False and includeNone: # TODO: remove False clause
-        displayValues.insert(0, '')
-        configValues.insert(0, None)
+    if includeNone:
+        displayValues = [''] + list(displayValues)
+        configValues = [None] + list(configValues)
     return ChoiceCti(nodeName, data=data, defaultData=defaultData, 
                      displayValues=displayValues, configValues=configValues)
 
@@ -206,7 +206,7 @@ class PenCti(BoolCti):
         qPen = QtGui.QPen(resetTo)
         
         self.insertChild(ColorCti('color', defaultData=qPen.color()))
-        defaultIndex = PEN_STYLE_CONFIG_VALUES.index(qPen.style())
+        defaultIndex = PEN_STYLE_CONFIG_VALUES.index(qPen.style()) + int(includeNoneStyle)
         self.insertChild(createPenStyleCti('style', defaultData=defaultIndex, 
                                            includeNone=includeNoneStyle))
         self.insertChild(createPenWidthCti('width', defaultData=qPen.widthF(), 
