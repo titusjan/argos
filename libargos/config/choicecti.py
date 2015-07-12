@@ -17,7 +17,7 @@
 
 """ Some simple Config Tree Items
 """
-import logging
+import logging, copy
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
 from libargos.qt import  Qt, QtCore, QtGui, QtSlot
@@ -48,14 +48,15 @@ class ChoiceCti(AbstractCti):
         self.editable = editable
         self._configValues = [] if configValues is None else configValues
         if displayValues is None:
-            self._displayValues = list(self._configValues) 
+            self._displayValues = copy.copy(self._configValues) 
         else:
             assert not editable, "No separate displayValues may be set if the CTI is editable"
             self._displayValues = displayValues
             
         assert len(self._configValues) == len(self._displayValues),\
             "If set, configValues must have the same length as displayValues."
-
+        
+        self._defaultConfigValues = copy.copy(self._configValues)
         
         # Set after self._displayValues are defined. The parent constructor call _enforceDataType
         super(ChoiceCti, self).__init__(nodeName, data=data, defaultData=defaultData)
@@ -82,7 +83,28 @@ class ChoiceCti(AbstractCti):
         """
         choices = self._displayValues
         return str(choices[data])
-         
+
+
+    def _nodeGetNonDefaultsDict(self):
+        """ Retrieves this nodes` values as a dictionary to be used for persistence.
+            Non-recursive auxiliary function for getNonDefaultsDict
+        """
+        dct = super(ChoiceCti, self)._nodeGetNonDefaultsDict()
+        if self._configValues != self._defaultConfigValues:
+            dct['choices'] = self._configValues
+                        
+        return dct
+    
+    
+    def _nodeSetValuesFromDict(self, dct):
+        """ Sets values from a dictionary in the current node. 
+            Non-recursive auxiliary function for setValuesFromDict
+        """
+        if 'choices' in dct:
+            self._configValues = list(dct['choices'])
+            self._displayValues = list(dct['choices'])
+        super(ChoiceCti, self)._nodeSetValuesFromDict(dct)
+                     
             
     @property
     def debugInfo(self):
@@ -106,6 +128,7 @@ class ChoiceCti(AbstractCti):
         self._configValues.insert(pos, configValue)
         self._displayValues.insert(pos, displayValue if displayValue is not None else configValue)
     
+        
         
         
 class ChoiceCtiEditor(AbstractCtiEditor):

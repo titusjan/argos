@@ -87,23 +87,29 @@ class ColorCti(AbstractCti):
             
     @property
     def decoration(self):
-        """ Returns the data (QColor) as to be displayed as decoration
+        """ Returns the data (QColor) to be displayed as decoration
         """
         return self.data
     
-    def _dataToJson(self, qColor):
-        """ Converts data or defaultData to serializable json dictionary or scalar.
-            Helper function that can be overridden; by default the input is returned.
-        """
-        return qColor.name()
-    
-    def _dataFromJson(self, json):
-        """ Converts json dictionary or scalar to an object to use in self.data or defaultData.
-            Helper function that can be overridden; by default the input is returned.
-        """
-        return QtGui.QColor(json) 
         
+    def _nodeGetNonDefaultsDict(self):
+        """ Retrieves this nodes` values as a dictionary to be used for persistence.
+            Non-recursive auxiliary function for getNonDefaultsDict
+        """
+        dct = {}
+        if self.data != self.defaultData:
+            dct['data'] = self.data.name()
+        return dct
     
+    
+    def _nodeSetValuesFromDict(self, dct):
+        """ Sets values from a dictionary in the current node. 
+            Non-recursive auxiliary function for setValuesFromDict
+        """
+        if 'data' in dct:
+            self.data = QtGui.QColor(dct['data'])
+            
+            
     def createEditor(self, delegate, parent, option):
         """ Creates a ColorCtiEditor. 
             For the parameters see the AbstractCti constructor documentation.

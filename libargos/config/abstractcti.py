@@ -309,21 +309,17 @@ class AbstractCti(BaseTreeItem):
                 'data': self._dataToJson(self.data), 
                 'defaultData': self._dataToJson(self.defaultData), 
                 'childItems': self.childItems}
-        
 
-    def _dataToJson(self, data):
-        """ Converts data or defaultData to serializable json dictionary or scalar.
-            Helper function that can be overridden; by default the input is returned.
+
+    def _nodeGetNonDefaultsDict(self):
+        """ Retrieves this nodes` values as a dictionary to be used for persistence.
+            Non-recursive auxiliary function for getNonDefaultsDict
         """
-        return data
-    
-    
-    def _dataFromJson(self, json):
-        """ Converts json dictionary or scalar to an object to use in self.data or defaultData.
-            Helper function that can be overridden; by default the input is returned.
-        """
-        return json
-        
+        dct = {}
+        if self.data != self.defaultData:
+            dct['data'] = self.data
+        return dct
+            
 
     def getNonDefaultsDict(self):
         """ Recursively retrieves values as a dictionary to be used for persistence.
@@ -331,10 +327,10 @@ class AbstractCti(BaseTreeItem):
             the defaultData. If the CTI and none of its children differ from their default, a 
             completely empty dictionary is returned. This is to achieve a smaller json 
             representation.
+            
+            Typically descendants should override _nodeGetNonDefaultsDict instead of this function.
         """
-        dct = {}
-        if self.data != self.defaultData:
-            dct['data'] = self._dataToJson(self.data)
+        dct = self._nodeGetNonDefaultsDict()
             
         childList = []
         for childCti in self.childItems:
@@ -350,11 +346,20 @@ class AbstractCti(BaseTreeItem):
         return dct
                 
 
+    def _nodeSetValuesFromDict(self, dct):
+        """ Sets values from a dictionary in the current node. 
+            Non-recursive auxiliary function for setValuesFromDict
+        """
+        if 'data' in dct:
+            self.data = dct['data']
+
     def setValuesFromDict(self, dct):
         """ Recursively sets values from a dictionary created by getNonDefaultsDict.
          
-            Does not raise exceptions (only logs warnings) so that we can remove/rename node
-            names in new Argos versions (or remove them) without breaking the application.
+            Does not raise exceptions (logs warnings instead) so that we can remove/rename node
+            names in future Argos versions (or remove them) without breaking the application.
+            
+            Typically descendants should override _nodeSetValuesFromDict instead of this function.
         """
         if 'nodeName' not in dct:
             return
@@ -368,8 +373,7 @@ class AbstractCti(BaseTreeItem):
                 logger.warn(msg)
                 return
             
-        if 'data' in dct:
-            self.data = self._dataFromJson(dct['data'])
+        self._nodeSetValuesFromDict(dct)
         
         for childDct in dct.get('childItems', []):
             key = childDct['nodeName']
