@@ -26,7 +26,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
     COL_DECORATION = None   # Column number that contains the decoration. None for no icons
     
     # Can be connected to a QTreeView.update() as to update a single cell
-    update = QtSignal(QtCore.QModelIndex)    
+    #update = QtSignal(QtCore.QModelIndex) # Not used    
         
     def __init__(self, parent=None):
         """ Constructor
@@ -266,19 +266,23 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         try:
             if role == Qt.CheckStateRole:
                 result = self.setCheckStateForColumn(treeItem, index.column(), value)
-                if result:
-                    # A check box can have a tristate checkbox as parent which state depends
-                    # on the state of this child check box. Therefore we update the parentIndex 
-                    # and the descendants. 
-                    parentIndex = index.parent()
-                    uncleIndex = parentIndex.sibling(parentIndex.row(), index.column())
-                    self.update.emit(uncleIndex)
-                    self.emitUpdateForBranch(index)
+#                if False and result:
+#                    assert False, "TODO: remove"
+#                    # A check box can have a tristate checkbox as parent which state depends
+#                    # on the state of this child check box. Therefore we update the parentIndex 
+#                    # and the descendants. 
+#                    parentIndex = index.parent()
+#                    uncleIndex = parentIndex.sibling(parentIndex.row(), index.column())
+#                    self.update.emit(uncleIndex)
+#                    self.emitUpdateForBranch(index)
             else:
                 result = self.setEditValueForColumn(treeItem, index.column(), value)
                 
             if result:
-                self.dataChanged.emit(index, index)
+                parentIndex = index.parent() 
+                indexLeft = self.index(index.row(), 0, parentIndex)
+                indexRight = self.index(index.row(), self.columnCount(), parentIndex)
+                self.dataChanged.emit(indexLeft, indexRight)
             return result
                     
         except Exception as ex:

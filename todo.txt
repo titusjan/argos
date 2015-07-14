@@ -7,6 +7,8 @@ https://datamarket.com/data/set/22r4/annual-diameter-of-skirt-at-hem-1866-to-191
 https://datamarket.com/data/set/22xi/tree-wulan-arstan-jusp-location-pr-china-juniper-3600m-3700-10000-author-local-met-bur-rz-zu-years-1163-1986#!ds=22xi&display=line&e=-4qsa&s=-5a8a
 https://datamarket.com/data/set/1cfl/total-population#!ds=1cfl!r3d=55.66.l.6d&display=line
 
+http://tylervigen.com/sources
+
 http://www.gdngeoservices.nl/wms/dinomap/M11M0802
 
 # NOAA
