@@ -419,11 +419,14 @@ class Collector(QtGui.QWidget):
             sliceList[dimNr] = spinBox.value()
         
         # Make the array slicer. It needs to be a tuple, a list of only integers will be 
-        # interpreted as an index. With a tuple array[(exp1, exp2, ..., expN)] is equivalent to 
+        # interpreted as an index. With a tuple, array[(exp1, exp2, ..., expN)] is equivalent to 
         # array[exp1, exp2, ..., expN]. 
         # See: http://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
         #logging.debug("Array slice: {}".format(str(sliceList)))
         slicedArray = self.rti.asArray[tuple(sliceList)]
+        
+        if self.rti.fieldName is not None:
+            slicedArray = slicedArray[self.rti.fieldName]
         
         # Add fake dimensions of length 1 so that result.ndim will equal the number of combo boxes
         for dimNr in range(slicedArray.ndim, self.maxCombos):

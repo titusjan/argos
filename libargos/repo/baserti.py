@@ -36,13 +36,12 @@ class BaseRti(AbstractLazyLoadTreeItem):
 
         Serves as an interface but can also be instantiated for debugging purposes.
     """
-    _label = "Unknown Item"  # TODO: obsolete?
     _iconOpen = None   # can be overridden by a QtGui.QIcon
     _iconClosed = None # can be overridden by a QtGui.QIcon
     _iconError = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'err.warning.svg'))    
     #_iconError = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'err.exclamation.svg'))    
     
-    def __init__(self, nodeName='', fileName=''):
+    def __init__(self, nodeName, fileName=''):
         """ Constructor
         
             :param nodeName: name of this node (used to construct the node path).
@@ -240,7 +239,16 @@ class BaseRti(AbstractLazyLoadTreeItem):
     
     @property
     def elementTypeName(self):
+        """ String representation of the element type.
+        """
         return ""
+
+    
+    @property
+    def fieldName(self):
+        """ The field name if the RTI is a field in a compound data type
+        """
+        return None
     
     @property
     def asArray(self):
@@ -248,7 +256,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
             indexing and other methods of numpy arrays (e.g. the shape). It can, for instance, 
             return a h5py dataset. 
             
-            If the underlying data cannot be representent as an array, this property returns None.
+            If the underlying data cannot be represented as an array, this property returns None.
             Note that the implementation is expected to be fast; it should not retrieve actual 
             array data from an underlying file, only return a reference.
         """
@@ -276,6 +284,9 @@ class BaseRti(AbstractLazyLoadTreeItem):
 #    
     @property
     def attributes(self):
+        """ The attribute dictionary. 
+            The attributes generally contain meta data about the item. 
+        """
         return {}
 
 

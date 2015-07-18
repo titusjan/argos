@@ -72,7 +72,8 @@ def main():
     createIcon(fsColor, 'fs.directory-open',   'folder-open.svg')
     createIcon(fsColor, 'fs.directory-closed', 'folder-close.svg')
 
-    ncdfColor = '#0088FF' 
+    ncdfColor = '#0088FF'
+    createIcon(ncdfColor, 'ncdf.field',        'asterisk.svg') 
     createIcon(ncdfColor, 'ncdf.variable',     'th-large.svg')
     createIcon(ncdfColor, 'ncdf.group-open',   'folder-open.svg')
     createIcon(ncdfColor, 'ncdf.group-closed', 'folder-close.svg')

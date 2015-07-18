@@ -25,58 +25,138 @@ import logging, os
 from netCDF4 import Dataset, Variable
 
 from libargos.qt import QtGui
-from libargos.utils.cls import check_class, type_name
+from libargos.utils.cls import check_class
 from libargos.repo.baserti import (ICONS_DIRECTORY, BaseRti)
 
 logger = logging.getLogger(__name__)
 
 
-class VariableRti(BaseRti):
 
-    _label = "NCDF Variable"
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.variable.svg'))
+class FieldRti(BaseRti):
+    """ Repository Tree Item (RTI) that contains a field in a compound NCDF variable. 
+    """ 
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.field.svg'))
     _iconClosed = _iconOpen 
     
-    def __init__(self, ncVar, nodeName='', fileName=''):
+    def __init__(self, ncVar, nodeName, fileName=''):
         """ Constructor
         """
-        super(VariableRti, self).__init__(nodeName = nodeName, fileName=fileName)
+        super(FieldRti, self).__init__(nodeName, fileName=fileName)
         check_class(ncVar, Variable)
 
         self._ncVar = ncVar
-        
-#    def canFetchChildren(self):
-#        return False
-            
+
     def hasChildren(self):
         """ Returns False. Leaf nodes never have children. """
         return False
    
     @property
     def attributes(self):
+        """ The attributes dictionary. 
+            Returns the attributes of the variable that contains this field.
+        """        
         return self._ncVar.__dict__
 
     @property
+    def fieldName(self):
+        """ The field name if the RTI is a field in a compound data type
+        """
+        return self.nodeName
+    
+    @property
     def asArray(self):
+        """ Returns the NCDF variable, not a numpy array!
+        """        
         return self._ncVar
     
     @property
     def elementTypeName(self):
-        dtype =  self._ncVar.dtype
-        return '<compound>' if dtype.names else str(dtype)
-    
-    
+        """ String representation of the element type.
+        """
+        fieldName = self.nodeName
+        return str(self._ncVar.dtype.fields[fieldName][0])
 
+
+class VariableRti(BaseRti):
+    """ Repository Tree Item (RTI) that contains a NCDF variable. 
+    """ 
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.variable.svg'))
+    _iconClosed = _iconOpen 
+    
+    def __init__(self, ncVar, nodeName, fileName=''):
+        """ Constructor
+        """
+        super(VariableRti, self).__init__(nodeName, fileName=fileName)
+        check_class(ncVar, Variable)
+        self._ncVar = ncVar
+
+        try:
+            self._isCompound = bool(self._ncVar.dtype.names)
+        except (AttributeError, KeyError): 
+            # If dtype is a string instead of an numpy dtype, netCDF4 raises a KeyError 
+            # or AttributeError, depending on its version.
+            self._isCompound = False
+            
+    def hasChildren(self):
+        """ Returns True if the variable has a compound type, otherwise returns False.
+        """
+        return self._isCompound
+   
+    @property
+    def isCompoattributes(self):
+        """ The attributes dictionary.
+        """        
+        return self._ncVar.__dict__
+
+   
+    @property
+    def attributes(self):
+        """ The attributes dictionary.
+        """        
+        return self._ncVar.__dict__
+
+    @property
+    def asArray(self):
+        """ Returns the NCDF variable, not a numpy array!
+        """        
+        return self._ncVar
+    
+    @property
+    def elementTypeName(self):
+        """ String representation of the element type.
+        """        
+        dtype =  self._ncVar.dtype 
+        return '<compound>' if dtype.names else str(dtype) # TODO: what if dtype.names does not exist
+    
+               
+    def _fetchAllChildren(self):
+        """ Fetches all fields that this variable contains. 
+            Only variables with a compound data type can have fields.
+        """        
+        assert self.canFetchChildren(), "canFetchChildren must be True"
+
+        childItems = []
+
+        # Add fields
+        if self._isCompound:
+            #fields = dtype.fields
+            for fieldName in self._ncVar.dtype.names:
+                childItems.append(FieldRti(self._ncVar, nodeName=fieldName, fileName=self.fileName))
+                        
+        self._childrenFetched = True
+        return childItems
+    
+    
 class DatasetRti(BaseRti): # TODO: rename to GroupRti?
-
-    _label = "NCDF Group"
+    """ Repository Tree Item (RTI) that contains a NCDF group. 
+    """     
     _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.group-closed.svg'))
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.group-open.svg'))
     
-    def __init__(self, dataset, nodeName='', fileName=''):
+    def __init__(self, dataset, nodeName, fileName=''):
         """ Constructor
         """
-        super(DatasetRti, self).__init__(nodeName=nodeName, fileName=fileName)
+        super(DatasetRti, self).__init__(nodeName, fileName=fileName)
         check_class(dataset, Dataset, allow_none=True)
 
         self._dataset = dataset
@@ -84,10 +164,14 @@ class DatasetRti(BaseRti): # TODO: rename to GroupRti?
         
     @property
     def attributes(self):
+        """ The attributes dictionary.
+        """
         return self._dataset.__dict__ if self._dataset else {}
         
                
     def _fetchAllChildren(self):
+        """ Fetches all sub groups and variables that this group contains.
+        """
         assert self._dataset is not None, "dataset undefined (file not opened?)"
         assert self.canFetchChildren(), "canFetchChildren must be True"
         
@@ -107,20 +191,21 @@ class DatasetRti(BaseRti): # TODO: rename to GroupRti?
 
 
 class NcdfFileRti(DatasetRti):
-    """ Repository tree item that stores a netCDF file.
+    """ Repository tree item that contains a netCDF file.
     """
-    _label = "NCDF File"
     _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.file-closed.svg'))
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.file-open.svg'))
         
-    def __init__(self, nodeName='', fileName=''):
+    def __init__(self, nodeName, fileName=''):
         """ Constructor
         """
-        super(NcdfFileRti, self).__init__(None, nodeName=nodeName, fileName=fileName)
+        super(NcdfFileRti, self).__init__(None, nodeName, fileName=fileName)
         self._checkFileExists()
         
     @property
     def attributes(self):
+        """ The attributes dictionary.
+        """        
         return self._dataset.__dict__ if self._dataset else {}
     
     def _openResources(self):

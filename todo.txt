@@ -35,9 +35,8 @@ http://tools.medialab.sciences-po.fr/iwanthue/tutorial.php
 http://vis4.net/blog/posts/avoid-equidistant-hsv-colors/
 
 TODO:
-	confirm on error when editing cell
 	Masked arrays and fill values.
-	Compound data types
+	Tooltips in all tables and trees
 	
 			
 Collectors:
@@ -53,6 +52,7 @@ Test:
 	Memory leaks
 
 TODO Long term or nice to have:
+	confirm on error when editing cell
 	make argos assert and assertEqual function for sanity checks (consistent "please report thig bug" text)
 	read/write config to yaml, QSettings. 
 	thinks how to stretch last line when toggling columns on/off (recalc column size?)
