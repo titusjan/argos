@@ -5,6 +5,7 @@
 """
 import sys, os
 import logging
+from shutil import copy
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +15,8 @@ SNIP_BLUE1 = '#00AAFF'
 OLD_COLORS = [SNIP_BLUE0, SNIP_BLUE1] 
 SNIP_ICONS_DIR = 'snipicons'
 OUTPUT_DIR = 'icons'
+    
+
     
     
 def createIcon(newColor, baseNameOut, baseNameIn):
@@ -34,8 +37,23 @@ def createIcon(newColor, baseNameOut, baseNameIn):
                     line = line.replace(oldColor, newColor) 
                 fileOut.write(line)
 
+
+def copyIcon(baseNameOut, baseNameIn):
+    """ Copies an icon from the icon source dir to the target dir.
+        Just to have a function with the same interface as createIcon without the color param
+    """
+    fileNameIn = os.path.join(SNIP_ICONS_DIR, baseNameIn)
+    _fileIn, extension = os.path.splitext(os.path.basename(fileNameIn))
+    fileNameOut = os.path.join(OUTPUT_DIR, '{}{}'.format(baseNameOut, extension))
+    logger.info("Copying to: {}".format(fileNameOut))
+    copy(fileNameIn, fileNameOut)
+
+
+    
 def main():
     """ Creates all icons """
+    
+    copyIcon('reset', 'reset-l.svg')
     
     errColor = '#FF0000'
     createIcon(errColor, 'err.warning',     'warning-sign.svg')

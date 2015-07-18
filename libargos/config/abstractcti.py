@@ -450,7 +450,7 @@ class AbstractCtiEditor(QtGui.QWidget):
         self.resetButton = QtGui.QToolButton()
         self.resetButton.setText("Reset")
         self.resetButton.setToolTip("Reset to default value.")
-        self.resetButton.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'err.warning.svg')))
+        self.resetButton.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'reset.svg')))
         self.resetButton.setFocusPolicy(Qt.NoFocus)
         self.resetButton.clicked.connect(self.resetEditorValue)
         self.hBoxLayout.addWidget(self.resetButton, alignment=Qt.AlignRight)
