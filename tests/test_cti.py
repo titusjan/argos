@@ -5,10 +5,11 @@
 import unittest, logging, sys, copy
 from json import loads, dumps
 
+from libargos import configBasicLogging
 from libargos.qt import QtGui
 from libargos.config.abstractcti import ctiDumps, CtiDecoder
 from libargos.config.untypedcti import UntypedCti
-from libargos.config.colorcti import ColorCti
+from libargos.config.qtctis import ColorCti
 
 
 
@@ -39,7 +40,8 @@ class TestUntypedCtis(unittest.TestCase):
         self.assertNotEqual(ctiIn, ctiOut)
         
 
-    def testJson(self):
+    # This functionality is currently not used? Depricated?
+    def __not_used__testJson(self):
         
         # encoding
         jstr = ctiDumps(self.invisibleRootItem)
@@ -113,7 +115,7 @@ class TestSimpleCtis(unittest.TestCase):
         colorStr = '#FF33EE'
         cti = ColorCti('color', defaultData=colorStr)
         self.assertEqual(cti.data, QtGui.QColor(colorStr))
-        self.assertEqual(cti.value, QtGui.QColor(colorStr))
+        self.assertEqual(cti.data, QtGui.QColor(colorStr))
         self.assertEqual(cti.displayValue, colorStr)
 
 
@@ -138,8 +140,7 @@ class TestSimpleCtis(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level='DEBUG', stream=sys.stderr,
-                        format='%(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s')    
+    configBasicLogging(level='DEBUG')
     unittest.main()
     
     
