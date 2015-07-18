@@ -125,7 +125,7 @@ class AbstractCti(BaseTreeItem):
         value himself.
     """
     # TODO: defaultData should be the second argument. Be mandatory?
-    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=None):
+    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=None, enabled=True):
         """ Constructor
             :param nodeName: name of this node (used to construct the node path).
             :param data: the configuration data. If omitted the defaultData will be used.
@@ -140,6 +140,9 @@ class AbstractCti(BaseTreeItem):
             self._data = self.defaultData
         else:
             self._data = self._enforceDataType(data)
+            
+        self._enabled = enabled
+        
     
     def __eq__(self, other): 
         """ Returns true if self == other. 
@@ -236,6 +239,28 @@ class AbstractCti(BaseTreeItem):
         """
         raise NotImplementedError()
 
+    @property
+    def enabled(self):
+        """ Returns the enabled flag which determines if the user can interact with this item.
+        """
+        return self._enabled
+
+    @enabled.setter
+    def enabled(self, enabled):
+        """ Sets the enabled flag which determines if the user can interact with this item.
+        """
+        #logger.debug("Setting enabled = {:5} for {}".format(enabled, self))
+        self._enabled = enabled
+
+
+    def enableBranch(self, enabled):
+        """ Sets the enabled member to True or False for a node and all it's children
+        """
+        self.enabled = enabled
+        for child in self.childItems:
+            child.enableBranch(enabled)      
+            
+        
     def resetToDefault(self, resetChildren=True):
         """ Resets the data to the default data. By default the children will be reset as well
         """

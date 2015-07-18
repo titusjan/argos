@@ -70,6 +70,9 @@ class EmptyInspector(AbstractInspector):
             
             lcItem = UntypedCti('line color', defaultData=123)
             grpItem.insertChild(lcItem)
+            
+            disabledItem = rootItem.insertChild(StringCti('disabled', defaultData="Can't touch me"))
+            disabledItem.enabled=False
     
             grpItem.insertChild(IntCti('line-1 color', defaultData=7, minValue = -5, stepSize=2, 
                                        specialValueText="I'm special"))

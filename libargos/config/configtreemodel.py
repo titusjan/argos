@@ -66,10 +66,14 @@ class ConfigTreeModel(BaseTreeModel):
         if not index.isValid():
             return 0
         
-        result = Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        cti = self.getItem(index)  
+        
+        result = Qt.ItemIsSelectable
+        
+        if cti.enabled:
+            result |= Qt.ItemIsEnabled
 
         if index.column() == self.COL_VALUE: 
-            cti = self.getItem(index)  
             result |= cti.valueColumnItemFlags
             
         return result

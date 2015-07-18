@@ -28,26 +28,60 @@ logger = logging.getLogger(__name__)
 
 
 
-class BoolCti(AbstractCti):
+class  BoolCti(AbstractCti):
     """ Config Tree Item to store an boolean. It can be edited using a check box
     """
     def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=False):
         """ Constructor. For the parameters see the AbstractCti constructor documentation.
         """
         super(BoolCti, self).__init__(nodeName, data=data, defaultData=defaultData)
-
+        self.childrenDisabledWhenFalse = True
     
     def _enforceDataType(self, data):
         """ Converts to bool so that self.data always is of that type.
         """
         return bool(data)
         
+
+    @property
+    def data(self):
+        """ Returns the data of this item. 
+        """
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        """ Sets the data of this item. 
+            Does type conversion to ensure data is always of the correct type.
+        """
+        # Descendants should convert the data to the desired type here
+        self._data = self._enforceDataType(data)
+
+        if self.childrenDisabledWhenFalse:
+            logger.debug("BoolCti.setData: {} for {}".format(data, self))
+            enabled = self.enabled
+            self.enableBranch(self.data and enabled)
+            self.enabled = enabled
+                
         
     @property
     def displayValue(self):
-        """ Returns empty string since a checkbox will displayed in the value column instead.  
+        """ Returns empty string since a checkbox will displayed in the value-column instead.  
         """
         return ""
+    
+    
+    def insertChild(self, childItem, position=None):
+        """ Inserts a child item to the current item.
+        
+            Overridden from BaseTreeItem.
+        """
+        childItem = super(BoolCti, self).insertChild(childItem, position=None)
+        if self.childrenDisabledWhenFalse:
+            logger.debug("BoolCti.insertChild: {}".format(childItem))
+            childItem.enableBranch(self.data)
+            childItem.enabled = self.enabled
+        return childItem    
     
     
     @property
@@ -80,6 +114,19 @@ class BoolCti(AbstractCti):
             self.data = False
         else:
             raise ValueError("Unexpected check state: {!r}".format(checkState))
+            
+
+    def enableBranch(self, enabled):
+        """ Sets the enabled member to True or False for a node and all it's children
+        """
+        #logger.debug("BoolCti.insertChild: {}".format(childItem))
+        self.enabled = enabled
+        
+        if self.childrenDisabledWhenFalse:
+            enabled = enabled and self.data
+
+        for child in self.childItems:
+            child.enableBranch(enabled)            
 
     
     def createEditor(self, delegate, parent, _option):
