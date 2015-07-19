@@ -36,8 +36,8 @@ class DimensionsPane(DetailTablePane):
     """
     _label = "Dimensions"
     
-    HEADERS = ["Name", "Size"]
-    (COL_DIM_NAME, COL_DIM_SIZE) = range(len(HEADERS))
+    HEADERS = ["Name", "Size", "Group"]
+    (COL_NAME, COL_SIZE, COL_GROUP) = range(len(HEADERS))
     
     def __init__(self, repoTreeView, parent=None):
         super(DimensionsPane, self).__init__(repoTreeView, parent=parent)
@@ -46,8 +46,9 @@ class DimensionsPane(DetailTablePane):
         self.table.setTextElideMode(QtCore.Qt.ElideMiddle)
         
         tableHeader = self.table.horizontalHeader()
-        tableHeader.resizeSection(self.COL_DIM_NAME, 125)
-        tableHeader.resizeSection(self.COL_DIM_SIZE, 125)  
+        tableHeader.resizeSection(self.COL_NAME, 125)
+        tableHeader.resizeSection(self.COL_SIZE, 125)  
+        tableHeader.resizeSection(self.COL_GROUP, 250)
 
         
     def _drawContents(self, currentRti=None):
@@ -68,17 +69,20 @@ class DimensionsPane(DetailTablePane):
 
             nDims =currentRti.nDims
             dimNames = currentRti.dimensionNames
+            dimGroups = currentRti.dimensionGroupPaths
             dimSizes = currentRti.arrayShape
             
             # Sanity check
-            assert len(dimNames) == nDims, "dimNames size ({}) != {}".format(len(dimNames), nDims)
-            assert len(dimSizes) == nDims, "dimSizes size ({}) != {}".format(len(dimSizes), nDims)
+            assert len(dimNames) == nDims, "dimNames size {} != {}".format(len(dimNames), nDims)
+            assert len(dimGroups) == nDims, "dimGroups size {} != {}".format(len(dimGroups), nDims)
+            assert len(dimSizes) == nDims, "dimSizes size {} != {}".format(len(dimSizes), nDims)
             
             table.setRowCount(nDims)
-            for row, (dimName, dimSize) in enumerate(zip(dimNames, dimSizes)):
-                table.setItem(row, self.COL_DIM_NAME, QtGui.QTableWidgetItem(dimName))
-                table.setItem(row, self.COL_DIM_SIZE, QtGui.QTableWidgetItem(str(dimSize)))
-                table.item(row, self.COL_DIM_SIZE).setTextAlignment(sizeAlignment)
+            for row, (dimName, dimSize, dimGroup) in enumerate(zip(dimNames, dimSizes, dimGroups)):
+                table.setItem(row, self.COL_NAME, QtGui.QTableWidgetItem(dimName))
+                table.setItem(row, self.COL_SIZE, QtGui.QTableWidgetItem(str(dimSize)))
+                table.item(row, self.COL_SIZE).setTextAlignment(sizeAlignment)
+                table.setItem(row, self.COL_GROUP, QtGui.QTableWidgetItem(str(dimGroup)))
                 table.resizeRowToContents(row)
     
             verticalHeader.setResizeMode(QtGui.QHeaderView.ResizeToContents)

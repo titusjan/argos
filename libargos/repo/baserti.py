@@ -299,11 +299,21 @@ class BaseRti(AbstractLazyLoadTreeItem):
     @property
     def dimensionNames(self):
         """ Returns a list with the name of each of the RTI's dimensions.
-            The default Returns ['Dim0', 'Dim1', ...] by default. Descendants can override this.
+            The default implementation returns ['Dim0', 'Dim1', ...] by default. Descendants can 
+            override this.
         """
         return ['Dim{}'.format(dimNr) for dimNr in range(self.nDims)] # TODO: cache?
 
     
+    @property
+    def dimensionGroupPaths(self):
+        """ Returns a list with, for every dimension, the path of the group that contains it.
+            The default implementation returns an empty string for each dimension. Descendants 
+            can override this.
+        """
+        return ['' for _dimNr in range(self.nDims)] # TODO: cache?
+    
+        
 #    @property
 #    def dimensionInfo(self):
 #        """ Returns a list with a DimensionInfo objects for each of the RTI's dimensions.
