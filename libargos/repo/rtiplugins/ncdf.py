@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 
-class FieldRti(BaseRti):
+class NcdfFieldRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a field in a compound NCDF variable. 
     """ 
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.field.svg'))
@@ -42,7 +42,7 @@ class FieldRti(BaseRti):
         """ Constructor.
             The name of the field must be given to the nodeName parameter. 
         """
-        super(FieldRti, self).__init__(nodeName, fileName=fileName)
+        super(NcdfFieldRti, self).__init__(nodeName, fileName=fileName)
         check_class(ncVar, Variable)
 
         self._ncVar = ncVar
@@ -84,7 +84,7 @@ class FieldRti(BaseRti):
         return str(self._ncVar.dtype.fields[fieldName][0])
 
 
-class VariableRti(BaseRti):
+class NcdfVariableRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a NCDF variable. 
     """ 
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.variable.svg'))
@@ -93,7 +93,7 @@ class VariableRti(BaseRti):
     def __init__(self, ncVar, nodeName, fileName=''):
         """ Constructor
         """
-        super(VariableRti, self).__init__(nodeName, fileName=fileName)
+        super(NcdfVariableRti, self).__init__(nodeName, fileName=fileName)
         check_class(ncVar, Variable)
         self._ncVar = ncVar
 
@@ -149,13 +149,13 @@ class VariableRti(BaseRti):
         if self._isCompound:
             #fields = dtype.fields
             for fieldName in self._ncVar.dtype.names:
-                childItems.append(FieldRti(self._ncVar, nodeName=fieldName, fileName=self.fileName))
+                childItems.append(NcdfFieldRti(self._ncVar, nodeName=fieldName, fileName=self.fileName))
                         
         self._childrenFetched = True
         return childItems
     
     
-class DatasetRti(BaseRti): # TODO: rename to GroupRti?
+class NcdfGroupRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a NCDF group. 
     """     
     _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.group-closed.svg'))
@@ -164,7 +164,7 @@ class DatasetRti(BaseRti): # TODO: rename to GroupRti?
     def __init__(self, dataset, nodeName, fileName=''):
         """ Constructor
         """
-        super(DatasetRti, self).__init__(nodeName, fileName=fileName)
+        super(NcdfGroupRti, self).__init__(nodeName, fileName=fileName)
         check_class(dataset, Dataset, allow_none=True)
 
         self._dataset = dataset
@@ -187,18 +187,18 @@ class DatasetRti(BaseRti): # TODO: rename to GroupRti?
         
         # Add groups
         for groupName, ncGroup in self._dataset.groups.items():
-            childItems.append(DatasetRti(ncGroup, nodeName=groupName, fileName=self.fileName))
+            childItems.append(NcdfGroupRti(ncGroup, nodeName=groupName, fileName=self.fileName))
             
         # Add variables
         for varName, ncVar in self._dataset.variables.items():
-            childItems.append(VariableRti(ncVar, nodeName=varName, fileName=self.fileName))
+            childItems.append(NcdfVariableRti(ncVar, nodeName=varName, fileName=self.fileName))
                         
         self._childrenFetched = True
         return childItems
     
 
 
-class NcdfFileRti(DatasetRti):
+class NcdfFileRti(NcdfGroupRti):
     """ Repository tree item that contains a netCDF file.
     """
     _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.file-closed.svg'))
