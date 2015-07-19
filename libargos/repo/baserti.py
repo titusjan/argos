@@ -244,7 +244,28 @@ class BaseRti(AbstractLazyLoadTreeItem):
         """ Returns True if the underlying data can be sliced.
             You should always check this before using an index/slice on an RTI.
         """
-        return self._asArray is not None
+        return self.nDims > 0
+    
+    
+    @property
+    def nDims(self):
+        """ The number of dimension of the underlying array
+            Should return 0 for scalars and unsliceable RTIs.
+        """
+        return len(self.arrayShape)
+    
+        
+    @property
+    def arrayShape(self):
+        """ Returns the shape of the underlying array. Returns an empty tuple if the underlying
+            array is None.
+            Returns 
+            Raised TypeError if the RTI is not sliceable
+        """
+        if self._asArray is None:
+            return tuple()
+        else:
+            return self._asArray.shape
     
     
     @property
@@ -267,27 +288,6 @@ class BaseRti(AbstractLazyLoadTreeItem):
         return self._asArray.__getitem__(index)
         
                 
-    @property
-    def arrayShape(self):
-        """ Returns the shape of the underlying array. Returns an empty tuple if the underlying
-            array is None.
-            Raised TypeError if the RTI is not sliceable
-        """
-        if self.isSliceable:
-            return self._asArray.shape
-        else:
-            raise TypeError("RTI is not sliceable: {}".format(self))
-        
-        #return tuple() if not self.isSliceable is None else self._asArray.shape
-        
-    
-    @property
-    def nDims(self):
-        """ The number of dimension of the underlying array
-            Should return 0 for scalars.
-        """
-        return len(self.arrayShape)
-
     @property
     def attributes(self):
         """ The attribute dictionary. 
