@@ -4,12 +4,11 @@
 viewBox="0 0 500 500"
  xmlns:xlink="http://www.w3.org/1999/xlink">
  <defs>
-  <!-- made from file.svg by swapping the gradients -->
-  <linearGradient y2="0" x2="0" y1="1" x1="1" id="wtb">
-   <stop stop-color="#8800FF" offset="0"/>
-   <stop stop-color="#8800FF" offset="1"/>
+  <linearGradient y2="0" x2="0" y1="1" x1="1" id="btl">
+   <stop stop-color="#00EE88" offset="0"/>
+   <stop stop-color="#00EE88" offset="1"/>
   </linearGradient>
-  <linearGradient y2="0" x2="0" y1="1" x1="0" id="btl">
+  <linearGradient y2="0" x2="0" y1="1" x1="0" id="wtb">
    <stop stop-color="#FCFCFD" offset="0"/>
    <stop stop-color="#DDDEDE" offset="1"/>
   </linearGradient>

@@ -59,7 +59,7 @@ def main():
     createIcon(errColor, 'err.warning',     'warning-sign.svg')
     #createIcon(errColor, 'err.exclamation', 'exclamation-sign.svg') # not used
     
-    memColor = '#8800FF' 
+    memColor = '#FFAA00' 
     createIcon(memColor, 'memory.scalar',        'asterisk.svg')
     createIcon(memColor, 'memory.array',         'th-large.svg')
     createIcon(memColor, 'memory.sequence',      'align-left.svg')
@@ -80,7 +80,15 @@ def main():
     createIcon(ncdfColor, 'ncdf.file-open',    'file.svg')
     createIcon(ncdfColor, 'ncdf.file-closed',  'file-inverse.svg')
     
-    nptxtColor = '#00FF88' 
+    h5pyColor = '#00EE88'
+    createIcon(h5pyColor, 'h5py.field',        'asterisk.svg') 
+    createIcon(h5pyColor, 'h5py.variable',     'th-large.svg')
+    createIcon(h5pyColor, 'h5py.group-open',   'folder-open.svg')
+    createIcon(h5pyColor, 'h5py.group-closed', 'folder-close.svg')
+    createIcon(h5pyColor, 'h5py.file-open',    'file.svg')
+    createIcon(h5pyColor, 'h5py.file-closed',  'file-inverse.svg')
+    
+    nptxtColor = '#8800FF'
     createIcon(nptxtColor, 'nptxt.column',     'th-large.svg')
     createIcon(nptxtColor, 'nptxt.file-open',  'file.svg')
     createIcon(nptxtColor, 'nptxt.file-closed','file-inverse.svg')

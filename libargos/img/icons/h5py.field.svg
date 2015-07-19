@@ -12,8 +12,8 @@ viewBox="0 0 5000 5000"
    ]]>
   </style>
   <radialGradient id="id0" gradientUnits="objectBoundingBox" cx="50%" cy="48%" r="50%" fx="50%" fy="48%">
-   <stop offset="0" style="stop-color:#0088FF"/>
-   <stop offset="1" style="stop-color:#0088FF"/>
+   <stop offset="0" style="stop-color:#00EE88"/>
+   <stop offset="1" style="stop-color:#00EE88"/>
   </radialGradient>
  </defs>
  <g id="Layer_x0020_1">

@@ -6,8 +6,8 @@ viewBox="0 0 500 500"
  <defs>
   <!-- made from file.svg by swapping the gradients -->
   <linearGradient y2="0" x2="0" y1="1" x1="1" id="wtb">
-   <stop stop-color="#8800FF" offset="0"/>
-   <stop stop-color="#8800FF" offset="1"/>
+   <stop stop-color="#00EE88" offset="0"/>
+   <stop stop-color="#00EE88" offset="1"/>
   </linearGradient>
   <linearGradient y2="0" x2="0" y1="1" x1="0" id="btl">
    <stop stop-color="#FCFCFD" offset="0"/>

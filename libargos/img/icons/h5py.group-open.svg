@@ -15,19 +15,19 @@ viewBox="0 0 500 500"
     .fil1 {fill:url(#id1)}
    ]]>
   </style>
-  <linearGradient id="id0" gradientUnits="userSpaceOnUse" x1="250.05" y1="90.052" x2="250.05" y2="195.052">
+  <linearGradient id="id0" gradientUnits="userSpaceOnUse" x1="250.05" y1="257.25" x2="250.05" y2="112.852">
    <stop offset="0" style="stop-color:#FCFCFD"/>
    <stop offset="1" style="stop-color:#EDEDED"/>
   </linearGradient>
-  <linearGradient id="id1" gradientUnits="userSpaceOnUse" x1="250.036" y1="171.55" x2="250.036" y2="383.552">
-   <stop offset="0" style="stop-color:#FFAA00"/>
-   <stop offset="1" style="stop-color:#FFAA00"/>
+  <linearGradient id="id1" gradientUnits="userSpaceOnUse" x1="257.779" y1="263.852" x2="257.779" y2="386.252">
+   <stop offset="0" style="stop-color:#00EE88"/>
+   <stop offset="1" style="stop-color:#00EE88"/>
   </linearGradient>
  </defs>
  <g id="Layer_x0020_1">
   <metadata id="CorelCorpID_0Corel-Layer"/>
-  <path class="fil0 str0" d="M50 195l0 -95c0,-5 5,-10 10,-10l140 0c20,0 20,30 40,30l200 0c6,0 10,5 10,10l0 65 -400 0z"/>
-  <path class="fil1 str0" d="M60 410l380 0c6,0 10,-4 10,-10l10 -245c0,-5 -4,-10 -10,-10l-150 0c-20,0 -20,30 -40,30l-210 0c-5,0 -10,5 -10,10l10 215c0,6 5,10 10,10z"/>
+  <path class="fil0 str0" d="M50 280l0 -180c0,-5 5,-10 10,-10l140 0c20,0 20,30 40,30l200 0c6,0 10,5 10,10l0 150 -400 0z"/>
+  <path class="fil1 str0" d="M60 410l380 0c5,0 9,-5 10,-10l25 -150c1,-5 -5,-10 -10,-10l-160 0c-20,0 -20,30 -40,30l-215 0c-5,0 -10,5 -10,10l10 120c1,6 5,10 10,10z"/>
   <rect class="fil2 str1" width="500" height="500"/>
   <line class="fil2 str2" x1="85" y1="120" x2="185" y2= "120" />
  </g>

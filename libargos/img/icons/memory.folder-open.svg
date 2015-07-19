@@ -20,8 +20,8 @@ viewBox="0 0 500 500"
    <stop offset="1" style="stop-color:#EDEDED"/>
   </linearGradient>
   <linearGradient id="id1" gradientUnits="userSpaceOnUse" x1="257.779" y1="263.852" x2="257.779" y2="386.252">
-   <stop offset="0" style="stop-color:#8800FF"/>
-   <stop offset="1" style="stop-color:#8800FF"/>
+   <stop offset="0" style="stop-color:#FFAA00"/>
+   <stop offset="1" style="stop-color:#FFAA00"/>
   </linearGradient>
  </defs>
  <g id="Layer_x0020_1">

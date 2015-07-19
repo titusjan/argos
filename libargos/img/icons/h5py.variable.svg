@@ -6,8 +6,8 @@ viewBox="0 0 500 500"
  xmlns:xlink="http://www.w3.org/1999/xlink">
  <defs>
    <linearGradient id="id0" gradientUnits="userSpaceOnUse" x1="459.998" y1="249.999" x2="40" y2="249.999">
-    <stop offset="0" stop-color="#FFAA00"/>
-    <stop offset="1" stop-color="#FFAA00"/>
+    <stop offset="0" stop-color="#00EE88"/>
+    <stop offset="1" stop-color="#00EE88"/>
    </linearGradient>
  </defs>
  <g id="Layer_x0020_1">
