@@ -118,12 +118,6 @@ class Collector(QtGui.QWidget):
         """ Returns the maximum number of combo boxes """
         return len(self._comboLabels)
     
-
-    def dimensionNameByNumber(self, dimNr):
-        """ Returns a dimension name (e.g. Dim0) to be used for unnamed dimensions.
-        """
-        return "dimension{}".format(dimNr)
-    
     
     def blockChildrenSignals(self, block):
         """ If block equals True, the signals of the combo boxes and spin boxes are blocked
@@ -271,7 +265,7 @@ class Collector(QtGui.QWidget):
             comboBox.addItem(self.FAKE_DIM_NAME, userData = self.FAKE_DIM_OFFSET + comboBoxNr)
             
             for dimNr in range(nDims):
-                comboBox.addItem(self.dimensionNameByNumber(dimNr), userData=dimNr)
+                comboBox.addItem(self._rti.dimensionNames[dimNr], userData=dimNr)
                         
             # We set the nth combo-box index to the last item - n. This because the 
             # NetCDF-CF conventions have the preferred dimension order of T, Z, Y, X. 
@@ -323,14 +317,14 @@ class Collector(QtGui.QWidget):
             spinBox.setMaximum(dimSize - 1)
             spinBox.setSingleStep(1)
             spinBox.setValue(dimSize // 2) # select the middle of the slice
-            spinBox.setPrefix("{}: ".format(self.dimensionNameByNumber(dimNr)))
+            spinBox.setPrefix("{}: ".format(self._rti.dimensionNames[dimNr]))
             spinBox.setSuffix("/{}".format(spinBox.maximum()))
             spinBox.setProperty("dim_nr", dimNr)
             
             # This must be done after setValue to prevent emitting too many signals
             spinBox.valueChanged[int].connect(self._spinboxValueChanged)
 
-            #spinboxLabel = QtGui.QLabel(self.dimensionNameByNumber(dimNr))
+            #spinboxLabel = QtGui.QLabel(self.self._rti.dimensionNames[dimNr])
             #editor = LabeledWidget(spinboxLabel, spinBox)
 
             if col >= model.columnCount():

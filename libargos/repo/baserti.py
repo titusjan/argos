@@ -287,11 +287,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
             Should return 0 for scalars.
         """
         return len(self.arrayShape)
-    
-#    @property
-#    def dimensions(self):
-#        return []
-#    
+
     @property
     def attributes(self):
         """ The attribute dictionary. 
@@ -300,5 +296,42 @@ class BaseRti(AbstractLazyLoadTreeItem):
         return {}
 
 
+    @property
+    def dimensionNames(self):
+        """ Returns a list with the name of each of the RTI's dimensions.
+            The default Returns ['Dim0', 'Dim1', ...] by default. Descendants can override this.
+        """
+        return ['Dim{}'.format(dimNr) for dimNr in range(self.nDims)] # TODO: cache?
+
     
-    
+#    @property
+#    def dimensionInfo(self):
+#        """ Returns a list with a DimensionInfo objects for each of the RTI's dimensions.
+#            The default Returns ['Dim0', 'Dim1', ...] by default. Descendants can override this.
+#        """
+#        return ['Dim{}'.format(dimNr) for dimNr in range(self.nDims)]
+#
+#    
+#
+#class DimensionInfo(object):
+#    """ Stores attributes (name, size, etc) of a Dimension
+#    """
+#    def __init__(self, name, size):
+#        """ Constructor
+#        """
+#        self._name = name
+#        self._size = size 
+#        
+#    @property
+#    def name(self):
+#        """ The dimension name
+#        """
+#        return self._name
+#        
+#    @property
+#    def size(self):
+#        """ The dimension size
+#        """
+#        return self._size
+#        
+#        

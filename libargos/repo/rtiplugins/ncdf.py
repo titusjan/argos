@@ -137,6 +137,13 @@ class NcdfVariableRti(BaseRti):
         return '<compound>' if dtype.names else str(dtype) # TODO: what if dtype.names does not exist
     
                
+    @property
+    def dimensionNames(self):
+        """ Returns a list with the dimension names of the underlying NCDF variable
+        """
+        return self._ncVar.dimensions
+    
+                   
     def _fetchAllChildren(self):
         """ Fetches all fields that this variable contains. 
             Only variables with a compound data type can have fields.

@@ -30,6 +30,7 @@ from libargos.inspector.dialog import OpenInspectorDialog
 from libargos.inspector.registry import InspectorRegItem
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
 from libargos.repo.detailplugins.attr import AttributesPane
+from libargos.repo.detailplugins.dim import DimensionsPane
 from libargos.repo.detailplugins.prop import PropertiesPane
 from libargos.repo.repotreeview import RepoTreeView
 from libargos.utils.cls import check_class
@@ -254,6 +255,9 @@ class MainWindow(QtGui.QMainWindow):
 
         attributesPane = AttributesPane(self.repoTreeView)
         self.dockDetailPane(attributesPane, area=Qt.LeftDockWidgetArea)
+
+        dimensionsPane = DimensionsPane(self.repoTreeView)
+        self.dockDetailPane(dimensionsPane, area=Qt.LeftDockWidgetArea)
 
 
     # -- End of setup_methods --
