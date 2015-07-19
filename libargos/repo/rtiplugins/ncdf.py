@@ -39,7 +39,8 @@ class FieldRti(BaseRti):
     _iconClosed = _iconOpen 
     
     def __init__(self, ncVar, nodeName, fileName=''):
-        """ Constructor
+        """ Constructor.
+            The name of the field must be given to the nodeName parameter. 
         """
         super(FieldRti, self).__init__(nodeName, fileName=fileName)
         check_class(ncVar, Variable)
@@ -56,20 +57,24 @@ class FieldRti(BaseRti):
             Returns the attributes of the variable that contains this field.
         """        
         return self._ncVar.__dict__
-
-    @property
-    def fieldName(self):
-        """ The field name if the RTI is a field in a compound data type
-        """
-        return self.nodeName
-    
-    
     
     @property
     def _asArray(self):
-        """ Returns the NCDF variable, not a numpy array!
-        """        
+        """ Returns the NCDF variable this field belongs to
+            The return type is a netCDF4.Variable, not a numpy array!
+        """
         return self._ncVar
+    
+    
+    def __getitem__(self, index):
+        """ Called when using the RTI with an index (e.g. rti[0]).
+            Applies the index on the NCDF variable that contain this field and then selects the
+            current field. In pseudo-code, it returns: self.ncVar[index][self.nodeName].
+        """
+        slicedArray = self._asArray.__getitem__(index)
+        fieldName = self.nodeName
+        return slicedArray[fieldName]
+
     
     @property
     def elementTypeName(self):
@@ -119,7 +124,8 @@ class VariableRti(BaseRti):
 
     @property
     def _asArray(self):
-        """ Returns the NCDF variable, not a numpy array!
+        """ Returns the the underlying NCDF variable.
+            The return type is a netCDF4.Variable, not a numpy array!
         """        
         return self._ncVar
     

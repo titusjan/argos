@@ -432,9 +432,6 @@ class Collector(QtGui.QWidget):
         #logging.debug("Array slice: {}".format(str(sliceList)))
         slicedArray = self.rti[tuple(sliceList)]
         
-        if self.rti.fieldName is not None:
-            slicedArray = slicedArray[self.rti.fieldName]
-        
         # Add fake dimensions of length 1 so that result.ndim will equal the number of combo boxes
         for dimNr in range(slicedArray.ndim, self.maxCombos):
             #logger.debug("Adding fake dimension: {}".format(dimNr))

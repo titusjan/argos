@@ -245,13 +245,6 @@ class BaseRti(AbstractLazyLoadTreeItem):
 
     
     @property
-    def fieldName(self):
-        """ The field name if the RTI is a field in a compound data type
-        """
-        return None
-
-    
-    @property
     def isSliceable(self):
         """ Returns True if the underlying data can be sliced.
             You should always check this before using an index/slice on an RTI.
@@ -272,11 +265,11 @@ class BaseRti(AbstractLazyLoadTreeItem):
         return None
         
     
-    def __getitem__(self, key):
+    def __getitem__(self, index):
         """ Called when using the RTI with an index (e.g. rti[0]). 
             Passes the index through to the underlying array.
         """
-        return self._asArray.__getitem__(key)
+        return self._asArray.__getitem__(index)
         
                 
     @property
