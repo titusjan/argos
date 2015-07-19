@@ -42,7 +42,6 @@ def _createFromObject(obj, nodeName, fileName):
 class ScalarRti(BaseRti):
     """ Stores a Python or numpy scalar
     """
-    _label = "Scalar"
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.scalar.svg'))
     _iconClosed = _iconOpen      
     
@@ -62,7 +61,6 @@ class ScalarRti(BaseRti):
 class ArrayRti(BaseRti):
     """ Represents a numpy array (or None for undefined)
     """
-    _label = "NumPy Array"
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.array.svg'))
     _iconClosed = _iconOpen     
 
@@ -96,7 +94,6 @@ class ArrayRti(BaseRti):
 class SequenceRti(BaseRti):
     """ Represents a sequence (e.g. a list or a tuple)
     """
-    _label = "Sequence"
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.sequence.svg'))
     _iconClosed = _iconOpen     
     
@@ -140,7 +137,6 @@ class SequenceRti(BaseRti):
 class MappingRti(BaseRti):
     """ Represents a mapping (e.g. a dictionary)
     """    
-    _label = "Mapping"
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.folder-open.svg'))
     _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.folder-closed.svg'))
     

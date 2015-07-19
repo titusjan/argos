@@ -30,8 +30,6 @@ class UnknownFileRti(BaseRti):
     """ A repository tree item that represents a file of unknown type.  
         The file is not opened.
     """
-    
-    _label = "Unknown File"
     _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'fs.file-closed.svg'))    
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'fs.file-open.svg'))
     
@@ -51,7 +49,6 @@ class UnknownFileRti(BaseRti):
 class DirectoryRti(BaseRti):
     """ A repository tree item that has a reference to a file. 
     """
-    _label = "Directory"
     _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'fs.directory-closed.svg'))
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'fs.directory-open.svg'))
     

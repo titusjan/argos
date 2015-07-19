@@ -66,11 +66,6 @@ class BaseRti(AbstractLazyLoadTreeItem):
         #logger.debug("Trying to create object of class: {!r}".format(cls))
         return cls(nodeName=os.path.basename(fileName), fileName=fileName)
 
-#    @classmethod # TODO: obsolete?
-#    def classLabel(cls):
-#        """ Returns a short string that describes this class. For use in menus, headers, etc. 
-#        """
-#        return cls._label
     
     @property
     def fileName(self):
