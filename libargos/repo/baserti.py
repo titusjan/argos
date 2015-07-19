@@ -54,7 +54,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
         
         check_class(fileName, StringType, allow_none=True) 
         if fileName:
-            fileName = os.path.realpath(fileName) 
+            fileName = os.path.abspath(fileName) 
         self._fileName = fileName
     
                 

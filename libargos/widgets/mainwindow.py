@@ -86,7 +86,8 @@ class MainWindow(QtGui.QMainWindow):
         
         if DEBUGGING:
             # Select test item
-            path = "/trl1brb5g.lx.nc/BAND5/ICID_61347_GROUP_00000/OBSERVATIONS/signal"
+            #path = "/trl1brb5g.lx.nc/BAND5/ICID_61347_GROUP_00000/OBSERVATIONS/signal"
+            path = "/trl1brb6g.lx.h5/BAND6/ICID_61347_GROUP_00000/OBSERVATIONS/signal"
             try:
                 _lastItem, lastIndex = self.repoTreeView.expandPath(path)
                 self.repoTreeView.setCurrentIndex(lastIndex)

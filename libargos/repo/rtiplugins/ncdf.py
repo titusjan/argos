@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Data store for netCDF data.
+""" Repository Tree Items (RTIs) for netCDF data.
 
     It uses the netCDF4 package to open netCDF files.
     See http://unidata.github.io/netcdf4-python/
@@ -48,7 +48,8 @@ class NcdfFieldRti(BaseRti):
         self._ncVar = ncVar
 
     def hasChildren(self):
-        """ Returns False. Leaf nodes never have children. """
+        """ Returns False. Field nodes never have children. 
+        """
         return False
    
     @property
@@ -84,6 +85,7 @@ class NcdfFieldRti(BaseRti):
         return str(self._ncVar.dtype.fields[fieldName][0])
 
 
+
 class NcdfVariableRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a NCDF variable. 
     """ 
@@ -108,14 +110,7 @@ class NcdfVariableRti(BaseRti):
         """ Returns True if the variable has a compound type, otherwise returns False.
         """
         return self._isCompound
-   
-    @property
-    def isCompoattributes(self):
-        """ The attributes dictionary.
-        """        
-        return self._ncVar.__dict__
 
-   
     @property
     def attributes(self):
         """ The attributes dictionary.
@@ -161,12 +156,12 @@ class NcdfVariableRti(BaseRti):
 
         # Add fields
         if self._isCompound:
-            #fields = dtype.fields
             for fieldName in self._ncVar.dtype.names:
                 childItems.append(NcdfFieldRti(self._ncVar, nodeName=fieldName, fileName=self.fileName))
                         
         self._childrenFetched = True
         return childItems
+    
     
     
 class NcdfGroupRti(BaseRti):
@@ -175,36 +170,36 @@ class NcdfGroupRti(BaseRti):
     _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.group-closed.svg'))
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.group-open.svg'))
     
-    def __init__(self, dataset, nodeName, fileName=''):
+    def __init__(self, h5Group, nodeName, fileName=''):
         """ Constructor
         """
         super(NcdfGroupRti, self).__init__(nodeName, fileName=fileName)
-        check_class(dataset, Dataset, allow_none=True)
+        check_class(h5Group, Dataset, allow_none=True)
 
-        self._dataset = dataset
+        self._ncGroup = h5Group
         self._childrenFetched = False
         
     @property
     def attributes(self):
         """ The attributes dictionary.
         """
-        return self._dataset.__dict__ if self._dataset else {}
+        return self._ncGroup.__dict__ if self._ncGroup else {}
         
-               
+                   
     def _fetchAllChildren(self):
         """ Fetches all sub groups and variables that this group contains.
         """
-        assert self._dataset is not None, "dataset undefined (file not opened?)"
+        assert self._ncGroup is not None, "dataset undefined (file not opened?)"
         assert self.canFetchChildren(), "canFetchChildren must be True"
         
         childItems = []
         
         # Add groups
-        for groupName, ncGroup in self._dataset.groups.items():
+        for groupName, ncGroup in self._ncGroup.groups.items():
             childItems.append(NcdfGroupRti(ncGroup, nodeName=groupName, fileName=self.fileName))
             
         # Add variables
-        for varName, ncVar in self._dataset.variables.items():
+        for varName, ncVar in self._ncGroup.variables.items():
             childItems.append(NcdfVariableRti(ncVar, nodeName=varName, fileName=self.fileName))
                         
         self._childrenFetched = True
@@ -223,22 +218,16 @@ class NcdfFileRti(NcdfGroupRti):
         """
         super(NcdfFileRti, self).__init__(None, nodeName, fileName=fileName)
         self._checkFileExists()
-        
-    @property
-    def attributes(self):
-        """ The attributes dictionary.
-        """        
-        return self._dataset.__dict__ if self._dataset else {}
     
     def _openResources(self):
         """ Opens the root Dataset.
         """
         logger.info("Opening: {}".format(self._fileName))
-        self._dataset = Dataset(self._fileName)
+        self._ncGroup = Dataset(self._fileName)
     
     def _closeResources(self):
         """ Closes the root Dataset.
         """
         logger.info("Closing: {}".format(self._fileName))
-        self._dataset.close()
-        self._dataset = None
+        self._ncGroup.close()
+        self._ncGroup = None

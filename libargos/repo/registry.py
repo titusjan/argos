@@ -140,6 +140,10 @@ class RtiRegistry(ClassRegistry):
         """ Returns a list with the default plugins in the repo tree item registry.
         """
         return [
+            RtiRegItem('HDF-5 file', 
+                          'libargos.repo.rtiplugins.hdf5.H5pyFileRti', 
+                          extensions=['hdf', 'hdf5', 'h5']),
+                   
             RtiRegItem('NCDF file', 
                           'libargos.repo.rtiplugins.ncdf.NcdfFileRti', 
                           extensions=['nc', 'nc3', 'nc4']),
