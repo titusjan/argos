@@ -489,7 +489,7 @@ class Collector(QtGui.QWidget):
         """ Returns list of the names of the dependent dimensions. 
             A good default is the name of the RTI.
         """
-        return self.rti.nodeName
+        return self.rti.nodeName if self.rti else ''
 
     
     def dependentDimensionUnit(self):
@@ -497,10 +497,11 @@ class Collector(QtGui.QWidget):
             A good default is the unit or units attribute name of the RTI.
             Returns  empty string if the unit cannot be determined from the RTI attributes.
         """
-        attributes = self.rti.attributes
-        for key in ('units', 'unit'):
-            if key in attributes:
-                return attributes[key]
+        if self.rti:
+            attributes = self.rti.attributes
+            for key in ('units', 'unit'):
+                if key in attributes:
+                    return attributes[key]
         return ''
 
     

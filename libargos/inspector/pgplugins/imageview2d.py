@@ -86,7 +86,7 @@ class PgImageView2d(AbstractInspector):
         
         if slicedArray is None or not array_has_real_numbers(slicedArray):
             self.imageView.clear()
-            if not DEBUGGING:
+            if not DEBUGGING: # TODO: is this an error?
                 raise ValueError("No data available or it does not contain real numbers")
         else:
             # TODO: cache config values?

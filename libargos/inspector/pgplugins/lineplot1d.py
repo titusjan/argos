@@ -29,7 +29,6 @@ from libargos.config.boolcti import BoolGroupCti, BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.qtctis import PenCti, ColorCti, createPenStyleCti, createPenWidthCti
 from libargos.config.floatcti import FloatCti
-from libargos.config.stringcti import StringCti
 from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector
 from libargos.utils.cls import array_has_real_numbers
@@ -156,29 +155,30 @@ class PgLinePlot1d(AbstractInspector):
         slicedArray = self.collector.getSlicedArray()
         if slicedArray is None or not array_has_real_numbers(slicedArray):
             self.plotDataItem.clear()
+            self.plotWidget.setTitle('')
+            self.plotWidget.setLabel('left', '')
+            self.plotWidget.setLabel('bottom', '')
+            # TODO: is this an error
             if not DEBUGGING:
                 raise ValueError("No data available or it does not contain real numbers.")
-            return
-
-        assert self.collector.rti, "sanity check."
         
-        self.plotDataItem.setData(slicedArray)
+        else:        
+            title = self.configValue('title').format(**self.collector.getRtiInfo())
+            self.plotWidget.setTitle(title)
+    
+            ylabel = self.collector.dependentDimensionName()
+            depUnit = self.collector.dependentDimensionUnit()
+            if depUnit:
+                ylabel += ' ({})'.format(depUnit)
+            self.plotWidget.setLabel('left', ylabel)
+    
+            xlabel = self.collector.independentDimensionNames()[0]
+            indepUnit = self.collector.independentDimensionUnits()[0]
+            if indepUnit:
+                xlabel += ' ({})'.format(indepUnit)
+            self.plotWidget.setLabel('bottom', xlabel)
         
-        logger.debug("self.collector.getRtiInfo(): {}".format(self.collector.getRtiInfo()))
-        title = self.configValue('title').format(**self.collector.getRtiInfo())
-        self.plotWidget.setTitle(title)
-
-        ylabel = self.collector.dependentDimensionName()
-        depUnit = self.collector.dependentDimensionUnit()
-        if depUnit:
-            ylabel += ' ({})'.format(depUnit)
-        self.plotWidget.setLabel('left', ylabel)
-
-        xlabel = self.collector.independentDimensionNames()[0]
-        indepUnit = self.collector.independentDimensionUnits()[0]
-        if indepUnit:
-            xlabel += ' ({})'.format(indepUnit)
-        self.plotWidget.setLabel('bottom', xlabel)
+            self.plotDataItem.setData(slicedArray)
         
             
         
