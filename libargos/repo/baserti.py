@@ -249,9 +249,18 @@ class BaseRti(AbstractLazyLoadTreeItem):
         """ The field name if the RTI is a field in a compound data type
         """
         return None
+
     
     @property
-    def asArray(self):
+    def isSliceable(self):
+        """ Returns True if the underlying data can be sliced.
+            You should always check this before using an index/slice on an RTI.
+        """
+        return self._asArray is not None
+    
+    
+    @property
+    def _asArray(self):
         """ Returns the underlying data as an array-like object that supports multi-dimensional 
             indexing and other methods of numpy arrays (e.g. the shape). It can, for instance, 
             return a h5py dataset. 
@@ -262,13 +271,26 @@ class BaseRti(AbstractLazyLoadTreeItem):
         """
         return None
         
+    
+    def __getitem__(self, key):
+        """ Called when using the RTI with an index (e.g. rti[0]). 
+            Passes the index through to the underlying array.
+        """
+        return self._asArray.__getitem__(key)
+        
+                
     @property
     def arrayShape(self):
         """ Returns the shape of the underlying array. Returns an empty tuple if the underlying
-            array is None
+            array is None.
+            Raised TypeError if the RTI is not sliceable
         """
-        array = self.asArray
-        return tuple() if array is None else array.shape
+        if self.isSliceable:
+            return self._asArray.shape
+        else:
+            raise TypeError("RTI is not sliceable: {}".format(self))
+        
+        #return tuple() if not self.isSliceable is None else self._asArray.shape
         
     
     @property

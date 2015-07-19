@@ -76,7 +76,7 @@ class ArrayRti(BaseRti):
         self._array = array
            
     @property
-    def asArray(self):
+    def _asArray(self):
         return self._array
     
     @property
@@ -108,10 +108,10 @@ class SequenceRti(BaseRti):
         super(SequenceRti, self).__init__(nodeName=nodeName, fileName=fileName)
         check_is_a_sequence(sequence, allow_none=True)
         self._sequence = sequence
-        self._array = NOT_SPECIFIED
+        self._array = NOT_SPECIFIED # To cache the sequence converted to a numpy array.
    
     @property
-    def asArray(self):
+    def _asArray(self):
         """ The sequence converted to a Numpy array. Returns None if the conversion fails
         """
         if self._array is NOT_SPECIFIED:

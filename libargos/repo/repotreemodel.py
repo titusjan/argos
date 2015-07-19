@@ -58,7 +58,10 @@ class RepoTreeModel(BaseTreeModel):
         elif column == self.COL_NODE_PATH:
             return treeItem.nodePath
         elif column == self.COL_SHAPE:
-            return " x ".join(str(elem) for elem in treeItem.arrayShape)
+            if treeItem.isSliceable:
+                return " x ".join(str(elem) for elem in treeItem.arrayShape)
+            else:
+                return ""
         elif column == self.COL_IS_OPEN:
             return str(treeItem.isOpen)
         elif column == self.COL_RTI_TYPE:

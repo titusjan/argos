@@ -97,6 +97,13 @@ class Collector(QtGui.QWidget):
         """
         return self._rti
 
+    
+    @property
+    def rtiIsSliceable(self):
+        """ Returns true if the RTI is not None and is sliceable
+        """
+        return self._rti and self._rti.isSliceable
+
 
     @property
     def comboLabels(self): # TODO: rename?
@@ -187,7 +194,7 @@ class Collector(QtGui.QWidget):
             this function directly.
         """
         check_class(rti, BaseRti)
-        #assert rti.asArray is not None, "rti must have array" # TODO: maybe later
+        #assert rti.isSliceable, "RTI must be sliceable" # TODO: maybe later
         
         self._rti = rti
         self._updateWidgets()
@@ -254,10 +261,10 @@ class Collector(QtGui.QWidget):
         for comboBox in self._comboBoxes:
             comboBox.clear()
             
-        if self.rti is None or self.rti.asArray is None:
+        if not self.rtiIsSliceable:
             return
         
-        nDims = self._rti.asArray.ndim
+        nDims = self._rti.nDims
         
         for comboBoxNr, comboBox in enumerate(self._comboBoxes):
             # Add a fake dimension of length 1
@@ -292,16 +299,16 @@ class Collector(QtGui.QWidget):
         """
         assert len(self._spinBoxes) == 0, "Spinbox list not empty. Call _deleteSpinBoxes first"
         
-        if self.rti is None or self.rti.asArray is None:
+        if not self.rtiIsSliceable:
             return     
 
-        logger.debug("_createSpinBoxes, array shape: {}".format(self._rti.asArray.shape))
+        logger.debug("_createSpinBoxes, array shape: {}".format(self._rti.arrayShape))
         
         tree = self.tree
         model = self.tree.model()
         col = self.COL_FIRST_COMBO + self.maxCombos
                         
-        for dimNr, dimSize in enumerate(self._rti.asArray.shape):
+        for dimNr, dimSize in enumerate(self._rti.arrayShape):
             
             if self._dimensionSelectedInComboBox(dimNr):
                 continue
@@ -406,7 +413,7 @@ class Collector(QtGui.QWidget):
         """
         #logging.debug("getSlicedArray() called")
 
-        if self.rti is None or self.rti.asArray is None:
+        if not self.rtiIsSliceable:
             return None  
 
         # The dimensions that are selected in the combo boxes will be set to slice(None), 
@@ -423,7 +430,7 @@ class Collector(QtGui.QWidget):
         # array[exp1, exp2, ..., expN]. 
         # See: http://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
         #logging.debug("Array slice: {}".format(str(sliceList)))
-        slicedArray = self.rti.asArray[tuple(sliceList)]
+        slicedArray = self.rti[tuple(sliceList)]
         
         if self.rti.fieldName is not None:
             slicedArray = slicedArray[self.rti.fieldName]
@@ -453,7 +460,7 @@ class Collector(QtGui.QWidget):
         """ Returns a string representation of the slices that are used to get the sliced array.
             For example returns '[:, 5]' if the combo box selects dimension 9 and the spin box 5.
         """
-        if self.rti is None or self.rti.asArray is None:
+        if not self.rtiIsSliceable:
             return ''  
 
         # The dimensions that are selected in the combo boxes will be set to slice(None), 

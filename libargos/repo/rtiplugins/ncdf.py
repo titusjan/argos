@@ -63,8 +63,10 @@ class FieldRti(BaseRti):
         """
         return self.nodeName
     
+    
+    
     @property
-    def asArray(self):
+    def _asArray(self):
         """ Returns the NCDF variable, not a numpy array!
         """        
         return self._ncVar
@@ -116,7 +118,7 @@ class VariableRti(BaseRti):
         return self._ncVar.__dict__
 
     @property
-    def asArray(self):
+    def _asArray(self):
         """ Returns the NCDF variable, not a numpy array!
         """        
         return self._ncVar
