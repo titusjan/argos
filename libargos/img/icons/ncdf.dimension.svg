@@ -7,17 +7,17 @@ viewBox="0 0 500 500"
  <defs>
   <style type="text/css">
    <![CDATA[
-    .str0 {stroke:#434242;stroke-width:10;stroke-linejoin:round}
+    .str0 {stroke:#2B2A29;stroke-width:10}
     .fil0 {fill:url(#id0)}
    ]]>
   </style>
-  <linearGradient id="id0" gradientUnits="userSpaceOnUse" x1="380.002" y1="252.728" x2="120" y2="252.728">
+  <radialGradient id="id0" gradientUnits="objectBoundingBox" cx="50%" cy="48%" r="50%" fx="50%" fy="48%">
    <stop offset="0" style="stop-color:#0088FF"/>
    <stop offset="1" style="stop-color:#0088FF"/>
-  </linearGradient>
+  </radialGradient>
  </defs>
  <g id="Layer_x0020_1">
   <metadata id="CorelCorpID_0Corel-Layer"/>
-  <path class="fil0 str0" d="M120 258c0,-80 60,-168 140,-220 5,75 115,120 120,210 0,70 -30,110 -110,110 5,30 40,70 70,90 10,10 -10,20 -20,11 -40,-31 -59,-62 -80,-121 -19,-53 -20,-105 -20,-160 -10,55 -25,110 5,180 -85,20 -105,-45 -105,-100z"/>
+  <path class="fil0 str0" d="M308 366l-18 0 0 -77 77 0 0 18c0,14 3,17 7,21 7,7 21,7 28,0l64 -64c7,-7 7,-21 0,-28l-64 -64c-7,-7 -21,-7 -28,0 -4,4 -7,7 -7,21l0 16 -77 0 0 -75 18 0c14,0 17,-3 21,-7 7,-7 7,-21 0,-28l-64 -64c-7,-7 -21,-7 -28,0l-64 64c-7,7 -7,21 0,28 4,4 7,7 22,7l15 0 0 75 -75 0 0 -16c0,-14 -3,-17 -7,-21 -7,-7 -21,-7 -28,0l-64 64c-7,7 -7,21 0,28l64 64c7,7 21,7 28,0 4,-4 7,-7 7,-21l0 -18 75 0 0 77 -15 0c-15,0 -18,3 -22,7 -7,7 -7,21 0,28l64 64c7,7 21,7 28,0l64 -64c7,-7 7,-21 0,-28 -4,-4 -7,-7 -21,-7z"/>
  </g>
 </svg>

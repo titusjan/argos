@@ -73,7 +73,8 @@ def main():
     createIcon(fsColor, 'fs.directory-closed', 'folder-close.svg')
 
     ncdfColor = '#0088FF'
-    createIcon(ncdfColor, 'ncdf.field',        'asterisk.svg') 
+    createIcon(ncdfColor, 'ncdf.dimension',    'move.svg') 
+    createIcon(ncdfColor, 'ncdf.field',        'leaf.svg') 
     createIcon(ncdfColor, 'ncdf.variable',     'th-large.svg')
     createIcon(ncdfColor, 'ncdf.group-open',   'folder-open.svg')
     createIcon(ncdfColor, 'ncdf.group-closed', 'folder-close.svg')
@@ -81,7 +82,7 @@ def main():
     createIcon(ncdfColor, 'ncdf.file-closed',  'file-inverse.svg')
     
     h5pyColor = '#00EE88'
-    createIcon(h5pyColor, 'h5py.field',        'asterisk.svg') 
+    createIcon(h5pyColor, 'h5py.field',        'leaf.svg') 
     createIcon(h5pyColor, 'h5py.variable',     'th-large.svg')
     createIcon(h5pyColor, 'h5py.group-open',   'folder-open.svg')
     createIcon(h5pyColor, 'h5py.group-closed', 'folder-close.svg')
