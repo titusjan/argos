@@ -22,7 +22,7 @@
 """
 
 import logging, os
-from netCDF4 import Dataset, Variable
+from netCDF4 import Dataset, Variable, Dimension
 
 from libargos.qt import QtGui
 from libargos.utils.cls import check_class
@@ -31,7 +31,36 @@ from libargos.repo.baserti import (ICONS_DIRECTORY, BaseRti)
 logger = logging.getLogger(__name__)
 
 
+    
+class NcdfDimensionRti(BaseRti):
+    """ Repository Tree Item (RTI) that contains a NCDF group. 
+    """     
+    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.dimension.svg'))
+    _iconOpen = _iconClosed
+    
+    def __init__(self, ncDim, nodeName, fileName=''):
+        """ Constructor
+        """
+        super(NcdfDimensionRti, self).__init__(nodeName, fileName=fileName)
+        check_class(ncDim, Dimension)
 
+        self._ncDim = ncDim
+        
+    def hasChildren(self):
+        """ Returns False. Dimension items never have children. 
+        """
+        return False
+
+    @property
+    def attributes(self):
+        """ The attributes dictionary.
+        """
+        return {'unlimited': str(self._ncDim.isunlimited())}
+        #size = self._ncDim.size
+        #return {'size': 'unlimited' if size is None else str(size)}
+    
+    
+    
 class NcdfFieldRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a field in a compound NCDF variable. 
     """ 
@@ -48,7 +77,7 @@ class NcdfFieldRti(BaseRti):
         self._ncVar = ncVar
 
     def hasChildren(self):
-        """ Returns False. Field nodes never have children. 
+        """ Returns False. Field items never have children. 
         """
         return False
    
@@ -170,13 +199,13 @@ class NcdfGroupRti(BaseRti):
     _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.group-closed.svg'))
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.group-open.svg'))
     
-    def __init__(self, h5Group, nodeName, fileName=''):
+    def __init__(self, ncGroup, nodeName, fileName=''):
         """ Constructor
         """
         super(NcdfGroupRti, self).__init__(nodeName, fileName=fileName)
-        check_class(h5Group, Dataset, allow_none=True)
+        check_class(ncGroup, Dataset, allow_none=True)
 
-        self._ncGroup = h5Group
+        self._ncGroup = ncGroup
         self._childrenFetched = False
         
     @property
@@ -193,6 +222,10 @@ class NcdfGroupRti(BaseRti):
         assert self.canFetchChildren(), "canFetchChildren must be True"
         
         childItems = []
+
+        # Add dimensions
+        for dimName, ncDim in self._ncGroup.dimensions.items():
+            childItems.append(NcdfDimensionRti(ncDim, nodeName=dimName, fileName=self.fileName))
         
         # Add groups
         for groupName, ncGroup in self._ncGroup.groups.items():
