@@ -56,7 +56,7 @@ class H5pyFieldRti(BaseRti):
         """ The attributes dictionary. 
             Returns the attributes of the variable that contains this field.
         """        
-        return self._h5Dataset.attrs.items()
+        return self._h5Dataset.attrs
     
     @property
     def _asArray(self):
@@ -110,7 +110,7 @@ class H5pyDatasetRti(BaseRti):
     def attributes(self):
         """ The attributes dictionary.
         """        
-        return self._h5Dataset.attrs.items()
+        return self._h5Dataset.attrs
     
 
     @property
@@ -127,12 +127,34 @@ class H5pyDatasetRti(BaseRti):
         dtype =  self._h5Dataset.dtype 
         return '<compound>' if dtype.names else str(dtype)
     
-#               
-#    @property
-#    def dimensionNames(self):
-#        """ Returns a list with the dimension names of the underlying HDF-5 dataset
-#        """
-#        return self._h5Dataset.dimensions
+               
+    @property
+    def dimensionNames(self):
+        """ Returns a list with the dimension names of the underlying HDF-5 dataset.
+        
+            First looks in the dataset's dimension scales to see if it refers to another
+            dataset. In that case the referred dataset's name is used. If not, the label of the
+            dimension scale is used. Finally, if this is empty, the dimension is numbered.
+        """
+        dimNames = [] # TODO: cache?
+        for dimNr, dimScales in enumerate(self._h5Dataset.dims):
+            if len(dimScales) == 0:
+                dimNames.append('Dim{}'.format(dimNr))
+            elif len(dimScales) == 1:
+                dimScaleLabel, dimScaleDataset = dimScales.items()[0]
+                path = dimScaleDataset.name
+                if path:
+                    dimNames.append(os.path.basename(path))
+                elif dimScaleLabel: # This could potentially be long so it's our second choice 
+                    dimNames.append(dimScaleLabel)
+                else:
+                    dimNames.append('Dim{}'.format(dimNr))
+            else:
+                # TODO: multiple scales for this dimension. What to do?
+                logger.warn("More than one dimension scale found: {!r}".format(dimScales))
+                dimNames.append('Dim{}'.format(dimNr)) # For now, just number them
+                                 
+        return dimNames
     
                    
     def _fetchAllChildren(self):
@@ -172,7 +194,7 @@ class H5pyGroupRti(BaseRti):
     def attributes(self):
         """ The attributes dictionary.
         """
-        return self._h5Group.attrs.items() if self._h5Group else {}
+        return self._h5Group.attrs if self._h5Group else {}
         
                
     def _fetchAllChildren(self):
