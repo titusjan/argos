@@ -21,7 +21,6 @@ import logging
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
 from libargos.qt import QtGui
-from libargos.utils.misc import NOT_SPECIFIED
 
 logger = logging.getLogger(__name__)
 
@@ -30,13 +29,12 @@ class StringCti(AbstractCti):
     """ Config Tree Item to store a string. It can be edited with a QLineEdit.
         The string can have an optional maximum length.
     """
-    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData='', 
-                 maxLength=None):
+    def __init__(self, nodeName, defaultData='', maxLength=None):
         """ For the (other) parameters see the AbstractCti constructor documentation. 
         
             :param maxLength: maximum length of the string
         """
-        super(StringCti, self).__init__(nodeName, data=data, defaultData=defaultData)
+        super(StringCti, self).__init__(nodeName, defaultData)
         
         # We could define a mask here as well but since that very likely will be rarely used, 
         # we don't want to store it for each cti. You can make a subclass if you need it. 

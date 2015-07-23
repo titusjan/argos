@@ -73,24 +73,24 @@ class PgLinePlot1d(AbstractInspector):
         rootItem = GroupCti('inspector')
         
         # Titles and labels
-        rootItem.insertChild(ChoiceCti('title', defaultData=0, editable=True, 
+        rootItem.insertChild(ChoiceCti('title', 0, editable=True, 
                                        configValues=["{path} {slices}", "{name} {slices}"]))
         
         # Axes
-        gridItem = rootItem.insertChild(BoolGroupCti('grid'))
-        gridItem.insertChild(BoolCti('X-axis', defaultData=True))
-        gridItem.insertChild(BoolCti('Y-axis', defaultData=True))
-        gridItem.insertChild(FloatCti('alpha', defaultData=0.25, 
+        gridItem = rootItem.insertChild(BoolGroupCti('grid', True))
+        gridItem.insertChild(BoolCti('X-axis', True))
+        gridItem.insertChild(BoolCti('Y-axis', True))
+        gridItem.insertChild(FloatCti('alpha', 0.25, 
                                       minValue=0.0, maxValue=1.0, stepSize=0.01, decimals=2))
         # Grid
         logAxesItem = rootItem.insertChild(GroupCti('logarithmic'))
-        logAxesItem.insertChild(BoolCti('X-axis', defaultData=False))
-        logAxesItem.insertChild(BoolCti('Y-axis', defaultData=False))
+        logAxesItem.insertChild(BoolCti('X-axis', False))
+        logAxesItem.insertChild(BoolCti('Y-axis', False))
                 
         # Pen
         penItem = rootItem.insertChild(GroupCti('pen'))
-        penItem.insertChild(ColorCti('color', defaultData=QtGui.QColor('#1C8857')))
-        lineItem = penItem.insertChild(BoolCti('line', defaultData=True))
+        penItem.insertChild(ColorCti('color', QtGui.QColor('#1C8857')))
+        lineItem = penItem.insertChild(BoolCti('line', True))
         lineItem.insertChild(createPenStyleCti('style'))
         lineItem.insertChild(createPenWidthCti('width'))
         defaultShadowPen = QtGui.QPen(QtGui.QColor('#BFBFBF'))
@@ -98,13 +98,13 @@ class PgLinePlot1d(AbstractInspector):
         lineItem.insertChild(PenCti("shadow", resetTo=QtGui.QPen(defaultShadowPen), 
                                     includeNoneStyle=True, includeZeroWidth=True))
 
-        symbolItem = penItem.insertChild(BoolCti("symbol", defaultData=False)) 
-        symbolItem.insertChild(ChoiceCti("shape", defaultData=0, 
+        symbolItem = penItem.insertChild(BoolCti("symbol", False)) 
+        symbolItem.insertChild(ChoiceCti("shape", 0, 
            displayValues=['circle', 'square', 'triangle', 'diamond', 'plus'],  
            configValues=['o', 's', 't', 'd', '+']))
-        symbolItem.insertChild(IntCti('size', defaultData=5, minValue=0, maxValue=100, stepSize=1))
+        symbolItem.insertChild(IntCti('size', 5, minValue=0, maxValue=100, stepSize=1))
         
-        rootItem.insertChild(BoolCti("anti-alias", defaultData=False))
+        rootItem.insertChild(BoolCti("anti-alias", False))
         
         return rootItem
     

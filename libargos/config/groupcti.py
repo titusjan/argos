@@ -20,8 +20,7 @@
 import logging
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
-from libargos.qt import QtGui, QtSlot
-from libargos.utils.misc import NOT_SPECIFIED
+from libargos.qt import QtGui
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +29,10 @@ logger = logging.getLogger(__name__)
 class GroupCti(AbstractCti):
     """ Read only config Tree Item that only stores None. It can be used to group CTIs
     """
-    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=None):
+    def __init__(self, nodeName, defaultData=None):
         """ Constructor. For the parameters see the AbstractCti constructor documentation.
         """
-        super(GroupCti, self).__init__(nodeName, data=data, defaultData=defaultData)
+        super(GroupCti, self).__init__(nodeName, defaultData)
 
     
     def _enforceDataType(self, data):

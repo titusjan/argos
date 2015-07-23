@@ -21,7 +21,6 @@ import logging
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
 from libargos.qt import QtGui
-from libargos.utils.misc import NOT_SPECIFIED
 
 logger = logging.getLogger(__name__)
 
@@ -34,10 +33,10 @@ class UntypedCti(AbstractCti):
         the same type (enforcec by _enforceDataType). This class is currently not used and may 
         become obsolete in the future.
     """
-    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=''):
+    def __init__(self, nodeName, defaultData=''):
         """ Constructor. For the parameters see the AbstractCti constructor documentation.
         """
-        super(UntypedCti, self).__init__(nodeName, data=data, defaultData=defaultData)
+        super(UntypedCti, self).__init__(nodeName, defaultData)
     
     def _enforceDataType(self, value):
         """ Since UntypedCti can store any type of data no conversion will be done. 

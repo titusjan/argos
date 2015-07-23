@@ -22,7 +22,6 @@ import numpy as np
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
 from libargos.qt import QtGui, QtSlot
-from libargos.utils.misc import NOT_SPECIFIED
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +29,7 @@ logger = logging.getLogger(__name__)
 class IntCti(AbstractCti):
     """ Config Tree Item to store an integer. It can be edited using a QSpinBox.
     """
-    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=0, 
+    def __init__(self, nodeName, defaultData=0, 
                  minValue = None, maxValue = None, stepSize = 1, 
                  specialValueText=None):
         """ Constructor.
@@ -43,7 +42,7 @@ class IntCti(AbstractCti):
                     
             For the (other) parameters see the AbstractCti constructor documentation.
         """
-        super(IntCti, self).__init__(nodeName, data=data, defaultData=defaultData)
+        super(IntCti, self).__init__(nodeName, defaultData)
         
         self.minValue = minValue
         self.maxValue = maxValue

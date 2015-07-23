@@ -68,27 +68,27 @@ class EmptyInspector(AbstractInspector):
             grpItem = GroupCti("group")
             rootItem.insertChild(grpItem)
             
-            lcItem = UntypedCti('line color', defaultData=123)
+            lcItem = UntypedCti('line color', 123)
             grpItem.insertChild(lcItem)
             
-            disabledItem = rootItem.insertChild(StringCti('disabled', defaultData="Can't touch me"))
+            disabledItem = rootItem.insertChild(StringCti('disabled', "Can't touch me"))
             disabledItem.enabled=False
     
-            grpItem.insertChild(IntCti('line-1 color', defaultData=7, minValue = -5, stepSize=2, 
+            grpItem.insertChild(IntCti('line-1 color', 7, minValue = -5, stepSize=2, 
                                        specialValueText="I'm special"))
-            rootItem.insertChild(StringCti('letter', defaultData='aa', maxLength = 1))
-            grpItem.insertChild(FloatCti('width', defaultData=2, minValue =5, stepSize=0.45, 
+            rootItem.insertChild(StringCti('letter', 'aa', maxLength = 1))
+            grpItem.insertChild(FloatCti('width', 2, minValue =5, stepSize=0.45, 
                                          decimals=3, specialValueText="so very special"))
-            gridItem = rootItem.insertChild(BoolGroupCti('grid'))
-            gridItem.insertChild(BoolCti('X-Axis', defaultData=True))
-            gridItem.insertChild(BoolCti('Y-Axis', defaultData=False))
+            gridItem = rootItem.insertChild(BoolGroupCti('grid', True))
+            gridItem.insertChild(BoolCti('X-Axis', True))
+            gridItem.insertChild(BoolCti('Y-Axis', False))
             
-            rootItem.insertChild(ChoiceCti('hobbit', defaultData=2, editable=True, 
+            rootItem.insertChild(ChoiceCti('hobbit', 2, editable=True, 
                                            configValues=['Frodo', 'Sam', 'Pippin', 'Merry']))
             myPen = QtGui.QPen(QtGui.QColor('#FF0066'))
             myPen.setWidth(2)
             myPen.setStyle(Qt.DashDotDotLine)
-            rootItem.insertChild(PenCti('line', resetTo=myPen)) 
+            rootItem.insertChild(PenCti('line', False, resetTo=myPen)) 
                     
         return rootItem
         

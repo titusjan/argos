@@ -21,7 +21,6 @@ import logging, copy
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
 from libargos.qt import  Qt, QtCore, QtGui, QtSlot
-from libargos.utils.misc import NOT_SPECIFIED
 
 
 logger = logging.getLogger(__name__)
@@ -33,7 +32,7 @@ logger = logging.getLogger(__name__)
 class ChoiceCti(AbstractCti):
     """ Config Tree Item to store a choice between strings.
     """
-    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=0, editable=False,  
+    def __init__(self, nodeName, defaultData=0, editable=False,  
                  configValues=None, displayValues=None):
         """ Constructor.
         
@@ -59,7 +58,7 @@ class ChoiceCti(AbstractCti):
         self._defaultConfigValues = copy.copy(self._configValues)
         
         # Set after self._displayValues are defined. The parent constructor call _enforceDataType
-        super(ChoiceCti, self).__init__(nodeName, data=data, defaultData=defaultData)
+        super(ChoiceCti, self).__init__(nodeName, defaultData)
         
     
     def _enforceDataType(self, data):

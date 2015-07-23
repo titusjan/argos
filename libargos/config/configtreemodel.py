@@ -43,7 +43,7 @@ class ConfigTreeModel(BaseTreeModel):
         """ Constructor
         """
         super(ConfigTreeModel, self).__init__(parent=parent)
-        self._invisibleRootItem = GroupCti(nodeName='<invisible-root>')
+        self._invisibleRootItem = GroupCti('<invisible-root>')
         self.dataChanged.connect(self.debug)
 
 

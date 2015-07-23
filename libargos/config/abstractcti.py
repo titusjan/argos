@@ -24,7 +24,6 @@ from libargos.info import DEBUGGING, icons_directory
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
 from libargos.qt.treeitems import BaseTreeItem
 from libargos.utils.cls import get_full_class_name, import_symbol
-from libargos.utils.misc import NOT_SPECIFIED
 
 
 logger = logging.getLogger(__name__)
@@ -124,8 +123,7 @@ class AbstractCti(BaseTreeItem):
         version, the new value will be updated in the UI unless the user has explicitly changed the
         value himself.
     """
-    # TODO: defaultData should be the second argument. Be mandatory?
-    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=None, enabled=True):
+    def __init__(self, nodeName, defaultData, enabled=True):
         """ Constructor
             :param nodeName: name of this node (used to construct the node path).
             :param data: the configuration data. If omitted the defaultData will be used.
@@ -135,12 +133,7 @@ class AbstractCti(BaseTreeItem):
         super(AbstractCti, self).__init__(nodeName=nodeName)
 
         self._defaultData = self._enforceDataType(defaultData)
-
-        if data is NOT_SPECIFIED:
-            self._data = self.defaultData
-        else:
-            self._data = self._enforceDataType(data)
-            
+        self._data = self.defaultData
         self._enabled = enabled
         
     

@@ -22,7 +22,6 @@ import logging
 from libargos.config.abstractcti import AbstractCti
 from libargos.config.groupcti import GroupCtiEditor
 from libargos.qt import Qt
-from libargos.utils.misc import NOT_SPECIFIED
 
 logger = logging.getLogger(__name__)
 
@@ -31,10 +30,10 @@ logger = logging.getLogger(__name__)
 class  BoolCti(AbstractCti):
     """ Config Tree Item to store an boolean. It can be edited using a check box
     """
-    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=False):
+    def __init__(self, nodeName, defaultData):
         """ Constructor. For the parameters see the AbstractCti constructor documentation.
         """
-        super(BoolCti, self).__init__(nodeName, data=data, defaultData=defaultData)
+        super(BoolCti, self).__init__(nodeName, defaultData)
         self.childrenDisabledWhenFalse = True
     
     def _enforceDataType(self, data):
@@ -147,10 +146,10 @@ class BoolGroupCti(AbstractCti):
         See: https://bugreports.qt.io/browse/QTBUG-7674 and 
              http://comments.gmane.org/gmane.comp.lib.qt.general/925
     """
-    def __init__(self, nodeName):
+    def __init__(self, nodeName, defaultData):
         """ Constructor. For the parameters see the AbstractCti constructor documentation.
         """
-        super(BoolGroupCti, self).__init__(nodeName)
+        super(BoolGroupCti, self).__init__(nodeName, defaultData)
 
     
     def _enforceDataType(self, data):

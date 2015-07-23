@@ -22,7 +22,6 @@ import numpy as np
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
 from libargos.qt import QtGui, QtSlot
-from libargos.utils.misc import NOT_SPECIFIED
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +29,7 @@ logger = logging.getLogger(__name__)
 class FloatCti(AbstractCti):
     """ Config Tree Item to store a floating point number. It can be edited using a QDoubleSpinBox.
     """
-    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=0, 
+    def __init__(self, nodeName, defaultData=0, 
                  minValue = None, maxValue = None, stepSize = 1.0, decimals = 2, 
                  specialValueText=None):
         """ Constructor.
@@ -45,7 +44,7 @@ class FloatCti(AbstractCti):
                     
             For the (other) parameters see the AbstractCti constructor documentation.
         """
-        super(FloatCti, self).__init__(nodeName, data=data, defaultData=defaultData)
+        super(FloatCti, self).__init__(nodeName, defaultData)
         
         self.decimals = decimals 
         self.minValue = minValue

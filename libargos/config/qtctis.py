@@ -24,9 +24,7 @@ from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.floatcti import FloatCti
 
-
 from libargos.qt import Qt, QtCore, QtGui
-from libargos.utils.misc import NOT_SPECIFIED
 
 logger = logging.getLogger(__name__)
           
@@ -36,7 +34,7 @@ PEN_STYLE_CONFIG_VALUES = (Qt.SolidLine, Qt.DashLine, Qt.DotLine,
                            Qt.DashDotLine, Qt.DashDotDotLine)
 
 
-def createPenStyleCti(nodeName, data=NOT_SPECIFIED, defaultData=0, includeNone=False):
+def createPenStyleCti(nodeName, defaultData=0, includeNone=False):
     """ Creates a ChoiceCti with Qt PenStyles.
         If includeEmtpy is True, the first option will be None.
     """
@@ -45,7 +43,7 @@ def createPenStyleCti(nodeName, data=NOT_SPECIFIED, defaultData=0, includeNone=F
     if includeNone:
         displayValues = [''] + list(displayValues)
         configValues = [None] + list(configValues)
-    return ChoiceCti(nodeName, data=data, defaultData=defaultData, 
+    return ChoiceCti(nodeName, defaultData, 
                      displayValues=displayValues, configValues=configValues)
 
              
@@ -66,11 +64,11 @@ def createPenWidthCti(nodeName, defaultData=1.0, zeroValueText=None):
 class ColorCti(AbstractCti):
     """ Config Tree Item to store a color. 
     """
-    def __init__(self, nodeName, data=NOT_SPECIFIED, defaultData=''):
+    def __init__(self, nodeName, defaultData=''):
         """ Constructor. 
             For the (other) parameters see the AbstractCti constructor documentation.
         """
-        super(ColorCti, self).__init__(nodeName, data=data, defaultData=defaultData)
+        super(ColorCti, self).__init__(nodeName, defaultData)
 
     def _enforceDataType(self, data):
         """ Converts to str so that this CTI always stores that type. 
@@ -194,7 +192,8 @@ class PenCti(BoolCti):
         It will create children for the pen color, width and style. It will not create a child
         for the brush.
     """
-    def __init__(self, nodeName, resetTo=None, includeNoneStyle=False, includeZeroWidth=False):
+    def __init__(self, nodeName, defaultData, resetTo=None, 
+                 includeNoneStyle=False, includeZeroWidth=False):
         """ Sets the children's default value using the resetTo value.
         
             The resetTo value must be a QPen or value that can be converted to QPen. It is used
@@ -203,11 +202,11 @@ class PenCti(BoolCti):
             
             (resetTo is not called 'defaultData' since the PenCti itself always has a data and 
             defaultData of None. That is, it does not store the data itself but relies on its 
-            child nodes).
+            child nodes). The default data, is used to indicate if the pen is enabled.
             
             If includeNonStyle is True, an None-option will be prepended to the style choice
         """
-        super(PenCti, self).__init__(nodeName)
+        super(PenCti, self).__init__(nodeName, defaultData)
         # We don't need a similar initFrom parameter.
         qPen = QtGui.QPen(resetTo)
         
