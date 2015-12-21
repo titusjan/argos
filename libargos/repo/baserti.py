@@ -240,11 +240,18 @@ class BaseRti(AbstractLazyLoadTreeItem):
 
     
     @property
-    def isSliceable(self):
+    def isSliceable(self): # TODO: rename to containsArray?
         """ Returns True if the underlying data can be sliced.
             You should always check this before using an index/slice on an RTI.
         """
         return self.nDims > 0
+    
+    
+    def __getitem__(self, index):
+        """ Called when using the RTI with an index (e.g. rti[0]). 
+            Passes the index through to the underlying array.
+        """
+        return self._asArray.__getitem__(index)
     
     
     @property
@@ -259,12 +266,13 @@ class BaseRti(AbstractLazyLoadTreeItem):
     def arrayShape(self):
         """ Returns the shape of the underlying array. Returns an empty tuple if the underlying
             array is None.
-            Returns 
-            Raised TypeError if the RTI is not sliceable
+
+            Raises TypeError if the RTI is not sliceable
         """
         if self._asArray is None:
             return tuple()
-        else:
+        else: 
+            # TODO: this should probably not be the base implementation but implemented by descendants 
             return self._asArray.shape
     
     
@@ -278,14 +286,8 @@ class BaseRti(AbstractLazyLoadTreeItem):
             Note that the implementation is expected to be fast; it should not retrieve actual 
             array data from an underlying file, only return a reference.
         """
+        # TODO: this should not be part of the base class. Move to HDF/NCDF modules.
         return None
-        
-    
-    def __getitem__(self, index):
-        """ Called when using the RTI with an index (e.g. rti[0]). 
-            Passes the index through to the underlying array.
-        """
-        return self._asArray.__getitem__(index)
         
                 
     @property

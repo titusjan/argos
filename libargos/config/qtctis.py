@@ -192,7 +192,7 @@ class PenCti(BoolCti):
         It will create children for the pen color, width and style. It will not create a child
         for the brush.
     """
-    def __init__(self, nodeName, defaultData, resetTo=None, 
+    def __init__(self, nodeName, defaultData, resetTo=None, expanded=True,  
                  includeNoneStyle=False, includeZeroWidth=False):
         """ Sets the children's default value using the resetTo value.
         
@@ -206,7 +206,7 @@ class PenCti(BoolCti):
             
             If includeNonStyle is True, an None-option will be prepended to the style choice
         """
-        super(PenCti, self).__init__(nodeName, defaultData)
+        super(PenCti, self).__init__(nodeName, defaultData, expanded=expanded)
         # We don't need a similar initFrom parameter.
         qPen = QtGui.QPen(resetTo)
         

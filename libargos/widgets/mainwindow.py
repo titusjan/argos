@@ -87,6 +87,7 @@ class MainWindow(QtGui.QMainWindow):
         if DEBUGGING:
             # Select test item
             #path = "/trl1brb5g.lx.nc/BAND5/ICID_61347_GROUP_00000/OBSERVATIONS/signal"
+            #path = "/trl1brb6g.lx.cdf/BAND6/ICID_61347_GROUP_00000/OBSERVATIONS/signal"
             path = "/trl1brb6g.lx.h5/BAND6/ICID_61347_GROUP_00000/OBSERVATIONS/signal"
             try:
                 _lastItem, lastIndex = self.repoTreeView.expandPath(path)
@@ -356,7 +357,7 @@ class MainWindow(QtGui.QMainWindow):
                     nonDefaults = self._persistentSettings.get(key, {})
                     self.inspector.config.setValuesFromDict(nonDefaults)
                     self._configTreeModel.setInvisibleRootItem(self.inspector.config)
-                    self.configTreeView.expandAll() # TODO: more sophisticated 
+                    self.configTreeView.expandBranch()  
                     self.collector.clearAndSetComboBoxes(self.inspector.axesNames())
                     self.inspector.initContents() # TODO: call this here?
                     centralLayout.addWidget(self.inspector)

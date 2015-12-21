@@ -14,7 +14,7 @@ from libargos.repo.registry import RtiRegistry
 def printReg(name, registry):
     print("{} registry....".format(name))
     for nr, regItem in enumerate(registry.items):
-        print("  {0:03d}: {1.identifier:20} {1.fullClassName:30} ".format(nr, regItem))
+        print("  {0:03d}: {1.identifier:25} {1.fullClassName:30} ".format(nr, regItem))
     print()
     
 def main():

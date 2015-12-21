@@ -30,8 +30,6 @@ logger = logging.getLogger(__name__)
 
 
 # TODO: QCompleter? See demos/spreadsheet/spreadsheetdelegate.py
-# TODO: FloatCti using QDoubleSpinBox
-# TODO: None takes data of parent
 
 class InvalidInputError(Exception):
     """ Exception raised when the input is invalid after editing
@@ -123,7 +121,7 @@ class AbstractCti(BaseTreeItem):
         version, the new value will be updated in the UI unless the user has explicitly changed the
         value himself.
     """
-    def __init__(self, nodeName, defaultData, enabled=True):
+    def __init__(self, nodeName, defaultData, enabled=True, expanded=True):
         """ Constructor
             :param nodeName: name of this node (used to construct the node path).
             :param data: the configuration data. If omitted the defaultData will be used.
@@ -135,6 +133,7 @@ class AbstractCti(BaseTreeItem):
         self._defaultData = self._enforceDataType(defaultData)
         self._data = self.defaultData
         self._enabled = enabled
+        self._expanded = expanded
         
     
     def __eq__(self, other): 
@@ -244,6 +243,23 @@ class AbstractCti(BaseTreeItem):
         """
         #logger.debug("Setting enabled = {:5} for {}".format(enabled, self))
         self._enabled = enabled
+        
+        
+    @property
+    def expanded(self):
+        """ Returns the expanded flag which keeps 
+        """
+        return self._expanded
+
+    @expanded.setter
+    def expanded(self, expanded):
+        """ Keeps track if the config item is expanded. 
+            Needed to keep state between changing inspectors.
+            Note, this can only be used as an initial expanded value but does not update the tree
+            when it's constructed. Use ConfigTree.expand for that. 
+        """
+        logger.debug("Setting expanded = {:5} for {}".format(expanded, self))
+        self._expanded = expanded
 
 
     def enableBranch(self, enabled):

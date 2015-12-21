@@ -40,6 +40,8 @@ class ConfigTreeView(ArgosTreeView):
         """
         super(ConfigTreeView, self).__init__(treeModel=configTreeModel, parent=parent)
 
+        self.expanded.connect(configTreeModel.expand) 
+        self.collapsed.connect(configTreeModel.collapse) 
         #configTreeModel.update.connect(self.update) # not necessary
         self.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
         
@@ -83,4 +85,36 @@ class ConfigTreeView(ArgosTreeView):
         configItemDelegate.finalizeEditor(editor)
         super(ConfigTreeView, self).closeEditor(editor, hint)
 
+
+    
+    def expandBranch(self, index=None, expanded=None):
+        """ Expands or collapses the node at the index and all it's descendants.
+            If expanded is True the nodes will be expanded, if False they will be collapsed, and if 
+            expanded is None the expanded attribute of each item is used.
+            If parentIndex is None, the invisible root will be used (i.e. the complete forest will 
+            be expanded).
+        """
+        configModel = self.model()
+        if index is None:
+            #index = configTreeModel.createIndex()
+            index = QtCore.QModelIndex()
+
+        if index.isValid():            
+            if expanded is None:
+                item = configModel.getItem(index)
+                newExpanded = item.expanded
+            else:
+                newExpanded = expanded
+                
+            self.setExpanded(index, newExpanded)
+ 
+#            
+#            if newExpand:
+#                self.expand(index)
+#            else:
+#                self.collapse(index)
         
+        for rowNr in range(configModel.rowCount(index)):
+            childIndex = configModel.index(rowNr, configModel.COL_NODE_NAME, parentIndex=index)
+            self.expandBranch(index=childIndex, expanded=expanded)
+            

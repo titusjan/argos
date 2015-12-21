@@ -55,7 +55,7 @@ def browse(fileNames = None,
     if resetRegistry:
         argosApp.deleteRegistries()
 
-    # Must be called before opening the files so that file format are auto-detected.
+    # Must be called before opening the files so that file formats are auto-detected.
     argosApp.loadOrInitRegistries()
         
     # Load data in common repository before windows are created.

@@ -150,6 +150,30 @@ class ConfigTreeModel(BaseTreeModel):
                 return False
             else:
                 return True
+            
+            
+    def setExpanded(self, index, expanded):
+        """ Expands the model item specified by the index.
+            Overridden from QTreeView to make it persistent (between inspector changes).
+        """
+        if index.isValid():
+            item = self.getItem(index)
+            item.expanded = expanded
+            logger.debug("Setting expanded = {} for {}".format(expanded, item))
+            
+            
+    def expand(self, index):
+        """ Expands the model item specified by the index.
+            Overridden from QTreeView to make it persistent (between inspector changes).
+        """
+        self.setExpanded(index, True)
+            
+            
+    def collapse(self, index):
+        """ Expands the model item specified by the index.
+            Overridden from QTreeView to make it persistent (between inspector changes).
+        """
+        self.setExpanded(index, False)
 
         
     def __obsolete__readModelSettings(self, key, settings):

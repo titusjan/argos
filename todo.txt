@@ -11,17 +11,29 @@ http://tylervigen.com/sources
 
 http://www.gdngeoservices.nl/wms/dinomap/M11M0802
 
+https://scihub.esa.int/
+
 # NOAA
 http://www.ngdc.noaa.gov/mgg/topo/gltiles.html
 
 # NASA data
 http://mirador.gsfc.nasa.gov/cgi-bin/mirador/presentNavigation.pl?tree=project&CGISESSID=09380e8a7f3c544a347205a800ad7014
+http://data.giss.nasa.gov/gistemp/
+http://archive.stsci.edu/genlinks_search.php?target=&resolver=SIMBAD&Submit=Search
+
 
 # OMI L3
 http://mirador.gsfc.nasa.gov/cgi-bin/mirador/granlist.pl?page=1&location=%28-90,-180%29,%2890,180%29&dataSet=OMDOAO3e&version=003&allversion=003&startTime=2010-06-02T00:00:01Z&endTime=2010-06-02T23:59:59Z&keyword=OMDOAO3e&longname=OMI/Aura%20Ozone%20%28O3%29%20DOAS%20Total%20Column%20Daily%20L3%20Global%200.25deg%20Lat/Lon%20Grid&CGISESSID=3a77ae56c199ee231e300480e6fc5edc&prodpg=http://mirador.gsfc.nasa.gov/collections/OMDOAO3e__003.shtml
+http://www.temis.nl/airpollution/no2.html
+http://www.temis.nl/airpollution/no2col/data/omi/overpass/De_Bilt_domino.dat
+http://www.temis.nl/airpollution/no2col/no2regioomi_v2.php?Region=9&Year=2015&Month=10&Day=07
 
 # US Census
 http://www.census.gov/population/international/data/countryrank/rank.php
+
+# Selectors plugins
+http://blaze.pydata.org/en/latest/
+BColz
 
 # Plot and Mapping libs:
 http://pygal.org/chart_types/#idworldmap-charts
@@ -93,6 +105,9 @@ USE CASES:
 BUGS:
 	Why doesn't value attribute show in 
 	/Users/titusjan/Data/argos/2015_04_21T01_00_34_LaserSunIsrfStraySts/quicklook_000_minutes-000-020
+	
+	/users/titusjan/data/trop_lx/pre_env/2014_08_27t19_27_53_short_test_orbit/proc_000_raw
+	PyQtGraph line plot KeyError: 'attribute units has unsupported datatype'
 	
 	When a floatCti has many decimals, the spin box doesn't cover the text behind it.
 	When item is unvisited, the detail panes must be updated (also the collector). Check unvisiting.

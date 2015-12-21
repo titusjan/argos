@@ -30,10 +30,10 @@ logger = logging.getLogger(__name__)
 class  BoolCti(AbstractCti):
     """ Config Tree Item to store an boolean. It can be edited using a check box
     """
-    def __init__(self, nodeName, defaultData):
+    def __init__(self, nodeName, defaultData, expanded=True):
         """ Constructor. For the parameters see the AbstractCti constructor documentation.
         """
-        super(BoolCti, self).__init__(nodeName, defaultData)
+        super(BoolCti, self).__init__(nodeName, defaultData, expanded=expanded)
         self.childrenDisabledWhenFalse = True
     
     def _enforceDataType(self, data):
@@ -77,7 +77,7 @@ class  BoolCti(AbstractCti):
         """
         childItem = super(BoolCti, self).insertChild(childItem, position=None)
         if self.childrenDisabledWhenFalse:
-            logger.debug("BoolCti.insertChild: {}".format(childItem))
+            #logger.debug("BoolCti.insertChild: {}".format(childItem))
             childItem.enableBranch(self.data)
             childItem.enabled = self.enabled
         return childItem    
