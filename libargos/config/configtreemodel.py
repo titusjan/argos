@@ -159,7 +159,7 @@ class ConfigTreeModel(BaseTreeModel):
         if index.isValid():
             item = self.getItem(index)
             item.expanded = expanded
-            logger.debug("Setting expanded = {} for {}".format(expanded, item))
+            #logger.debug("Setting expanded = {} for {}".format(expanded, item))
             
             
     def expand(self, index):

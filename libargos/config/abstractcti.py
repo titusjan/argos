@@ -125,8 +125,7 @@ class AbstractCti(BaseTreeItem):
         """ Constructor
             :param nodeName: name of this node (used to construct the node path).
             :param data: the configuration data. If omitted the defaultData will be used.
-            :param defaultData: default data to which the data can be reset or initialized if 
-                omitted from the constructor.
+            :param defaultData: default data to which the data can be reset by the reset button.
         """
         super(AbstractCti, self).__init__(nodeName=nodeName)
 
@@ -258,7 +257,7 @@ class AbstractCti(BaseTreeItem):
             Note, this can only be used as an initial expanded value but does not update the tree
             when it's constructed. Use ConfigTree.expand for that. 
         """
-        logger.debug("Setting expanded = {:5} for {}".format(expanded, self))
+        #logger.debug("Setting expanded = {!r:5} for {}".format(expanded, self))
         self._expanded = expanded
 
 
@@ -426,7 +425,7 @@ class AbstractCtiEditor(QtGui.QWidget):
         It consists of a horizontal collection of child widgets, the last of which is a reset 
         button which will reset the config data to its default when clicked.
         
-        You must implemented setData and getData which that pass the data from the 
+        You must implemented setData and getData, which pass the data from the 
         QConfigItemDelegate to the editor and back.
     """
     def __init__(self, cti, delegate, subEditors=None, parent=None):
@@ -471,7 +470,7 @@ class AbstractCtiEditor(QtGui.QWidget):
     def finalize(self):
         """ Called at clean up, when the editor is closed. Can be used to disconnect signals.
             This is often called after the client (e.g. the inspector) is updated. If you want to 
-            take action before the  update, override prepareCommit instead.
+            take action before the update, override prepareCommit instead.
             Be sure to call the finalize of the super class if you override this function. 
         """
         for subEditor in self._subEditors:

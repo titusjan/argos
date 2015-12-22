@@ -346,7 +346,7 @@ class MainWindow(QtGui.QMainWindow):
 
             self.setWindowTitle(self.constructWindowTitle())
             
-            # Update collector widgets
+            # Update collector widgets and the config tree
             oldBlockState = self.collector.blockSignals(True)
             try:
                 if self.inspector is None:
@@ -355,6 +355,7 @@ class MainWindow(QtGui.QMainWindow):
                 else:
                     key = self.inspectorRegItem.identifier
                     nonDefaults = self._persistentSettings.get(key, {})
+                    logger.debug("NONDEFAULTS for {}: {}".format(key, nonDefaults))
                     self.inspector.config.setValuesFromDict(nonDefaults)
                     self._configTreeModel.setInvisibleRootItem(self.inspector.config)
                     self.configTreeView.expandBranch()  
