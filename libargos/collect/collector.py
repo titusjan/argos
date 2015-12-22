@@ -204,6 +204,7 @@ class Collector(QtGui.QWidget):
         # Create path label
         nodePath = '' if self.rti is None else self.rti.nodePath
         pathItem = QtGui.QStandardItem(nodePath)
+        pathItem.setToolTip(nodePath)
         pathItem.setEditable(False)
         model.setItem(row, 0, pathItem)
         

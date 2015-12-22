@@ -107,6 +107,15 @@ class ConfigTreeModel(BaseTreeModel):
             return treeItem.data
         else:
             raise ValueError("Invalid column: {}".format(column))
+        
+        
+    def toolTipForColumn(self, treeItem, column):
+        """ Returns the value for tool-tip of the item given the column number.
+        """
+        if column == self.COL_NODE_NAME or column == self.COL_NODE_PATH:
+            return treeItem.nodePath
+        else:
+            return None
             
 
     def setEditValueForColumn(self, treeItem, column, value):
