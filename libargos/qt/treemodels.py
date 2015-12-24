@@ -370,7 +370,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         logger.debug("removeAllChildrenAtIndex completed")
             
     
-    def deleteItemByIndex(self, itemIndex): 
+    def deleteItemAtIndex(self, itemIndex): 
         """ Removes the item at the itemIndex.
             The item's finalize method is called before removing so it can close its resources. 
         """
@@ -379,7 +379,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             return
         
         item = self.getItem(itemIndex, "<no item>")
-        logger.debug("deleteItemByIndex: removing {!r}".format(item))
+        logger.debug("deleteItemAtIndex: removing {!r}".format(item))
         
         parentIndex = itemIndex.parent()
         parentItem = self.getItem(parentIndex, altItem=self.invisibleRootItem)
@@ -390,7 +390,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         finally:
             self.endRemoveRows()
             
-        logger.debug("deleteItemByIndex completed")
+        logger.debug("deleteItemAtIndex completed")
   
 
     def replaceItemAtIndex(self, newItem, oldItemIndex): 
@@ -399,7 +399,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         oldItem = self.getItem(oldItemIndex)
         childNumber = oldItem.childNumber()
         parentIndex = oldItemIndex.parent()
-        self.deleteItemByIndex(oldItemIndex)
+        self.deleteItemAtIndex(oldItemIndex)
         insertedIndex = self.insertItem(newItem, position=childNumber, parentIndex=parentIndex)
         return insertedIndex
 
@@ -495,7 +495,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         return _auxGetByPath(path.split('/'), startItem, startIndex)
 
 
-    def emitUpdateForBranch(self, parentIndex):
+    def __not_used__emitUpdateForBranch(self, parentIndex):
         """ Emits the update signal for parentIndex and all its children.
         """
         self.update.emit(parentIndex)

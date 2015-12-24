@@ -138,7 +138,7 @@ class RepoTreeModel(BaseTreeModel):
         position = fileRti.childNumber()
         
         # Delete old RTI and Insert a new one instead.
-        self.deleteItemByIndex(itemIndex) # this will close the items resources.
+        self.deleteItemAtIndex(itemIndex) # this will close the items resources.
         return self.loadFile(fileName, rtiClass, position=position, parentIndex=fileRtiParentIndex)
 
 
