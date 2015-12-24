@@ -145,8 +145,9 @@ class MainWindow(QtGui.QMainWindow):
         """ Creates the UI widgets. 
         """
         self._collector = Collector(self.windowNumber)
-        self.repoTreeView = RepoTreeView(self.argosApplication.repo, self.collector)
         self.configTreeView = ConfigTreeView(self._configTreeModel)
+        #self._configTreeModel.insertTopLevelGroup(self, groupName, position=None)
+        self.repoTreeView = RepoTreeView(self.argosApplication.repo, self.collector)
         
         # Define a central widget that will be the parent of the inspector widget.
         # We don't set the inspector directly as the central widget to retain the size when the
@@ -162,6 +163,7 @@ class MainWindow(QtGui.QMainWindow):
 
         # TODO: dedicated signal?
         self._configTreeModel.dataChanged.connect(self.configContentsChanged)
+        
                               
     def __setupMenu(self):
         """ Sets up the main menu.
@@ -327,10 +329,19 @@ class MainWindow(QtGui.QMainWindow):
             centralLayout = self.centralWidget().layout()
             
             # Delete old inspector
-            if self.inspector is not None: # can be None at start-up
+            if self.inspector is None: # can be None at start-up
+                oldConfigPosition = None
+            else:
+                # Remove old inspector configuration from tree            
+                oldConfigPosition = self.inspector.config.childNumber()
+                configPath = self.inspector.config.nodePath
+                _, oldConfigIndex = self._configTreeModel.findItemAndIndexPath(configPath)[-1]
+                self._configTreeModel.deleteItemAtIndex(oldConfigIndex)
+                            
                 self.inspector.finalize()
                 centralLayout.removeWidget(self.inspector)
                 self.inspector.deleteLater()
+
                 
             # Set new inspector
             self._inspectorRegItem = inspectorRegItem
@@ -350,14 +361,12 @@ class MainWindow(QtGui.QMainWindow):
             oldBlockState = self.collector.blockSignals(True)
             try:
                 if self.inspector is None:
-                    self._configTreeModel.setInvisibleRootItem() # clear config tree
                     self.collector.clearAndSetComboBoxes([])
                 else:
                     key = self.inspectorRegItem.identifier
                     nonDefaults = self._persistentSettings.get(key, {})
-                    logger.debug("NONDEFAULTS for {}: {}".format(key, nonDefaults))
                     self.inspector.config.setValuesFromDict(nonDefaults)
-                    self._configTreeModel.setInvisibleRootItem(self.inspector.config)
+                    self._configTreeModel.insertItem(self.inspector.config, oldConfigPosition)
                     self.configTreeView.expandBranch()  
                     self.collector.clearAndSetComboBoxes(self.inspector.axesNames())
                     self.inspector.initContents() # TODO: call this here?

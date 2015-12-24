@@ -70,6 +70,7 @@ class PgLinePlot1d(AbstractInspector):
     def createConfig(cls):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
+        #rootItem = GroupCti('line plot')
         rootItem = GroupCti('inspector')
         
         # Titles and labels
@@ -90,7 +91,7 @@ class PgLinePlot1d(AbstractInspector):
         # Pen
         penItem = rootItem.insertChild(GroupCti('pen'))
         penItem.insertChild(ColorCti('color', QtGui.QColor('#1C8857')))
-        lineItem = penItem.insertChild(BoolCti('line', True))
+        lineItem = penItem.insertChild(BoolCti('line', True, expanded=False))
         lineItem.insertChild(createPenStyleCti('style'))
         lineItem.insertChild(createPenWidthCti('width'))
         defaultShadowPen = QtGui.QPen(QtGui.QColor('#BFBFBF'))
@@ -99,7 +100,7 @@ class PgLinePlot1d(AbstractInspector):
                                     resetTo=QtGui.QPen(defaultShadowPen), 
                                     includeNoneStyle=True, includeZeroWidth=True))
 
-        symbolItem = penItem.insertChild(BoolCti("symbol", False)) 
+        symbolItem = penItem.insertChild(BoolCti("symbol", False, expanded=False)) 
         symbolItem.insertChild(ChoiceCti("shape", 0, 
            displayValues=['circle', 'square', 'triangle', 'diamond', 'plus'],  
            configValues=['o', 's', 't', 'd', '+']))

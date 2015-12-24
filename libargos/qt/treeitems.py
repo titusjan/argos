@@ -149,7 +149,6 @@ class BaseTreeItem(object):
             raise IndexError("Item not found: {!r}".format(nodePath))
         
         return _auxGetByPath(nodePath.split('/'), self)
-    
             
 
     def childNumber(self):
@@ -162,10 +161,14 @@ class BaseTreeItem(object):
 
     def insertChild(self, childItem, position=None):
         """ Inserts a child item to the current item.
-            The childItem may not yet have a parent (it will be set by this function).
+            The childItem must not yet have a parent (it will be set by this function).
             
             IMPORTANT: this does not let the model know that items have been added. 
             Use BaseTreeModel.insertItem instead.
+            
+            param childItem: a BaseTreeItem that will be added
+            param position: integer position before which the item will be added.
+                If position is None (default) the item will be appended at the end.
             
             Returns childItem so that calls may be chained.
         """ 
@@ -202,6 +205,17 @@ class BaseTreeItem(object):
             childItem.finalize()
         self._childItems = []
 
+
+
+    def logBranch(self, indent=0, level=logging.DEBUG):
+        """ Logs the child and all descendants, one line per child
+        """
+        if 0:
+            print(indent * "    " + str(self))
+        else:
+            logger.log(level, indent * "    " + str(self))
+        for childItems in self.childItems:
+            childItems.logBranch(indent + 1, level=level)
 
     
 class AbstractLazyLoadTreeItem(BaseTreeItem):

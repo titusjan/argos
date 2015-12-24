@@ -57,9 +57,11 @@ class ConfigTreeView(ArgosTreeView):
         checked[headerNames[ConfigTreeModel.COL_VALUE]] = True # Checked by default
         self.addHeaderContextMenu(checked=checked, enabled=enabled, checkable={})
 
+        self.setRootIsDecorated(False) 
+        self.setUniformRowHeights(True)
         self.setItemDelegate(ConfigItemDelegate())
         self.setEditTriggers(QtGui.QAbstractItemView.AllEditTriggers) 
-
+        
         #self.setEditTriggers(QtGui.QAbstractItemView.DoubleClicked |
         #                     QtGui.QAbstractItemView.EditKeyPressed | 
         #                     QtGui.QAbstractItemView.AnyKeyPressed | 
@@ -107,12 +109,6 @@ class ConfigTreeView(ArgosTreeView):
                 newExpanded = expanded
                 
             self.setExpanded(index, newExpanded)
- 
-#            
-#            if newExpand:
-#                self.expand(index)
-#            else:
-#                self.collapse(index)
         
         for rowNr in range(configModel.rowCount(index)):
             childIndex = configModel.index(rowNr, configModel.COL_NODE_NAME, parentIndex=index)

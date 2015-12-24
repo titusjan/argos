@@ -300,6 +300,18 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
     ##################################################################
     
     
+    def rootIndex(self):
+        """ Returns an invalid index, which therefore will point to the root Item"""
+        return QtCore.QModelIndex()
+
+        
+    def rootItem(self):
+        """ Returns an invalid index, which therefore will point to the root Item.
+            Can return None if the model is empty
+        """
+        return self.getItem(self.rootIndex())
+        
+    
     # Originally from the editabletreemodel example but added the altItem parameter to force
     # callers to specify request the invisibleRootItem as alternative in case of an invalid index.
     def getItem(self, index, altItem=None):
@@ -504,3 +516,11 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             self.emitUpdateForBranch(childIndex)
         
 
+    def logItems(self, level=logging.DEBUG):
+        """ rootItem
+        """
+        rootItem = self.rootItem()
+        if rootItem is None:
+            logger.debug("No items in: {}".format(self))
+        else:
+            rootItem.logBranch(level=level)

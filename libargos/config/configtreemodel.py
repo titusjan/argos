@@ -39,11 +39,13 @@ class ConfigTreeModel(BaseTreeModel):
      
     COL_DECORATION = COL_VALUE   # Column number that contains the decoration.
     
+    INVISIBLE_ROOT_NAME = '<invisible-root>'
+    
     def __init__(self, parent=None):
         """ Constructor
         """
         super(ConfigTreeModel, self).__init__(parent=parent)
-        self._invisibleRootItem = GroupCti('<invisible-root>')
+        self._invisibleRootItem = GroupCti(self.INVISIBLE_ROOT_NAME)
         self.dataChanged.connect(self.debug)
 
 
@@ -116,6 +118,15 @@ class ConfigTreeModel(BaseTreeModel):
             return treeItem.nodePath
         else:
             return None
+
+        
+    def insertTopLevelGroup(self, groupName, position=None):
+        """ Inserts a top level group tree item.
+            Used to group all config nodes of (for instance) the current inspector, 
+            Returns the newly created CTI 
+        """
+        groupCti = GroupCti(groupName)
+        return self._invisibleRootItem.insertChild(groupCti, position=position) 
             
 
     def setEditValueForColumn(self, treeItem, column, value):
