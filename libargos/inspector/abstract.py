@@ -18,7 +18,7 @@
 """ Base class for inspectors
 """
 import logging
-from libargos.config.groupcti import GroupCti
+from libargos.config.groupcti import MainGroupCti
 from libargos.info import DEBUGGING
 from libargos.qt import QtGui, QtSlot
 from libargos.utils.cls import type_name
@@ -81,7 +81,7 @@ class AbstractInspector(QtGui.QStackedWidget):
     def createConfig(cls):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
-        return GroupCti(nodeName='inspector')
+        return MainGroupCti(nodeName='inspector')
     
             
     @property

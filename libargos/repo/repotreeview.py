@@ -20,8 +20,10 @@ from __future__ import print_function
 
 import logging
 from libargos.qt import QtGui, QtCore, QtSlot
-from libargos.widgets.argostreeview import ArgosTreeView
+from libargos.config.groupcti import MainGroupCti
+from libargos.config.boolcti import BoolCti
 from libargos.repo.repotreemodel import RepoTreeModel
+from libargos.widgets.argostreeview import ArgosTreeView
 from libargos.widgets.constants import (LEFT_DOCK_WIDTH, COL_NODE_NAME_WIDTH, 
                                         COL_SHAPE_WIDTH, COL_ELEM_TYPE_WIDTH)
 
@@ -46,6 +48,7 @@ class RepoTreeView(ArgosTreeView):
         super(RepoTreeView, self).__init__(treeModel=repoTreeModel, parent=parent)
  
         self._collector = collector
+        self._config = self.createConfig()
         
         treeHeader = self.header()
         treeHeader.resizeSection(RepoTreeModel.COL_NODE_NAME, COL_NODE_NAME_WIDTH)
@@ -100,6 +103,23 @@ class RepoTreeView(ArgosTreeView):
         selectionModel = self.selectionModel() # need to store to prevent crash in PySide
         selectionModel.currentChanged.disconnect(self.updateCollector)
         selectionModel.currentChanged.disconnect(self.updateCurrentItemActions)
+
+        
+    @property
+    def config(self):
+        """ The root config tree item for this widget 
+        """
+        return self._config
+    
+
+    @classmethod        
+    def createConfig(cls):
+        """ Creates a config tree item (CTI) hierarchy containing default children.
+        """
+        rootItem = MainGroupCti('data repository')
+        rootItem.insertChild(BoolCti('show dimensions', False)) # Does nothing yet
+        return rootItem
+            
         
     @property
     def collector(self): # TODO: move to selector class in the future

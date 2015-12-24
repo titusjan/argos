@@ -24,7 +24,7 @@ import pyqtgraph as pg
 
 from libargos.qt import QtGui
 from libargos.info import DEBUGGING
-from libargos.config.groupcti import GroupCti
+from libargos.config.groupcti import MainGroupCti, GroupCti
 from libargos.config.boolcti import BoolGroupCti, BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.qtctis import PenCti, ColorCti, createPenStyleCti, createPenWidthCti
@@ -71,7 +71,7 @@ class PgLinePlot1d(AbstractInspector):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
         #rootItem = GroupCti('line plot')
-        rootItem = GroupCti('inspector')
+        rootItem = MainGroupCti('inspector')
         
         # Titles and labels
         rootItem.insertChild(ChoiceCti('title', 0, editable=True, 

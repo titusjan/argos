@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 
+
 class GroupCti(AbstractCti):
     """ Read only config Tree Item that only stores None. It can be used to group CTIs
     """
@@ -83,4 +84,17 @@ class GroupCtiEditor(AbstractCtiEditor):
         return self.widget.property("editor_data")
 
     
+
+class MainGroupCti(GroupCti):
+    """ Read only config Tree Item that only stores None. 
+        To be used as a high level group (e.g. the inspector group)
+        Is the same as a groupCti but might have a different look. 
+    """
+    def __init__(self, nodeName, defaultData=None):
+        """ Constructor. For the parameters see the AbstractCti constructor documentation.
+        """
+        super(MainGroupCti, self).__init__(nodeName, defaultData)
+
+
+
     

@@ -20,7 +20,7 @@
 import logging
 
 from libargos.info import DEBUGGING
-from libargos.config.groupcti import GroupCti
+from libargos.config.groupcti import MainGroupCti, GroupCti
 from libargos.inspector.abstract import AbstractInspector
 from libargos.qt import Qt, QtGui
 
@@ -53,7 +53,7 @@ class EmptyInspector(AbstractInspector):
     def createConfig(cls):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
-        rootItem = GroupCti('inspector')
+        rootItem = MainGroupCti('inspector')
         
         if DEBUGGING:
             # Some test config items.

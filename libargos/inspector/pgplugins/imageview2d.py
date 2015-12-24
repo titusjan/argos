@@ -23,7 +23,7 @@ import logging
 import pyqtgraph as pg
 
 from libargos.info import DEBUGGING
-from libargos.config.groupcti import GroupCti
+from libargos.config.groupcti import MainGroupCti, GroupCti
 from libargos.config.boolcti import BoolCti
 from libargos.inspector.abstract import AbstractInspector
 from libargos.utils.cls import array_has_real_numbers
@@ -63,7 +63,7 @@ class PgImageView2d(AbstractInspector):
     def createConfig(cls):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
-        rootItem = GroupCti(nodeName='inspector')
+        rootItem = MainGroupCti(nodeName='inspector')
         rootItem.insertChild(BoolCti('auto levels', defaultData=True))
         rootItem.insertChild(BoolCti('auto range', defaultData=True))
         rootItem.insertChild(BoolCti('lock aspect ratio', defaultData=False))

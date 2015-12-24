@@ -11,6 +11,7 @@ TODO:
 	Tooltips in all tables and trees
 	Button to select inspectors.
 	
+	Fix 'clone-window' in main menu (is there a need for a separate 'new window'?)
 			
 Collectors:
 	test with Evoss sciamachy products
