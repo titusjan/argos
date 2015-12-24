@@ -66,69 +66,37 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         """
         return len(self.horizontalHeaders)
 
-
-    def displayValueForColumn(self, treeItem, column):
-        """ Descendants should override this function to return the display value of the item 
-            for the given column number.
-        """
-        return None
-
-
-    def editValueForColumn(self, treeItem, column):
-        """ Descendants should override this function to return the edit value of the item 
-            for the given column number.
-        """
-        return None
-
-
-    def toolTipForColumn(self, treeItem, column):
-        """ Descendants should override this function to return the tooltip value of the item 
-            for the given column number.
-        """
-        return None
-
-
-    def checkStateForColumn(self, treeItem, column):
-        """ Descendants should override this function to return the check state of the item 
-            for the given column number.
-             
-            :rtype: Qt.CheckState or None
-        """
-        # The CheckStateRole seems to be called for each cell so we can't make this an abstract
-        # function like the editValueForColumn. Just return None.  
-        return None
-    
         
-    def data(self, index, role):
+    def data(self, index, role=Qt.DisplayRole):
         """ Returns the data stored under the given role for the item referred to by the index.
-        
-            Note: If you do not have a value to return, return an invalid QVariant instead of 
-            returning 0. (This means returning None in Python)
+            
+            Calls self.itemData for valid items, except for the DecorationRole
+            Descendants should typically override itemData instead of this function.
         """
         if not index.isValid():
             return None
-
-        if role == Qt.DisplayRole:
-            item = self.getItem(index, altItem=self.invisibleRootItem)
-            return self.displayValueForColumn(item, index.column())
-
-        elif role == Qt.EditRole:
-            item = self.getItem(index, altItem=self.invisibleRootItem)
-            return self.editValueForColumn(item, index.column())
-
-        elif role == Qt.ToolTipRole:
-            item = self.getItem(index, altItem=self.invisibleRootItem)
-            return self.toolTipForColumn(item, index.column())
         
-        elif role == Qt.CheckStateRole:
-            item = self.getItem(index, altItem=self.invisibleRootItem)
-            return self.checkStateForColumn(item, index.column())
-        
-        elif role == Qt.DecorationRole:
+        if role == Qt.DecorationRole:
             if index.column() == self.COL_DECORATION:
                 item = self.getItem(index, altItem=self.invisibleRootItem)
                 return item.decoration
-        
+        else:
+            item = self.getItem(index, altItem=self.invisibleRootItem)
+            return self.itemData(item, index.column(), role=role)
+
+        return None
+    
+    
+    def itemData(self, item, column, role=Qt.DisplayRole):
+        """ Returns the data stored under the given role for the item. O
+            The column parameter may be used to differentiate behavior per column.
+
+            The default implementation does nothing. Descendants should typically override this 
+            function instead of data()
+
+            Note: If you do not have a value to return, return an invalid QVariant instead of 
+            returning 0. (This means returning None in Python)                
+        """
         return None
 
 
@@ -237,48 +205,23 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         return parentItem.hasChildren()
         
 
-    def setEditValueForColumn(self, treeItem, column, value):
-        """ Descendants should override this function to set the value corresponding
-            to the column number in treeItem.
-            It should return True for success, otherwise False.
-        """
-        raise NotImplementedError("Abstract class.")    
-        
-
-    def setCheckStateForColumn(self, treeItem, column, checkState):
-        """ Descendants should override this function to set the check state corresponding
-            to the column number in treeItem.
-            It should return True for success, otherwise False.
-        """
-        raise NotImplementedError("Abstract class.")    
-
-
     def setData(self, index, value, role=Qt.EditRole):
         """ Sets the role data for the item at index to value.
             Returns true if successful; otherwise returns false.
             
-            The dataChanged() signal should be emitted if the data was successfully set.
+            The dataChanged() signal will be emitted if the data was successfully set.
         """
         if role != Qt.CheckStateRole and role != Qt.EditRole:
             return False
 
         treeItem = self.getItem(index, altItem=self.invisibleRootItem)
         try:
-            if role == Qt.CheckStateRole:
-                result = self.setCheckStateForColumn(treeItem, index.column(), value)
-#                if False and result:
-#                    assert False, "TODO: remove"
-#                    # A check box can have a tristate checkbox as parent which state depends
-#                    # on the state of this child check box. Therefore we update the parentIndex 
-#                    # and the descendants. 
-#                    parentIndex = index.parent()
-#                    uncleIndex = parentIndex.sibling(parentIndex.row(), index.column())
-#                    self.update.emit(uncleIndex)
-#                    self.emitUpdateForBranch(index)
-            else:
-                result = self.setEditValueForColumn(treeItem, index.column(), value)
-                
+            result = self.setItemData(treeItem, index.column(), value, role=role)
             if result:
+                #     TODO, update the entire tree?
+                #     A check box can have a tristate checkbox as parent which state depends
+                #     on the state of this child check box. Therefore we update the parentIndex 
+                #     and the descendants.                 
                 parentIndex = index.parent() 
                 indexLeft = self.index(index.row(), 0, parentIndex)
                 indexRight = self.index(index.row(), self.columnCount(), parentIndex)
@@ -293,7 +236,15 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             return False
 
             
-    
+    def setItemData(self, item, column, value, role=Qt.EditRole):
+        """ Sets the role data for the item at index to value.
+        
+            Descendants should typically override this function instead of setData()
+            Should True if successful; otherwise returns false.
+        """
+        raise NotImplementedError("Please override in descendant class.")
+           
+                    
 
     ##################################################################
     # The methods below are not part of the QAbstractModel interface #

@@ -80,45 +80,47 @@ class ConfigTreeModel(BaseTreeModel):
             
         return result
         
-    
-    def displayValueForColumn(self, treeItem, column):
-        """ Returns the display value of the item given the column number.
-            :rtype: string
+
+    def itemData(self, treeItem, column, role=Qt.DisplayRole):
+        """ Returns the data stored under the given role for the item. 
         """
-        if column == self.COL_NODE_NAME:
-            return treeItem.nodeName
-        elif column == self.COL_NODE_PATH:
-            return treeItem.nodePath
-        elif column == self.COL_VALUE:
-            return treeItem.displayValue
-        elif column == self.COL_DEF_VALUE:
-            return treeItem.displayDefaultValue
-        elif column == self.COL_CTI_TYPE:
-            return type_name(treeItem)
-        elif column == self.COL_DEBUG:
-            return treeItem.debugInfo
-        else:
-            raise ValueError("Invalid column: {}".format(column))
+        if role == Qt.DisplayRole:
+            if column == self.COL_NODE_NAME:
+                return treeItem.nodeName
+            elif column == self.COL_NODE_PATH:
+                return treeItem.nodePath
+            elif column == self.COL_VALUE:
+                return treeItem.displayValue
+            elif column == self.COL_DEF_VALUE:
+                return treeItem.displayDefaultValue
+            elif column == self.COL_CTI_TYPE:
+                return type_name(treeItem)
+            elif column == self.COL_DEBUG:
+                return treeItem.debugInfo
+            else:
+                raise ValueError("Invalid column: {}".format(column))
+
+        elif role == Qt.EditRole:
+            if column == self.COL_VALUE:
+                return treeItem.data
+            else:
+                raise ValueError("Invalid column: {}".format(column))
+
+        elif role == Qt.ToolTipRole:
+            if column == self.COL_NODE_NAME or column == self.COL_NODE_PATH:
+                return treeItem.nodePath
+            else:
+                return None            
         
-    
-    def editValueForColumn(self, treeItem, column):
-        """ Returns the value for editing of the item given the column number.
-            :rtype: string
-        """
-        if column == self.COL_VALUE:
-            return treeItem.data
-        else:
-            raise ValueError("Invalid column: {}".format(column))
-        
-        
-    def toolTipForColumn(self, treeItem, column):
-        """ Returns the value for tool-tip of the item given the column number.
-        """
-        if column == self.COL_NODE_NAME or column == self.COL_NODE_PATH:
-            return treeItem.nodePath
+        elif role == Qt.CheckStateRole:
+            if column != self.COL_VALUE:
+                # The CheckStateRole is called for each cell so return None here.              
+                return None
+            else:
+                return treeItem.checkState
         else:
             return None
-
+        
         
     def insertTopLevelGroup(self, groupName, position=None):
         """ Inserts a top level group tree item.
@@ -129,49 +131,28 @@ class ConfigTreeModel(BaseTreeModel):
         return self._invisibleRootItem.insertChild(groupCti, position=position) 
             
 
-    def setEditValueForColumn(self, treeItem, column, value):
-        """ Sets the value in the item, of the item given the column number.
-            It returns True for success, otherwise False.
-        """
-        if column != self.COL_VALUE:
-            return False
-        try:
-            logger.debug("setEditValueForColumn: {!r}".format(value))
-            treeItem.data = value
-        except Exception:
-            raise
-        else:
-            return True
-        
-
-    def checkStateForColumn(self, treeItem, column):
-        """ Returns the check state of the item given the column number.
-            for the given column number.
-            :rtype: Qt.CheckState or None
-        """
-        if column != self.COL_VALUE:
-            # The CheckStateRole is called for each cell so return None here.              
-            return None
-        else:
-            return treeItem.checkState
-            
-            
-    def setCheckStateForColumn(self, treeItem, column, checkState):
-        """ Sets the check state in the item, of the item given the column number.
-            It returns True for success, otherwise False.
-        """
-        if column != self.COL_VALUE:
-            return False
-        else:
-            logger.debug("setCheckStateForColumn: {!r}".format(checkState))
-            try:
-                treeItem.checkState = checkState
-            except NotImplementedError:
+    def setItemData(self, treeItem, column, value, role=Qt.EditRole):
+        """ Sets the role data for the item at index to value.
+        """           
+        if role == Qt.CheckStateRole:
+            if column != self.COL_VALUE:
                 return False
             else:
+                logger.debug("setting check state (col={}): {!r}".format(column, value))
+                treeItem.checkState = value
+                return True                    
+
+        elif role == Qt.EditRole:
+            if column != self.COL_VALUE:
+                return False
+            else:
+                logger.debug("set Edit value (col={}): {!r}".format(column, value))
+                treeItem.data = value
                 return True
-            
-            
+        else:
+            raise ValueError("Unexpected edit role: {}".format(role))
+
+
     def setExpanded(self, index, expanded):
         """ Expands the model item specified by the index.
             Overridden from QTreeView to make it persistent (between inspector changes).

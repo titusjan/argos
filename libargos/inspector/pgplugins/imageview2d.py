@@ -23,7 +23,7 @@ import logging
 import pyqtgraph as pg
 
 from libargos.info import DEBUGGING
-from libargos.config.groupcti import MainGroupCti, GroupCti
+from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
 from libargos.inspector.abstract import AbstractInspector
 from libargos.utils.cls import array_has_real_numbers

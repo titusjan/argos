@@ -18,7 +18,7 @@
 """ Data repository functionality
 """
 import logging
-from libargos.qt import QtCore
+from libargos.qt import Qt, QtCore
 from libargos.qt.treemodels import BaseTreeModel
 #from libargos.info import DEBUGGING
 from libargos.repo.filesytemrtis import createRtiFromFileName
@@ -48,39 +48,38 @@ class RepoTreeModel(BaseTreeModel):
         self._invisibleRootItem = BaseRti(nodeName='<invisible-root>')
         self._isEditable = False
         
-    
-    def displayValueForColumn(self, treeItem, column):
-        """ Returns the value of the item given the column number.
-            :rtype: string
-        """
-        if column == self.COL_NODE_NAME:
-            return treeItem.nodeName
-        elif column == self.COL_NODE_PATH:
-            return treeItem.nodePath
-        elif column == self.COL_SHAPE:
-            return " x ".join(str(elem) for elem in treeItem.arrayShape)
-        elif column == self.COL_IS_OPEN:
-            return str(treeItem.isOpen)
-        elif column == self.COL_RTI_TYPE:
-            return type_name(treeItem)
-        elif column == self.COL_ELEM_TYPE:
-            return treeItem.elementTypeName
-        elif column == self.COL_FILE_NAME:
-            return treeItem.fileName if hasattr(treeItem, 'fileName') else ''
-        elif column == self.COL_EXCEPTION:
-            return str(treeItem.exception) if treeItem.exception else ''        
-        else:
-            raise ValueError("Invalid column: {}".format(column))
-            
 
-    def toolTipForColumn(self, treeItem, column):
-        """ Shows the exception in the tool tip. No tool tip if there was no error. 
+    def itemData(self, treeItem, column, role=Qt.DisplayRole):
+        """ Returns the data stored under the given role for the item. O
         """
-        if treeItem.exception:
-            return str(treeItem.exception)
-        else:
-            return None
+        if role == Qt.DisplayRole:
+            if column == self.COL_NODE_NAME:
+                return treeItem.nodeName
+            elif column == self.COL_NODE_PATH:
+                return treeItem.nodePath
+            elif column == self.COL_SHAPE:
+                return " x ".join(str(elem) for elem in treeItem.arrayShape)
+            elif column == self.COL_IS_OPEN:
+                return str(treeItem.isOpen)
+            elif column == self.COL_RTI_TYPE:
+                return type_name(treeItem)
+            elif column == self.COL_ELEM_TYPE:
+                return treeItem.elementTypeName
+            elif column == self.COL_FILE_NAME:
+                return treeItem.fileName if hasattr(treeItem, 'fileName') else ''
+            elif column == self.COL_EXCEPTION:
+                return str(treeItem.exception) if treeItem.exception else ''        
+            else:
+                raise ValueError("Invalid column: {}".format(column))
             
+        elif role == Qt.ToolTipRole:
+            if treeItem.exception:
+                return str(treeItem.exception)
+            else:
+                return None
+        else:
+            return None        
+
         
     def canFetchMore(self, parentIndex):
         """ Returns true if there is more data available for parent; otherwise returns false.

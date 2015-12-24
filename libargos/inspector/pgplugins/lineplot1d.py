@@ -78,7 +78,7 @@ class PgLinePlot1d(AbstractInspector):
                                        configValues=["{path} {slices}", "{name} {slices}"]))
         
         # Axes
-        gridItem = rootItem.insertChild(BoolGroupCti('grid', True))
+        gridItem = rootItem.insertChild(BoolGroupCti('grid', True, expanded=False))
         gridItem.insertChild(BoolCti('X-axis', True))
         gridItem.insertChild(BoolCti('Y-axis', True))
         gridItem.insertChild(FloatCti('alpha', 0.25, 
