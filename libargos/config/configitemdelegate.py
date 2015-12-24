@@ -20,8 +20,9 @@ from __future__ import print_function
 
 import logging
 from libargos.config.abstractcti import InvalidInputError
-from libargos.qt import Qt,  QtGui
+from libargos.qt import Qt, QtCore, QtGui
 from libargos.qt.misc import widgetSubCheckBoxRect
+from libargos.widgets.constants import TREE_ROW_HEIGHT
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +41,16 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         super(ConfigItemDelegate, self).__init__(parent=parent)
         
         self.commitData.connect(self._prepareCommit) 
+        
+        
+    def sizeHint(self, option, index):
+        """ Returns the size hint of the rows
+        """
+        logger.debug("ConfigItemDelegate, option = {}".format(option))
+        size = QtCore.QSize()
+        size.setHeight(TREE_ROW_HEIGHT)
+        return size
+        
         
     
     def createEditor(self, parent, option, index):

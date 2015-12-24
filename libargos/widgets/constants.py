@@ -18,6 +18,9 @@
 """ Constants related to the layout and other widget properties.
 """
 
+TREE_ROW_HEIGHT = 20 # pixels
+
+
 # Initial dock widths of the main window
 LEFT_DOCK_WIDTH = 350
 RIGHT_DOCK_WIDTH = 300
