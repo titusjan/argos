@@ -78,7 +78,7 @@ class RepoTreeModel(BaseTreeModel):
             else:
                 return None
         else:
-            return None        
+            return super(RepoTreeModel, self).itemData(treeItem, column, role=role)
 
         
     def canFetchMore(self, parentIndex):

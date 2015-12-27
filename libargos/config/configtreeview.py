@@ -43,7 +43,7 @@ class ConfigTreeView(ArgosTreeView):
         self.expanded.connect(configTreeModel.expand) 
         self.collapsed.connect(configTreeModel.collapse) 
         #configTreeModel.update.connect(self.update) # not necessary
-        self.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
+        #self.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
         
         treeHeader = self.header()
         treeHeader.resizeSection(ConfigTreeModel.COL_VALUE, RIGHT_DOCK_WIDTH / 2)

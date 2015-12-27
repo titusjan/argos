@@ -70,21 +70,14 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
     def data(self, index, role=Qt.DisplayRole):
         """ Returns the data stored under the given role for the item referred to by the index.
             
-            Calls self.itemData for valid items, except for the DecorationRole
-            Descendants should typically override itemData instead of this function.
+            Calls self.itemData for valid items. Descendants should typically override itemData 
+            instead of this function.
         """
-        if not index.isValid():
-            return None
-        
-        if role == Qt.DecorationRole:
-            if index.column() == self.COL_DECORATION:
-                item = self.getItem(index, altItem=self.invisibleRootItem)
-                return item.decoration
-        else:
+        if index.isValid():
             item = self.getItem(index, altItem=self.invisibleRootItem)
             return self.itemData(item, index.column(), role=role)
-
-        return None
+        else:
+            return None
     
     
     def itemData(self, item, column, role=Qt.DisplayRole):
@@ -97,6 +90,19 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             Note: If you do not have a value to return, return an invalid QVariant instead of 
             returning 0. (This means returning None in Python)                
         """
+        if role == Qt.DecorationRole:
+            if column == self.COL_DECORATION:
+                return item.decoration
+            
+        elif role == Qt.FontRole:
+            return item.font
+            
+        elif role == Qt.ForegroundRole:
+            return item.foregroundBrush
+            
+        elif role == Qt.BackgroundRole:
+            return item.backgroundBrush
+
         return None
 
 

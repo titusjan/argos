@@ -20,7 +20,7 @@
 import logging
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
-from libargos.qt import QtGui
+from libargos.qt import Qt, QtGui
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +30,10 @@ logger = logging.getLogger(__name__)
 class GroupCti(AbstractCti):
     """ Read only config Tree Item that only stores None. It can be used to group CTIs
     """
-    def __init__(self, nodeName, defaultData=None):
+    def __init__(self, nodeName, defaultData=None, expanded=True):
         """ Constructor. For the parameters see the AbstractCti constructor documentation.
         """
-        super(GroupCti, self).__init__(nodeName, defaultData)
+        super(GroupCti, self).__init__(nodeName, defaultData, expanded=expanded)
 
     
     def _enforceDataType(self, data):
@@ -88,13 +88,38 @@ class GroupCtiEditor(AbstractCtiEditor):
 class MainGroupCti(GroupCti):
     """ Read only config Tree Item that only stores None. 
         To be used as a high level group (e.g. the inspector group)
-        Is the same as a groupCti but might have a different look. 
+        Is the same as a groupCti but drawn as light text on a dark grey back ground  
     """
+    _backgroundBrush = QtGui.QBrush(QtGui.QColor("#606060")) # create only once
+    _foregroundBrush = QtGui.QBrush(QtGui.QColor(Qt.white)) # create only once
+    _font = QtGui.QFont()
+    _font.setWeight(QtGui.QFont.Bold)
+    
     def __init__(self, nodeName, defaultData=None):
         """ Constructor. For the parameters see the AbstractCti constructor documentation.
         """
-        super(MainGroupCti, self).__init__(nodeName, defaultData)
+        super(MainGroupCti, self).__init__(nodeName, defaultData, expanded=True) # always expand
 
+        
+    @property
+    def font(self):
+        """ Returns a font for displaying this item's text in the tree.
+        """
+        return self._font
 
+        
+    @property
+    def backgroundBrush(self):
+        """ Returns a (dark gray) brush for drawing the background role in the tree.
+        """
+        return self._backgroundBrush
+
+        
+    @property
+    def foregroundBrush(self):
+        """ Returns a (white) brush for drawing the foreground role in the tree.
+        """
+        return self._foregroundBrush
+    
 
     

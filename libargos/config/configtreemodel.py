@@ -19,10 +19,10 @@
 """
 import logging
 
-from libargos.qt import Qt, QtCore, QtSlot
+from libargos.qt import Qt, QtCore, QtGui, QtSlot
 from libargos.qt.treemodels import BaseTreeModel
 from libargos.config.abstractcti import ctiDumps, ctiLoads
-from libargos.config.groupcti import GroupCti
+from libargos.config.groupcti import GroupCti, MainGroupCti
 from libargos.utils.cls import type_name
 
 
@@ -80,6 +80,15 @@ class ConfigTreeModel(BaseTreeModel):
             
         return result
         
+        
+    def insertTopLevelGroup(self, groupName, position=None):
+        """ Inserts a top level group tree item.
+            Used to group all config nodes of (for instance) the current inspector, 
+            Returns the newly created CTI 
+        """
+        groupCti = GroupCti(groupName)
+        return self._invisibleRootItem.insertChild(groupCti, position=position) 
+
 
     def itemData(self, treeItem, column, role=Qt.DisplayRole):
         """ Returns the data stored under the given role for the item. 
@@ -119,16 +128,7 @@ class ConfigTreeModel(BaseTreeModel):
             else:
                 return treeItem.checkState
         else:
-            return None
-        
-        
-    def insertTopLevelGroup(self, groupName, position=None):
-        """ Inserts a top level group tree item.
-            Used to group all config nodes of (for instance) the current inspector, 
-            Returns the newly created CTI 
-        """
-        groupCti = GroupCti(groupName)
-        return self._invisibleRootItem.insertChild(groupCti, position=position) 
+            return super(ConfigTreeModel, self).itemData(treeItem, column, role=role)
             
 
     def setItemData(self, treeItem, column, value, role=Qt.EditRole):

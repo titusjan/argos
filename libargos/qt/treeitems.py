@@ -47,6 +47,31 @@ class BaseTreeItem(object):
         """
         return None
     
+    
+    @property
+    def font(self):
+        """ Returns a font for displaying this item's text in the tree.
+            The default implementation returns None (i.e. uses default font).
+        """
+        return None
+    
+        
+    @property
+    def backgroundBrush(self):
+        """ Returns a brush for drawing the background role in the tree.
+            The default implementation returns None (i.e. uses default brush).
+        """
+        return None
+    
+        
+    @property
+    def foregroundBrush(self):
+        """ Returns a brush for drawing the foreground role in the tree.
+            The default implementation returns None (i.e. uses default brush).
+        """
+        return None
+
+
     @property
     def nodeName(self):
         """ The node name. Is used to construct the nodePath"""

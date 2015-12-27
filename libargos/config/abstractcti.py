@@ -277,39 +277,6 @@ class AbstractCti(BaseTreeItem):
             for child in self.childItems:
                 child.resetToDefault(resetChildren=True)
                 
-
-    ########################
-    # Editor look and feel #
-    ########################
-   
-    @property
-    def valueColumnItemFlags(self):
-        """ Returns Qt.ItemFlag enum that will be used for the value column in the config tree.
-            These flags determine how the user can interact with the value column (e.g. can edit).
-            
-            Note that the ConfigTreeModel may override them: it will add the Qt.ItemIsEnabled and 
-            Qt.ItemIsSelectable to the flags. 
-            
-            The base implementatin of valueColumnItemFlags returns Qt.ItemIsEditable. Make sure to
-            implement the createEditor abstract method if Qt.ItemIsEditable is included in the
-            result.
-        """
-        return Qt.ItemIsEditable 
-
-    
-    def createEditor(self, delegate, parent, option):
-        """ Creates an editor (QWidget) for editing. 
-            It's parent will be set by the ConfigItemDelegate class that calls it.
-            
-            :param delegate: the delegate that called this function
-            :type  delegate: ConfigItemDelegate
-            :param parent: The parent widget for the editor
-            :type  parent: QWidget
-            :param option: describes the parameters used to draw an item in a view widget.
-            :type  option: QStyleOptionViewItem
-        """
-        raise NotImplementedError("createEditor not implemented while Qt.ItemIsEditable is set")
-
     
     #################
     # serialization #
@@ -417,6 +384,38 @@ class AbstractCti(BaseTreeItem):
             else:
                 childCti.setValuesFromDict(childDct)
     
+    ########################
+    # Editor look and feel #
+    ########################
+   
+    @property
+    def valueColumnItemFlags(self):
+        """ Returns Qt.ItemFlag enum that will be used for the value column in the config tree.
+            These flags determine how the user can interact with the value column (e.g. can edit).
+            
+            Note that the ConfigTreeModel may override them: it will add the Qt.ItemIsEnabled and 
+            Qt.ItemIsSelectable to the flags. 
+            
+            The base implementatin of valueColumnItemFlags returns Qt.ItemIsEditable. Make sure to
+            implement the createEditor abstract method if Qt.ItemIsEditable is included in the
+            result.
+        """
+        return Qt.ItemIsEditable 
+
+    
+    def createEditor(self, delegate, parent, option):
+        """ Creates an editor (QWidget) for editing. 
+            It's parent will be set by the ConfigItemDelegate class that calls this method.
+            
+            :param delegate: the delegate that called this function
+            :type  delegate: ConfigItemDelegate
+            :param parent: The parent widget for the editor
+            :type  parent: QWidget
+            :param option: describes the parameters used to draw an item in a view widget.
+            :type  option: QStyleOptionViewItem
+        """
+        raise NotImplementedError("createEditor not implemented while Qt.ItemIsEditable is set")
+
 
 
 class AbstractCtiEditor(QtGui.QWidget):

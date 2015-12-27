@@ -146,10 +146,10 @@ class BoolGroupCti(AbstractCti):
         See: https://bugreports.qt.io/browse/QTBUG-7674 and 
              http://comments.gmane.org/gmane.comp.lib.qt.general/925
     """
-    def __init__(self, nodeName, defaultData):
+    def __init__(self, nodeName, defaultData, expanded=True):
         """ Constructor. For the parameters see the AbstractCti constructor documentation.
         """
-        super(BoolGroupCti, self).__init__(nodeName, defaultData)
+        super(BoolGroupCti, self).__init__(nodeName, defaultData, expanded=expanded)
 
     
     def _enforceDataType(self, data):
