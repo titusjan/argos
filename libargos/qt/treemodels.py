@@ -221,7 +221,10 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         """ Sets the role data for the item at index to value.
             Returns true if successful; otherwise returns false.
             
-            The dataChanged() signal will be emitted if the data was successfully set.
+            The dataChanged and itemChanged signals will be emitted if the data was successfully 
+            set.
+            
+            Descendants should typically override setItemData function instead of setData()
         """
         if role != Qt.CheckStateRole and role != Qt.EditRole:
             return False
@@ -230,14 +233,12 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         try:
             result = self.setItemData(treeItem, index.column(), value, role=role)
             if result:
-                #     TODO, update the entire tree?
-                #     A check box can have a tristate checkbox as parent which state depends
-                #     on the state of this child check box. Therefore we update the parentIndex 
-                #     and the descendants.                 
-                parentIndex = index.parent() 
-                indexLeft = self.index(index.row(), 0, parentIndex)
-                indexRight = self.index(index.row(), self.columnCount() - 1, parentIndex)
-                self.dataChanged.emit(indexLeft, indexRight)
+                # Emit dataChanged to update the tree view
+                # TODO, update the entire tree?
+                # A check box can have a tristate checkbox as parent which state depends
+                # on the state of this child check box. Therefore we update the parentIndex 
+                # and the descendants.                 
+                self.emitDataChanged(treeItem)
                 
                 # Emit itemChanged to update other widgets.
                 self.itemChanged.emit(treeItem) 

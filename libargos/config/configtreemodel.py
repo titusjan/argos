@@ -178,7 +178,7 @@ class ConfigTreeModel(BaseTreeModel):
         self.setExpanded(index, False)
         
  
-    def indexTupleFromItem(self, treeItem):
+    def indexTupleFromItem(self, treeItem): # TODO: move to BaseTreeItem?
         """ Return (first column model index, last column model index) tuple for a configTreeItem
         """
         if not treeItem:
@@ -195,7 +195,7 @@ class ConfigTreeModel(BaseTreeModel):
                 self.createIndex(row, self.columnCount() - 1, treeItem))
 
 
-    def emitDataChanged(self, treeItem):
+    def emitDataChanged(self, treeItem):  # TODO: move to BaseTreeItem?
         """ Emits the data changed for the model indices (all columns) for this treeItem
         """
         indexLeft, indexRight = self.indexTupleFromItem(treeItem)

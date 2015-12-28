@@ -48,6 +48,8 @@ class PgAxisCti(GroupCti):
         self.rangeItem = self.insertChild(GroupCti('range'))
         self.rangeMinItem = self.rangeItem.insertChild(FloatCti('min', 0.0)) 
         self.rangeMaxItem = self.rangeItem.insertChild(FloatCti('max', 0.0))
+        
+        self.rangeItem.insertChild(BoolCti("auto range", True))
          
     
     def rangeChanged(self, viewBox, newRange):
@@ -75,18 +77,12 @@ class PgLinePlot1dCti(MainGroupCti):
         gridItem.insertChild(BoolCti('Y-axis', True))
         gridItem.insertChild(FloatCti('alpha', 0.25, 
                                       minValue=0.0, maxValue=1.0, stepSize=0.01, decimals=2))
-        # Axes
-        #logAxesItem = self.insertChild(GroupCti('logarithmic'))
-        #logAxesItem.insertChild(BoolCti('X-axis', False))
-        #logAxesItem.insertChild(BoolCti('Y-axis', False))
-
-        # Keep references to the axis CTIs because they need to be updated quickly when
-        # the range changes; self.configValue may be slow.
+    
+        # Axes (keeping references to the axis CTIs because they need to be updated quickly when
+        # the range changes; self.configValue may be slow.)
+        self.insertChild(BoolCti("aspect locked", False)) # TODO: implement?
         self.xAxisItem = self.insertChild(PgAxisCti('X-axis'))
         self.yAxisItem = self.insertChild(PgAxisCti('Y-axis'))
-        
-        #yAxisItem = self.insertChild(GroupCti('Y-axis', False))
-        #yAxisItem.insertChild(BoolCti('logarithmic', False))
                 
         # Pen
         penItem = self.insertChild(GroupCti('pen'))
@@ -121,6 +117,11 @@ class PgLinePlot1d(AbstractInspector):
                                         title='', enableMenu=False) 
         self.contentsLayout.addWidget(self.plotWidget)
         
+        # Connect signals
+        plotItem = self.plotWidget.getPlotItem()
+        plotItem.sigXRangeChanged.connect(self.config.xAxisItem.rangeChanged)
+        plotItem.sigYRangeChanged.connect(self.config.yAxisItem.rangeChanged)
+        
         
     def finalize(self):
         """ Is called before destruction. Can be used to clean-up resources
@@ -129,8 +130,8 @@ class PgLinePlot1d(AbstractInspector):
         
         # Disconnect signals
         plotItem = self.plotWidget.getPlotItem()
-        #plotItem.sigRangeChanged.disconnect(self.rangeChanged)
-        plotItem.sigXRangeChanged.disconnect(self.xRangeChanged)
+        plotItem.sigXRangeChanged.disconnect(self.config.xAxisItem.rangeChanged)
+        plotItem.sigYRangeChanged.disconnect(self.config.yAxisItem.rangeChanged)
                 
         self.plotWidget.close()
                 
@@ -188,10 +189,6 @@ class PgLinePlot1d(AbstractInspector):
                                                  symbol=symbolShape, symbolSize=symbolSize,
                                                  symbolPen=symbolPen, symbolBrush=symbolBrush,
                                                  antialias=antiAlias)
-        # Connect signals
-        plotItem = self.plotWidget.getPlotItem()
-        plotItem.sigXRangeChanged.connect(self.config.xAxisItem.rangeChanged)
-        plotItem.sigYRangeChanged.connect(self.config.yAxisItem.rangeChanged)
             
 
     def _updateRti(self):

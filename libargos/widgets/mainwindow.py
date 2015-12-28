@@ -96,6 +96,18 @@ class MainWindow(QtGui.QMainWindow):
             except Exception as ex:
                 logger.warn(ex)
 
+        
+    def finalize(self):
+        """ Is called before destruction (when closing). 
+            Can be used to clean-up resources.
+        """
+        logger.debug("Finalizing: {}".format(self))
+        
+        # Disconnect signals
+        self.collector.contentsChanged.disconnect(self.collectorContentsChanged)
+        self._configTreeModel.itemChanged.disconnect(self.configContentsChanged)
+
+
     @property
     def windowNumber(self):
         """ The instance number of this window.
@@ -161,10 +173,7 @@ class MainWindow(QtGui.QMainWindow):
         
         # Must be after setInspector since that already draws the inspector
         self.collector.contentsChanged.connect(self.collectorContentsChanged)
-
         self._configTreeModel.itemChanged.connect(self.configContentsChanged)
-        
-        # TODO: disconnects
         
                               
     def __setupMenu(self):
@@ -290,6 +299,7 @@ class MainWindow(QtGui.QMainWindow):
         title = detailPane.classLabel() if title is None else title
         area = Qt.LeftDockWidgetArea if area is None else area
         dockWidget = self.dockWidget(detailPane, title, area)
+        # TODO: undockDetailPane to disconnect
         dockWidget.visibilityChanged.connect(detailPane.dockVisibilityChanged) 
         if len(self._detailDockWidgets) > 0:
             self.tabifyDockWidget(self._detailDockWidgets[-1], dockWidget)
@@ -533,6 +543,7 @@ class MainWindow(QtGui.QMainWindow):
         """
         logger.debug("closeEvent")
         self.argosApplication.saveSettingsIfNeeded()
+        self.finalize()
         self.argosApplication.removeMainWindow(self)
         event.accept()
         logger.debug("closeEvent accepted")
