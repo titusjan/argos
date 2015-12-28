@@ -23,6 +23,7 @@
 from __future__ import absolute_import, division, print_function
 from libargos.collect.collector import Collector
 from libargos.config.abstractcti import ctiDumps, ctiLoads
+from libargos.config.abstractcti import AbstractCti
 from libargos.config.configtreemodel import ConfigTreeModel
 from libargos.config.configtreeview import ConfigTreeView
 from libargos.info import DEBUGGING, PROJECT_NAME
@@ -161,8 +162,9 @@ class MainWindow(QtGui.QMainWindow):
         # Must be after setInspector since that already draws the inspector
         self.collector.contentsChanged.connect(self.collectorContentsChanged)
 
-        # TODO: dedicated signal?
-        self._configTreeModel.dataChanged.connect(self.configContentsChanged)
+        self._configTreeModel.itemChanged.connect(self.configContentsChanged)
+        
+        # TODO: disconnects
         
                               
     def __setupMenu(self):
@@ -405,13 +407,12 @@ class MainWindow(QtGui.QMainWindow):
             self.inspector.updateRti()
 
         
-    @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
-    def configContentsChanged(self, _topLeftIndex=None, _bottomRightIndex=None):
-        """ Slot is called whenever data of the config tree is set by the user (not 
-            programmatically)
-            The _topLeftIndex and _bottomRightIndex parameters are ignored.
+    @QtSlot(AbstractCti)
+    def configContentsChanged(self, configTreeItem):
+        """ Slot is called when an item has been changed by setData of the ConfigTreeModel. 
+            Will draw the window contents.
         """
-        logger.debug("configContentsChanged()")
+        logger.debug("configContentsChanged: {}".format(configTreeItem))
         
         # Store the old config values for persistence
         if self.inspectorRegItem and self.inspector:

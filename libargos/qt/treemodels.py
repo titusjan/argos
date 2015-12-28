@@ -26,7 +26,13 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
     COL_DECORATION = None   # Column number that contains the decoration. None for no icons
     
     # Can be connected to a QTreeView.update() as to update a single cell
-    #update = QtSignal(QtCore.QModelIndex) # Not used    
+    #update = QtSignal(QtCore.QModelIndex) # Not used
+    
+    # Signal emitted when an item has been changed by setData. This can be used to update other
+    # widgets, whereas the dataChanged signal is used only to update the treeView only. This
+    # separation is introduced to break circular updates that would occur when the other widgets
+    # update the tree model.
+    itemChanged = QtSignal(BaseTreeItem)    
         
     def __init__(self, parent=None):
         """ Constructor
@@ -152,12 +158,12 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         #logger.debug("    Getting row {} from parentItem: {}".format(row, parentItem))
         
         if not (0 <= row < parentItem.nChildren()):
-            # Can happen when deleting the last child. TODO: remove warning.
+            # Can happen when deleting the last child. TODO: remove warning?
             logger.warn("Index row {} invalid for parent item: {}".format(row, parentItem))
             return QtCore.QModelIndex()
         
         if not (0 <= column < self.columnCount()):
-            logger.warn("Index column {} invalid for parent item: {}".format(row, parentItem))
+            logger.warn("Index column {} invalid for parent item: {}".format(column, parentItem))
             return QtCore.QModelIndex()
 
         childItem = parentItem.child(row)
@@ -230,8 +236,11 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
                 #     and the descendants.                 
                 parentIndex = index.parent() 
                 indexLeft = self.index(index.row(), 0, parentIndex)
-                indexRight = self.index(index.row(), self.columnCount(), parentIndex)
+                indexRight = self.index(index.row(), self.columnCount() - 1, parentIndex)
                 self.dataChanged.emit(indexLeft, indexRight)
+                
+                # Emit itemChanged to update other widgets.
+                self.itemChanged.emit(treeItem) 
             return result
                     
         except Exception as ex:
@@ -240,6 +249,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             if DEBUGGING:
                 raise
             return False
+            
 
             
     def setItemData(self, item, column, value, role=Qt.EditRole):

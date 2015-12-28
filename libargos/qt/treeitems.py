@@ -22,6 +22,7 @@ class BaseTreeItem(object):
         assert nodeName, "Node name may not be empty"
         self._nodeName = str(nodeName)
         self._parentItem = None
+        self._model = None 
         self._childItems = [] # the fetched children
         self._nodePath = self._constructNodePath()        
 
@@ -39,6 +40,34 @@ class BaseTreeItem(object):
         return ("<{}: {!r}, children:[{}]>".
                 format(type(self).__name__, self.nodePath, 
                        ', '.join([repr(child) for child in self.childItems])))
+
+    @property
+    def model(self):
+        """ Returns the ConfigTreeModel this item belongs to.
+            If the model is None (not set), it will use and cache the parent's model
+        """
+        if self._model is None and self.parentItem is not None:
+            self._model = self.parentItem.model
+        return self._model
+    
+    @model.setter
+    def model(self, value):
+        """ Sets ConfigTreeModel this item belongs to.
+        """
+        self._model = value
+    
+#    @property
+#    def modelIndex(self): # TODO: needed?
+#        """ Returns the index in the ConfigTreeModel that refers to this item.
+#        """
+#        assert self._model, "Model not set for {}".format(self) 
+#        return self._model.indexFromItem(self)    
+    
+    def emitDataChanged(self):
+        """ Causes the model associated with this item to emit a dataChanged() signal for this item.
+        """
+        assert self._model, "Model not set for {}".format(self) 
+        return self._model.itemChanged(self)
     
     @property
     def decoration(self):
@@ -47,14 +76,12 @@ class BaseTreeItem(object):
         """
         return None
     
-    
     @property
     def font(self):
         """ Returns a font for displaying this item's text in the tree.
             The default implementation returns None (i.e. uses default font).
         """
         return None
-    
         
     @property
     def backgroundBrush(self):
@@ -62,7 +89,6 @@ class BaseTreeItem(object):
             The default implementation returns None (i.e. uses default brush).
         """
         return None
-    
         
     @property
     def foregroundBrush(self):
@@ -70,7 +96,6 @@ class BaseTreeItem(object):
             The default implementation returns None (i.e. uses default brush).
         """
         return None
-
 
     @property
     def nodeName(self):
@@ -177,8 +202,9 @@ class BaseTreeItem(object):
             
 
     def childNumber(self):
-        """ Gets the index (nr) of this node in its parent's list of children
+        """ Gets the index (nr) of this node in its parent's list of children.
         """
+        # This is O(n) in time. # TODO: store row number in the items?
         if self.parentItem != None:
             return self.parentItem.childItems.index(self)
         return 0
@@ -204,10 +230,11 @@ class BaseTreeItem(object):
             "position should be 0 < {} <= {}".format(position, len(self.childItems))
             
         assert childItem.parentItem is None, "childItem already has a parent: {}".format(childItem)
+        assert childItem._model is None, "childItem already has a model: {}".format(childItem)
             
         childItem.parentItem = self    
+        childItem._model = self.model    
         self.childItems.insert(position, childItem)
-        
         return childItem
 
 
@@ -231,9 +258,8 @@ class BaseTreeItem(object):
         self._childItems = []
 
 
-
     def logBranch(self, indent=0, level=logging.DEBUG):
-        """ Logs the child and all descendants, one line per child
+        """ Logs the item and all descendants, one line per child
         """
         if 0:
             print(indent * "    " + str(self))
@@ -241,6 +267,7 @@ class BaseTreeItem(object):
             logger.log(level, indent * "    " + str(self))
         for childItems in self.childItems:
             childItems.logBranch(indent + 1, level=level)
+
 
     
 class AbstractLazyLoadTreeItem(BaseTreeItem):

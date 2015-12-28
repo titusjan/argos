@@ -19,10 +19,10 @@
 """
 import logging
 
-from libargos.qt import Qt, QtCore, QtGui, QtSlot
+from libargos.qt import Qt, QtCore, QtSlot
 from libargos.qt.treemodels import BaseTreeModel
 from libargos.config.abstractcti import ctiDumps, ctiLoads
-from libargos.config.groupcti import GroupCti, MainGroupCti
+from libargos.config.groupcti import GroupCti
 from libargos.utils.cls import type_name
 
 
@@ -46,12 +46,13 @@ class ConfigTreeModel(BaseTreeModel):
         """
         super(ConfigTreeModel, self).__init__(parent=parent)
         self._invisibleRootItem = GroupCti(self.INVISIBLE_ROOT_NAME)
-        self.dataChanged.connect(self.debug)
+        self._invisibleRootItem.model = self
+        #self.dataChanged.connect(self.debug)
 
 
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
     def debug(self, topLeftIndex, bottomRightIndex):
-        """ Temporary debug to test the dataChanged signal
+        """ Temporary debug to test the dataChanged signal. TODO: remove.
         """
         if topLeftIndex.isValid() and bottomRightIndex.isValid():
             topRow = topLeftIndex.row()
@@ -175,8 +176,34 @@ class ConfigTreeModel(BaseTreeModel):
             Overridden from QTreeView to make it persistent (between inspector changes).
         """
         self.setExpanded(index, False)
-
         
+ 
+    def indexTupleFromItem(self, treeItem):
+        """ Return (first column model index, last column model index) tuple for a configTreeItem
+        """
+        if not treeItem:
+            return (QtCore.QModelIndex(), QtCore.QModelIndex())
+        
+        if not treeItem.parentItem: # TODO: only necessary because of childNumber?
+            return (QtCore.QModelIndex(), QtCore.QModelIndex())
+
+        # Is there a bug in Qt in QStandardItemModel::indexFromItem?
+        # It passes the parent in createIndex. TODO: investigate 
+        
+        row =  treeItem.childNumber()        
+        return (self.createIndex(row, 0, treeItem), 
+                self.createIndex(row, self.columnCount() - 1, treeItem))
+
+
+    def emitDataChanged(self, treeItem):
+        """ Emits the data changed for the model indices (all columns) for this treeItem
+        """
+        indexLeft, indexRight = self.indexTupleFromItem(treeItem)
+        checkItem = self.getItem(indexLeft)
+        assert checkItem is treeItem, "{} != {}".format(checkItem, treeItem) # TODO: remove
+        self.dataChanged.emit(indexLeft, indexRight)
+                
+         
     def __obsolete__readModelSettings(self, key, settings):
         """ Reads the persistent program settings.
         

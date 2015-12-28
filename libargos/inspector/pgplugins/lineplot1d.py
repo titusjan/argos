@@ -36,6 +36,77 @@ from libargos.utils.cls import array_has_real_numbers
 logger = logging.getLogger(__name__)
 
 
+class PgAxisCti(GroupCti):
+    """ Configuration tree for a plot axis
+    """
+    def __init__(self, nodeName, defaultData=None):
+        super(PgAxisCti, self).__init__(nodeName, defaultData=defaultData)
+
+        self.insertChild(BoolCti('logarithmic', False))
+        
+        # Keep a reference because this needs to be changed often/quick
+        self.rangeItem = self.insertChild(GroupCti('range'))
+        self.rangeMinItem = self.rangeItem.insertChild(FloatCti('min', 0.0)) 
+        self.rangeMaxItem = self.rangeItem.insertChild(FloatCti('max', 0.0))
+         
+    
+    def rangeChanged(self, viewBox, newRange):
+        """ Called when the x-range of the plot is changed. Updates the range in the config tree.
+        """
+        self.rangeMinItem.data, self.rangeMaxItem.data = newRange
+        self.model.emitDataChanged(self.rangeItem)
+        
+                
+
+class PgLinePlot1dCti(MainGroupCti):
+    """ Configuration tree for a PgLinePlot1d inspector
+    """
+    def __init__(self, nodeName, defaultData=None):
+        
+        super(PgLinePlot1dCti, self).__init__(nodeName, defaultData=defaultData)
+    
+        self.insertChild(ChoiceCti('title', 0, editable=True, 
+                                    configValues=["{path} {slices}", "{name} {slices}"]))
+        self.insertChild(BoolCti("anti-alias", False))
+
+        # Grid
+        gridItem = self.insertChild(BoolGroupCti('grid', True, expanded=False))
+        gridItem.insertChild(BoolCti('X-axis', True))
+        gridItem.insertChild(BoolCti('Y-axis', True))
+        gridItem.insertChild(FloatCti('alpha', 0.25, 
+                                      minValue=0.0, maxValue=1.0, stepSize=0.01, decimals=2))
+        # Axes
+        #logAxesItem = self.insertChild(GroupCti('logarithmic'))
+        #logAxesItem.insertChild(BoolCti('X-axis', False))
+        #logAxesItem.insertChild(BoolCti('Y-axis', False))
+
+        # Keep references to the axis CTIs because they need to be updated quickly when
+        # the range changes; self.configValue may be slow.
+        self.xAxisItem = self.insertChild(PgAxisCti('X-axis'))
+        self.yAxisItem = self.insertChild(PgAxisCti('Y-axis'))
+        
+        #yAxisItem = self.insertChild(GroupCti('Y-axis', False))
+        #yAxisItem.insertChild(BoolCti('logarithmic', False))
+                
+        # Pen
+        penItem = self.insertChild(GroupCti('pen'))
+        penItem.insertChild(ColorCti('color', QtGui.QColor('#1C8857')))
+        lineItem = penItem.insertChild(BoolCti('line', True, expanded=False))
+        lineItem.insertChild(createPenStyleCti('style'))
+        lineItem.insertChild(createPenWidthCti('width'))
+        defaultShadowPen = QtGui.QPen(QtGui.QColor('#BFBFBF'))
+        defaultShadowPen.setWidth(0)
+        lineItem.insertChild(PenCti("shadow", False, expanded=False,  
+                                    resetTo=QtGui.QPen(defaultShadowPen), 
+                                    includeNoneStyle=True, includeZeroWidth=True))
+
+        symbolItem = penItem.insertChild(BoolCti("symbol", False, expanded=False)) 
+        symbolItem.insertChild(ChoiceCti("shape", 0, 
+           displayValues=['circle', 'square', 'triangle', 'diamond', 'plus'],  
+           configValues=['o', 's', 't', 'd', '+']))
+        symbolItem.insertChild(IntCti('size', 5, minValue=0, maxValue=100, stepSize=1))
+        
+                
 
 class PgLinePlot1d(AbstractInspector):
     """ Inspector that contains a PyQtGraph 1-dimensional line plot
@@ -55,6 +126,12 @@ class PgLinePlot1d(AbstractInspector):
         """ Is called before destruction. Can be used to clean-up resources
         """
         logger.debug("Finalizing: {}".format(self))
+        
+        # Disconnect signals
+        plotItem = self.plotWidget.getPlotItem()
+        #plotItem.sigRangeChanged.disconnect(self.rangeChanged)
+        plotItem.sigXRangeChanged.disconnect(self.xRangeChanged)
+                
         self.plotWidget.close()
                 
         
@@ -70,45 +147,7 @@ class PgLinePlot1d(AbstractInspector):
     def createConfig(cls):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
-        #rootItem = GroupCti('line plot')
-        rootItem = MainGroupCti('inspector')
-        
-        # Titles and labels
-        rootItem.insertChild(ChoiceCti('title', 0, editable=True, 
-                                       configValues=["{path} {slices}", "{name} {slices}"]))
-        
-        # Axes
-        gridItem = rootItem.insertChild(BoolGroupCti('grid', True, expanded=False))
-        gridItem.insertChild(BoolCti('X-axis', True))
-        gridItem.insertChild(BoolCti('Y-axis', True))
-        gridItem.insertChild(FloatCti('alpha', 0.25, 
-                                      minValue=0.0, maxValue=1.0, stepSize=0.01, decimals=2))
-        # Grid
-        logAxesItem = rootItem.insertChild(GroupCti('logarithmic'))
-        logAxesItem.insertChild(BoolCti('X-axis', False))
-        logAxesItem.insertChild(BoolCti('Y-axis', False))
-                
-        # Pen
-        penItem = rootItem.insertChild(GroupCti('pen'))
-        penItem.insertChild(ColorCti('color', QtGui.QColor('#1C8857')))
-        lineItem = penItem.insertChild(BoolCti('line', True, expanded=False))
-        lineItem.insertChild(createPenStyleCti('style'))
-        lineItem.insertChild(createPenWidthCti('width'))
-        defaultShadowPen = QtGui.QPen(QtGui.QColor('#BFBFBF'))
-        defaultShadowPen.setWidth(0)
-        lineItem.insertChild(PenCti("shadow", False, expanded=False,  
-                                    resetTo=QtGui.QPen(defaultShadowPen), 
-                                    includeNoneStyle=True, includeZeroWidth=True))
-
-        symbolItem = penItem.insertChild(BoolCti("symbol", False, expanded=False)) 
-        symbolItem.insertChild(ChoiceCti("shape", 0, 
-           displayValues=['circle', 'square', 'triangle', 'diamond', 'plus'],  
-           configValues=['o', 's', 't', 'd', '+']))
-        symbolItem.insertChild(IntCti('size', 5, minValue=0, maxValue=100, stepSize=1))
-        
-        rootItem.insertChild(BoolCti("anti-alias", False))
-        
-        return rootItem
+        return PgLinePlot1dCti('inspector') # TODO: should be able to change nodeName without --reset
     
                 
     def _initContents(self):
@@ -117,8 +156,8 @@ class PgLinePlot1d(AbstractInspector):
         """
         self.plotWidget.clear()
         #self.plotWidget.showAxis('right')
-        self.plotWidget.setLogMode(x=self.configValue('logarithmic/X-axis'), 
-                                   y=self.configValue('logarithmic/Y-axis'))
+        self.plotWidget.setLogMode(x=self.configValue('X-axis/logarithmic'), 
+                                   y=self.configValue('Y-axis/logarithmic'))
 
         self.plotWidget.showGrid(x=self.configValue('grid/X-axis'), 
                                  y=self.configValue('grid/Y-axis'), 
@@ -149,6 +188,10 @@ class PgLinePlot1d(AbstractInspector):
                                                  symbol=symbolShape, symbolSize=symbolSize,
                                                  symbolPen=symbolPen, symbolBrush=symbolBrush,
                                                  antialias=antiAlias)
+        # Connect signals
+        plotItem = self.plotWidget.getPlotItem()
+        plotItem.sigXRangeChanged.connect(self.config.xAxisItem.rangeChanged)
+        plotItem.sigYRangeChanged.connect(self.config.yAxisItem.rangeChanged)
             
 
     def _updateRti(self):
@@ -182,7 +225,4 @@ class PgLinePlot1d(AbstractInspector):
         
             self.plotDataItem.setData(slicedArray)
         
-            
-        
-            
         

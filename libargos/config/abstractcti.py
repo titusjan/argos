@@ -126,6 +126,8 @@ class AbstractCti(BaseTreeItem):
             :param nodeName: name of this node (used to construct the node path).
             :param data: the configuration data. If omitted the defaultData will be used.
             :param defaultData: default data to which the data can be reset by the reset button.
+            :param enabled: True if the item is enabled
+            :param expanded: True if the item is expanded
         """
         super(AbstractCti, self).__init__(nodeName=nodeName)
 
@@ -155,6 +157,7 @@ class AbstractCti(BaseTreeItem):
         """ Returns the string with debugging information
         """
         return ""
+        
     
     def _dataToString(self, data):
         """ Conversion function used to convert the (default)data to the display value.
