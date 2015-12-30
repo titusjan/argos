@@ -119,6 +119,14 @@ class ConfigTreeModel(BaseTreeModel):
         elif role == Qt.ToolTipRole:
             if column == self.COL_NODE_NAME or column == self.COL_NODE_PATH:
                 return treeItem.nodePath
+            elif column == self.COL_VALUE:
+                return treeItem.displayValue
+            elif column == self.COL_DEF_VALUE:
+                return treeItem.displayDefaultValue
+            elif column == self.COL_CTI_TYPE:
+                return type_name(treeItem)
+            elif column == self.COL_DEBUG:
+                return treeItem.debugInfo                   
             else:
                 return None            
         
