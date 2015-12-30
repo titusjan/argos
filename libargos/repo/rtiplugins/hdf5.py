@@ -32,6 +32,35 @@ logger = logging.getLogger(__name__)
 
 
 
+def dimNamesFromDataset(h5Dataset):
+    """ Constructs the dimension names given a h5py dataset.
+            
+        First looks in the dataset's dimension scales to see if it refers to another
+        dataset. In that case the referred dataset's name is used. If not, the label of the
+        dimension scale is used. Finally, if this is empty, the dimension is numbered.
+    """
+    dimNames = [] # TODO: cache?
+    for dimNr, dimScales in enumerate(h5Dataset.dims):
+        if len(dimScales) == 0:
+            dimNames.append('Dim{}'.format(dimNr))
+        elif len(dimScales) == 1:
+            dimScaleLabel, dimScaleDataset = dimScales.items()[0]
+            path = dimScaleDataset.name
+            if path:
+                dimNames.append(os.path.basename(path))
+            elif dimScaleLabel: # This could potentially be long so it's our second choice 
+                dimNames.append(dimScaleLabel)
+            else:
+                dimNames.append('Dim{}'.format(dimNr))
+        else:
+            # TODO: multiple scales for this dimension. What to do?
+            logger.warn("More than one dimension scale found: {!r}".format(dimScales))
+            dimNames.append('Dim{}'.format(dimNr)) # For now, just number them
+                             
+    return dimNames
+    
+
+
 class H5pyFieldRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a field in a compound HDF-5 variable. 
     """ 
@@ -83,7 +112,14 @@ class H5pyFieldRti(BaseRti):
         fieldName = self.nodeName
         return str(self._h5Dataset.dtype.fields[fieldName][0])
     
-    
+               
+    @property
+    def dimensionNames(self):
+        """ Returns a list with the dimension names of the underlying HDF-5 dataset.
+        """
+        return dimNamesFromDataset(self._h5Dataset) # TODO: cache?
+
+        
 
 class H5pyDatasetRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a HDF5 dataset. 
@@ -131,30 +167,8 @@ class H5pyDatasetRti(BaseRti):
     @property
     def dimensionNames(self):
         """ Returns a list with the dimension names of the underlying HDF-5 dataset.
-        
-            First looks in the dataset's dimension scales to see if it refers to another
-            dataset. In that case the referred dataset's name is used. If not, the label of the
-            dimension scale is used. Finally, if this is empty, the dimension is numbered.
         """
-        dimNames = [] # TODO: cache?
-        for dimNr, dimScales in enumerate(self._h5Dataset.dims):
-            if len(dimScales) == 0:
-                dimNames.append('Dim{}'.format(dimNr))
-            elif len(dimScales) == 1:
-                dimScaleLabel, dimScaleDataset = dimScales.items()[0]
-                path = dimScaleDataset.name
-                if path:
-                    dimNames.append(os.path.basename(path))
-                elif dimScaleLabel: # This could potentially be long so it's our second choice 
-                    dimNames.append(dimScaleLabel)
-                else:
-                    dimNames.append('Dim{}'.format(dimNr))
-            else:
-                # TODO: multiple scales for this dimension. What to do?
-                logger.warn("More than one dimension scale found: {!r}".format(dimScales))
-                dimNames.append('Dim{}'.format(dimNr)) # For now, just number them
-                                 
-        return dimNames
+        return dimNamesFromDataset(self._h5Dataset) # TODO: cache?
     
                    
     def _fetchAllChildren(self):

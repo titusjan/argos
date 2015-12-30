@@ -120,6 +120,13 @@ class NcdfFieldRti(BaseRti):
         """
         fieldName = self.nodeName
         return str(self._ncVar.dtype.fields[fieldName][0])
+    
+               
+    @property
+    def dimensionNames(self):
+        """ Returns a list with the dimension names of the underlying NCDF variable
+        """
+        return self._ncVar.dimensions    
 
 
 
