@@ -30,7 +30,7 @@ from libargos.utils.cls import array_has_real_numbers
 
 logger = logging.getLogger(__name__)
 
-
+# TODO: look in imageAnalysis.py PyQtGraph example to see how to enable axis labels and disable the menu
 class PgImageView2d(AbstractInspector):
     """ Inspector that contains a PyQtGraph 2-dimensional image plot
     """
@@ -80,7 +80,6 @@ class PgImageView2d(AbstractInspector):
 
     def _updateRti(self):
         """ Draws the inspector widget when no input is available.
-            The default implementation shows an error message. Descendants should override this.
         """
         slicedArray = self.collector.getSlicedArray()
         

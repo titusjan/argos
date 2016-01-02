@@ -561,10 +561,15 @@ class MainWindow(QtGui.QMainWindow):
         """ Function for testing """
         logger.debug("myTest for window: {}".format(self.windowNumber))
         
-        from libargos.qt.misc import printChildren
-        printChildren(self.centralWidget())
-        print()
-        print()
+        pw = self.inspector.plotWidget
+        
+        pw.setRange(xRange = [0, 600], yRange = [2000, 4000], padding=0, 
+                    update=False, disableAutoRange=True)  
+            
+#        from libargos.qt.misc import printChildren
+#        printChildren(self.centralWidget())
+#        print()
+#        print()
         
         
 #        self.argosApplication.raiseAllWindows()

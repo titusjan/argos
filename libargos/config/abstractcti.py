@@ -399,7 +399,7 @@ class AbstractCti(BaseTreeItem):
             Note that the ConfigTreeModel may override them: it will add the Qt.ItemIsEnabled and 
             Qt.ItemIsSelectable to the flags. 
             
-            The base implementatin of valueColumnItemFlags returns Qt.ItemIsEditable. Make sure to
+            The base implementation of valueColumnItemFlags returns Qt.ItemIsEditable. Make sure to
             implement the createEditor abstract method if Qt.ItemIsEditable is included in the
             result.
         """

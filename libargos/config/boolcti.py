@@ -57,7 +57,7 @@ class  BoolCti(AbstractCti):
         self._data = self._enforceDataType(data)
 
         if self.childrenDisabledWhenFalse:
-            logger.debug("BoolCti.setData: {} for {}".format(data, self))
+            #logger.debug("BoolCti.setData: {} for {}".format(data, self))
             enabled = self.enabled
             self.enableBranch(self.data and enabled)
             self.enabled = enabled

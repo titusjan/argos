@@ -10,7 +10,7 @@ TODO:
 	Masked arrays and fill values.
 	Tooltips in all tables and trees
 	Button to select inspectors.
-	
+	Re-order dimension when a 1D array is used in a table
 	Fix 'clone-window' in main menu (is there a need for a separate 'new window'?)
 			
 Collectors:
@@ -26,7 +26,7 @@ Test:
 	Memory leaks
 
 TODO Long term or nice to have:
-
+	probe
 	confirm on error when editing cell
 	make argos assert and assertEqual function for sanity checks (consistent "please report this bug" text)
 	read/write config to yaml, QSettings.
