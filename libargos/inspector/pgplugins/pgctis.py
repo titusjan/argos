@@ -31,117 +31,6 @@ logger = logging.getLogger(__name__)
 
 
 
-class ViewBoxCti(GroupCti):
-    """ Read-only config tree for inspecting a PyQtGraph ViewBox
-    """
-    def __init__(self, nodeName='axes'):
-
-        super(ViewBoxCti, self).__init__(nodeName, defaultData=None)
-
-        self._updatingViewBox = False #
-
-        # Axes (keeping references to the axis CTIs because they need to be updated quickly when
-        # the range changes; self.configValue may be slow.)
-        #self.insertChild(BoolCti("aspect locked", False)) # TODO: implement?
-        self.xAxisItem = self.insertChild(PgAxisCti('X-axis', axisNumber=0))
-        self.yAxisItem = self.insertChild(PgAxisCti('Y-axis', axisNumber=1))
-
-        if DEBUGGING:
-            self.viewBoxItem = self.insertChild(ViewBoxDebugCti('state', expanded=False))
-        else:
-            self.viewBoxItem = None
-
-
-    def viewBoxChanged(self, viewBox):
-        """ Called when the x-range of the plot is changed. Updates the values in the config tree.
-
-            Is disabled during execution of updateViewBox so it doesn't prematurely update the
-            config tree item settings.
-        """
-        if self._updatingViewBox:
-            #logger.debug("viewBoxChanged: ignored")
-            return
-
-        #logger.debug("viewBoxChanged: {}".format(viewBox.autoRangeEnabled()))
-
-        state = viewBox.state
-        xAxisEnabled, yAxisEnabled = viewBox.autoRangeEnabled()
-
-        self.xAxisItem.rangeMinItem.data, self.xAxisItem.rangeMaxItem.data = state['viewRange'][0]
-        self.xAxisItem.autoRangeItem.data = bool(xAxisEnabled)
-
-        self.yAxisItem.rangeMinItem.data, self.yAxisItem.rangeMaxItem.data = state['viewRange'][1]
-        self.yAxisItem.autoRangeItem.data = bool(yAxisEnabled)
-
-        if self.viewBoxItem:
-            self.viewBoxItem.updateFromViewBox(viewBox)
-
-        self.model.emitDataChanged(self)
-
-
-    def updateViewBox(self, viewBox):
-        """ Updates the viewBox from the configuration values
-        """
-        self._updatingViewBox = True
-        try:
-            autoRangeX = self.xAxisItem.autoRangeItem.data
-            if autoRangeX:
-                #logger.debug("enableAutoRange: {}, {}".format(viewBox.XAxis, autoRangeX))
-                viewBox.enableAutoRange(viewBox.XAxis, autoRangeX)
-            else:
-                #logger.debug("Setting xRange: {}".format(self.xAxisItem.getRange()))
-                viewBox.setRange(xRange = self.xAxisItem.getRange(),
-                                 padding=0, update=False, disableAutoRange=True)
-
-            autoRangeY = self.yAxisItem.autoRangeItem.data
-            if autoRangeY:
-                #logger.debug("enableAutoRange: {}, {}".format(viewBox.YAxis, autoRangeY))
-                viewBox.enableAutoRange(viewBox.YAxis, autoRangeY)
-            else:
-                #logger.debug("Setting yRange: {}".format(self.yAxisItem.getRange()))
-                viewBox.setRange(yRange = self.yAxisItem.getRange(),
-                                 padding=0, update=False, disableAutoRange=True)
-        finally:
-            self._updatingViewBox = False
-
-
-
-
-class PgAxisCti(GroupCti):
-    """ Configuration tree for a plot axis
-    """
-    def __init__(self, nodeName, defaultData=None, axisNumber=None):
-        """ Constructor
-        """
-        super(PgAxisCti, self).__init__(nodeName, defaultData=defaultData)
-
-        assert axisNumber in (0, 1), "axisName must be 0 or 1"
-        self._axisNumber = axisNumber
-
-        #self.insertChild(BoolCti("show", True)) # TODO:
-        self.insertChild(BoolCti('logarithmic', False))
-
-        # Keep a reference because this needs to be changed often/fast
-        self.rangeItem = self.insertChild(GroupCti('range'))
-        self.rangeMinItem = self.rangeItem.insertChild(FloatCti('min', 0.0))
-        self.rangeMaxItem = self.rangeItem.insertChild(FloatCti('max', 0.0))
-
-        self.autoRangeItem = self.rangeItem.insertChild(BoolCti("auto-range", True))
-
-
-    def rangeChanged(self, viewBox, newRange):
-        """ Called when the range of the axis is changed. Updates the range in the config tree.
-        """
-        self.rangeMinItem.data, self.rangeMaxItem.data = newRange
-        self.autoRangeItem.data = bool(viewBox.autoRangeEnabled()[self._axisNumber])
-        self.model.emitDataChanged(self.rangeItem)
-
-
-    def getRange(self):
-        return (self.rangeMinItem.data, self.rangeMaxItem.data)
-
-
-
 class ViewBoxDebugCti(GroupCti):
     """ Read-only config tree for inspecting a PyQtGraph ViewBox
     """
@@ -185,9 +74,9 @@ class ViewBoxDebugCti(GroupCti):
             doc="Maximum and minimum Y range"))
 
 
-    def updateFromViewBox(self, viewBox):
-
-        self.viewBox = viewBox
+    def viewBoxChanged(self, viewBox):
+        """ Updates the config settings
+        """
         for key, value in viewBox.state.items():
             if key != "limits":
                 childItem = self.childByNodeName(key)
@@ -198,3 +87,121 @@ class ViewBoxDebugCti(GroupCti):
                     limitChildItem = self.limitsItem.childByNodeName(limitKey)
                     limitChildItem.data = limitValue
 
+
+
+class PgAxisCti(GroupCti):
+    """ Configuration tree for a plot axis
+    """
+    def __init__(self, nodeName, defaultData=None, axisNumber=None):
+        """ Constructor
+        """
+        super(PgAxisCti, self).__init__(nodeName, defaultData=defaultData)
+
+        assert axisNumber in (0, 1), "axisName must be 0 or 1"
+        self._axisNumber = axisNumber
+
+        #self.insertChild(BoolCti("show", True)) # TODO:
+        self.insertChild(BoolCti('logarithmic', False))
+
+        # Keep a reference because this needs to be changed often/fast
+        self.rangeItem = self.insertChild(GroupCti('range'))
+        self.rangeMinItem = self.rangeItem.insertChild(FloatCti('min', 0.0))
+        self.rangeMaxItem = self.rangeItem.insertChild(FloatCti('max', 0.0))
+
+        self.autoRangeItem = self.rangeItem.insertChild(BoolCti("auto-range", True))
+
+
+    def getRange(self):
+        "Returns a tuple with the min and max range"
+        return (self.rangeMinItem.data, self.rangeMaxItem.data)
+
+
+    def viewBoxChanged(self, viewBox):
+        """ Called when the range of the axis is changed. Updates the range in the config tree.
+        """
+        #self.rangeMinItem.data, self.rangeMaxItem.data = newRange
+        #self.autoRangeItem.data = bool(viewBox.autoRangeEnabled()[self._axisNumber])
+        #self.model.emitDataChanged(self.rangeItem)
+
+        state = viewBox.state
+        autoRangeEnabled = bool(viewBox.autoRangeEnabled()[self._axisNumber])
+
+        self.rangeMinItem.data, self.rangeMaxItem.data = state['viewRange'][self._axisNumber]
+        self.rangeMinItem.enabled = not autoRangeEnabled
+        self.rangeMaxItem.enabled = not autoRangeEnabled
+        self.autoRangeItem.data = autoRangeEnabled
+
+        self.model.emitDataChanged(self.rangeItem)
+
+
+
+
+class ViewBoxCti(GroupCti):
+    """ Read-only config tree for inspecting a PyQtGraph ViewBox
+    """
+    def __init__(self, nodeName='axes'):
+
+        super(ViewBoxCti, self).__init__(nodeName, defaultData=None)
+
+        self._updatingViewBox = False #
+
+        # Axes (keeping references to the axis CTIs because they need to be updated quickly when
+        # the range changes; self.configValue may be slow.)
+        #self.insertChild(BoolCti("aspect locked", False)) # TODO: implement?
+        self.xAxisItem = self.insertChild(PgAxisCti('X-axis', axisNumber=0))
+        self.yAxisItem = self.insertChild(PgAxisCti('Y-axis', axisNumber=1))
+
+        if DEBUGGING:
+            self.stateItem = self.insertChild(ViewBoxDebugCti('state', expanded=False))
+        else:
+            self.stateItem = None
+
+
+    def viewBoxChanged(self, viewBox):
+        """ Called when the x-range of the plot is changed. Updates the values in the config tree.
+
+            Is disabled during execution of updateViewBox so it doesn't prematurely update the
+            config tree item settings.
+        """
+        if self._updatingViewBox:
+            #logger.debug("viewBoxChanged: ignored")
+            return
+
+        #logger.debug("viewBoxChanged: {}".format(viewBox.autoRangeEnabled()))
+
+        self.xAxisItem.viewBoxChanged(viewBox)
+        self.yAxisItem.viewBoxChanged(viewBox)
+
+        if self.stateItem:
+            self.stateItem.viewBoxChanged(viewBox)
+
+
+
+    def updateViewBox(self, viewBox):
+        """ Updates the viewBox from the configuration values.
+            Returns the viewBox
+        """
+        self._updatingViewBox = True # defer calling self.viewBoxChanged
+        try:
+            autoRangeX = self.xAxisItem.autoRangeItem.data
+            if autoRangeX:
+                #logger.debug("enableAutoRange: {}, {}".format(viewBox.XAxis, autoRangeX))
+                viewBox.enableAutoRange(viewBox.XAxis, autoRangeX)
+            else:
+                #logger.debug("Setting xRange: {}".format(self.xAxisItem.getRange()))
+                viewBox.setRange(xRange = self.xAxisItem.getRange(),
+                                 padding=0, update=False, disableAutoRange=True)
+
+            autoRangeY = self.yAxisItem.autoRangeItem.data
+            if autoRangeY:
+                #logger.debug("enableAutoRange: {}, {}".format(viewBox.YAxis, autoRangeY))
+                viewBox.enableAutoRange(viewBox.YAxis, autoRangeY)
+            else:
+                #logger.debug("Setting yRange: {}".format(self.yAxisItem.getRange()))
+                viewBox.setRange(yRange = self.yAxisItem.getRange(),
+                                 padding=0, update=False, disableAutoRange=True)
+        finally:
+            self._updatingViewBox = False
+
+        self.viewBoxChanged(viewBox)
+        return viewBox

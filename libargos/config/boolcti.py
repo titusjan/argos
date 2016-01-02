@@ -56,7 +56,7 @@ class  BoolCti(AbstractCti):
         # Descendants should convert the data to the desired type here
         self._data = self._enforceDataType(data)
 
-        if self.childrenDisabledWhenFalse:
+        if self.childrenDisabledWhenFalse and self.hasChildren():
             #logger.debug("BoolCti.setData: {} for {}".format(data, self))
             enabled = self.enabled
             self.enableBranch(self.data and enabled)
