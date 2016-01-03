@@ -45,3 +45,4 @@ org.eclipse.core.resources.prefs
 .DS_Store
 pylint.out
 .idea
+uml.dia~
