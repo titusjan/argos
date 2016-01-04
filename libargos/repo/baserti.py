@@ -216,6 +216,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
             child.finalize()
         self.close()
 
+
     @property
     def decoration(self):
         """ The displayed icon.
@@ -233,62 +234,50 @@ class BaseRti(AbstractLazyLoadTreeItem):
 
     
     @property
-    def elementTypeName(self):
-        """ String representation of the element type.
-        """
-        return ""
-
-    
-    @property
-    def isSliceable(self): # TODO: rename to containsArray?
+    def isSliceable(self):
         """ Returns True if the underlying data can be sliced.
-            You should always check this before using an index/slice on an RTI.
+            An inspector should always check this before using an index/slice on an RTI.
+
+            The base implementation returns False. Descendants should override this if they contain
+            an array that can be sliced.
         """
-        return self.nDims > 0
+        return False
     
     
     def __getitem__(self, index):
-        """ Called when using the RTI with an index (e.g. rti[0]). 
-            Passes the index through to the underlying array.
+        """ Called when using the RTI with an index (e.g. rti[0]).
+
+            The base function is abstract. Descendants should override this if they contain
+            an array that can be sliced (i.e. self.isSliceable is True). It should then
+            call __getitem__(index) on the underlying array data.
         """
-        return self._asArray.__getitem__(index)
-    
+        raise NotImplemented("Override for slicable arrays")
+
     
     @property
     def nDims(self):
-        """ The number of dimension of the underlying array
-            Should return 0 for scalars and unsliceable RTIs.
+        """ The number of dimensions of the underlying array
+            The base implementation returns len(self.arrayShape). Descendants may override this to
+            provide a more efficient implementation
         """
         return len(self.arrayShape)
     
         
     @property
     def arrayShape(self):
-        """ Returns the shape of the underlying array. Returns an empty tuple if the underlying
-            array is None.
+        """ Returns the shape of the underlying array.
+            The base function is abstract. Descendants should override this if they contain
+            an array that can be sliced (i.e. self.isSliceable is True).
+        """
+        raise NotImplemented("Override for slicable arrays")
 
-            Raises TypeError if the RTI is not sliceable
-        """
-        if self._asArray is None:
-            return tuple()
-        else: 
-            # TODO: this should probably not be the base implementation but implemented by descendants 
-            return self._asArray.shape
-    
-    
+
     @property
-    def _asArray(self):
-        """ Returns the underlying data as an array-like object that supports multi-dimensional 
-            indexing and other methods of numpy arrays (e.g. the shape). It can, for instance, 
-            return a h5py dataset. 
-            
-            If the underlying data cannot be represented as an array, this property returns None.
-            Note that the implementation is expected to be fast; it should not retrieve actual 
-            array data from an underlying file, only return a reference.
+    def elementTypeName(self):
+        """ String representation of the element type.
         """
-        # TODO: this should not be part of the base class. Move to HDF/NCDF modules.
-        return None
-        
+        return ""
+
                 
     @property
     def attributes(self):

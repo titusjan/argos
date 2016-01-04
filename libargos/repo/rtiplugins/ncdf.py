@@ -60,16 +60,17 @@ class NcdfDimensionRti(BaseRti):
         #return {'size': 'unlimited' if size is None else str(size)}
     
     
-    
+
+
 class NcdfFieldRti(BaseRti):
-    """ Repository Tree Item (RTI) that contains a field in a compound NCDF variable. 
-    """ 
+    """ Repository Tree Item (RTI) that contains a field in a compound NCDF variable.
+    """
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.field.svg'))
-    _iconClosed = _iconOpen 
-    
+    _iconClosed = _iconOpen
+
     def __init__(self, ncVar, nodeName, fileName=''):
         """ Constructor.
-            The name of the field must be given to the nodeName parameter. 
+            The name of the field must be given to the nodeName parameter.
         """
         super(NcdfFieldRti, self).__init__(nodeName, fileName=fileName)
         check_class(ncVar, Variable)
@@ -77,56 +78,71 @@ class NcdfFieldRti(BaseRti):
         self._ncVar = ncVar
 
     def hasChildren(self):
-        """ Returns False. Field items never have children. 
+        """ Returns False. Field items never have children.
         """
         return False
-   
+
+
     @property
-    def attributes(self):
-        """ The attributes dictionary. 
-            Returns the attributes of the variable that contains this field.
+    def isSliceable(self):
+        """ Returns True because the underlying data can be sliced.
         """
-        ncVar = self._ncVar
-        try:
-            return ncVar.__dict__
-        except Exception as ex:
-            # Due to some internal error netCDF4 may raise an AttributeError or KeyError, 
-            # depending on its version. 
-            logger.warn("Unable to read the attributes from {}. Reason: {}"
-                        .format(self.nodeName, ex))
-            return {}
-    
-    @property
-    def _asArray(self):
-        """ Returns the NCDF variable this field belongs to
-            The return type is a netCDF4.Variable, not a numpy array!
-        """
-        return self._ncVar
-    
-    
+        return True
+
+
     def __getitem__(self, index):
         """ Called when using the RTI with an index (e.g. rti[0]).
             Applies the index on the NCDF variable that contain this field and then selects the
             current field. In pseudo-code, it returns: self.ncVar[index][self.nodeName].
         """
-        slicedArray = self._asArray.__getitem__(index)
+        slicedArray = self._ncVar.__getitem__(index)
         fieldName = self.nodeName
         return slicedArray[fieldName]
 
-    
+
+    @property
+    def nDims(self):
+        """ The number of dimensions of the underlying array
+        """
+        return self._ncVar.ndim
+
+
+    @property
+    def arrayShape(self):
+        """ Returns the shape of the underlying array.
+        """
+        return self._ncVar.shape
+
+
     @property
     def elementTypeName(self):
         """ String representation of the element type.
         """
         fieldName = self.nodeName
         return str(self._ncVar.dtype.fields[fieldName][0])
-    
-               
+
+
+    @property
+    def attributes(self):
+        """ The attributes dictionary.
+            Returns the attributes of the variable that contains this field.
+        """
+        ncVar = self._ncVar
+        try:
+            return ncVar.__dict__
+        except Exception as ex:
+            # Due to some internal error netCDF4 may raise an AttributeError or KeyError,
+            # depending on its version.
+            logger.warn("Unable to read the attributes from {}. Reason: {}"
+                        .format(self.nodeName, ex))
+            return {}
+
+
     @property
     def dimensionNames(self):
         """ Returns a list with the dimension names of the underlying NCDF variable
         """
-        return self._ncVar.dimensions    
+        return self._ncVar.dimensions
 
 
 
@@ -155,18 +171,50 @@ class NcdfVariableRti(BaseRti):
         """
         return self._isCompound
 
+
+    @property
+    def isSliceable(self):
+        """ Returns True because the underlying data can be sliced.
+        """
+        return True
+
+
+    def __getitem__(self, index):
+        """ Called when using the RTI with an index (e.g. rti[0]).
+            Passes the index through to the underlying array.
+        """
+        return self._ncVar.__getitem__(index)
+
+
+    @property
+    def nDims(self):
+        """ The number of dimensions of the underlying array
+        """
+        return self._ncVar.ndim
+
+
+    @property
+    def arrayShape(self):
+        """ Returns the shape of the underlying array.
+        """
+        return self._ncVar.shape
+
+
     @property
     def attributes(self):
         """ The attributes dictionary.
-        """        
-        return self._ncVar.__dict__
+            Returns the attributes of the variable that contains this field.
+        """
+        ncVar = self._ncVar
+        try:
+            return ncVar.__dict__
+        except Exception as ex:
+            # Due to some internal error netCDF4 may raise an AttributeError or KeyError,
+            # depending on its version.
+            logger.warn("Unable to read the attributes from {}. Reason: {}"
+                        .format(self.nodeName, ex))
+            return {}
 
-    @property
-    def _asArray(self):
-        """ Returns the the underlying NCDF variable.
-            The return type is a netCDF4.Variable, not a numpy array!
-        """        
-        return self._ncVar
     
     @property
     def elementTypeName(self):

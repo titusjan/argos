@@ -37,7 +37,9 @@ def _createFromObject(obj, nodeName, fileName):
         return ArrayRti(obj, nodeName=nodeName, fileName=fileName)
     else:
         return ScalarRti(obj, nodeName=nodeName, fileName=fileName)
-    
+
+
+
 
 class ScalarRti(BaseRti):
     """ Stores a Python or numpy scalar
@@ -73,10 +75,38 @@ class ArrayRti(BaseRti):
         check_is_an_array(array, allow_none=True) # TODO: what about masked arrays?
         self._array = array
            
+
     @property
-    def _asArray(self):
-        return self._array
-    
+    def isSliceable(self):
+        """ Returns True if the underlying array is not None.
+        """
+        return self._array is not None
+
+
+    def __getitem__(self, index):
+        """ Called when using the RTI with an index (e.g. rti[0]).
+            Passes the index through to the underlying array.
+        """
+        # Will only be called if self.isSliceable is True, so self._array will not be None
+        return self._array.__getitem__(index)
+
+
+    @property
+    def nDims(self):
+        """ The number of dimensions of the underlying array
+        """
+        # Will only be called if self.isSliceable is True, so self._array will not be None
+        return self._array.ndim
+
+
+    @property
+    def arrayShape(self):
+        """ Returns the shape of the underlying array.
+        """
+        # Will only be called if self.isSliceable is True, so self._array will not be None
+        return self._array.shape
+
+
     @property
     def elementTypeName(self):
         if self._array is None:

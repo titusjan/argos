@@ -86,23 +86,31 @@ class H5pyFieldRti(BaseRti):
             Returns the attributes of the variable that contains this field.
         """        
         return self._h5Dataset.attrs
-    
+
+
+
     @property
-    def _asArray(self):
-        """ Returns the HDf-5 dataset this field belongs to
-            The return type is a h5py.Dataset, not a numpy array!
+    def isSliceable(self):
+        """ Returns True because the underlying data can be sliced.
         """
-        return self._h5Dataset
-    
-    
+        return True
+
+
     def __getitem__(self, index):
         """ Called when using the RTI with an index (e.g. rti[0]).
             Applies the index on the HDF5 dataset that contain this field and then selects the
             current field. In pseudo-code, it returns: self.dataset[index][self.nodeName].
         """
-        slicedArray = self._asArray.__getitem__(index)
+        slicedArray = self._h5Dataset.__getitem__(index)
         fieldName = self.nodeName
         return slicedArray[fieldName]
+
+
+    @property
+    def arrayShape(self):
+        """ Returns the shape of the underlying array.
+        """
+        return self._h5Dataset.shape
 
     
     @property
@@ -141,20 +149,27 @@ class H5pyDatasetRti(BaseRti):
         """
         return self._isCompound
 
-   
-    @property
-    def attributes(self):
-        """ The attributes dictionary.
-        """        
-        return self._h5Dataset.attrs
-    
 
     @property
-    def _asArray(self):
-        """ Returns the the underlying HDF-5 dataset.
-            The return type is a h5py.Dataset, not a numpy array!
-        """        
-        return self._h5Dataset
+    def isSliceable(self):
+        """ Returns True because the underlying data can be sliced.
+        """
+        return True
+
+
+    def __getitem__(self, index):
+        """ Called when using the RTI with an index (e.g. rti[0]).
+            Passes the index through to the underlying array.
+        """
+        return self._h5Dataset.__getitem__(index)
+
+
+    @property
+    def arrayShape(self):
+        """ Returns the shape of the underlying array.
+        """
+        return self._h5Dataset.shape
+
     
     @property
     def elementTypeName(self):
@@ -162,7 +177,14 @@ class H5pyDatasetRti(BaseRti):
         """        
         dtype =  self._h5Dataset.dtype 
         return '<compound>' if dtype.names else str(dtype)
-    
+
+
+    @property
+    def attributes(self):
+        """ The attributes dictionary.
+        """
+        return self._h5Dataset.attrs
+
                
     @property
     def dimensionNames(self):

@@ -1,5 +1,6 @@
 
 TODO:
+	Masked arrays and fill values.
 	Config settings:
 		zoom factors
 		attribute windows
@@ -7,12 +8,12 @@ TODO:
 	Interaction in IPython
 	QSettings should not use titusjan by default
 	(auto)refresh
-	Masked arrays and fill values.
 	Tooltips in all tables and trees
 	Button to select inspectors.
 	Re-order dimension when a 1D array is used in a table
 	Fix 'clone-window' in main menu (is there a need for a separate 'new window'?)
-			
+	scipy.io.loadmat
+	
 Collectors:
 	test with Evoss sciamachy products
 
