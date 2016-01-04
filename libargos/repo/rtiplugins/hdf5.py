@@ -88,7 +88,6 @@ class H5pyFieldRti(BaseRti):
         return self._h5Dataset.attrs
 
 
-
     @property
     def isSliceable(self):
         """ Returns True because the underlying data can be sliced.

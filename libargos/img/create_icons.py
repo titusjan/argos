@@ -61,6 +61,7 @@ def main():
     
     memColor = '#FFAA00' 
     createIcon(memColor, 'memory.scalar',        'asterisk.svg')
+    createIcon(memColor, 'memory.field',         'leaf.svg')
     createIcon(memColor, 'memory.array',         'th-large.svg')
     createIcon(memColor, 'memory.sequence',      'align-left.svg')
     createIcon(memColor, 'memory.folder-open',   'folder-open.svg')

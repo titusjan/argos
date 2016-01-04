@@ -42,7 +42,9 @@ def _createFromObject(obj, nodeName, fileName):
 
 
 class ScalarRti(BaseRti):
-    """ Stores a Python or numpy scalar
+    """ Stores a Python or numpy scalar. 
+        
+        Is NOT sliceable and can not be inspected/plotted.
     """
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.scalar.svg'))
     _iconClosed = _iconOpen      
@@ -59,6 +61,73 @@ class ScalarRti(BaseRti):
         """ Returns False. Leaf nodes never have children. """
         return False
     
+    
+
+class FieldRti(BaseRti):
+    """ Repository Tree Item (RTI) that contains a field in a compound numpy array. 
+    """ 
+    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.field.svg'))
+    _iconClosed = _iconOpen 
+    
+    def __init__(self, array, nodeName, fileName=''):
+        """ Constructor.
+            The name of the field must be given to the nodeName parameter. 
+        """
+        super(FieldRti, self).__init__(nodeName, fileName=fileName)
+        check_is_an_array(array, allow_none=True)
+        self._array = array
+        
+
+    def hasChildren(self):
+        """ Returns False. Field nodes never have children. 
+        """
+        return False
+
+
+    @property
+    def isSliceable(self):
+        """ Returns True because the underlying data can be sliced.
+        """
+        return True
+    
+
+    def __getitem__(self, index):
+        """ Called when using the RTI with an index (e.g. rti[0]).
+            Applies the index on the array that contain this field and then selects the
+            current field. In pseudo-code, it returns: self.array[index][self.nodeName].
+        """
+        slicedArray = self._array.__getitem__(index)
+        fieldName = self.nodeName
+        return slicedArray[fieldName]
+
+
+    @property
+    def nDims(self):
+        """ The number of dimensions of the underlying array
+        """
+        # Will only be called if self.isSliceable is True, so self._array will not be None
+        return self._array.ndim
+
+
+    @property
+    def arrayShape(self):
+        """ Returns the shape of the underlying array.
+        """
+        # Will only be called if self.isSliceable is True, so self._array will not be None
+        return self._array.shape
+
+
+    @property
+    def elementTypeName(self):
+        """ String representation of the element type.
+        """
+        if self._array is None:
+            return super(FieldRti, self).elementTypeName
+        else:
+            fieldName = self.nodeName
+            return str(self._array.dtype.fields[fieldName][0])
+
+
 
 class ArrayRti(BaseRti):
     """ Represents a numpy array (or None for undefined)
@@ -74,6 +143,12 @@ class ArrayRti(BaseRti):
         super(ArrayRti, self).__init__(nodeName=nodeName, fileName=fileName)
         check_is_an_array(array, allow_none=True) # TODO: what about masked arrays?
         self._array = array
+
+            
+    def hasChildren(self):
+        """ Returns True if the variable has a compound type, otherwise returns False.
+        """
+        return self._array is not None and bool(self._array.dtype.names)
            
 
     @property
@@ -109,16 +184,30 @@ class ArrayRti(BaseRti):
 
     @property
     def elementTypeName(self):
+        """ String representation of the element type.
+        """
         if self._array is None:
             return super(ArrayRti, self).elementTypeName 
         else:        
             dtype =  self._array.dtype
             return '<compound>' if dtype.names else str(dtype)
 
-    def hasChildren(self):
-        """ Returns False. Leaf nodes never have children. """
-        return False
-    
+
+    def _fetchAllChildren(self):
+        """ Fetches all fields that this variable contains. 
+            Only variables with a compound data type can have fields.
+        """        
+        assert self.canFetchChildren(), "canFetchChildren must be True"
+
+        childItems = []
+
+        # Add fields in case of an array of compound type.
+        if self.hasChildren():
+            for fieldName in self._array.dtype.names:
+                childItems.append(FieldRti(self._array, nodeName=fieldName,
+                                           fileName=self.fileName))
+        self._childrenFetched = True
+        return childItems
     
 
 class SequenceRti(BaseRti):
