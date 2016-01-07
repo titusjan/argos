@@ -150,8 +150,12 @@ class RtiRegistry(ClassRegistry):
                    
             RtiRegItem('NumPy text file', 
                           'libargos.repo.rtiplugins.nptextfile.NumpyTextFileRti', 
-                          extensions=['txt', 'text'])]
-        
+                          extensions=['txt', 'text']),
+
+            RtiRegItem('IDL save file',
+                          'libargos.repo.rtiplugins.scipyio.IdlSaveFileRti',
+                          extensions=['sav'])]
+
 
 # The RTI registry is implemented as a singleton. This is necessary because
 # in DirectoryRti._fetchAllChildren we need access to the registry. 

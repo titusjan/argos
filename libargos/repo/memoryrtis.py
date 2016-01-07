@@ -130,7 +130,7 @@ class FieldRti(BaseRti):
 
 
 class ArrayRti(BaseRti):
-    """ Represents a numpy array (or None for undefined)
+    """ Represents a numpy array (or None for undefined/unopened nodes)
     """
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.array.svg'))
     _iconClosed = _iconOpen     
@@ -206,7 +206,7 @@ class ArrayRti(BaseRti):
             for fieldName in self._array.dtype.names:
                 childItems.append(FieldRti(self._array, nodeName=fieldName,
                                            fileName=self.fileName))
-        self._childrenFetched = True
+        #self._childrenFetched = True # TODO: necessary?
         return childItems
     
 
@@ -255,28 +255,37 @@ class SequenceRti(BaseRti):
 
 class MappingRti(BaseRti):
     """ Represents a mapping (e.g. a dictionary)
-    """    
+    """
     _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.folder-open.svg'))
     _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.folder-closed.svg'))
     
     def __init__(self, dictionary, nodeName='', fileName=''):
-        """ Constructor
+        """ Constructor.
+            The dictionary may be None for under(or None for undefined/unopened nodes)
         """
         super(MappingRti, self).__init__(nodeName=nodeName, fileName=fileName)
-        check_is_a_mapping(dictionary)
+        check_is_a_mapping(dictionary, allow_none=True)
         self._dictionary = dictionary
 
+
     @property
-    def typeName(self):
-        return type_name(self._dictionary)
-        
+    def elementTypeName(self):
+        """ String representation of the element type.
+        """
+        if self._dictionary is None:
+            return super(MappingRti, self).elementTypeName
+        else:
+            return type_name(self._dictionary)
+
+
     def _fetchAllChildren(self):
         """ Adds a child item for each item 
         """        
         childItems = []
         logger.debug("{!r} _fetchAllChildren {!r}".format(self, self.fileName))
-        for key, value in sorted(self._dictionary.items()):
-            childItems.append(_createFromObject(value, nodeName=str(key), fileName=self.fileName))
+
+        if self.hasChildren():
+            for key, value in sorted(self._dictionary.items()):
+                childItems.append(_createFromObject(value, nodeName=str(key), fileName=self.fileName))
             
         return childItems
-

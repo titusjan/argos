@@ -64,10 +64,10 @@ class DimensionsPane(DetailTablePane):
             verticalHeader = table.verticalHeader()
             verticalHeader.setResizeMode(QtGui.QHeaderView.Fixed)
             
-            if currentRti is None:
+            if currentRti is None or not currentRti.isSliceable:
                 return
 
-            nDims =currentRti.nDims
+            nDims = currentRti.nDims
             dimNames = currentRti.dimensionNames
             dimGroups = currentRti.dimensionGroupPaths
             dimSizes = currentRti.arrayShape
