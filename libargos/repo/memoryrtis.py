@@ -96,25 +96,25 @@ class FieldRti(BaseRti):
             Applies the index on the array that contain this field and then selects the
             current field. In pseudo-code, it returns: self.array[index][self.nodeName].
         """
-        slicedArray = self._array.__getitem__(index)
+        logger.debug("FieldRti.__getitem__, index={!r}".format(index))
         fieldName = self.nodeName
-        return slicedArray[fieldName]
-
-
-    @property
-    def nDims(self):
-        """ The number of dimensions of the underlying array
-        """
-        # Will only be called if self.isSliceable is True, so self._array will not be None
-        return self._array.ndim
+        slicedArray = self._array[fieldName].__getitem__(index)
+        return slicedArray
 
 
     @property
     def arrayShape(self):
         """ Returns the shape of the underlying array.
+            If the field contains a subarray the shape may be longer than 1.
         """
         # Will only be called if self.isSliceable is True, so self._array will not be None
-        return self._array.shape
+        if self._array.dtype.fields is None:
+            return self._array.shape
+        else:
+            # The fields contains a sub-array.
+            fieldName = self.nodeName
+            fieldDtype = self._array.dtype.fields[fieldName][0]
+            return self._array.shape + fieldDtype.shape
 
 
     @property

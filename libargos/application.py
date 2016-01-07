@@ -79,8 +79,11 @@ def __addTestData(argosApp):
     myDict['age'] = 34
     myDict['ghosts'] = ['Inky', 'Blinky', 'Pinky', 'Clyde']
     myDict['array'] = np.arange(24).reshape(3, 8)
-    myDict['struct_arr'] = x = np.array([(1,2.,'Hello'), (2,3.,"World")],
-                                        dtype=[('foo', 'i4'),('bar', 'f4'), ('baz', 'S10')])
+    myDict['structured_arr1'] = np.array([(1,2.,'Hello'), (2,3.,"World")],
+                                          dtype=[('foo', 'i4'),('bar', 'f4'), ('baz', 'S10')])
+
+    myDict['structured_arr2'] = np.array([(1.5,2.5,(1.0,2.0)),(3.,4.,(4.,5.)),(1.,3.,(2.,6.))],
+                                         dtype=[('x','f4'),('y',np.float32),('value','f4',(2,2))])
     myDict['subDict'] = {'mean': np.ones(111), 'stddev': np.zeros(111, dtype=np.uint16)}
 
 

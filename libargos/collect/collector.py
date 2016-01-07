@@ -431,7 +431,12 @@ class Collector(QtGui.QWidget):
         for dimNr in range(slicedArray.ndim, self.maxCombos):
             #logger.debug("Adding fake dimension: {}".format(dimNr))
             slicedArray = np.expand_dims(slicedArray, dimNr)
-        
+
+        # Post-condition check
+        assert slicedArray.ndim == self.maxCombos, \
+            "Bug: getSlicedArray should return a {:d}D array, got: {}D" \
+            .format(self.maxCombos, slicedArray.ndim)
+
         # Shuffle the dimensions to be in the order as specified by the combo boxes    
         comboDims = [self._comboBoxDimensionIndex(cb) for cb in self._comboBoxes]
         permutations = np.argsort(comboDims)
@@ -439,11 +444,6 @@ class Collector(QtGui.QWidget):
         slicedArray = np.transpose(slicedArray, permutations)
 
         logging.debug("slicedArray.shape: {}".format(slicedArray.shape))
-        
-        # Post-condition check
-        assert slicedArray.ndim == self.maxCombos, \
-            "Bug: getSlicedArray should return a {:d}D array, got: {}D" \
-            .format(self.maxCombos, slicedArray.ndim)
 
         return slicedArray
 
