@@ -26,17 +26,20 @@ from netCDF4 import Dataset, Variable, Dimension
 
 from libargos.qt import QtGui
 from libargos.utils.cls import check_class
-from libargos.repo.baserti import (ICONS_DIRECTORY, BaseRti)
+from libargos.repo.baserti import BaseRti
+from libargos.repo.iconfactory import RtiIconFactory
 
 logger = logging.getLogger(__name__)
+
+ICON_COLOR_NCDF4 = '#0088FF'
 
 
     
 class NcdfDimensionRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a NCDF group. 
     """     
-    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.dimension.svg'))
-    _iconOpen = _iconClosed
+    _iconKind = RtiIconFactory.DIMENSION
+    _iconColor = ICON_COLOR_NCDF4
     
     def __init__(self, ncDim, nodeName, fileName=''):
         """ Constructor
@@ -65,8 +68,8 @@ class NcdfDimensionRti(BaseRti):
 class NcdfFieldRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a field in a compound NCDF variable.
     """
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.field.svg'))
-    _iconClosed = _iconOpen
+    _iconKind = RtiIconFactory.FIELD
+    _iconColor = ICON_COLOR_NCDF4
 
     def __init__(self, ncVar, nodeName, fileName=''):
         """ Constructor.
@@ -149,8 +152,8 @@ class NcdfFieldRti(BaseRti):
 class NcdfVariableRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a NCDF variable. 
     """ 
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.variable.svg'))
-    _iconClosed = _iconOpen 
+    _iconKind = RtiIconFactory.ARRAY
+    _iconColor = ICON_COLOR_NCDF4
     
     def __init__(self, ncVar, nodeName, fileName=''):
         """ Constructor
@@ -259,8 +262,8 @@ class NcdfVariableRti(BaseRti):
 class NcdfGroupRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a NCDF group. 
     """     
-    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.group-closed.svg'))
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.group-open.svg'))
+    _iconKind = RtiIconFactory.FOLDER
+    _iconColor = ICON_COLOR_NCDF4
     
     def __init__(self, ncGroup, nodeName, fileName=''):
         """ Constructor
@@ -306,8 +309,8 @@ class NcdfGroupRti(BaseRti):
 class NcdfFileRti(NcdfGroupRti):
     """ Repository tree item that contains a netCDF file.
     """
-    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.file-closed.svg'))
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'ncdf.file-open.svg'))
+    _iconKind = RtiIconFactory.FILE
+    _iconColor = ICON_COLOR_NCDF4
         
     def __init__(self, nodeName, fileName=''):
         """ Constructor

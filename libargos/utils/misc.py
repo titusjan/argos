@@ -51,6 +51,37 @@ def configBasicLogging(level = 'DEBUG'):
     logging.basicConfig(level=level, format=fmt)
 
 
+def log_dictionary(dictionary, msg='', logger='main', level='debug', item_prefix='  '):
+    """ Writes a log message with key and value for each item in the dictionary.
+
+        :param dictionary: the dictionary to be logged
+        :type dictionary: dict
+        :param name: An optional message that is logged before the contents
+        :type name: string
+        :param logger: A logging.Logger object to log to. If not set, the 'main' logger is used.
+        :type logger: logging.Logger or a string
+        :param level: log level. String or int as described in the logging module documentation.
+            Default: 'debug'.
+        :type level: string or int
+        :param item_prefix: String that will be prefixed to each line. Default: two spaces.
+        :type item_prefix: string
+    """
+    level_nr = logging.getLevelName(level.upper())
+
+    if msg :
+        logger.log(level_nr, "Logging dictionary: {}".format(msg))
+
+    if not dictionary:
+        logger.log(level_nr,"{}<empty dictionary>".format(item_prefix))
+        return
+
+    max_key_len = max([len(k) for k in dictionary.keys()])
+
+    for key, value in sorted(dictionary.iteritems()):
+        logger.log(level_nr, "{0}{1:<{2}s} = {3}".format(item_prefix, key, max_key_len, value))
+
+
+
 def remove_process_serial_number(arg_list):
     """ Creates a copy of a list (typically sys.argv) where the strings that
         start with '-psn_0_' are removed.

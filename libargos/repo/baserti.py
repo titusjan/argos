@@ -18,11 +18,13 @@
 """ Repository TreeItem (RTI) classes
     Tree items for use in the RepositoryTreeModel
 """
-import logging, os
+import logging
+import os
 
 from libargos.info import program_directory, DEBUGGING
-from libargos.qt import QtGui # TODO: get rid of dependency on QtGui?
+from libargos.qt import QtGui
 from libargos.qt.treeitems import AbstractLazyLoadTreeItem
+from libargos.repo.iconfactory import RtiIconFactory
 from libargos.utils.cls import StringType, check_class, is_a_sequence
 
 ICONS_DIRECTORY = os.path.join(program_directory(), 'img/icons')
@@ -36,10 +38,8 @@ class BaseRti(AbstractLazyLoadTreeItem):
 
         Serves as an interface but can also be instantiated for debugging purposes.
     """
-    _iconOpen = None   # can be overridden by a QtGui.QIcon
-    _iconClosed = None # can be overridden by a QtGui.QIcon
-    _iconError = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'err.warning.svg'))    
-    #_iconError = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'err.exclamation.svg'))    
+    _iconKind = RtiIconFactory.FOLDER
+    _iconColor = "#00cc00"
     
     def __init__(self, nodeName, fileName=''):
         """ Constructor
@@ -178,7 +178,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
         self.clearException()
 
         if not self.isOpen:
-            self.open()
+            self.open() # Will set self._exception in case of failure
         
         if not self.isOpen:
             logger.warn("Opening item failed during fetch (aborted)")
@@ -218,6 +218,22 @@ class BaseRti(AbstractLazyLoadTreeItem):
 
 
     @property
+    def iconColor(self):
+        """ Returns the color of the icon (.e.g. '#FF0000' for red).
+            :rtype: string
+        """
+        return self._iconColor
+
+
+    @property
+    def iconKind(self):
+        """ Returns the kind of the icon (e.g. RtiIconFactory.FILE, RtiIconFactory.ARRAY, etc).
+            :rtype: string
+        """
+        return self._iconKind
+
+
+    @property
     def decoration(self):
         """ The displayed icon.
          
@@ -225,14 +241,14 @@ class BaseRti(AbstractLazyLoadTreeItem):
             for instance to collapse a directory node but still see that it was visited, which
             may be useful if there is a huge list of directories.
         """
-        if self._exception:
-            return self._iconError
-        elif self._childrenFetched:
-            return self._iconOpen
-        else:
-            return self._iconClosed
+        rtiIconFactory = RtiIconFactory.singleton()
 
-    
+        if self._exception:
+            return rtiIconFactory.getIcon(rtiIconFactory.ERROR, color=rtiIconFactory.COLOR_ERROR)
+        else:
+            return rtiIconFactory.getIcon(self.iconKind, isOpen=self._childrenFetched,
+                                          color=self._iconColor)
+
     @property
     def isSliceable(self):
         """ Returns True if the underlying data can be sliced.

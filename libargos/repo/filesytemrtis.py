@@ -21,6 +21,7 @@
 import logging, os
 from .baserti import (ICONS_DIRECTORY, BaseRti)
 from libargos.qt import QtGui
+from libargos.repo.iconfactory import RtiIconFactory
 from libargos.repo.registry import globalRtiRegistry
 
 logger = logging.getLogger(__name__)
@@ -30,9 +31,9 @@ class UnknownFileRti(BaseRti):
     """ A repository tree item that represents a file of unknown type.  
         The file is not opened.
     """
-    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'fs.file-closed.svg'))    
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'fs.file-open.svg'))
-    
+    _iconKind = RtiIconFactory.FILE
+    _iconColor = RtiIconFactory.COLOR_UNKNOWN
+
     def __init__(self, nodeName='', fileName=''):
         """ Constructor 
         """
@@ -49,9 +50,9 @@ class UnknownFileRti(BaseRti):
 class DirectoryRti(BaseRti):
     """ A repository tree item that has a reference to a file. 
     """
-    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'fs.directory-closed.svg'))
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'fs.directory-open.svg'))
-    
+    _iconKind = RtiIconFactory.FOLDER
+    _iconColor = RtiIconFactory.COLOR_UNKNOWN
+
     def __init__(self, nodeName='', fileName=''):
         """ Constructor
         """

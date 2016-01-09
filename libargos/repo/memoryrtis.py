@@ -22,6 +22,7 @@ import numpy as np
 
 from .baserti import ICONS_DIRECTORY, BaseRti
 from libargos.qt import QtGui
+from libargos.repo.iconfactory import RtiIconFactory
 from libargos.utils.cls import (check_is_a_sequence, check_is_a_mapping, check_is_an_array,  
                                 is_a_sequence, is_a_mapping, is_an_array, type_name)
 from libargos.utils.misc import NOT_SPECIFIED
@@ -46,9 +47,9 @@ class ScalarRti(BaseRti):
         
         Is NOT sliceable and can not be inspected/plotted.
     """
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.scalar.svg'))
-    _iconClosed = _iconOpen      
-    
+    _iconKind = RtiIconFactory.SCALAR
+    _iconColor = RtiIconFactory.COLOR_MEMORY
+
     def __init__(self, scalar, nodeName='', fileName=''):
         super(ScalarRti, self).__init__(nodeName = nodeName, fileName=fileName)
         self._scalar = scalar 
@@ -66,9 +67,9 @@ class ScalarRti(BaseRti):
 class FieldRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a field in a compound numpy array. 
     """ 
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.field.svg'))
-    _iconClosed = _iconOpen 
-    
+    _iconKind = RtiIconFactory.FIELD
+    _iconColor = RtiIconFactory.COLOR_MEMORY
+
     def __init__(self, array, nodeName, fileName=''):
         """ Constructor.
             The name of the field must be given to the nodeName parameter. 
@@ -132,8 +133,8 @@ class FieldRti(BaseRti):
 class ArrayRti(BaseRti):
     """ Represents a numpy array (or None for undefined/unopened nodes)
     """
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.array.svg'))
-    _iconClosed = _iconOpen     
+    _iconKind = RtiIconFactory.ARRAY
+    _iconColor = RtiIconFactory.COLOR_MEMORY
 
     def __init__(self, array, nodeName='', fileName=''):
         """ Constructor. 
@@ -213,8 +214,8 @@ class ArrayRti(BaseRti):
 class SequenceRti(BaseRti):
     """ Represents a sequence (e.g. a list or a tuple)
     """
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.sequence.svg'))
-    _iconClosed = _iconOpen     
+    _iconKind = RtiIconFactory.SEQUENCE
+    _iconColor = RtiIconFactory.COLOR_MEMORY
     
     def __init__(self, sequence, nodeName='', fileName=''):
         """ Constructor. 
@@ -256,8 +257,8 @@ class SequenceRti(BaseRti):
 class MappingRti(BaseRti):
     """ Represents a mapping (e.g. a dictionary)
     """
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.folder-open.svg'))
-    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'memory.folder-closed.svg'))
+    _iconKind = RtiIconFactory.FOLDER
+    _iconColor = RtiIconFactory.COLOR_MEMORY
     
     def __init__(self, dictionary, nodeName='', fileName=''):
         """ Constructor.

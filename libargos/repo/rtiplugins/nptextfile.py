@@ -21,24 +21,26 @@ import logging, os
 import numpy as np
 
 from libargos.qt import QtGui
+from libargos.repo.iconfactory import RtiIconFactory
 from libargos.repo.memoryrtis import ArrayRti
 from libargos.repo.baserti import ICONS_DIRECTORY
 
 logger = logging.getLogger(__name__)
 
+ICON_COLOR_NUMPY = '#8800FF'
 
 class NumpyTextColumnRti(ArrayRti):
     """ Represents a column from a simple text file, imported with numpy.loadtxt. 
     """
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'nptxt.column.svg'))
-    _iconClosed = _iconOpen     
+    _iconKind = RtiIconFactory.ARRAY
+    _iconColor = ICON_COLOR_NUMPY
 
 
 class NumpyTextFileRti(ArrayRti):
     """ Represents a 2D array from a simple text file, imported with numpy.loadtxt.
     """
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'nptxt.file-open.svg'))
-    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'nptxt.file-closed.svg'))     
+    _iconKind = RtiIconFactory.FILE
+    _iconColor = ICON_COLOR_NUMPY
 
     def __init__(self, nodeName='', fileName=''):
         """ Constructor. Initializes as an ArrayRTI with None as underlying array.

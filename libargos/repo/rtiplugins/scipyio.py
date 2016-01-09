@@ -24,10 +24,11 @@ import scipy.io
 
 from libargos.qt import QtGui
 from libargos.repo.memoryrtis import MappingRti
-from libargos.repo.baserti import ICONS_DIRECTORY
+from libargos.repo.iconfactory import RtiIconFactory
 
 logger = logging.getLogger(__name__)
 
+ICON_COLOR_SCIPY = '#8800FF'
 
 
 class IdlSaveFileRti(MappingRti):
@@ -37,8 +38,8 @@ class IdlSaveFileRti(MappingRti):
         is open (in contrast to lazy loading each node separately). It therefor may take a while
         to read a large save-file. During this time the application is not responsive!
     """
-    _iconOpen = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'nptxt.file-open.svg'))
-    _iconClosed = QtGui.QIcon(os.path.join(ICONS_DIRECTORY, 'nptxt.file-closed.svg'))     
+    _iconKind = RtiIconFactory.FILE
+    _iconColor = ICON_COLOR_SCIPY
 
     def __init__(self, nodeName='', fileName=''):
         """ Constructor. Initializes as an MappingRti with None as underlying dictionary.

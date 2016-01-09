@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Qt specific stuff, which is not specific to this project.
+""" Contains classes and functions based on Qt. These could in principle be useful for
+    other projects but would then require minor tweaking (e.g. imports).
 """
 # Import commonly used function into the package name space for convenience.
 
-from libargos.qt.misc import USE_PYQT, Qt, QtCore, QtGui, QtSignal, QtSlot
+from libargos.qt.misc import USE_PYQT, Qt, QtCore, QtGui, QtSvg, QtSignal, QtSlot
 from libargos.qt.misc import initQApplication, initQCoreApplication

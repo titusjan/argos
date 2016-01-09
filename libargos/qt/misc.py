@@ -45,12 +45,12 @@ if USE_PYQT:
     
 
 if USE_PYQT:
-    from PyQt4 import QtCore, QtGui
+    from PyQt4 import QtCore, QtGui, QtSvg
     from PyQt4.QtCore import Qt
     from PyQt4.QtCore import pyqtSignal as QtSignal
     from PyQt4.QtCore import pyqtSlot as QtSlot 
 else:
-    from PySide import QtCore, QtGui
+    from PySide import QtCore, QtGui, QtSvg
     from PySide.QtCore import Qt
     from PySide.QtCore import Signal as QtSignal
     from PySide.QtCore import Slot as QtSlot
