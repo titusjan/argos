@@ -43,6 +43,7 @@ class RtiIconFactory(object):
     """
 
     ICONS_DIRECTORY = os.path.join(program_directory(), 'img/snipicons')
+    ICON_SIZE = 32 # Render in this size
 
     # File state
     OPEN = "open"
@@ -72,6 +73,8 @@ class RtiIconFactory(object):
         self._registry = {}
         self.colorsToBeReplaced = ('#008BFF', '#00AAFF')
 
+        self.registerIcon(None, None) # no icon
+        self.registerIcon("",   None) # no icon
         self.registerIcon("warning-sign.svg", self.ERROR)
         self.registerIcon("folder-open.svg",  self.FOLDER, True)
         self.registerIcon("folder-close.svg", self.FOLDER, False)
@@ -105,7 +108,7 @@ class RtiIconFactory(object):
         """
         check_class(isOpen, bool, allow_none=True)
 
-        if not os.path.isabs(fileName):
+        if fileName and not os.path.isabs(fileName):
             fileName = os.path.join(self.ICONS_DIRECTORY, fileName)
 
         if isOpen is None:
@@ -116,7 +119,7 @@ class RtiIconFactory(object):
             self._registry[(glyph, isOpen)] = fileName
 
 
-    def getIcon(self, glyph, isOpen=None, color=None):
+    def getIcon(self, glyph, isOpen, color=None):
         """ Returns a QIcon given a glyph name, open/closed state and color.
 
             The reslulting icon is cached so that it only needs to be rendered once.
@@ -143,9 +146,13 @@ class RtiIconFactory(object):
             Optionally replaces the color. Caches the created icons.
 
             :param fileName: absolute path to an icon file.
+                If False/empty/None, None returned, which yields no icon.
             :param color: '#RRGGBB' string (e.g. '#FF0000' for red)
             :return: QtGui.QIcon
         """
+        if not fileName:
+            return None
+
         key = (fileName, color)
         if key not in self._icons:
             try:
@@ -185,7 +192,8 @@ class RtiIconFactory(object):
 
         # From http://stackoverflow.com/questions/15123544/change-the-color-of-an-svg-in-qt
         svgRenderer = QtSvg.QSvgRenderer(QtCore.QByteArray(svg))
-        pix = QtGui.QPixmap(svgRenderer.defaultSize())
+        #pix = QtGui.QPixmap(svgRenderer.defaultSize())
+        pix = QtGui.QPixmap(QtCore.QSize(self.ICON_SIZE, self.ICON_SIZE))
         pix.fill(Qt.transparent)
         pixPainter = QtGui.QPainter(pix)
         svgRenderer.render(pixPainter)

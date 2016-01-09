@@ -47,12 +47,13 @@ class ScalarRti(BaseRti):
         
         Is NOT sliceable and can not be inspected/plotted.
     """
-    _iconKind = RtiIconFactory.SCALAR
-    _iconColor = RtiIconFactory.COLOR_MEMORY
+    _defaultIconGlyph = RtiIconFactory.SCALAR
+    _defaultIconColor = RtiIconFactory.COLOR_MEMORY
 
-    def __init__(self, scalar, nodeName='', fileName=''):
+    def __init__(self, scalar, nodeName='', fileName='', iconColor=_defaultIconColor):
         super(ScalarRti, self).__init__(nodeName = nodeName, fileName=fileName)
-        self._scalar = scalar 
+        self._scalar = scalar
+        self._iconColor = iconColor
     
     @property
     def elementTypeName(self):
@@ -67,16 +68,17 @@ class ScalarRti(BaseRti):
 class FieldRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a field in a compound numpy array. 
     """ 
-    _iconKind = RtiIconFactory.FIELD
-    _iconColor = RtiIconFactory.COLOR_MEMORY
+    _defaultIconGlyph = RtiIconFactory.FIELD
+    _defaultIconColor = RtiIconFactory.COLOR_MEMORY
 
-    def __init__(self, array, nodeName, fileName=''):
+    def __init__(self, array, nodeName, fileName='', iconColor=_defaultIconColor):
         """ Constructor.
             The name of the field must be given to the nodeName parameter. 
         """
         super(FieldRti, self).__init__(nodeName, fileName=fileName)
         check_is_an_array(array, allow_none=True)
         self._array = array
+        self._iconColor = iconColor
         
 
     def hasChildren(self):
@@ -133,10 +135,10 @@ class FieldRti(BaseRti):
 class ArrayRti(BaseRti):
     """ Represents a numpy array (or None for undefined/unopened nodes)
     """
-    _iconKind = RtiIconFactory.ARRAY
-    _iconColor = RtiIconFactory.COLOR_MEMORY
+    _defaultIconGlyph = RtiIconFactory.ARRAY
+    _defaultIconColor = RtiIconFactory.COLOR_MEMORY
 
-    def __init__(self, array, nodeName='', fileName=''):
+    def __init__(self, array, nodeName='', fileName='', iconColor=_defaultIconColor):
         """ Constructor. 
             :param array: the underlying array. May be undefined (None)
             :type array: numpy.ndarray or None
@@ -144,6 +146,7 @@ class ArrayRti(BaseRti):
         super(ArrayRti, self).__init__(nodeName=nodeName, fileName=fileName)
         check_is_an_array(array, allow_none=True) # TODO: what about masked arrays?
         self._array = array
+        self._iconColor = iconColor
 
             
     def hasChildren(self):
@@ -214,10 +217,10 @@ class ArrayRti(BaseRti):
 class SequenceRti(BaseRti):
     """ Represents a sequence (e.g. a list or a tuple)
     """
-    _iconKind = RtiIconFactory.SEQUENCE
-    _iconColor = RtiIconFactory.COLOR_MEMORY
+    _defaultIconGlyph = RtiIconFactory.SEQUENCE
+    _defaultIconColor = RtiIconFactory.COLOR_MEMORY
     
-    def __init__(self, sequence, nodeName='', fileName=''):
+    def __init__(self, sequence, nodeName='', fileName='', iconColor=_defaultIconColor):
         """ Constructor. 
             :param sequence: the underlying sequence. May be undefined (None)
             :type array: None or a Python sequence (e.g. list or tuple)
@@ -226,6 +229,7 @@ class SequenceRti(BaseRti):
         check_is_a_sequence(sequence, allow_none=True)
         self._sequence = sequence
         self._array = NOT_SPECIFIED # To cache the sequence converted to a numpy array.
+        self._iconColor = iconColor
    
     @property
     def _asArray(self):
@@ -248,8 +252,9 @@ class SequenceRti(BaseRti):
         """
         childItems = []
         for nr, elem in enumerate(self._sequence):
-            childItems.append(_createFromObject(elem, nodeName="elem-{}".format(nr), 
-                                                fileName=self.fileName))
+            childItem = _createFromObject(elem, "elem-{}".format(nr), self.fileName)
+            childItem._iconColor = self.iconColor
+            childItems.append(childItem)
         return childItems
     
 
@@ -257,16 +262,17 @@ class SequenceRti(BaseRti):
 class MappingRti(BaseRti):
     """ Represents a mapping (e.g. a dictionary)
     """
-    _iconKind = RtiIconFactory.FOLDER
-    _iconColor = RtiIconFactory.COLOR_MEMORY
+    _defaultIconGlyph = RtiIconFactory.FOLDER
+    _defaultIconColor = RtiIconFactory.COLOR_MEMORY
     
-    def __init__(self, dictionary, nodeName='', fileName=''):
+    def __init__(self, dictionary, nodeName='', fileName='', iconColor=_defaultIconColor):
         """ Constructor.
             The dictionary may be None for under(or None for undefined/unopened nodes)
         """
         super(MappingRti, self).__init__(nodeName=nodeName, fileName=fileName)
         check_is_a_mapping(dictionary, allow_none=True)
         self._dictionary = dictionary
+        self._iconColor = iconColor
 
 
     @property
@@ -287,6 +293,8 @@ class MappingRti(BaseRti):
 
         if self.hasChildren():
             for key, value in sorted(self._dictionary.items()):
-                childItems.append(_createFromObject(value, nodeName=str(key), fileName=self.fileName))
+                childItem = _createFromObject(value, str(key), self.fileName)
+                childItem._iconColor = self.iconColor
+                childItems.append(childItem)
             
         return childItems
