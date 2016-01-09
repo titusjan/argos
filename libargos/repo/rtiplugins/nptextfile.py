@@ -29,23 +29,18 @@ logger = logging.getLogger(__name__)
 
 ICON_COLOR_NUMPY = '#8800FF'
 
-class NumpyTextColumnRti(ArrayRti):
-    """ Represents a column from a simple text file, imported with numpy.loadtxt. 
-    """
-    _iconKind = RtiIconFactory.ARRAY
-    _iconColor = ICON_COLOR_NUMPY
-
 
 class NumpyTextFileRti(ArrayRti):
     """ Represents a 2D array from a simple text file, imported with numpy.loadtxt.
     """
-    _iconKind = RtiIconFactory.FILE
-    _iconColor = ICON_COLOR_NUMPY
+    _defaultIconGlyph = RtiIconFactory.FILE
+    _defaultIconColor = ICON_COLOR_NUMPY
 
     def __init__(self, nodeName='', fileName=''):
         """ Constructor. Initializes as an ArrayRTI with None as underlying array.
         """
-        super(NumpyTextFileRti, self).__init__(None, nodeName=nodeName, fileName=fileName)
+        super(NumpyTextFileRti, self).__init__(None, nodeName=nodeName, fileName=fileName,
+                                               iconColor=self._defaultIconColor)
         self._checkFileExists()
 
             
@@ -72,7 +67,7 @@ class NumpyTextFileRti(ArrayRti):
         childItems = []
         _nRows, nCols = self._array.shape if self._array is not None else (0, 0)
         for col in range(nCols):
-            colItem = NumpyTextColumnRti(self._array[:, col], nodeName="column-{}".format(col), 
-                                         fileName=self.fileName)
+            colItem = ArrayRti(self._array[:, col], nodeName="column-{}".format(col),
+                               fileName=self.fileName, iconColor=self.iconColor)
             childItems.append(colItem)
         return childItems

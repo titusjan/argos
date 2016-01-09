@@ -38,8 +38,8 @@ class BaseRti(AbstractLazyLoadTreeItem):
 
         Serves as an interface but can also be instantiated for debugging purposes.
     """
-    _iconKind = RtiIconFactory.FOLDER
-    _iconColor = "#00cc00"
+    _defaultIconGlyph = None  # Can be overridden by defining a _iconGlyph attribute
+    _defaultIconColor = None  # Can be overridden by defining a _iconColor attribute
     
     def __init__(self, nodeName, fileName=''):
         """ Constructor
@@ -220,17 +220,26 @@ class BaseRti(AbstractLazyLoadTreeItem):
     @property
     def iconColor(self):
         """ Returns the color of the icon (.e.g. '#FF0000' for red).
+            If self contains a _iconColor attribute, this is returned.
+            Otherwise the _defaultIconColor of the class is returned.
             :rtype: string
         """
-        return self._iconColor
+        if hasattr(self, "_iconColor"):
+            return getattr(self, "_iconColor")
+        else:
+            return self._defaultIconColor
 
 
     @property
-    def iconKind(self):
+    def iconGlyph(self):
         """ Returns the kind of the icon (e.g. RtiIconFactory.FILE, RtiIconFactory.ARRAY, etc).
+            The base implementation returns the default glyph of the class.
             :rtype: string
         """
-        return self._iconKind
+        if hasattr(self, "_iconGlyph"):
+            return getattr(self, "_iconGlyph")
+        else:
+            return self._defaultIconGlyph
 
 
     @property
@@ -244,10 +253,11 @@ class BaseRti(AbstractLazyLoadTreeItem):
         rtiIconFactory = RtiIconFactory.singleton()
 
         if self._exception:
-            return rtiIconFactory.getIcon(rtiIconFactory.ERROR, color=rtiIconFactory.COLOR_ERROR)
+            return rtiIconFactory.getIcon(rtiIconFactory.ERROR, isOpen=False,
+                                          color=rtiIconFactory.COLOR_ERROR)
         else:
-            return rtiIconFactory.getIcon(self.iconKind, isOpen=self._childrenFetched,
-                                          color=self._iconColor)
+            return rtiIconFactory.getIcon(self.iconGlyph, isOpen=self._childrenFetched,
+                                          color=self.iconColor)
 
     @property
     def isSliceable(self):

@@ -31,8 +31,8 @@ class UnknownFileRti(BaseRti):
     """ A repository tree item that represents a file of unknown type.  
         The file is not opened.
     """
-    _iconKind = RtiIconFactory.FILE
-    _iconColor = RtiIconFactory.COLOR_UNKNOWN
+    _defaultIconGlyph = RtiIconFactory.FILE
+    _defaultIconColor = RtiIconFactory.COLOR_UNKNOWN
 
     def __init__(self, nodeName='', fileName=''):
         """ Constructor 
@@ -50,8 +50,8 @@ class UnknownFileRti(BaseRti):
 class DirectoryRti(BaseRti):
     """ A repository tree item that has a reference to a file. 
     """
-    _iconKind = RtiIconFactory.FOLDER
-    _iconColor = RtiIconFactory.COLOR_UNKNOWN
+    _defaultIconGlyph = RtiIconFactory.FOLDER
+    _defaultIconColor = RtiIconFactory.COLOR_UNKNOWN
 
     def __init__(self, nodeName='', fileName=''):
         """ Constructor

@@ -38,13 +38,14 @@ class IdlSaveFileRti(MappingRti):
         is open (in contrast to lazy loading each node separately). It therefor may take a while
         to read a large save-file. During this time the application is not responsive!
     """
-    _iconKind = RtiIconFactory.FILE
-    _iconColor = ICON_COLOR_SCIPY
+    _defaultIconGlyph = RtiIconFactory.FILE
+    _defaultIconColor = ICON_COLOR_SCIPY
 
     def __init__(self, nodeName='', fileName=''):
         """ Constructor. Initializes as an MappingRti with None as underlying dictionary.
         """
-        super(IdlSaveFileRti, self).__init__(None, nodeName=nodeName, fileName=fileName)
+        super(IdlSaveFileRti, self).__init__(None, nodeName=nodeName, fileName=fileName,
+                                             iconColor=self._defaultIconColor)
         self._checkFileExists()
 
     def hasChildren(self):

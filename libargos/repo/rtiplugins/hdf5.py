@@ -66,8 +66,8 @@ def dimNamesFromDataset(h5Dataset):
 class H5pyFieldRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a field in a compound HDF-5 variable. 
     """ 
-    _iconKind = RtiIconFactory.FIELD
-    _iconColor = ICON_COLOR_H5PY
+    _defaultIconGlyph = RtiIconFactory.FIELD
+    _defaultIconColor = ICON_COLOR_H5PY
     
     def __init__(self, h5Dataset, nodeName, fileName=''):
         """ Constructor.
@@ -133,8 +133,8 @@ class H5pyFieldRti(BaseRti):
 class H5pyDatasetRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a HDF5 dataset. 
     """ 
-    _iconKind = RtiIconFactory.ARRAY
-    _iconColor = ICON_COLOR_H5PY
+    _defaultIconGlyph = RtiIconFactory.ARRAY
+    _defaultIconColor = ICON_COLOR_H5PY
     
     def __init__(self, h5Dataset, nodeName, fileName=''):
         """ Constructor
@@ -215,8 +215,8 @@ class H5pyDatasetRti(BaseRti):
 class H5pyGroupRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a HDF-5 group. 
     """     
-    _iconKind = RtiIconFactory.FOLDER
-    _iconColor = ICON_COLOR_H5PY
+    _defaultIconGlyph = RtiIconFactory.FOLDER
+    _defaultIconColor = ICON_COLOR_H5PY
     
     def __init__(self, h5Group, nodeName, fileName=''):
         """ Constructor
@@ -260,8 +260,8 @@ class H5pyGroupRti(BaseRti):
 class H5pyFileRti(H5pyGroupRti):
     """ Repository tree item that contains a netCDF file.
     """
-    _iconKind = RtiIconFactory.FILE
-    _iconColor = ICON_COLOR_H5PY
+    _defaultIconGlyph = RtiIconFactory.FILE
+    _defaultIconColor = ICON_COLOR_H5PY
         
     def __init__(self, nodeName, fileName=''):
         """ Constructor

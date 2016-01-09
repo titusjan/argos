@@ -38,8 +38,8 @@ ICON_COLOR_NCDF4 = '#0088FF'
 class NcdfDimensionRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a NCDF group. 
     """     
-    _iconKind = RtiIconFactory.DIMENSION
-    _iconColor = ICON_COLOR_NCDF4
+    _defaultIconGlyph = RtiIconFactory.DIMENSION
+    _defaultIconColor = ICON_COLOR_NCDF4
     
     def __init__(self, ncDim, nodeName, fileName=''):
         """ Constructor
@@ -68,8 +68,8 @@ class NcdfDimensionRti(BaseRti):
 class NcdfFieldRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a field in a compound NCDF variable.
     """
-    _iconKind = RtiIconFactory.FIELD
-    _iconColor = ICON_COLOR_NCDF4
+    _defaultIconGlyph = RtiIconFactory.FIELD
+    _defaultIconColor = ICON_COLOR_NCDF4
 
     def __init__(self, ncVar, nodeName, fileName=''):
         """ Constructor.
@@ -152,8 +152,8 @@ class NcdfFieldRti(BaseRti):
 class NcdfVariableRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a NCDF variable. 
     """ 
-    _iconKind = RtiIconFactory.ARRAY
-    _iconColor = ICON_COLOR_NCDF4
+    _defaultIconGlyph = RtiIconFactory.ARRAY
+    _defaultIconColor = ICON_COLOR_NCDF4
     
     def __init__(self, ncVar, nodeName, fileName=''):
         """ Constructor
@@ -262,8 +262,8 @@ class NcdfVariableRti(BaseRti):
 class NcdfGroupRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a NCDF group. 
     """     
-    _iconKind = RtiIconFactory.FOLDER
-    _iconColor = ICON_COLOR_NCDF4
+    _defaultIconGlyph = RtiIconFactory.FOLDER
+    _defaultIconColor = ICON_COLOR_NCDF4
     
     def __init__(self, ncGroup, nodeName, fileName=''):
         """ Constructor
@@ -309,8 +309,8 @@ class NcdfGroupRti(BaseRti):
 class NcdfFileRti(NcdfGroupRti):
     """ Repository tree item that contains a netCDF file.
     """
-    _iconKind = RtiIconFactory.FILE
-    _iconColor = ICON_COLOR_NCDF4
+    _defaultIconGlyph = RtiIconFactory.FILE
+    _defaultIconColor = ICON_COLOR_NCDF4
         
     def __init__(self, nodeName, fileName=''):
         """ Constructor
