@@ -22,6 +22,8 @@ from __future__ import division, print_function
 import logging
 import pyqtgraph as pg
 
+from pyqtgraph.graphicsItems.PlotItem import PlotItem
+
 from libargos.qt import QtGui
 from libargos.info import DEBUGGING
 from libargos.config.groupcti import MainGroupCti, GroupCti
@@ -88,10 +90,13 @@ class PgLinePlot1d(AbstractInspector):
         super(PgLinePlot1d, self).__init__(collector, parent=parent)
         
         self.viewBox = pg.ViewBox(border=pg.mkPen("#000000", width=1))#), lockAspect=1.0)
-        self.plotWidget = pg.PlotWidget(name='1d_line_plot_#{}'.format(self.windowNumber),
-                                        title='', enableMenu=True, viewBox=self.viewBox) # TODO: enableMenu=False
-        self.viewBox.setParent(self.plotWidget) 
-        self.contentsLayout.addWidget(self.plotWidget)
+
+        self.graphicsView = pg.GraphicsView() # TODO: use scale to image?
+        self.plotItem = pg.PlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
+                                    title='', enableMenu=True, viewBox=self.viewBox) # TODO: enableMenu=False
+        self.viewBox.setParent(self.plotItem)
+        self.graphicsView.setCentralItem(self.plotItem)
+        self.contentsLayout.addWidget(self.graphicsView)
 
         self.viewBox.sigStateChanged.connect(self.config.viewBoxCti.viewBoxChanged)
         
@@ -102,9 +107,10 @@ class PgLinePlot1d(AbstractInspector):
         logger.debug("Finalizing: {}".format(self))
         
         # Disconnect signals
-        self.viewBox.sigStateChanged.connect(self.config.viewBoxCti.viewBoxChanged)
-        self.plotWidget.close()
-                
+        self.viewBox.sigStateChanged.disconnect(self.config.viewBoxCti.viewBoxChanged)
+        self.plotItem.close()
+        self.graphicsView.close()
+
         
     @classmethod
     def axesNames(cls):
@@ -125,14 +131,14 @@ class PgLinePlot1d(AbstractInspector):
         """ Draws the inspector widget when no input is available.
             Creates an empty plot.
         """
-        self.plotWidget.clear()
+        self.plotItem.clear()
         #self.plotWidget.showAxis('right')
-        self.plotWidget.setLogMode(x=self.configValue('axes/X-axis/logarithmic'),
-                                   y=self.configValue('axes/Y-axis/logarithmic'))
+        self.plotItem.setLogMode(x=self.configValue('axes/X-axis/logarithmic'),
+                                 y=self.configValue('axes/Y-axis/logarithmic'))
 
-        self.plotWidget.showGrid(x=self.configValue('grid/X-axis'), 
-                                 y=self.configValue('grid/Y-axis'), 
-                                 alpha=self.configValue('grid/alpha'))
+        self.plotItem.showGrid(x=self.configValue('grid/X-axis'),
+                               y=self.configValue('grid/Y-axis'),
+                               alpha=self.configValue('grid/alpha'))
 
         antiAlias = self.configValue('anti-alias')
         color = self.configValue('pen/color')
@@ -155,10 +161,10 @@ class PgLinePlot1d(AbstractInspector):
         symbolPen   = pen if drawSymbols else None
         symbolBrush = QtGui.QBrush(color) if drawSymbols else None
 
-        self.plotDataItem = self.plotWidget.plot(pen=pen, shadowPen=shadowPen, 
-                                                 symbol=symbolShape, symbolSize=symbolSize,
-                                                 symbolPen=symbolPen, symbolBrush=symbolBrush,
-                                                 antialias=antiAlias)
+        self.plotDataItem = self.plotItem.plot(pen=pen, shadowPen=shadowPen,
+                                               symbol=symbolShape, symbolSize=symbolSize,
+                                               symbolPen=symbolPen, symbolBrush=symbolBrush,
+                                               antialias=antiAlias)
 
     def _updateRti(self):
         """ Draws the RTI
@@ -166,28 +172,28 @@ class PgLinePlot1d(AbstractInspector):
         slicedArray = self.collector.getSlicedArray()
         if slicedArray is None or not array_has_real_numbers(slicedArray):
             self.plotDataItem.clear()
-            self.plotWidget.setTitle('')
-            self.plotWidget.setLabel('left', '')
-            self.plotWidget.setLabel('bottom', '')
+            self.plotItem.setTitle('')
+            self.plotItem.setLabel('left', '')
+            self.plotItem.setLabel('bottom', '')
             # TODO: is this an error
             if not DEBUGGING:
                 raise ValueError("No data available or it does not contain real numbers.")
         
         else:        
             title = self.configValue('title').format(**self.collector.getRtiInfo())
-            self.plotWidget.setTitle(title)
+            self.plotItem.setTitle(title)
 
             ylabel = self.collector.dependentDimensionName()
             depUnit = self.collector.dependentDimensionUnit()
             if depUnit:
                 ylabel += ' ({})'.format(depUnit)
-            self.plotWidget.setLabel('left', ylabel)
+            self.plotItem.setLabel('left', ylabel)
 
             xlabel = self.collector.independentDimensionNames()[0]
             indepUnit = self.collector.independentDimensionUnits()[0]
             if indepUnit:
                 xlabel += ' ({})'.format(indepUnit)
-            self.plotWidget.setLabel('bottom', xlabel)
+            self.plotItem.setLabel('bottom', xlabel)
 
             self.plotDataItem.setData(slicedArray)
 
