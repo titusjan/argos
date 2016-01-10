@@ -141,20 +141,25 @@ class RtiRegistry(ClassRegistry):
         """
         return [
             RtiRegItem('HDF-5 file', 
-                          'libargos.repo.rtiplugins.hdf5.H5pyFileRti', 
-                          extensions=['hdf', 'hdf5', 'h5']),
+                       'libargos.repo.rtiplugins.hdf5.H5pyFileRti',
+                       extensions=['hdf', 'hdf5', 'h5']),
                    
             RtiRegItem('NCDF file', 
-                          'libargos.repo.rtiplugins.ncdf.NcdfFileRti', 
-                          extensions=['nc', 'nc3', 'nc4']),
+                       'libargos.repo.rtiplugins.ncdf.NcdfFileRti',
+                       extensions=['nc', 'nc3', 'nc4']),
                    
             RtiRegItem('NumPy text file', 
-                          'libargos.repo.rtiplugins.nptextfile.NumpyTextFileRti', 
-                          extensions=['txt', 'text']),
+                       'libargos.repo.rtiplugins.numpyio.NumpyTextFileRti',
+                       extensions=['txt', 'text']),
 
             RtiRegItem('IDL save file',
-                          'libargos.repo.rtiplugins.scipyio.IdlSaveFileRti',
-                          extensions=['sav'])]
+                       'libargos.repo.rtiplugins.scipyio.IdlSaveFileRti',
+                       extensions=['sav']),
+
+            RtiRegItem('Pillow image',
+                       'libargos.repo.rtiplugins.pillowio.PillowFileRti',
+                        extensions=['bmp', 'eps', 'im', 'gif', 'jpg', 'jpeg', 'msp', 'pcx',
+                                    'png', 'ppm', 'spi', 'tif', 'tiff', 'xbm', 'xv'])]
 
 
 # The RTI registry is implemented as a singleton. This is necessary because

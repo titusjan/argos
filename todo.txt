@@ -4,16 +4,18 @@ TODO:
 	Config settings:
 		zoom factors
 		attribute windows
-	Refactor: remove BaseRti._asArray
+	Do not import all plugins at start-up
+	Tooltips in all tables and trees
+	Button to select inspectors.
+	Re-order dimensions when a 1D array is used in a table
+	Make SequenceRTIs and ScalarRTIs sliceable
+	Fix 'clone-window' in main menu (is there a need for a separate 'new window'?)
+	scipy.io.loadmat
+	probe
 	Interaction in IPython
 	QSettings should not use titusjan by default
 	(auto)refresh
-	Tooltips in all tables and trees
-	Button to select inspectors.
-	Re-order dimension when a 1D array is used in a table
-	Fix 'clone-window' in main menu (is there a need for a separate 'new window'?)
-	scipy.io.loadmat
-	
+
 Collectors:
 	test with Evoss sciamachy products
 
@@ -24,10 +26,10 @@ Handle Exception:
 	Resize message box.
 	
 Test:
-	Memory leaks
+	Memory leaks?
 
 TODO Long term or nice to have:
-	probe
+
 	confirm on error when editing cell
 	make argos assert and assertEqual function for sanity checks (consistent "please report this bug" text)
 	read/write config to yaml, QSettings.
@@ -77,7 +79,11 @@ BUGS:
 	PyQtGraph line plot KeyError: 'attribute units has unsupported datatype'
 	
 	When a floatCti has many decimals, the spin box doesn't cover the text behind it.
+
 	When item is unvisited, the detail panes must be updated (also the collector). Check unvisiting.
+	When an RTI is opened (fetchMore), the attribute pan must be upated.
+	When an RTI is opened (using the main menu or cttl-O), it must be selected in the repo tree.
+
 	
 PYQT_GRAPH:
 	ImageView without the menu

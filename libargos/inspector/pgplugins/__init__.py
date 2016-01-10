@@ -16,6 +16,8 @@
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
 """ Plugins that use the PyQtGraph plot library.
+
+    The default plugins are created (on registry reset) by InspectorRegistry.getDefaultItems()
 """
 import pyqtgraph as pg
 import logging

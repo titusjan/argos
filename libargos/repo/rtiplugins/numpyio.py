@@ -23,11 +23,23 @@ import numpy as np
 from libargos.qt import QtGui
 from libargos.repo.iconfactory import RtiIconFactory
 from libargos.repo.memoryrtis import ArrayRti
-from libargos.repo.baserti import ICONS_DIRECTORY
 
 logger = logging.getLogger(__name__)
 
 ICON_COLOR_NUMPY = '#8800FF'
+
+
+
+class NumpyTextColumnRti(ArrayRti):
+    """ A column in a numpy text file. Will typically be a child of a NumpyTextFileRti
+
+        Inherits from ArrayRti but shows a 'field' glyph as icon to indicate that the underlying
+        data is the same as it's parent.
+
+        No dedicated constructor defined (reuses the ArrayRti constructor)
+    """
+    _defaultIconGlyph = RtiIconFactory.FIELD
+    _defaultIconColor = ICON_COLOR_NUMPY
 
 
 class NumpyTextFileRti(ArrayRti):
@@ -62,12 +74,12 @@ class NumpyTextFileRti(ArrayRti):
     
                         
     def _fetchAllChildren(self):
-        """ Walks through all items and returns node to fill the repository
+        """ Adds an ArrayRti per column as children so that they can be inspected easily
         """
         childItems = []
         _nRows, nCols = self._array.shape if self._array is not None else (0, 0)
         for col in range(nCols):
-            colItem = ArrayRti(self._array[:, col], nodeName="column-{}".format(col),
-                               fileName=self.fileName, iconColor=self.iconColor)
+            colItem = NumpyTextColumnRti(self._array[:, col], nodeName="column-{}".format(col),
+                                         fileName=self.fileName, iconColor=self.iconColor)
             childItems.append(colItem)
         return childItems

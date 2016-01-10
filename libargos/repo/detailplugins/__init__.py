@@ -16,4 +16,6 @@
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
 """ Repository details plugins package.
+
+    The default plugins are created (on registry reset) by RtiRegistry.getDefaultItems()
 """

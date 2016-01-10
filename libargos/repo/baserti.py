@@ -27,7 +27,6 @@ from libargos.qt.treeitems import AbstractLazyLoadTreeItem
 from libargos.repo.iconfactory import RtiIconFactory
 from libargos.utils.cls import StringType, check_class, is_a_sequence
 
-ICONS_DIRECTORY = os.path.join(program_directory(), 'img/icons')
 
 logger = logging.getLogger(__name__)
 
@@ -224,7 +223,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
             Otherwise the _defaultIconColor of the class is returned.
             :rtype: string
         """
-        if hasattr(self, "_iconColor"):
+        if hasattr(self, "_iconColor"): # TODO: probably better override this in descendants.
             return getattr(self, "_iconColor")
         else:
             return self._defaultIconColor
@@ -304,7 +303,8 @@ class BaseRti(AbstractLazyLoadTreeItem):
         """
         return ""
 
-                
+
+    # TODO: setter?
     @property
     def attributes(self):
         """ The attribute dictionary. 

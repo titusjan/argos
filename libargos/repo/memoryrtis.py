@@ -16,12 +16,17 @@
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
 """ Store and Tree items for representing data that is stored in memory.
+
+    They do implement a _closeResources() method that sets the references to the memory to None
+    when the RTI is closed/deleted. This is perhaps not necessary but it might be possible that
+    an RTI shares an object (indirectly) with its parent, causing a circular dependency. Setting
+    the references to None breaks the cycle.
+
+    The memory-RTIs store the attributes per-object instead of per-class.
 """
 import logging, os
-import numpy as np
 
-from .baserti import ICONS_DIRECTORY, BaseRti
-from libargos.qt import QtGui
+from .baserti import BaseRti
 from libargos.repo.iconfactory import RtiIconFactory
 from libargos.utils.cls import (check_is_a_sequence, check_is_a_mapping, check_is_an_array,  
                                 is_a_sequence, is_a_mapping, is_an_array, type_name)
@@ -29,15 +34,20 @@ from libargos.utils.misc import NOT_SPECIFIED
 
 logger = logging.getLogger(__name__)
 
-def _createFromObject(obj, nodeName, fileName):
+def _createFromObject(obj, *args, **kwargs):
+    """ Creates an RTI given an object. Auto-detects which RTI class to return.
+        The *args and **kwargs parameters are passed to the RTI constructor.
+        It is therefor important that all memory RTIs accept the same parameters in the
+        constructor (with exception of the FieldRti which is not auto-detected).
+    """
     if is_a_sequence(obj):
-        return SequenceRti(obj, nodeName=nodeName, fileName=fileName)
+        return SequenceRti(obj, *args, **kwargs)
     elif is_a_mapping(obj):
-        return MappingRti(obj, nodeName=nodeName, fileName=fileName)
+        return MappingRti(obj, *args, **kwargs)
     elif is_an_array(obj):
-        return ArrayRti(obj, nodeName=nodeName, fileName=fileName)
+        return ArrayRti(obj, *args, **kwargs)
     else:
-        return ScalarRti(obj, nodeName=nodeName, fileName=fileName)
+        return ScalarRti(obj, *args, **kwargs)
 
 
 
@@ -50,15 +60,35 @@ class ScalarRti(BaseRti):
     _defaultIconGlyph = RtiIconFactory.SCALAR
     _defaultIconColor = RtiIconFactory.COLOR_MEMORY
 
-    def __init__(self, scalar, nodeName='', fileName='', iconColor=_defaultIconColor):
+    def __init__(self, scalar, nodeName='', fileName='',
+                 attributes=None, iconColor=_defaultIconColor):
         super(ScalarRti, self).__init__(nodeName = nodeName, fileName=fileName)
         self._scalar = scalar
         self._iconColor = iconColor
-    
+        self._attributes = {} if attributes is None else attributes
+
+
+    def _closeResources(self):
+        """ Sets the object references to None.
+        """
+        self._attributes = {}
+        self._scalar = None
+
+
+    @property
+    def attributes(self):
+        """ The attribute dictionary.
+            Reimplemented from BaseRti: he attribute dictionary is stored per-object instead of
+            per-class.
+        """
+        return self._attributes
+
+
     @property
     def elementTypeName(self):
         return type_name(self._scalar)
-    
+
+
     def hasChildren(self):
         """ Returns False. Leaf nodes never have children. """
         return False
@@ -66,19 +96,38 @@ class ScalarRti(BaseRti):
     
 
 class FieldRti(BaseRti):
-    """ Repository Tree Item (RTI) that contains a field in a compound numpy array. 
-    """ 
+    """ Repository Tree Item (RTI) that contains a field in a compound numpy array.
+    """
     _defaultIconGlyph = RtiIconFactory.FIELD
     _defaultIconColor = RtiIconFactory.COLOR_MEMORY
 
-    def __init__(self, array, nodeName, fileName='', iconColor=_defaultIconColor):
+    def __init__(self, array, nodeName, fileName='',
+                 attributes=None, iconColor=_defaultIconColor):
         """ Constructor.
-            The name of the field must be given to the nodeName parameter. 
+            The name of the field must be given to the nodeName parameter.
+            The attributes can be set so the parent's attributes can be reused.
         """
         super(FieldRti, self).__init__(nodeName, fileName=fileName)
         check_is_an_array(array, allow_none=True)
         self._array = array
         self._iconColor = iconColor
+        self._attributes = {} if attributes is None else attributes
+
+
+    def _closeResources(self):
+        """ Sets the object references to None.
+        """
+        self._attributes = {}
+        self._array = None
+
+
+    @property
+    def attributes(self):
+        """ The attribute dictionary.
+            Reimplemented from BaseRti: he attribute dictionary is stored per-object instead of
+            per-class.
+        """
+        return self._attributes
         
 
     def hasChildren(self):
@@ -138,7 +187,8 @@ class ArrayRti(BaseRti):
     _defaultIconGlyph = RtiIconFactory.ARRAY
     _defaultIconColor = RtiIconFactory.COLOR_MEMORY
 
-    def __init__(self, array, nodeName='', fileName='', iconColor=_defaultIconColor):
+    def __init__(self, array, nodeName='', fileName='',
+                 attributes=None, iconColor=_defaultIconColor):
         """ Constructor. 
             :param array: the underlying array. May be undefined (None)
             :type array: numpy.ndarray or None
@@ -147,13 +197,36 @@ class ArrayRti(BaseRti):
         check_is_an_array(array, allow_none=True) # TODO: what about masked arrays?
         self._array = array
         self._iconColor = iconColor
+        self._attributes = {} if attributes is None else attributes
 
-            
-    def hasChildren(self):
+
+    def _closeResources(self):
+        """ Sets the object references to None.
+        """
+        self._attributes = {}
+        self._array = None
+
+
+    @property
+    def attributes(self):
+        """ The attribute dictionary.
+            Reimplemented from BaseRti: he attribute dictionary is stored per-object instead of
+            per-class.
+        """
+        return self._attributes
+
+
+    @property
+    def isCompound(self):
         """ Returns True if the variable has a compound type, otherwise returns False.
         """
         return self._array is not None and bool(self._array.dtype.names)
            
+
+    def hasChildren(self):
+        """ Returns True if the variable has a compound type, otherwise returns False.
+        """
+        return self.isCompound
 
     @property
     def isSliceable(self):
@@ -206,21 +279,25 @@ class ArrayRti(BaseRti):
         childItems = []
 
         # Add fields in case of an array of compound type.
-        if self.hasChildren():
+        if self.isCompound:
             for fieldName in self._array.dtype.names:
-                childItems.append(FieldRti(self._array, nodeName=fieldName,
-                                           fileName=self.fileName))
-        #self._childrenFetched = True # TODO: necessary?
+                childItem = FieldRti(self._array, nodeName=fieldName, fileName=self.fileName)
+                childItems.append(childItem)
+
+        #self._childrenFetched = True # TODO: necessary? (already done in ancestor?)
         return childItems
     
 
 class SequenceRti(BaseRti):
-    """ Represents a sequence (e.g. a list or a tuple)
+    """ Represents a sequence (e.g. a list or a tuple).
+
+        A sequence is always one-dimensional.
     """
     _defaultIconGlyph = RtiIconFactory.SEQUENCE
     _defaultIconColor = RtiIconFactory.COLOR_MEMORY
     
-    def __init__(self, sequence, nodeName='', fileName='', iconColor=_defaultIconColor):
+    def __init__(self, sequence, nodeName='', fileName='',
+                 attributes=None, iconColor=_defaultIconColor):
         """ Constructor. 
             :param sequence: the underlying sequence. May be undefined (None)
             :type array: None or a Python sequence (e.g. list or tuple)
@@ -228,19 +305,27 @@ class SequenceRti(BaseRti):
         super(SequenceRti, self).__init__(nodeName=nodeName, fileName=fileName)
         check_is_a_sequence(sequence, allow_none=True)
         self._sequence = sequence
-        self._array = NOT_SPECIFIED # To cache the sequence converted to a numpy array.
+        #self._array = NOT_SPECIFIED # To cache the sequence converted to a numpy array.
         self._iconColor = iconColor
-   
-    @property
-    def _asArray(self):
-        """ The sequence converted to a Numpy array. Returns None if the conversion fails
+        self._attributes = {} if attributes is None else attributes
+
+
+    def _closeResources(self):
+        """ Sets the object references to None.
         """
-        if self._array is NOT_SPECIFIED:
-            try:
-                self._array = np.array(self._sequence)
-            except:
-                self._array = None
-        return self._array
+        self._attributes = {}
+        #self._array = NOT_SPECIFIED
+        self._sequence = None
+
+
+    @property
+    def attributes(self):
+        """ The attribute dictionary.
+            Reimplemented from BaseRti: he attribute dictionary is stored per-object instead of
+            per-class.
+        """
+        return self._attributes
+
     
     @property
     def typeName(self):
@@ -265,7 +350,8 @@ class MappingRti(BaseRti):
     _defaultIconGlyph = RtiIconFactory.FOLDER
     _defaultIconColor = RtiIconFactory.COLOR_MEMORY
     
-    def __init__(self, dictionary, nodeName='', fileName='', iconColor=_defaultIconColor):
+    def __init__(self, dictionary, nodeName='', fileName='',
+                 attributes=None, iconColor=_defaultIconColor):
         """ Constructor.
             The dictionary may be None for under(or None for undefined/unopened nodes)
         """
@@ -273,6 +359,23 @@ class MappingRti(BaseRti):
         check_is_a_mapping(dictionary, allow_none=True)
         self._dictionary = dictionary
         self._iconColor = iconColor
+        self._attributes = {} if attributes is None else attributes
+
+
+    def _closeResources(self):
+        """ Sets the object references to None.
+        """
+        self._attributes = {}
+        self._dictionary = None
+
+
+    @property
+    def attributes(self):
+        """ The attribute dictionary.
+            Reimplemented from BaseRti: he attribute dictionary is stored per-object instead of
+            per-class.
+        """
+        return self._attributes
 
 
     @property
@@ -293,6 +396,7 @@ class MappingRti(BaseRti):
 
         if self.hasChildren():
             for key, value in sorted(self._dictionary.items()):
+                # TODO: pass the attributes to the children? (probably not)
                 childItem = _createFromObject(value, str(key), self.fileName)
                 childItem._iconColor = self.iconColor
                 childItems.append(childItem)
