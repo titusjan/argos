@@ -26,7 +26,7 @@ from libargos.repo.memoryrtis import ArrayRti
 
 logger = logging.getLogger(__name__)
 
-ICON_COLOR_NUMPY = '#8800FF'
+ICON_COLOR_NUMPY = '#987456'
 
 
 

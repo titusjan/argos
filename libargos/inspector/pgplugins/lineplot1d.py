@@ -22,7 +22,14 @@ from __future__ import division, print_function
 import logging
 import pyqtgraph as pg
 
-from pyqtgraph.graphicsItems.PlotItem import PlotItem
+USE_SIMPLE_PLOT = False
+
+if USE_SIMPLE_PLOT:
+    from pyqtgraph.graphicsItems.PlotItem.simpleplotitem import SimplePlotItem
+else:
+    from pyqtgraph.graphicsItems.PlotItem import PlotItem
+
+
 
 from libargos.qt import QtGui
 from libargos.info import DEBUGGING
@@ -92,8 +99,14 @@ class PgLinePlot1d(AbstractInspector):
         self.viewBox = pg.ViewBox(border=pg.mkPen("#000000", width=1))#), lockAspect=1.0)
 
         self.graphicsView = pg.GraphicsView() # TODO: use scale to image?
-        self.plotItem = pg.PlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
-                                    title='', enableMenu=True, viewBox=self.viewBox) # TODO: enableMenu=False
+
+        if USE_SIMPLE_PLOT:
+            self.plotItem = SimplePlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
+                                           title='', enableMenu=True, viewBox=self.viewBox) # TODO: enableMenu=False
+        else:
+            self.plotItem = pg.PlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
+                                        title='', enableMenu=True, viewBox=self.viewBox)
+
         self.viewBox.setParent(self.plotItem)
         self.graphicsView.setCentralItem(self.plotItem)
         self.contentsLayout.addWidget(self.graphicsView)

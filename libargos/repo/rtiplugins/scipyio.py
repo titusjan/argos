@@ -28,7 +28,7 @@ from libargos.repo.iconfactory import RtiIconFactory
 
 logger = logging.getLogger(__name__)
 
-ICON_COLOR_SCIPY = '#8800FF'
+ICON_COLOR_SCIPY = '#987456'
 
 
 class IdlSaveFileRti(MappingRti):

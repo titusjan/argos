@@ -91,6 +91,8 @@ PYQT_GRAPH:
 	 
 	
 DATA & LIBS:
+    http://pandas-datareader.readthedocs.org/en/latest/remote_data.html#google-finance
+    
 	http://www.reddit.com/r/Python/comments/2vn1yz/what_is_the_best_way_to_create_deb_package_from/
 	
 	http://www.kdnuggets.com/datasets/index.html
