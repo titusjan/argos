@@ -66,14 +66,14 @@ class RepoTreeView(ArgosTreeView):
         self.addHeaderContextMenu(checked=checked, enabled=enabled, checkable={})
         
         # Add actions
-        self.topLevelItemActionGroup = QtGui.QActionGroup(self)
+        self.topLevelItemActionGroup = QtGui.QActionGroup(self) # TODO: not used anymore?
         self.topLevelItemActionGroup.setExclusive(False)
         self.currentItemActionGroup = QtGui.QActionGroup(self)
         self.currentItemActionGroup.setExclusive(False)
         
-        removeFileAction = QtGui.QAction("Remove File", self.topLevelItemActionGroup, 
+        removeFileAction = QtGui.QAction("Remove from Tree", self.currentItemActionGroup,
                                          shortcut=QtGui.QKeySequence.Delete,  
-                                         triggered=self.removeCurrentFile)
+                                         triggered=self.removeCurrentItem)
         self.addAction(removeFileAction)
         
         reloadFileAction = QtGui.QAction("Reload File", self.currentItemActionGroup, 
@@ -81,7 +81,7 @@ class RepoTreeView(ArgosTreeView):
                                          triggered=self.reloadFileOfCurrentItem)
         self.addAction(reloadFileAction)
         
-        openItemAction = QtGui.QAction("Visit Item", self.currentItemActionGroup, 
+        openItemAction = QtGui.QAction("Open Item", self.currentItemActionGroup,
                                        shortcut="Ctrl+Shift+U", 
                                        triggered=self.openCurrentItem)
         self.addAction(openItemAction)
@@ -178,7 +178,7 @@ class RepoTreeView(ArgosTreeView):
                                     # in another view (TODO: what to do about this?)
         
     @QtSlot()
-    def removeCurrentFile(self):
+    def __not_used__removeCurrentFile(self):
         """ Finds the root of of the current item, which represents a file, 
             and removes it from the list.
         """
@@ -188,7 +188,19 @@ class RepoTreeView(ArgosTreeView):
             return
 
         topLevelIndex = self.model().findTopLevelItemIndex(currentIndex)
-        self.model().deleteItemByIndex(topLevelIndex) # this will close the items resources.
+        self.model().deleteItemAtIndex(topLevelIndex) # this will close the items resources.
+
+
+    @QtSlot()
+    def removeCurrentItem(self):
+        """ Removes the current item from the repository tree.
+        """
+        logger.debug("removeCurrentFile")
+        currentIndex = self.getRowCurrentIndex()
+        if not currentIndex.isValid():
+            return
+
+        self.model().deleteItemAtIndex(currentIndex) # this will close the items resources.
 
     
     @QtSlot()

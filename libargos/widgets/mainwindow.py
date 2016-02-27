@@ -199,7 +199,7 @@ class MainWindow(QtGui.QMainWindow):
         action.setShortcut(QtGui.QKeySequence("Ctrl+i")) 
         
         action = fileMenu.addAction("&New Window...", self.argosApplication.addNewMainWindow)
-        action.setShortcut(QtGui.QKeySequence("Ctrl+N")) # TODO
+        action.setShortcut(QtGui.QKeySequence("Ctrl+N")) # TODO. Should open inspector selection window
         
         action = fileMenu.addAction("&Clone Window", self.argosApplication.addNewMainWindow)
         action.setShortcut(QtGui.QKeySequence("Ctrl+Shift+N"))

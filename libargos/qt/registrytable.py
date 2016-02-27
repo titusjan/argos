@@ -113,13 +113,13 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
             return None
 
 
-    def getItemForIndex(self, index):
+    def itemFromIndex(self, index):
         """ Gets the item given the model index
         """
         return self.registry.items[index.row()]
 
 
-    def getIndexForItem(self, regItem, col=0):
+    def indexFromItem(self, regItem, col=0):
         """ Gets the index (with column=0) for the row that contains the regItem
             If col is negative, it is counted from the end
         """
@@ -136,8 +136,8 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
     def emitDataChanged(self, regItem):
         """ Emits the dataChagned signal for the regItem
         """
-        leftIndex = self.getIndexForItem(regItem, col=0)
-        rightIndex = self.getIndexForItem(regItem, col=-1)
+        leftIndex = self.indexFromItem(regItem, col=0)
+        rightIndex = self.indexFromItem(regItem, col=-1)
 
         logger.debug("Data changed: {} ...{}".format(self.data(leftIndex), self.data(rightIndex)))
         self.dataChanged.emit(leftIndex, rightIndex)
@@ -181,18 +181,18 @@ class RegistryTableProxyModel(QtGui.QSortFilterProxyModel):
         return leftData < rightData
 
 
-    def getItemForIndex(self, index):
+    def itemFromIndex(self, index):
         """ Gets the item given the model index
         """
         sourceIndex = self.mapToSource(index)
-        return self.sourceModel().getItemForIndex(sourceIndex)
+        return self.sourceModel().itemFromIndex(sourceIndex)
 
 
-    def getIndexForItem(self, regItem, col=0):
+    def indexFromItem(self, regItem, col=0):
         """ Gets the index (with column=0) for the row that contains the regItem
             If col is negative, it is counted from the end
         """
-        sourceIndex = self.sourceModel().getIndexForItem(regItem, col=col)
+        sourceIndex = self.sourceModel().indexFromItem(regItem, col=col)
         return self.mapFromSource(sourceIndex)
 
 
@@ -200,8 +200,8 @@ class RegistryTableProxyModel(QtGui.QSortFilterProxyModel):
         """ Emits the dataChagned signal for the regItem
         """
         #self.sourceModel().emitDataChanged(regItem) # Does this work?
-        leftIndex = self.getIndexForItem(regItem, col=0)
-        rightIndex = self.getIndexForItem(regItem, col=-1)
+        leftIndex = self.indexFromItem(regItem, col=0)
+        rightIndex = self.indexFromItem(regItem, col=-1)
         self.dataChanged.emit(leftIndex, rightIndex)
 
 
@@ -259,13 +259,13 @@ class RegistryTableView(ToggleColumnTableView):
             Returns a tuple with the current item, and its index.
             See also the notes at the top of this module on current item vs selected item(s).
         """
-        return self.model().getItemForIndex(self.currentIndex())
+        return self.model().itemFromIndex(self.currentIndex())
 
 
     def setCurrentRegItem(self, regItem):
         """ Sets the current registry item.
         """
-        rowIndex = self.model().getIndexForItem(regItem)
+        rowIndex = self.model().indexFromItem(regItem)
         if not rowIndex.isValid():
             logger.warn("Can't select {!r} in table".format(regItem))
         self.setCurrentIndex(rowIndex)
