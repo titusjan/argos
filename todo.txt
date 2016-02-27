@@ -4,12 +4,14 @@ TODO:
 	Config settings:
 		zoom factors
 		attribute windows
-	Do not import all plugins at start-up
+
 	Tooltips in all tables and trees
 	Button to select inspectors.
 	Re-order dimensions when a 1D array is used in a table
 	Make SequenceRTIs and ScalarRTIs sliceable
-	Fix 'clone-window' in main menu (is there a need for a separate 'new window'?)
+	Inspector selection dropwindow (use in new window)
+	    Fix 'clone-window' in main menu (is there a need for a separate 'new window'?)
+
 	scipy.io.loadmat
 	probe
 	Interaction in IPython

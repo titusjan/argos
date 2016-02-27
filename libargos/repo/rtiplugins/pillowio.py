@@ -113,9 +113,9 @@ class PillowFileRti(ArrayRti):
         """ Adds the bands as separate fields so they can be inspected easily.
         """
         bands = self._image.getbands()
-        if len(bands) != self._array.ndim:
-            logger.warn("No bands added, bands != ndims ({} !: {}"
-                        .format(len(bands), self._array.ndim))
+        if len(bands) != self._array.shape[-1]:
+            logger.warn("No bands added, bands != last_dim_lenght ({} !: {})"
+                        .format(len(bands), self._array.shape[-1]))
             return []
 
         childItems = []
