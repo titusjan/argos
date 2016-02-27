@@ -34,7 +34,9 @@ logger = logging.getLogger(__name__)
 
 class ToggleColumnMixIn(object):
     """ Adds actions to a QTableView that can show/hide columns 
-        by right clicking on the header
+        by right clicking on the header.
+
+        Has functionality for reading/writing from persitent settings.
     """ 
     def addHeaderContextMenu(self, checked = None, checkable = None, enabled = None):
         """ Adds the context menu from using header information

@@ -20,10 +20,8 @@ from __future__ import print_function
 
 import logging
 
-from libargos.repo.baserti import BaseRti
 from libargos.qt import Qt, QtGui, QtSlot
-from libargos.qt.labeledwidget import LabeledWidget
-from libargos.widgets.argostreeview import ArgosTreeView
+from libargos.qt.togglecolumn import ToggleColumnTreeView
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +29,7 @@ logger = logging.getLogger(__name__)
 #pylint: disable=R0901
 
 #TODO: do we still need this as a separate class?
-class CollectorTree(ArgosTreeView): 
+class CollectorTree(ToggleColumnTreeView):
     """ Tree widget for collecting the selected data. Includes an internal tree model.
     
         NOTE: this class is not meant to be used directly but is 'private' to the Collector().
@@ -52,12 +50,23 @@ class CollectorTree(ArgosTreeView):
         model = QtGui.QStandardItemModel(3, nCols)
         self.setModel(model)
         self.setTextElideMode(Qt.ElideMiddle) # ellipsis appear in the middle of the text
- 
+
+        self.setAlternatingRowColors(True)
+        self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.setAnimated(True)
+        self.setAllColumnsShowFocus(True)
+        self.setContextMenuPolicy(Qt.ActionsContextMenu)
+
         treeHeader = self.header()
         treeHeader.setStretchLastSection(False)
         treeHeader.setMovable(False)
         
         treeHeader.resizeSection(0, 300) # For item path
+        treeHeader.setResizeMode(QtGui.QHeaderView.Interactive) # don't set to stretch
+        treeHeader.setStretchLastSection(True)
+
         for col in range(1, nCols):
             treeHeader.resizeSection(col, 150)
 
@@ -69,3 +78,4 @@ class CollectorTree(ArgosTreeView):
         #checked = dict((name, True) for name in self.HEADERS)
         #self.addHeaderContextMenu(checked=checked, enabled=enabled, checkable={})
     
+

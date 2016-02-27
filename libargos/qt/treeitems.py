@@ -205,7 +205,7 @@ class BaseTreeItem(object):
         """ Gets the index (nr) of this node in its parent's list of children.
         """
         # This is O(n) in time. # TODO: store row number in the items?
-        if self.parentItem != None:
+        if self.parentItem is not None:
             return self.parentItem.childItems.index(self)
         return 0
 

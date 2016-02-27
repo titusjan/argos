@@ -48,6 +48,8 @@ from __future__ import print_function
 import logging
 from libargos.qt import Qt, QtGui
 from libargos.qt.togglecolumn import ToggleColumnTreeView
+from libargos.qt.treemodels import BaseTreeModel
+from libargos.utils.cls import check_class
 
 
 logger = logging.getLogger(__name__)
@@ -57,6 +59,8 @@ logger = logging.getLogger(__name__)
 
 class ArgosTreeView(ToggleColumnTreeView):
     """ QTreeView that defines common functionality, look and feel for all tree views in Argos.
+
+        The model must be a BaseTreeModel
     """
     def __init__(self, treeModel=None, parent=None):
         """ Constructor
@@ -79,6 +83,14 @@ class ArgosTreeView(ToggleColumnTreeView):
         treeHeader.setStretchLastSection(True)
 
         self.setContextMenuPolicy(Qt.ActionsContextMenu)
+
+
+    def setModel(self, model):
+        """ Sets the model.
+            Checks that the model is a
+        """
+        check_class(model, BaseTreeModel)
+        super(ArgosTreeView, self).setModel(model)
 
 
     def setCurrentIndex(self, currentIndex):
