@@ -28,7 +28,6 @@ from libargos.repo.repotreemodel import RepoTreeModel
 from libargos.repo.registry import globalRtiRegistry
 from libargos.utils.misc import string_to_identifier
 from libargos.widgets.mainwindow import MainWindow
-from libargos.widgets.pluginsdialog import PluginsDialog
 
 logger = logging.getLogger(__name__)
 
@@ -124,11 +123,7 @@ class ArgosApplication(object):
         self._mainWindows = []
         self._settingsSaved = False  # boolean to prevent saving settings twice
         
-        self.pluginsDialog = PluginsDialog(parent=None,
-                                inspectorRegistry=self.inspectorRegistry, 
-                                rtiRegistry=self.rtiRegistry)
-                
-        self.qApplication.lastWindowClosed.connect(self.quit) 
+        self.qApplication.lastWindowClosed.connect(self.quit)
         
         # Call setup when the event loop starts.
         QtCore.QTimer.singleShot(0, self.setup)
@@ -143,9 +138,7 @@ class ArgosApplication(object):
         #self.raiseAllWindows()
         # activateWindow also solves the issue but doesn't work with the --inspector option.
         self.mainWindows[0].activateWindow() 
-        
-        self.pluginsDialog.tryImportAllPlugins()
-        
+
         
     @property
     def qApplication(self):

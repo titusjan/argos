@@ -22,7 +22,7 @@ from __future__ import print_function
 import logging
 
 from libargos.qt.registry import ClassRegItem
-from libargos.qt.registrytable import RegistryTableModel, RegistryTableView
+from libargos.qt.registrytable import RegistryTableModel, RegistryTableProxyModel, RegistryTableView
 from libargos.qt.registrytable import QCOLOR_REGULAR, QCOLOR_NOT_IMPORTED, QCOLOR_ERROR
 from libargos.qt import QtCore, QtGui, Qt, QtSlot
 from libargos.utils.cls import check_class
@@ -36,21 +36,24 @@ logger = logging.getLogger(__name__)
 
 class RegistryTab(QtGui.QWidget):
     """ Tab that shows the contents of a single plugin registry.
-    
-        SIDE EFFECT: will try to import all underlying classes.
-            This is done so that error information can be displayed when import was unsuccessful.
+
     """
     def __init__(self, registry, parent=None, 
                  attrNames=None, headerNames=None, headerSizes=None, 
-                 onlyShowImported=False):
+                 onlyShowImported=False, importOnSelect=True):
         """ Constructor.
         
-            If onlyShowImported == True, regItems that are not (successfully) imported are 
-            filtered from the table.
+            If onlyShowImported is True, regItems that are not (successfully) imported are
+            filtered from the table. By default onlyShowImported is False.
+
+            If importOnSelect is True (the default), the item is imported if the user
+            selects it.
         """
         super(RegistryTab, self).__init__(parent=parent)
+        self._importOnSelect = importOnSelect
         self._onlyShowImported = onlyShowImported
         self._registry = registry
+
         
         attrNames = [] if attrNames is None else attrNames
         headerNames = attrNames if headerNames is None else headerNames
@@ -62,22 +65,38 @@ class RegistryTab(QtGui.QWidget):
                 "Size mismatch {} != {}".format(len(headerSizes), len(attrNames))
 
         layout = QtGui.QVBoxLayout(self)
+        statusLayout = QtGui.QHBoxLayout()
+        layout.addLayout(statusLayout)
+
+        self.statusLabel = QtGui.QLabel("")
+        statusLayout.addWidget(self.statusLabel)
+        statusLayout.setStretch(0, 1)
+
+        self.loadAllButton = QtGui.QPushButton("Load all")
+        self.loadAllButton.setFocusPolicy(Qt.ClickFocus)
+        self.loadAllButton.clicked.connect(self.tryImportAllPlugins)
+        statusLayout.addWidget(self.loadAllButton)
+        statusLayout.setStretch(1, 0)
+
         splitter = QtGui.QSplitter(Qt.Vertical)
         layout.addWidget(splitter)
         
         # Table
-        self.tableModel = RegistryTableModel(self._registry, attrNames=attrNames, parent=self)
-        self.table = RegistryTableView(self.tableModel, onlyShowImported=self.onlyShowImported)
-        
-        tableHeader = self.table.horizontalHeader()
+        tableModel = RegistryTableModel(self._registry, attrNames=attrNames, parent=self)
+        proxyTableModel = RegistryTableProxyModel(parent=self,
+                                                  onlyShowImported=self._onlyShowImported)
+        proxyTableModel.setSourceModel(tableModel)
+        self.tableView = RegistryTableView(proxyTableModel, onlyShowImported=self.onlyShowImported)
+
+        tableHeader = self.tableView.horizontalHeader()
         for col, headerSize in enumerate(headerSizes):
             if headerSize:
                 tableHeader.resizeSection(col, headerSize)
                 
-        selectionModel = self.table.selectionModel()
+        selectionModel = self.tableView.selectionModel()
         selectionModel.currentRowChanged.connect(self.currentItemChanged)
                 
-        splitter.addWidget(self.table)
+        splitter.addWidget(self.tableView)
         splitter.setCollapsible(0, False)
         
         # Detail info widget
@@ -87,17 +106,16 @@ class RegistryTab(QtGui.QWidget):
         font.setPointSize(13)
 
         self.editor = QtGui.QTextEdit()
-        self.editor = QtGui.QTextEdit()
         self.editor.setReadOnly(True)
         self.editor.setFont(font)
         self.editor.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.editor.clear()      
         splitter.addWidget(self.editor)
-        splitter.setCollapsible(1, False) # True?
+        splitter.setCollapsible(1, False)
         splitter.setSizes([300, 150])
-    
-        self.tryImportAllPlugins()
-        
+
+        self.tableView.setFocus(Qt.NoFocusReason)
+
 
     @property
     def onlyShowImported(self):
@@ -110,36 +128,41 @@ class RegistryTab(QtGui.QWidget):
         "Returns the items from the registry"
         return self._registry.items
 
+
+    def importRegItem(self, regItem):
+        """ Imports the regItem
+            Writes this in the statusLabel while the import is in progress.
+        """
+        self.statusLabel.setText("Importing {}...".format(regItem.fullName))
+        QtGui.qApp.processEvents()
+        regItem.tryImportClass()
+        self.tableView.model().emitDataChanged(regItem)
+        self.statusLabel.setText("")
+        QtGui.qApp.processEvents()
+
     
     def tryImportAllPlugins(self):
         """ Tries to import all underlying plugin classes
         """ 
-        logger.debug("Importing all plugins in the registry: {}".format(self._registry))
-        
-        self.tableModel.beginResetModel()
-        try:
-            for regItem in self.registeredItems:
-                if not regItem.triedImport:
-                    regItem.tryImportClass()
-        finally:
-            self.tableModel.endResetModel()
-            
-        logger.debug("Importing finished.")            
-            
-    
+        for regItem in self.registeredItems:
+            if not regItem.triedImport:
+                self.importRegItem(regItem)
+
+        logger.debug("Importing finished.")
+
+
     def getCurrentRegItem(self):
         """ Returns the item that is currently selected in the table. 
             Can return None if there is no data in the table
         """
-        return self.table.getCurrentRegItem()
+        return self.tableView.getCurrentRegItem()
     
     
     def setCurrentRegItem(self, regItem):
-        """ Returns the item that is currently selected in the table. 
-            Can return None if there is no data in the table
+        """ Sets the current item to the regItem
         """
         check_class(regItem, ClassRegItem, allow_none=True)
-        return self.table.setCurrentRegItem(regItem)
+        self.tableView.setCurrentRegItem(regItem)
     
     
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
@@ -154,7 +177,10 @@ class RegistryTab(QtGui.QWidget):
 
         if regItem is None:
             return
-        
+
+        if self._importOnSelect and regItem.successfullyImported is None:
+            self.importRegItem(regItem)
+
         if regItem.successfullyImported is None:
             self.editor.setTextColor(QCOLOR_NOT_IMPORTED)
             self.editor.setPlainText('<plugin not yet imported>')     
@@ -164,15 +190,12 @@ class RegistryTab(QtGui.QWidget):
         elif regItem.descriptionHtml:
             self.editor.setHtml(regItem.descriptionHtml)
         else:
-            self.editor.setPlainText(regItem.docString)     
+            self.editor.setPlainText(regItem.docString)
 
-        
+
         
 class PluginsDialog(QtGui.QDialog): 
     """ Dialog window that shows the installed plugins.
-    
-        SIDE EFFECT: will try to import all underlying classes.
-            This is done so that error information can be displayed when import was unsuccessful.
     """
 
     def __init__(self, 
@@ -206,20 +229,20 @@ class PluginsDialog(QtGui.QDialog):
 
         # Sort by fullName by default.
         for tabNr in range(self.tabWidget.count()):
-            self.tabWidget.widget(tabNr).table.sortByColumn(0, Qt.AscendingOrder) 
+            self.tabWidget.widget(tabNr).tableView.sortByColumn(0, Qt.AscendingOrder)
 
         # Buttons
         buttonBox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok)
         buttonBox.accepted.connect(self.accept)
         layout.addWidget(buttonBox)
-        
+
         self.resize(QtCore.QSize(1100, 700))
-        
+
     
     def tryImportAllPlugins(self):
         """ Refreshes the tables of all tables by importing the underlying classes
         """
-        logger.debug("Resetting: {}".format(self))
+        logger.debug("Importing plugins: {}".format(self))
         for tabNr in range(self.tabWidget.count()):
             tab = self.tabWidget.widget(tabNr)
             tab.tryImportAllPlugins()

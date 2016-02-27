@@ -30,6 +30,7 @@ from libargos.info import DEBUGGING, PROJECT_NAME
 from libargos.inspector.dialog import OpenInspectorDialog
 from libargos.inspector.registry import InspectorRegItem
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
+
 from libargos.repo.detailplugins.attr import AttributesPane
 from libargos.repo.detailplugins.dim import DimensionsPane
 from libargos.repo.detailplugins.prop import PropertiesPane
@@ -38,6 +39,7 @@ from libargos.utils.cls import check_class
 from libargos.utils.misc import string_to_identifier
 from libargos.widgets.aboutdialog import AboutDialog
 from libargos.widgets.constants import CENTRAL_MARGIN, CENTRAL_SPACING
+from libargos.widgets.pluginsdialog import PluginsDialog
 import logging
 
 
@@ -87,6 +89,7 @@ class MainWindow(QtGui.QMainWindow):
         
         if DEBUGGING:
             # Select test item
+            #/Users/titusjan/Data/trop_lx/efm2/2014_03_10T10_09_42_swirfunctions/atp-00_td-11.raw/trl1brb6g.lx.cdf
             #path = "/trl1brb5g.lx.nc/BAND5/ICID_61347_GROUP_00000/OBSERVATIONS/signal"
             #path = "/trl1brb6g.lx.cdf/BAND6/ICID_61347_GROUP_00000/OBSERVATIONS/signal"
             path = "/trl1brb6g.lx.h5/BAND6/ICID_61347_GROUP_00000/OBSERVATIONS/signal"
@@ -213,15 +216,16 @@ class MainWindow(QtGui.QMainWindow):
         
         openAsMenu = fileMenu.addMenu("Open As")
         for rtiRegItem in self.argosApplication.rtiRegistry.items:
-            rtiRegItem.tryImportClass()   
+            #rtiRegItem.tryImportClass()
             def createTrigger():
                 "Function to create a closure with the regItem"
                 _rtiRegItem = rtiRegItem # keep reference in closure
                 return lambda: self.openFiles(rtiRegItem=_rtiRegItem, 
                                               fileMode = QtGui.QFileDialog.ExistingFiles, 
                                               caption="Open {}".format(_rtiRegItem.name))
+
             action = QtGui.QAction("{}...".format(rtiRegItem.name), self,
-                enabled=rtiRegItem.successfullyImported, 
+                enabled=bool(rtiRegItem.successfullyImported),
                 triggered=createTrigger())
             openAsMenu.addAction(action)
 
@@ -405,7 +409,10 @@ class MainWindow(QtGui.QMainWindow):
     def openPluginsDialog(self):
         """ Shows the plugins dialog with the registered plugins
         """
-        self.argosApplication.pluginsDialog.show()
+        pluginsDialog = PluginsDialog(parent=self,
+                                inspectorRegistry=self.argosApplication.inspectorRegistry,
+                                rtiRegistry=self.argosApplication.rtiRegistry)
+        pluginsDialog.exec_()
 
         
     @QtSlot()

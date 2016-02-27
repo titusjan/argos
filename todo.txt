@@ -71,6 +71,8 @@ USE CASES:
 
 BUGS:
 	https://bugreports.qt.io/browse/QTBUG-40585
+
+	No children in /Users/titusjan/Data/argos/temp-lx/task.pass-10.png
 	
 	Why doesn't value attribute show in 
 	/Users/titusjan/Data/argos/2015_04_21T01_00_34_LaserSunIsrfStraySts/quicklook_000_minutes-000-020
@@ -131,6 +133,7 @@ DATA & LIBS:
 	BColz
 	
 	# Plot and Mapping libs:
+	https://wiki.python.org/moin/NumericAndScientific/Plotting
 	http://pygal.org/chart_types/#idworldmap-charts
 	http://docs.enthought.com/chaco/quickstart.html
 	http://scikit-image.org/docs/dev/auto_examples/plot_canny.html
@@ -140,3 +143,4 @@ DATA & LIBS:
 	# color palette
 	http://tools.medialab.sciences-po.fr/iwanthue/tutorial.php
 	http://vis4.net/blog/posts/avoid-equidistant-hsv-colors/
+    http://soliton.vm.bytemark.co.uk/pub/cpt-city/

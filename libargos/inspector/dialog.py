@@ -41,7 +41,7 @@ class OpenInspectorDialog(QtGui.QDialog):
             This is done so that help and number of dimensions can be displayed.
     """
 
-    def __init__(self, registry, parent=None):
+    def __init__(self, registry, onlyShowImported=False, parent=None):
         """ Constructor
         """
         super(OpenInspectorDialog, self).__init__(parent=parent)
@@ -56,8 +56,8 @@ class OpenInspectorDialog(QtGui.QDialog):
         headerSizes = [250, 250, None]
         
         self.inspectorTab = RegistryTab(registry, attrNames=attrNames, headerSizes=headerSizes, 
-                                        onlyShowImported=True)
-        self.inspectorTab.table.sortByColumn(1, Qt.AscendingOrder) # sort by library
+                                        onlyShowImported=onlyShowImported)
+        self.inspectorTab.tableView.sortByColumn(1, Qt.AscendingOrder) # sort by library
         layout.addWidget(self.inspectorTab)
         
         # Buttons
@@ -68,9 +68,11 @@ class OpenInspectorDialog(QtGui.QDialog):
         layout.addWidget(buttonBox)
         
         # Double clicking is equivalent to selecting it and clicking Ok.
-        self.inspectorTab.table.doubleClicked.connect(self.accept)
+        self.inspectorTab.tableView.doubleClicked.connect(self.accept)
 
         self.resize(QtCore.QSize(800, 600))
+
+        #self.inspectorTab.tryImportAllPlugins()
         
         
     def getCurrentInspectorRegItem(self):

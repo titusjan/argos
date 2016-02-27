@@ -29,7 +29,7 @@ from libargos.utils.cls import check_class
 logger = logging.getLogger(__name__)
 
 QCOLOR_REGULAR = QtGui.QColor('black')
-QCOLOR_NOT_IMPORTED = QtGui.QColor('grey')
+QCOLOR_NOT_IMPORTED = QtGui.QColor('brown')
 QCOLOR_ERROR = QtGui.QColor('red')
 
 # The main window inherits from a Qt class, therefore it has many 
@@ -68,9 +68,9 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
         return len(self.attrNames)
     
 
-    def data(self, index, role):
+    def data(self, index, role=Qt.DisplayRole):
         """ Returns the data stored under the given role for the item referred to by the index.
-        """    
+        """
         if not index.isValid():
             return None
         
@@ -113,18 +113,38 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
             return None
 
 
-    def getRowIndexForItem(self, regItem):
-        """ Gets the index (with column=0) for the row that contains the regItem
+    def getItemForIndex(self, index):
+        """ Gets the item given the model index
         """
+        return self.registry.items[index.row()]
+
+
+    def getIndexForItem(self, regItem, col=0):
+        """ Gets the index (with column=0) for the row that contains the regItem
+            If col is negative, it is counted from the end
+        """
+        if col < 0:
+            col = len(self.attrNames) - col
         try:
             row = self.registry.items.index(regItem)
         except ValueError:
             return QtCore.QModelIndex()
         else:
-            return self.index(row, 0)
-        
+            return self.index(row, col)
+
+
+    def emitDataChanged(self, regItem):
+        """ Emits the dataChagned signal for the regItem
+        """
+        leftIndex = self.getIndexForItem(regItem, col=0)
+        rightIndex = self.getIndexForItem(regItem, col=-1)
+
+        logger.debug("Data changed: {} ...{}".format(self.data(leftIndex), self.data(rightIndex)))
+        self.dataChanged.emit(leftIndex, rightIndex)
+
+
     
-class RegistryTableProxModel(QtGui.QSortFilterProxyModel):
+class RegistryTableProxyModel(QtGui.QSortFilterProxyModel):
     """ Proxy model that overrides the sorting and can filter out regItems that are not imported.
     """
     def __init__(self, onlyShowImported=False, parent=None):
@@ -133,9 +153,12 @@ class RegistryTableProxModel(QtGui.QSortFilterProxyModel):
                 displayed. Default is False.
             :param parent: parent widget
         """
-        super(RegistryTableProxModel, self).__init__(parent=parent)
+        super(RegistryTableProxyModel, self).__init__(parent=parent)
         self.onlyShowImported = onlyShowImported
-        
+        self.setSortRole(RegistryTableModel.SORT_ROLE)
+        self.setDynamicSortFilter(True)
+        self.setSortCaseSensitivity(Qt.CaseInsensitive)
+
     
     def filterAcceptsRow(self, sourceRow, sourceParent):
         """ If onlyShowImported is True, regItems that were not (successfully) imported are 
@@ -156,8 +179,33 @@ class RegistryTableProxModel(QtGui.QSortFilterProxyModel):
         rightData = self.sourceModel().data(rightIndex, RegistryTableModel.SORT_ROLE)
         
         return leftData < rightData
-    
-    
+
+
+    def getItemForIndex(self, index):
+        """ Gets the item given the model index
+        """
+        sourceIndex = self.mapToSource(index)
+        return self.sourceModel().getItemForIndex(sourceIndex)
+
+
+    def getIndexForItem(self, regItem, col=0):
+        """ Gets the index (with column=0) for the row that contains the regItem
+            If col is negative, it is counted from the end
+        """
+        sourceIndex = self.sourceModel().getIndexForItem(regItem, col=col)
+        return self.mapFromSource(sourceIndex)
+
+
+    def emitDataChanged(self, regItem):
+        """ Emits the dataChagned signal for the regItem
+        """
+        #self.sourceModel().emitDataChanged(regItem) # Does this work?
+        leftIndex = self.getIndexForItem(regItem, col=0)
+        rightIndex = self.getIndexForItem(regItem, col=-1)
+        self.dataChanged.emit(leftIndex, rightIndex)
+
+
+
 class RegistryTableView(ToggleColumnTableView):
     """ QTableView that shows the contents of a registry. 
         Uses QSortFilterProxyModel as a wrapper over the model.
@@ -175,7 +223,11 @@ class RegistryTableView(ToggleColumnTableView):
         
         self._onlyShowImported = onlyShowImported
         if model is not None:
+
+            check_class(model, (RegistryTableModel, RegistryTableProxyModel))
             self.setModel(model)
+        else:
+            assert False, "not yet implemented"
             
         #self.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         #self.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
@@ -183,6 +235,7 @@ class RegistryTableView(ToggleColumnTableView):
         self.setAlternatingRowColors(True)
         self.setShowGrid(False)
         self.setSortingEnabled(True)
+        self.setTabKeyNavigation(False)
         
         self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
@@ -200,44 +253,20 @@ class RegistryTableView(ToggleColumnTableView):
         "If True, regItems that are not (successfully) imported are filtered from the table"
         return self._onlyShowImported
 
-    def setModel(self, model):
-        """ Wraps a QSortFilterProxyModel over the RegistryTableModel model to enable sorting.
-        """
-        # Replacing a current model is not (yet) implemented. We would have to delete the old
-        # proxy and selection model (and test this). See the AbstractItemView.setModel docs.
-        assert self.model() is None, "Model already defined"
-        
-        check_class(model, RegistryTableModel)
-        proxyTableModel = RegistryTableProxModel(parent=self, 
-                                                 onlyShowImported=self._onlyShowImported)
-        proxyTableModel.setSourceModel(model)
-        proxyTableModel.setSortRole(RegistryTableModel.SORT_ROLE)
-        proxyTableModel.setDynamicSortFilter(True) 
-        proxyTableModel.setSortCaseSensitivity(Qt.CaseInsensitive)
-        
-        super(RegistryTableView, self).setModel(proxyTableModel)
-        
 
-    def getCurrentRegItem(self): 
+    def getCurrentRegItem(self):
         """ Find the current tree item (and the current index while we're at it)
             Returns a tuple with the current item, and its index.
             See also the notes at the top of this module on current item vs selected item(s).
         """
-        currentSourceIndex = self.model().mapToSource(self.currentIndex())
-        registryItems = self.model().sourceModel().registry.items
-        return registryItems[currentSourceIndex.row()]
+        return self.model().getItemForIndex(self.currentIndex())
 
-        
-    def setCurrentRegItem(self, regItem): 
-        """ Find the current tree item (and the current index while we're at it)
-            Returns a tuple with the current item, and its index.
-            See also the notes at the top of this module on current item vs selected item(s).
+
+    def setCurrentRegItem(self, regItem):
+        """ Sets the current registry item.
         """
-        check_class(regItem, ClassRegItem, allow_none=True)
-        model = self.model().sourceModel()
-        sourceRowIndex = model.getRowIndexForItem(regItem)
-        rowIndex = self.model().mapFromSource(sourceRowIndex)
+        rowIndex = self.model().getIndexForItem(regItem)
         if not rowIndex.isValid():
             logger.warn("Can't select {!r} in table".format(regItem))
         self.setCurrentIndex(rowIndex)
-                
+
