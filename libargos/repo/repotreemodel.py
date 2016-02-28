@@ -132,16 +132,20 @@ class RepoTreeModel(BaseTreeModel):
                 return childIndex
 
         
-    def reloadFileAtIndex(self, itemIndex):
-        """ Finds the repo tree item that holds the file of the current item and reloads it.
-            Reloading is done by removing the repo tree item and inserting a new one.
+    def reloadFileAtIndex(self, itemIndex, rtiClass=None):
+        """ Reloads the item at the index by removing the repo tree item and inserting a new one.
+
+            The new item will have by of type rtiClass. If rtiClass is None (the default), the
+            new rtiClass will be the same as the old one.
         """        
         fileRtiParentIndex = itemIndex.parent()
         fileRti = self.getItem(itemIndex)
-        fileName = fileRti.fileName
-        rtiClass = type(fileRti)
         position = fileRti.childNumber()
-        
+        fileName = fileRti.fileName
+
+        if rtiClass is None:
+            rtiClass = type(fileRti)
+
         # Delete old RTI and Insert a new one instead.
         self.deleteItemAtIndex(itemIndex) # this will close the items resources.
         return self.loadFile(fileName, rtiClass, position=position, parentIndex=fileRtiParentIndex)

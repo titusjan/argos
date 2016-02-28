@@ -82,7 +82,7 @@ class ArgosTreeView(ToggleColumnTreeView):
         treeHeader.setResizeMode(QtGui.QHeaderView.Interactive) # don't set to stretch
         treeHeader.setStretchLastSection(True)
 
-        self.setContextMenuPolicy(Qt.ActionsContextMenu)
+
 
 
     def setModel(self, model):

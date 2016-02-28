@@ -92,7 +92,8 @@ class MainWindow(QtGui.QMainWindow):
             #/Users/titusjan/Data/trop_lx/efm2/2014_03_10T10_09_42_swirfunctions/atp-00_td-11.raw/trl1brb6g.lx.cdf
             #path = "/trl1brb5g.lx.nc/BAND5/ICID_61347_GROUP_00000/OBSERVATIONS/signal"
             #path = "/trl1brb6g.lx.cdf/BAND6/ICID_61347_GROUP_00000/OBSERVATIONS/signal"
-            path = "/trl1brb6g.lx.h5/BAND6/ICID_61347_GROUP_00000/OBSERVATIONS/signal"
+            #path = "/trl1brb6g.lx.h5/BAND6/ICID_61347_GROUP_00000/OBSERVATIONS/signal"
+            path = "/argos/visan-tutorial/gome/200305010243_41970.lv2"
             try:
                 _lastItem, lastIndex = self.repoTreeView.expandPath(path)
                 self.repoTreeView.setCurrentIndex(lastIndex)
@@ -225,7 +226,8 @@ class MainWindow(QtGui.QMainWindow):
                                               caption="Open {}".format(_rtiRegItem.name))
 
             action = QtGui.QAction("{}...".format(rtiRegItem.name), self,
-                enabled=bool(rtiRegItem.successfullyImported),
+                enabled=True, # Since this is only executed at start-up, it must be static
+                #enabled=bool(rtiRegItem.successfullyImported), # TODO: make this work?
                 triggered=createTrigger())
             openAsMenu.addAction(action)
 
@@ -250,8 +252,6 @@ class MainWindow(QtGui.QMainWindow):
         action.setShortcut(QtGui.QKeySequence("Ctrl+P"))
         
         self.viewMenu.addSeparator()
-        
-                
         ### Help Menu ###
                 
         menuBar.addSeparator()

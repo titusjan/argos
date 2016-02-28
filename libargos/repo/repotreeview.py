@@ -19,9 +19,10 @@
 from __future__ import print_function
 
 import logging
-from libargos.qt import QtGui, QtCore, QtSlot
+from libargos.qt import QtGui, QtCore, QtSlot, Qt
 from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
+from libargos.repo.registry import globalRtiRegistry
 from libargos.repo.repotreemodel import RepoTreeModel
 from libargos.widgets.argostreeview import ArgosTreeView
 from libargos.widgets.constants import (LEFT_DOCK_WIDTH, COL_NODE_NAME_WIDTH, 
@@ -49,6 +50,8 @@ class RepoTreeView(ArgosTreeView):
  
         self._collector = collector
         self._config = self.createConfig()
+
+
         
         treeHeader = self.header()
         treeHeader.resizeSection(RepoTreeModel.COL_NODE_NAME, COL_NODE_NAME_WIDTH)
@@ -64,7 +67,9 @@ class RepoTreeView(ArgosTreeView):
         checked[headerNames[RepoTreeModel.COL_SHAPE]] = False 
         checked[headerNames[RepoTreeModel.COL_ELEM_TYPE]] = False 
         self.addHeaderContextMenu(checked=checked, enabled=enabled, checkable={})
-        
+
+        self.setContextMenuPolicy(Qt.DefaultContextMenu) # will call contextMenuEvent
+
         # Add actions
         self.topLevelItemActionGroup = QtGui.QActionGroup(self) # TODO: not used anymore?
         self.topLevelItemActionGroup.setExclusive(False)
@@ -80,14 +85,14 @@ class RepoTreeView(ArgosTreeView):
                                          shortcut=QtGui.QKeySequence.Refresh,   #"Ctrl+R",  
                                          triggered=self.reloadFileOfCurrentItem)
         self.addAction(reloadFileAction)
-        
+
         self.openItemAction = QtGui.QAction("Open Item", self,
-                                       shortcut="Ctrl+Shift+C",
+                                       #shortcut="Ctrl+Shift+C",
                                        triggered=self.openCurrentItem)
         self.addAction(self.openItemAction)
-        
+
         self.closeItemAction = QtGui.QAction("Close Item", self,
-                                        shortcut="Ctrl+C",
+                                        #shortcut="Ctrl+C", # Ctrl+C already taken for Copy
                                         triggered=self.closeCurrentItem)
         self.addAction(self.closeItemAction)
         
@@ -95,7 +100,45 @@ class RepoTreeView(ArgosTreeView):
         selectionModel = self.selectionModel() # need to store to prevent crash in PySide
         selectionModel.currentChanged.connect(self.updateCurrentItemActions)
         selectionModel.currentChanged.connect(self.updateCollector)
-        
+
+
+    def contextMenuEvent(self, event):
+        """ Creates and executes the context menu for the tree view
+        """
+        menu = QtGui.QMenu(self)
+
+        for action in self.actions():
+            menu.addAction(action)
+
+        openAsMenu = self.createOpenAsMenu(parent=menu)
+        menu.insertMenu(self.closeItemAction, openAsMenu)
+
+        menu.exec_(event.globalPos())
+
+
+
+    def createOpenAsMenu(self, parent=None):
+        """ Creates the submenu for the Open As choice
+        """
+        openAsMenu = QtGui.QMenu(parent=parent)
+        openAsMenu.setTitle("Open Item As")
+
+        registry = globalRtiRegistry()
+        for rtiRegItem in registry.items:
+            #rtiRegItem.tryImportClass()
+            def createTrigger():
+                """Function to create a closure with the regItem"""
+                _rtiRegItem = rtiRegItem # keep reference in closure
+                return lambda: self.reloadFileOfCurrentItem(_rtiRegItem)
+
+            action = QtGui.QAction("{}".format(rtiRegItem.name), self,
+                enabled=bool(rtiRegItem.successfullyImported is not False),
+                triggered=createTrigger())
+            openAsMenu.addAction(action)
+
+        return openAsMenu
+
+
 
     def finalize(self):
         """ Disconnects signals and frees resources
@@ -146,9 +189,8 @@ class RepoTreeView(ArgosTreeView):
         self.topLevelItemActionGroup.setEnabled(isTopLevel)
 
         currentItem = self.model().getItem(currentIndex)
-        canBeClosed = currentItem.isOpen and currentItem.hasChildren()
-        self.openItemAction.setEnabled(not canBeClosed)
-        self.closeItemAction.setEnabled(canBeClosed)
+        self.openItemAction.setEnabled(currentItem.hasChildren() and not currentItem.isOpen)
+        self.closeItemAction.setEnabled(currentItem.hasChildren() and currentItem.isOpen)
 
 
 
@@ -183,18 +225,18 @@ class RepoTreeView(ArgosTreeView):
                                     # Note that this will happen anyway if the item is e in
                                     # in another view (TODO: what to do about this?)
         
-    @QtSlot()
-    def __not_used__removeCurrentFile(self):
-        """ Finds the root of of the current item, which represents a file, 
-            and removes it from the list.
-        """
-        logger.debug("removeCurrentFile")
-        currentIndex = self.getRowCurrentIndex()
-        if not currentIndex.isValid():
-            return
-
-        topLevelIndex = self.model().findTopLevelItemIndex(currentIndex)
-        self.model().deleteItemAtIndex(topLevelIndex) # this will close the items resources.
+    # @QtSlot()
+    # def __not_used__removeCurrentFile(self):
+    #     """ Finds the root of of the current item, which represents a file,
+    #         and removes it from the list.
+    #     """
+    #     logger.debug("removeCurrentFile")
+    #     currentIndex = self.getRowCurrentIndex()
+    #     if not currentIndex.isValid():
+    #         return
+    #
+    #     topLevelIndex = self.model().findTopLevelItemIndex(currentIndex)
+    #     self.model().deleteItemAtIndex(topLevelIndex) # this will close the items resources.
 
 
     @QtSlot()
@@ -210,25 +252,31 @@ class RepoTreeView(ArgosTreeView):
 
     
     @QtSlot()
-    def reloadFileOfCurrentItem(self):
+    def reloadFileOfCurrentItem(self, rtiRegItem=None):
         """ Finds the repo tree item that holds the file of the current item and reloads it.
             Reloading is done by removing the repo tree item and inserting a new one.
+
+            The new item will have by of type rtiRegItem.cls. If rtiRegItem is None (the default),
+            the new rtiClass will be the same as the old one.
+            The rtiRegItem.cls will be imported. If this fails the old class will be used, and a
+            warning will be logged.
         """
-        logger.debug("reloadFileOfCurrentItem")
+        logger.debug("reloadFileOfCurrentItem, rtiClass={}".format(rtiRegItem))
+
         currentIndex = self.getRowCurrentIndex()
         if not currentIndex.isValid():
             return
         
         fileRtiIndex = self.model().findFileRtiIndex(currentIndex)
         isExpanded = self.isExpanded(fileRtiIndex)
-        
-        newRtiIndex = self.model().reloadFileAtIndex(fileRtiIndex)
+
+        rtiRegItem.tryImportClass()
+        newRtiIndex = self.model().reloadFileAtIndex(fileRtiIndex, rtiClass=rtiRegItem.cls)
         self.setExpanded(newRtiIndex, isExpanded)
         self.setCurrentIndex(newRtiIndex)
         return newRtiIndex
     
-    
- 
+
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
     def updateCollector(self, currentIndex, _previousIndex):
         """ Updates the collector based on the current selection.

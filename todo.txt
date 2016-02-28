@@ -87,6 +87,7 @@ BUGS:
 
 	When item is unvisited, the detail panes must be updated (also the collector). Check unvisiting.
 	When an RTI is opened (fetchMore), the attribute pane must be upated.
+	When an RTI is closed/reloaded/removed, the context menu, attributes panes and collector must be updated
 	When an file is opened (using the main menu or ctrl-O), it must be selected in the repo tree.
 
 	
