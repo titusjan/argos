@@ -20,6 +20,7 @@
     The memory-RTIs store the attributes per-object instead of per-class.
 """
 import logging, os
+import numpy as np
 
 from .baserti import BaseRti
 from libargos.repo.iconfactory import RtiIconFactory
@@ -50,7 +51,6 @@ def _createFromObject(obj, *args, **kwargs):
 class ScalarRti(BaseRti):
     """ Stores a Python or numpy scalar. 
         
-        Is NOT sliceable and can not be inspected/plotted.
     """
     _defaultIconGlyph = RtiIconFactory.SCALAR
     _defaultIconColor = RtiIconFactory.COLOR_MEMORY
@@ -72,15 +72,41 @@ class ScalarRti(BaseRti):
         return self._attributes
 
 
-    @property
-    def elementTypeName(self):
-        return type_name(self._scalar)
-
-
     def hasChildren(self):
         """ Returns False. Leaf nodes never have children. """
         return False
-    
+
+
+    @property
+    def isSliceable(self):
+        """ Returns True because the underlying data can be sliced.
+            The scalar will be wrapped in array with one element so it can be inspected.
+        """
+        return True
+
+
+    def __getitem__(self, index):
+        """ Called when using the RTI with an index (e.g. rti[0]).
+            The scalar will be wrapped in array with one element so it can be inspected.
+        """
+        array = np.array([self._scalar])
+        assert array.shape == (1, ), "Scalar wrapper shape mismatch: {}".format(array.shape)
+        return array
+
+
+    @property
+    def arrayShape(self):
+        """ Returns the shape of the wrapper array. Will always be the tuple (1, )
+        """
+        return (1, )
+
+
+    @property
+    def elementTypeName(self):
+        """ String representation of the element type.
+        """
+        return type_name(self._scalar)
+
     
 
 class FieldRti(BaseRti):
