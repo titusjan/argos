@@ -17,11 +17,6 @@
 
 """ Store and Tree items for representing data that is stored in memory.
 
-    They do implement a _closeResources() method that sets the references to the memory to None
-    when the RTI is closed/deleted. This is perhaps not necessary but it might be possible that
-    an RTI shares an object (indirectly) with its parent, causing a circular dependency. Setting
-    the references to None breaks the cycle.
-
     The memory-RTIs store the attributes per-object instead of per-class.
 """
 import logging, os
@@ -68,13 +63,6 @@ class ScalarRti(BaseRti):
         self._attributes = {} if attributes is None else attributes
 
 
-    def _closeResources(self):
-        """ Sets the object references to None.
-        """
-        self._attributes = {}
-        self._scalar = None
-
-
     @property
     def attributes(self):
         """ The attribute dictionary.
@@ -112,13 +100,6 @@ class FieldRti(BaseRti):
         self._array = array
         self._iconColor = iconColor
         self._attributes = {} if attributes is None else attributes
-
-
-    def _closeResources(self):
-        """ Sets the object references to None.
-        """
-        self._attributes = {}
-        self._array = None
 
 
     @property
@@ -198,13 +179,6 @@ class ArrayRti(BaseRti):
         self._array = array
         self._iconColor = iconColor
         self._attributes = {} if attributes is None else attributes
-
-
-    def _closeResources(self):
-        """ Sets the object references to None.
-        """
-        self._attributes = {}
-        self._array = None
 
 
     @property
@@ -310,14 +284,6 @@ class SequenceRti(BaseRti):
         self._attributes = {} if attributes is None else attributes
 
 
-    def _closeResources(self):
-        """ Sets the object references to None.
-        """
-        self._attributes = {}
-        #self._array = NOT_SPECIFIED
-        self._sequence = None
-
-
     @property
     def attributes(self):
         """ The attribute dictionary.
@@ -360,13 +326,6 @@ class MappingRti(BaseRti):
         self._dictionary = dictionary
         self._iconColor = iconColor
         self._attributes = {} if attributes is None else attributes
-
-
-    def _closeResources(self):
-        """ Sets the object references to None.
-        """
-        self._attributes = {}
-        self._dictionary = None
 
 
     @property

@@ -58,7 +58,7 @@ class PillowBandRti(ArrayRti):
             if DEBUGGING:
                 raise ValueError(msg)
             logger.warn(msg)
-            return super(PillowFileRti, self).dimensionNames
+            return super(PillowBandRti, self).dimensionNames
         else:
             return ['Y', 'X']
 

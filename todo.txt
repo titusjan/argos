@@ -5,6 +5,9 @@ TODO:
 		zoom factors
 		attribute windows
 
+	PgImage should have axis
+	Spinbox with scientific notation
+
 	Tooltips in all tables and trees
 	Button to select inspectors.
 	Re-order dimensions when a 1D array is used in a table
@@ -74,9 +77,7 @@ USE CASES:
 BUGS:
 	https://bugreports.qt.io/browse/QTBUG-40585
 
-	No children in /Users/titusjan/Data/argos/temp-lx/task.pass-10.png
-	
-	Why doesn't value attribute show in 
+	Why doesn't value attribute show in
 	/Users/titusjan/Data/argos/2015_04_21T01_00_34_LaserSunIsrfStraySts/quicklook_000_minutes-000-020
 	
 	/users/titusjan/data/trop_lx/pre_env/2014_08_27t19_27_53_short_test_orbit/proc_000_raw
@@ -85,8 +86,8 @@ BUGS:
 	When a floatCti has many decimals, the spin box doesn't cover the text behind it.
 
 	When item is unvisited, the detail panes must be updated (also the collector). Check unvisiting.
-	When an RTI is opened (fetchMore), the attribute pan must be upated.
-	When an RTI is opened (using the main menu or cttl-O), it must be selected in the repo tree.
+	When an RTI is opened (fetchMore), the attribute pane must be upated.
+	When an file is opened (using the main menu or ctrl-O), it must be selected in the repo tree.
 
 	
 PYQT_GRAPH:

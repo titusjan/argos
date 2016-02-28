@@ -81,15 +81,15 @@ class RepoTreeView(ArgosTreeView):
                                          triggered=self.reloadFileOfCurrentItem)
         self.addAction(reloadFileAction)
         
-        openItemAction = QtGui.QAction("Open Item", self.currentItemActionGroup,
-                                       shortcut="Ctrl+Shift+U", 
+        self.openItemAction = QtGui.QAction("Open Item", self,
+                                       shortcut="Ctrl+Shift+C",
                                        triggered=self.openCurrentItem)
-        self.addAction(openItemAction)
+        self.addAction(self.openItemAction)
         
-        closeItemAction = QtGui.QAction("Unvisit Item", self.currentItemActionGroup, 
-                                        shortcut="Ctrl+U", 
+        self.closeItemAction = QtGui.QAction("Close Item", self,
+                                        shortcut="Ctrl+C",
                                         triggered=self.closeCurrentItem)
-        self.addAction(closeItemAction)
+        self.addAction(self.closeItemAction)
         
         # Connect signals
         selectionModel = self.selectionModel() # need to store to prevent crash in PySide
@@ -135,16 +135,22 @@ class RepoTreeView(ArgosTreeView):
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
     def updateCurrentItemActions(self, currentIndex, _previousIndex):
         """ Enables/disables actions when a new item is the current item in the tree view.
-        """ 
-        #currentIndex = self.selectionModel().currentIndex()
-        
+        """
+        logger.debug("updateCurrentItemActions... ")
+
         # When the model is empty the current index may be invalid.
         hasCurrent = currentIndex.isValid()
         self.currentItemActionGroup.setEnabled(hasCurrent)
 
-        isTopLevel = hasCurrent and self.model().isTopLevelIndex(currentIndex)
+        isTopLevel = hasCurrent and self.model().isTopLevelIndex(currentIndex) #
         self.topLevelItemActionGroup.setEnabled(isTopLevel)
-    
+
+        currentItem = self.model().getItem(currentIndex)
+        canBeClosed = currentItem.isOpen and currentItem.hasChildren()
+        self.openItemAction.setEnabled(not canBeClosed)
+        self.closeItemAction.setEnabled(canBeClosed)
+
+
 
     @QtSlot()
     def openCurrentItem(self):

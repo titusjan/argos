@@ -63,7 +63,10 @@ class RepoTreeModel(BaseTreeModel):
                 else:
                     return ""
             elif column == self.COL_IS_OPEN:
-                return str(treeItem.isOpen)
+                if treeItem.hasChildren():
+                    return str(treeItem.isOpen)
+                else:
+                    return ""
             elif column == self.COL_RTI_TYPE:
                 return type_name(treeItem)
             elif column == self.COL_ELEM_TYPE:
