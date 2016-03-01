@@ -46,7 +46,7 @@ class EmptyInspector(AbstractInspector):
         """ The names of the axes that this inspector visualizes.
             See the parent class documentation for a more detailed explanation.
         """
-        return tuple(['Y', 'X'])
+        return tuple()
           
             
     @classmethod        

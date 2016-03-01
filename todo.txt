@@ -90,6 +90,8 @@ BUGS:
 	When an RTI is closed/reloaded/removed, the context menu, attributes panes and collector must be updated
 	When an file is opened (using the main menu or ctrl-O), it must be selected in the repo tree.
 
+    Pg image 2d plot breaks histogram
+    /argos/OMI-Aura_L3-OMDOAO3e_2010m0602_v003-2011m1109t115919.he5/HDFEOS/GRIDS/ColumnAmountO3/Data Fields/TerrainHeight
 	
 PYQT_GRAPH:
 	ImageView without the menu

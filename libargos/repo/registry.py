@@ -142,7 +142,7 @@ class RtiRegistry(ClassRegistry):
         return [
             RtiRegItem('HDF-5 file', 
                        'libargos.repo.rtiplugins.hdf5.H5pyFileRti',
-                       extensions=['hdf5', 'h5']), # hdf extension is for HDF-4
+                       extensions=['hdf5', 'h5', 'h5e']), # hdf extension is for HDF-4
                    
             RtiRegItem('NCDF file', 
                        'libargos.repo.rtiplugins.ncdf.NcdfFileRti',

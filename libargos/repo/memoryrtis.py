@@ -80,18 +80,18 @@ class ScalarRti(BaseRti):
     @property
     def isSliceable(self):
         """ Returns True because the underlying data can be sliced.
-            The scalar will be wrapped in array with one element so it can be inspected.
+            The scalar will be wrapped in an array with one element so it can be inspected.
         """
         return True
 
 
     def __getitem__(self, index):
         """ Called when using the RTI with an index (e.g. rti[0]).
-            The scalar will be wrapped in array with one element so it can be inspected.
+            The scalar will be wrapped in an array with one element so it can be inspected.
         """
         array = np.array([self._scalar])
         assert array.shape == (1, ), "Scalar wrapper shape mismatch: {}".format(array.shape)
-        return array
+        return array[index] # Use the index to ensure the slice has the correct shape
 
 
     @property
