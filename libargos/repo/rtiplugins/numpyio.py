@@ -34,7 +34,7 @@ class NumpyTextColumnRti(ArrayRti):
     """ A column in a numpy text file. Will typically be a child of a NumpyTextFileRti
 
         Inherits from ArrayRti but shows a 'field' glyph as icon to indicate that the underlying
-        data is the same as it's parent.
+        data is the same as its parent.
 
         No dedicated constructor defined (reuses the ArrayRti constructor)
     """

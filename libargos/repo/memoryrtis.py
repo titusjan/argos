@@ -282,6 +282,7 @@ class ArrayRti(BaseRti):
         if self.isCompound:
             for fieldName in self._array.dtype.names:
                 childItem = FieldRti(self._array, nodeName=fieldName, fileName=self.fileName)
+                childItem._iconColor = self.iconColor
                 childItems.append(childItem)
 
         #self._childrenFetched = True # TODO: necessary? (already done in ancestor?)
