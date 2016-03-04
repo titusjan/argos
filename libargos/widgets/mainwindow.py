@@ -86,19 +86,6 @@ class MainWindow(QtGui.QMainWindow):
         self.__setupViews()
         self.__setupMenu()
         self.__setupDockWidgets()
-        
-        if DEBUGGING:
-            # Select test item
-            #/Users/titusjan/Data/trop_lx/efm2/2014_03_10T10_09_42_swirfunctions/atp-00_td-11.raw/trl1brb6g.lx.cdf
-            #path = "/trl1brb5g.lx.nc/BAND5/ICID_61347_GROUP_00000/OBSERVATIONS/signal"
-            #path = "/trl1brb6g.lx.cdf/BAND6/ICID_61347_GROUP_00000/OBSERVATIONS/signal"
-            #path = "/trl1brb6g.lx.h5/BAND6/ICID_61347_GROUP_00000/OBSERVATIONS/signal"
-            path = "/argos/visan-tutorial/gome/200305010243_41970.lv2"
-            try:
-                _lastItem, lastIndex = self.repoTreeView.expandPath(path)
-                self.repoTreeView.setCurrentIndex(lastIndex)
-            except Exception as ex:
-                logger.warn(ex)
 
         
     def finalize(self):
@@ -479,13 +466,33 @@ class MainWindow(QtGui.QMainWindow):
                 fileNames = dialog.selectedFiles()
             else:
                 fileNames = []
-            
+
+        fileRootIndex = None
         for fileName in fileNames:
             rtiClass = rtiRegItem.getClass(tryImport=True) if rtiRegItem else None
             fileRootIndex = self.argosApplication.repo.loadFile(fileName, rtiClass=rtiClass)
             self.repoTreeView.setExpanded(fileRootIndex, True)
-            
-            
+
+        # Select last opened file
+        if fileRootIndex is not None:
+            self.repoTreeView.setCurrentIndex(fileRootIndex)
+
+
+    def trySelectRtiByPath(self, path):
+        """ Selects a repository tree item given a path.
+
+            Returns True if the path was selected succesfully, else a warning is logged and False
+            is returned.
+        """
+        try:
+            _lastItem, lastIndex = self.repoTreeView.expandPath(path)
+            self.repoTreeView.setCurrentIndex(lastIndex)
+            return True
+        except Exception as ex:
+            logger.warn(ex)
+            return False
+
+
     def readViewSettings(self, settings=None): # TODO: rename to readProfile?
         """ Reads the persistent program settings
             

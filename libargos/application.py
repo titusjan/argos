@@ -32,14 +32,24 @@ from libargos.widgets.mainwindow import MainWindow
 logger = logging.getLogger(__name__)
 
 
-def browse(fileNames = None, 
-           inspectorFullName=None, 
-           profile=DEFAULT_PROFILE, 
-           resetProfile=False, 
-           resetAllProfiles=False, 
-           resetRegistry=False): 
-    """ Opens the main window(s) for the persistent settings of the given profile, 
+def browse(fileNames=None,
+           inspectorFullName=None,
+           select=None,
+           profile=DEFAULT_PROFILE,
+           resetProfile=False,      # TODO: should probably be moved to the main program
+           resetAllProfiles=False,  # TODO: should probably be moved to the main program
+           resetRegistry=False):    # TODO: should probably be moved to the main program
+    """ Opens the main window(s) for the persistent settings of the given profile,
         and executes the application.
+
+        :param fileNames: List of file names that will be added to the repository
+        :param inspectorFullName: The full path name of the inspector that will be loaded
+        :param select: a path of the repository item that will selected at start up.
+        :param profile: the name of the profile that will be loaded
+        :param resetProfile: if True, the profile will be reset to it standard settings.
+        :param resetAllProfiles: if True, all profiles will be reset to it standard settings.
+        :param resetRegistry: if True, the registry will be reset to it standard settings.
+        :return:
     """
     #if DEBUGGING: # TODO temporary
     #    _gcMon = createGcMonitor()
@@ -64,6 +74,11 @@ def browse(fileNames = None,
     
     # Create windows for this profile.     
     argosApp.loadProfile(profile=profile, inspectorFullName=inspectorFullName)
+
+    if select:
+        for mainWindow in argosApp.mainWindows:
+            mainWindow.trySelectRtiByPath(select)
+
 
     return argosApp.execute()
 
