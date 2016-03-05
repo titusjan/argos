@@ -170,16 +170,12 @@ class FieldRti(BaseRti):
 
     @property
     def _subArrayShape(self):
-        """ Returns the shape of the sub-array
+        """ Returns the shape of the sub-array.
             An empty tuple is returned for regular fields, which have no sub array.
         """
-        # Will only be called if self.isSliceable is True, so self._array will not be None
-        if self._array.dtype.fields is None:
-            return tuple() # regular field
-        else:
-            fieldName = self.nodeName
-            fieldDtype = self._array.dtype.fields[fieldName][0]
-            return fieldDtype.shape
+        fieldName = self.nodeName
+        fieldDtype = self._array.dtype.fields[fieldName][0]
+        return fieldDtype.shape
 
 
     @property

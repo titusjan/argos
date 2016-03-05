@@ -123,7 +123,7 @@ class NcdfFieldRti(BaseRti):
             An empty tuple is returned for regular fields, which have no sub array.
         """
         if self._ncVar.dtype.fields is None:
-            return tuple() # regular field
+            return tuple() # regular field # TODO: does this occur?
         else:
             fieldName = self.nodeName
             fieldDtype = self._ncVar.dtype.fields[fieldName][0]

@@ -35,6 +35,7 @@ Test:
 
 TODO Long term or nice to have:
 
+    nested arrays (/argos/idl-sav-files/qds_dd.sav/qds_dd/OCCURRENCES) (need to read first element)
 	confirm on error when editing cell
 	make argos assert and assertEqual function for sanity checks (consistent "please report this bug" text)
 	read/write config to yaml, QSettings.
@@ -69,10 +70,12 @@ THINK:
 	Inspectors can do calculations as well (e.g. image processing; select filter in combobox)
 	
 	If a new RTI is selected, does the plot range need to be updated? Yes, the unit will change.
-	
+
+
 USE CASES:
 	Select 3 lines of a wavelength map (at 0 and extreme swath angles), then select another detector.
 	Compare irrads
+
 
 BUGS:
 	https://bugreports.qt.io/browse/QTBUG-40585
@@ -91,8 +94,10 @@ BUGS:
 	When an file is opened (using the main menu or ctrl-O), it must be selected in the repo tree.
 
     Pg image 2d plot breaks histogram
-    /argos/OMI-Aura_L3-OMDOAO3e_2010m0602_v003-2011m1109t115919.he5/HDFEOS/GRIDS/ColumnAmountO3/Data Fields/TerrainHeight
-	
+        /argos/OMI-Aura_L3-OMDOAO3e_2010m0602_v003-2011m1109t115919.he5/HDFEOS/GRIDS/ColumnAmountO3/Data Fields/TerrainHeight
+
+
+    	
 PYQT_GRAPH:
 	ImageView without the menu
 	ImageView.setImage(axes) only seems to look at the 't' dimension.
