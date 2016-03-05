@@ -59,7 +59,7 @@ def main():
     parser.add_argument('--reset-registry', dest='reset_registry', action = 'store_true',  
         help="If set, the registry will be reset to contain only the default plugins.")
     
-    parser.add_argument('-V', '--version', action = 'store_true',  
+    parser.add_argument('--version', action = 'store_true',
         help="Prints the program version.")    
         
     parser.add_argument('-L', '--log-level', dest='log_level', default='warn',

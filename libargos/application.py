@@ -98,6 +98,8 @@ def __addTestData(argosApp):
 
     myDict['structured_arr2'] = np.array([(1.5,2.5,(1.0,2.0)),(3.,4.,(4.,5.)),(1.,3.,(2.,6.))],
                                          dtype=[('x','f4'),('y',np.float32),('value','f4',(2,2))])
+    myDict['structured_arr3'] = np.array([(1.5,2.5,(2.0, )),(3.,4.,(5., )),(1.,3.,(2.,))],
+                                         dtype=[('1st','f4'),('2nd',np.float32),('3rd','f4',(2,))])
     myDict['subDict'] = {'mean': np.ones(111), 'stddev': np.zeros(111, dtype=np.uint16)}
 
 

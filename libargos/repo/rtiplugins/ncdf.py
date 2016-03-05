@@ -97,24 +97,63 @@ class NcdfFieldRti(BaseRti):
         """ Called when using the RTI with an index (e.g. rti[0]).
             Applies the index on the NCDF variable that contain this field and then selects the
             current field. In pseudo-code, it returns: self.ncVar[index][self.nodeName].
+
+            If the field itself contains a sub-array it returns:
+                self.ncVar[mainArrayIndex][self.nodeName][subArrayIndex]
         """
-        slicedArray = self._ncVar.__getitem__(index)
-        fieldName = self.nodeName
-        return slicedArray[fieldName]
+        logger.debug("__getitem__, index: {!r}".format(index))
+        mainArrayNumDims = self._ncVar.ndim
+        logger.debug("mainArrayNumDims: {!r}".format(mainArrayNumDims))
+
+        mainIndex = index[:mainArrayNumDims]
+        logger.debug("mainIndex: {!r}".format(mainIndex))
+        mainArray = self._ncVar.__getitem__(mainIndex)
+        logger.debug("type(mainArray): {}".format(type(mainArray)))
+        logger.debug("mainArray.dtype: {}".format(mainArray.dtype))
+        logger.debug("mainArray.shape: {}".format(mainArray.shape))
+
+        #fieldArray = self._ncVar[mainIndex][self.nodeName]
+        fieldArray = mainArray[self.nodeName]
+        logger.debug("type(mainArray): {}".format(type(fieldArray)))
+        logger.debug("fieldArray.dtype: {}".format(fieldArray.dtype))
+        logger.debug("fieldArray.shape: {}".format(fieldArray.shape))
+
+        subIndex = tuple([Ellipsis]) + index[mainArrayNumDims:]
+        logger.debug("subIndex: {!r}".format(subIndex))
+        slicedArray = fieldArray[subIndex]
+        logger.debug("type(mainArray): {}".format(type(slicedArray)))
+        logger.debug("slicedArray.dtype: {}".format(slicedArray.dtype))
+        logger.debug("slicedArray.shape: {}".format(slicedArray.shape))
+
+        return slicedArray
 
 
     @property
     def nDims(self):
         """ The number of dimensions of the underlying array
         """
-        return self._ncVar.ndim
+        return self._ncVar.ndim + len(self._subArrayShape)
+
+
+    @property
+    def _subArrayShape(self):
+        """ Returns the shape of the sub-array
+            An empty tuple is returned for regular fields, which have no sub array.
+        """
+        if self._ncVar.dtype.fields is None:
+            return tuple() # regular field
+        else:
+            fieldName = self.nodeName
+            fieldDtype = self._ncVar.dtype.fields[fieldName][0]
+            return fieldDtype.shape
 
 
     @property
     def arrayShape(self):
         """ Returns the shape of the underlying array.
+            If the field contains a subarray the shape may be longer than 1.
         """
-        return self._ncVar.shape
+        return self._ncVar.shape + self._subArrayShape
 
 
     @property
@@ -145,7 +184,9 @@ class NcdfFieldRti(BaseRti):
     def dimensionNames(self):
         """ Returns a list with the dimension names of the underlying NCDF variable
         """
-        return self._ncVar.dimensions
+        nSubDims = len(self._subArrayShape)
+        subArrayDims = ['SubDim{}'.format(dimNr) for dimNr in range(nSubDims)]
+        return list(self._ncVar.dimensions + tuple(subArrayDims))
 
 
 

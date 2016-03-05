@@ -99,21 +99,65 @@ class H5pyFieldRti(BaseRti):
 
     def __getitem__(self, index):
         """ Called when using the RTI with an index (e.g. rti[0]).
-            Applies the index on the HDF5 dataset that contain this field and then selects the
-            current field. In pseudo-code, it returns: self.dataset[index][self.nodeName].
+            Applies the index on the NCDF variable that contain this field and then selects the
+            current field. In pseudo-code, it returns: self.ncVar[index][self.nodeName].
+
+            If the field itself contains a sub-array it returns:
+                self.ncVar[mainArrayIndex][self.nodeName][subArrayIndex]
         """
-        slicedArray = self._h5Dataset.__getitem__(index)
-        fieldName = self.nodeName
-        return slicedArray[fieldName]
+        mainArrayNumDims = len(self._h5Dataset.shape)
+        logger.debug("mainArrayNumDims: {!r}".format(mainArrayNumDims))
+
+        mainIndex = index[:mainArrayNumDims]
+        logger.debug("mainIndex: {!r}".format(mainIndex))
+        mainArray = self._h5Dataset.__getitem__(mainIndex)
+        logger.debug("type(mainArray): {}".format(type(mainArray)))
+        logger.debug("mainArray.dtype: {}".format(mainArray.dtype))
+        logger.debug("mainArray.shape: {}".format(mainArray.shape))
+
+        fieldArray = mainArray[self.nodeName]
+        logger.debug("type(mainArray): {}".format(type(fieldArray)))
+        logger.debug("fieldArray.dtype: {}".format(fieldArray.dtype))
+        logger.debug("fieldArray.shape: {}".format(fieldArray.shape))
+
+        subIndex = tuple([Ellipsis]) + index[mainArrayNumDims:]
+        logger.debug("subIndex: {!r}".format(subIndex))
+        slicedArray = fieldArray[subIndex]
+        logger.debug("type(mainArray): {}".format(type(slicedArray)))
+        logger.debug("slicedArray.dtype: {}".format(slicedArray.dtype))
+        logger.debug("slicedArray.shape: {}".format(slicedArray.shape))
+
+        return slicedArray
+
+
+    @property
+    def nDims(self):
+        """ The number of dimensions of the underlying array
+        """
+        return len(self.arrayShape) # h5py datasets don't have an ndim property
+
+
+    @property
+    def _subArrayShape(self):
+        """ Returns the shape of the sub-array
+            An empty tuple is returned for regular fields, which have no sub array.
+        """
+        if self._h5Dataset.dtype.fields is None:
+            return tuple() # regular field
+        else:
+            fieldName = self.nodeName
+            fieldDtype = self._h5Dataset.dtype.fields[fieldName][0]
+            return fieldDtype.shape
 
 
     @property
     def arrayShape(self):
         """ Returns the shape of the underlying array.
+            If the field contains a subarray the shape may be longer than 1.
         """
-        return self._h5Dataset.shape
+        return self._h5Dataset.shape + self._subArrayShape
 
-    
+
     @property
     def elementTypeName(self):
         """ String representation of the element type.
@@ -121,12 +165,14 @@ class H5pyFieldRti(BaseRti):
         fieldName = self.nodeName
         return str(self._h5Dataset.dtype.fields[fieldName][0])
     
-               
+
     @property
     def dimensionNames(self):
-        """ Returns a list with the dimension names of the underlying HDF-5 dataset.
+        """ Returns a list with the dimension names of the underlying NCDF variable
         """
-        return dimNamesFromDataset(self._h5Dataset) # TODO: cache?
+        nSubDims = len(self._subArrayShape)
+        subArrayDims = ['SubDim{}'.format(dimNr) for dimNr in range(nSubDims)]
+        return dimNamesFromDataset(self._h5Dataset) + subArrayDims
 
         
 
