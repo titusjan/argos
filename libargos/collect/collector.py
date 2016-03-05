@@ -53,7 +53,7 @@ class Collector(QtGui.QWidget):
         self._rti = None
         
         self._signalsBlocked = False
-        self.COL_FIRST_COMBO = 1  
+        self.COL_FIRST_COMBO = 1  # Column that contains the first (left most) combobox
         self._comboLabels = []  # Will be set in clearAndSetComboBoxes
         self._comboBoxes = []   # Will be set in clearAndSetComboBoxes
         self._spinBoxes = []    # Will be set in createSpinBoxes 
@@ -260,6 +260,7 @@ class Collector(QtGui.QWidget):
             return
         
         nDims = self._rti.nDims
+        nCombos = len(self._comboBoxes)
         
         for comboBoxNr, comboBox in enumerate(self._comboBoxes):
             # Add a fake dimension of length 1
@@ -267,12 +268,25 @@ class Collector(QtGui.QWidget):
             
             for dimNr in range(nDims):
                 comboBox.addItem(self._rti.dimensionNames[dimNr], userData=dimNr)
-                        
-            # We set the nth combo-box index to the last item - n. This because the 
-            # NetCDF-CF conventions have the preferred dimension order of T, Z, Y, X. 
-            # The +1 below is from the fake dimension.
-            comboBox.setCurrentIndex(max(0, nDims + 1 - len(self._comboBoxes) + comboBoxNr))
-            
+
+            # Set combobox current index
+            if nDims >= nCombos:
+                # We set the nth combo-box index to the last item - n. This because the
+                # NetCDF-CF conventions have the preferred dimension order of T, Z, Y, X.
+                # The +1 below is from the fake dimension.
+                curIdx = nDims + 1 - nCombos + comboBoxNr
+            else:
+                # If there are less dimensions in the RTI than the inspector can show, we fill
+                # the comboboxes starting at the leftmost and set the remaining comboboxes to the
+                # fake dimension. This means that a table inspector fill have one column and many
+                # rows, which is the most convenient.
+                curIdx = comboBoxNr + 1 if comboBoxNr < nDims else 0
+
+            assert 0 <= curIdx <= nDims + 1, \
+                "curIdx should be <= {}, got {}".format(nDims + 1, curIdx)
+
+            comboBox.setCurrentIndex(curIdx)
+
             
     def _comboBoxDimensionIndex(self, comboBox):
         """ Returns the dimension index from the user data of the currently item of the combo box.
