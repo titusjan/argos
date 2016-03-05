@@ -106,27 +106,11 @@ class H5pyFieldRti(BaseRti):
                 self.ncVar[mainArrayIndex][self.nodeName][subArrayIndex]
         """
         mainArrayNumDims = len(self._h5Dataset.shape)
-        logger.debug("mainArrayNumDims: {!r}".format(mainArrayNumDims))
-
         mainIndex = index[:mainArrayNumDims]
-        logger.debug("mainIndex: {!r}".format(mainIndex))
         mainArray = self._h5Dataset.__getitem__(mainIndex)
-        logger.debug("type(mainArray): {}".format(type(mainArray)))
-        logger.debug("mainArray.dtype: {}".format(mainArray.dtype))
-        logger.debug("mainArray.shape: {}".format(mainArray.shape))
-
         fieldArray = mainArray[self.nodeName]
-        logger.debug("type(mainArray): {}".format(type(fieldArray)))
-        logger.debug("fieldArray.dtype: {}".format(fieldArray.dtype))
-        logger.debug("fieldArray.shape: {}".format(fieldArray.shape))
-
         subIndex = tuple([Ellipsis]) + index[mainArrayNumDims:]
-        logger.debug("subIndex: {!r}".format(subIndex))
         slicedArray = fieldArray[subIndex]
-        logger.debug("type(mainArray): {}".format(type(slicedArray)))
-        logger.debug("slicedArray.dtype: {}".format(slicedArray.dtype))
-        logger.debug("slicedArray.shape: {}".format(slicedArray.shape))
-
         return slicedArray
 
 

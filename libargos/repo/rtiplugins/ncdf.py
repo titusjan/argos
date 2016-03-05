@@ -96,35 +96,17 @@ class NcdfFieldRti(BaseRti):
     def __getitem__(self, index):
         """ Called when using the RTI with an index (e.g. rti[0]).
             Applies the index on the NCDF variable that contain this field and then selects the
-            current field. In pseudo-code, it returns: self.ncVar[index][self.nodeName].
+            current field. In pseudo-code, it returns: self.h5Dataset[index][self.nodeName].
 
             If the field itself contains a sub-array it returns:
-                self.ncVar[mainArrayIndex][self.nodeName][subArrayIndex]
+                self.h5Dataset[mainArrayIndex][self.nodeName][subArrayIndex]
         """
-        logger.debug("__getitem__, index: {!r}".format(index))
         mainArrayNumDims = self._ncVar.ndim
-        logger.debug("mainArrayNumDims: {!r}".format(mainArrayNumDims))
-
         mainIndex = index[:mainArrayNumDims]
-        logger.debug("mainIndex: {!r}".format(mainIndex))
         mainArray = self._ncVar.__getitem__(mainIndex)
-        logger.debug("type(mainArray): {}".format(type(mainArray)))
-        logger.debug("mainArray.dtype: {}".format(mainArray.dtype))
-        logger.debug("mainArray.shape: {}".format(mainArray.shape))
-
-        #fieldArray = self._ncVar[mainIndex][self.nodeName]
         fieldArray = mainArray[self.nodeName]
-        logger.debug("type(mainArray): {}".format(type(fieldArray)))
-        logger.debug("fieldArray.dtype: {}".format(fieldArray.dtype))
-        logger.debug("fieldArray.shape: {}".format(fieldArray.shape))
-
         subIndex = tuple([Ellipsis]) + index[mainArrayNumDims:]
-        logger.debug("subIndex: {!r}".format(subIndex))
         slicedArray = fieldArray[subIndex]
-        logger.debug("type(mainArray): {}".format(type(slicedArray)))
-        logger.debug("slicedArray.dtype: {}".format(slicedArray.dtype))
-        logger.debug("slicedArray.shape: {}".format(slicedArray.shape))
-
         return slicedArray
 
 
