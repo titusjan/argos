@@ -19,23 +19,96 @@
 """
 import logging
 
+from libargos.config.groupcti import MainGroupCti
+from libargos.config.boolcti import BoolCti
 from libargos.inspector.abstract import AbstractInspector
-from libargos.qt import QtCore, QtGui
+
+from libargos.qt import Qt, QtCore, QtGui
 
 logger = logging.getLogger(__name__)
+
+
+
+class TableInspectorCti(MainGroupCti):
+    """ Configuration tree for a PgLinePlot1d inspector
+    """
+    def __init__(self, nodeName, defaultData=None):
+
+        super(TableInspectorCti, self).__init__(nodeName, defaultData=defaultData)
+
+        self.insertChild(BoolCti("separate fields", True))
+        self.insertChild(BoolCti("resize to contents", True))
+
+
+
+class TableInspector(AbstractInspector):
+    """ Shows the sliced array in a table.
+    """
+    def __init__(self, collector, parent=None):
+
+        super(TableInspector, self).__init__(collector, parent=parent)
+
+        self.model = TableInspectorModel(parent=self)
+        self.tableView = QtGui.QTableView()
+        self.contentsLayout.addWidget(self.tableView)
+        self.tableView.setModel(self.model)
+        self.tableView.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.tableView.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+
+
+    @classmethod
+    def axesNames(cls):
+        """ The names of the axes that this inspector visualizes.
+            See the parent class documentation for a more detailed explanation.
+        """
+        return tuple(['Rows', 'Columns'])
+
+
+    @classmethod
+    def createConfig(cls):
+        """ Creates a config tree item (CTI) hierarchy containing default children.
+        """
+        return TableInspectorCti('inspector')
+
+
+    def _updateRti(self):
+        """ Draws the inspector widget when no input is available.
+            The default implementation shows an error message. Descendants should override this.
+        """
+        logger.debug("TableInspector._updateRti: {}".format(self))
+        slicedArray = self.collector.getSlicedArray()
+
+        self.model.separateFields = self.configValue('separate fields')
+        self.model.setSlicedArray(slicedArray)
+
+        horHeader = self.tableView.horizontalHeader()
+        if self.configValue("resize to contents"):
+            horHeader.setResizeMode(horHeader.ResizeToContents)
+        else:
+            horHeader.setResizeMode(horHeader.Interactive)
+
+
+
 
 
 class TableInspectorModel(QtCore.QAbstractTableModel):
     """ Qt table model that gives access to the sliced array
     """
-    def __init__(self, collector, parent = None):
+    def __init__(self, separateFields=True, parent = None):
+        """ Constructor
+
+        :param separateFields: If True the fields of a compound array (recArray) have their
+            own separate cells.
+        :param parent: parent Qt widget. 
+        """
         super(TableInspectorModel, self).__init__(parent)
-        self._collector = collector
+        self.separateFields = separateFields
         self._nRows = 0
-        self._nCols = 0   
+        self._nCols = 0
+        self._fieldNames = []
         self._slicedArray = None
-        
-        
+
+
     def setSlicedArray(self, slicedArray):
         """ Sets the the sliced array
         """
@@ -45,25 +118,36 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
             if slicedArray is None:
                 self._nRows = 0
                 self._nCols = 0
+                self._fieldNames = []
             else:
                 self._nRows, self._nCols = self._slicedArray.shape
+                if self._slicedArray.dtype.names:
+                    self._fieldNames = self._slicedArray.dtype.names
+                else:
+                    self._fieldNames = []
         finally:
             self.endResetModel()
 
 
-    def data(self, index,  role = QtCore.Qt.DisplayRole):
+    def data(self, index, role = Qt.DisplayRole):
         """ Returns the data at an index for a certain role
         """
         row = index.row()
         col = index.column()
-        if (row < 0 or row >= self._nRows or col < 0 or col >= self._nCols): 
+        if (row < 0 or row >= self.rowCount() or col < 0 or col >= self.columnCount()):
             return None
 
         # The check above should have returned None if the sliced array is None
         assert self._slicedArray is not None, "Sanity check failed." 
                
-        if role == QtCore.Qt.DisplayRole:
-            return repr(self._slicedArray[row, col])
+        if role == Qt.DisplayRole:
+            if self.separateFields and self._fieldNames:
+                nFields = len(self._fieldNames)
+                varNr = col // nFields
+                fieldNr = col % nFields
+                return repr(self._slicedArray[row, varNr][self._fieldNames[fieldNr]])
+            else:
+                return repr(self._slicedArray[row, col])
         else:
             return None
 
@@ -71,56 +155,43 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
     def flags(self, index):
         """ Returns the item flags for the given index.
         """
-        return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        return Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
 
     def headerData(self, section, orientation, role):
         """ Returns the header for a section (row or column depending on orientation).
             Reimplemented from QAbstractTableModel to make the headers start at 0.
         """
-        if role == QtCore.Qt.DisplayRole:
-            return str(section)
+        if role == Qt.DisplayRole:
+            if self.separateFields and orientation == Qt.Horizontal and self._fieldNames:
+                nFields = len(self._fieldNames)
+                varNr = section // nFields
+                fieldNr = section % nFields
+                header = str(varNr) + ' : ' if self._nCols > 1 else ' : '
+                header += self._fieldNames[fieldNr]
+                return header
+            else:
+                return str(section)
         else:
             return None
 
     
-    def rowCount(self, parent):
+    def rowCount(self, parent=None):
         """ The number of rows of the sliced array.
+            The 'parent' parameter can be a QModelIndex. It is ignored since the number of
+            rows does not depend on the parent.
         """
         return self._nRows
 
 
-    def columnCount(self, parent):
+    def columnCount(self, parent=None):
         """ The number of columns of the sliced array.
+            The 'parent' parameter can be a QModelIndex. It is ignored since the number of
+            columns does not depend on the parent.
         """
-        return self._nCols
+        if self.separateFields and self._fieldNames:
+            return self._nCols * len(self._fieldNames)
+        else:
+            return self._nCols
 
-
-
-class TableInspector(AbstractInspector):
-    """ Shows the sliced array in a table.
-    """
-    def __init__(self, collector, parent=None):
-        
-        super(TableInspector, self).__init__(collector, parent=parent)
-        
-        self.model = TableInspectorModel(collector, parent=self)
-        self.table = QtGui.QTableView()
-        self.table.setModel(self.model)
-        self.contentsLayout.addWidget(self.table)
-        
-    @classmethod
-    def axesNames(cls):
-        """ The names of the axes that this inspector visualizes.
-            See the parent class documentation for a more detailed explanation.
-        """
-        return tuple(['Rows', 'Columns'])
-    
-    def _updateRti(self):
-        """ Draws the inspector widget when no input is available.
-            The default implementation shows an error message. Descendants should override this.
-        """
-        logger.debug("TableInspector._updateRti: {}".format(self))
-        slicedArray = self.collector.getSlicedArray()
-        self.model.setSlicedArray(slicedArray)
 
