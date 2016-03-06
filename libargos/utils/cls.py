@@ -103,6 +103,12 @@ def check_is_an_array(var, allow_none=False):
                         .format(type(var)))
     
 
+def array_is_compound(array):
+    """ Returns True if the array has a compound data type (record arrays)
+    """
+    return bool(array.dtype.names)
+
+
 def array_has_real_numbers(array):
     """ Uses the dtype kind of the numpy array to determine if it represents real numbers. 
     

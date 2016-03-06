@@ -22,7 +22,7 @@ from __future__ import division, print_function
 import logging
 import pyqtgraph as pg
 
-USE_SIMPLE_PLOT = False
+USE_SIMPLE_PLOT = True
 
 if USE_SIMPLE_PLOT:
     from pyqtgraph.graphicsItems.PlotItem.simpleplotitem import SimplePlotItem
@@ -98,19 +98,19 @@ class PgLinePlot1d(AbstractInspector):
         
         self.viewBox = pg.ViewBox(border=pg.mkPen("#000000", width=1))#), lockAspect=1.0)
 
-        self.graphicsView = pg.GraphicsView() # TODO: use scale to image?
-
         if USE_SIMPLE_PLOT:
             self.plotItem = SimplePlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
                                            title='', enableMenu=True, viewBox=self.viewBox) # TODO: enableMenu=False
         else:
             self.plotItem = pg.PlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
                                         title='', enableMenu=True, viewBox=self.viewBox)
-
         self.viewBox.setParent(self.plotItem)
+
+        self.graphicsView = pg.GraphicsView() # TODO: use scale to image?
         self.graphicsView.setCentralItem(self.plotItem)
         self.contentsLayout.addWidget(self.graphicsView)
 
+        # Connect signals
         self.viewBox.sigStateChanged.connect(self.config.viewBoxCti.viewBoxChanged)
         
         
@@ -152,6 +152,7 @@ class PgLinePlot1d(AbstractInspector):
         self.plotItem.showGrid(x=self.configValue('grid/X-axis'),
                                y=self.configValue('grid/Y-axis'),
                                alpha=self.configValue('grid/alpha'))
+        self.plotItem.updateGrid()
 
         antiAlias = self.configValue('anti-alias')
         color = self.configValue('pen/color')
