@@ -1,25 +1,32 @@
 
-TODO:
+TODO version 0.2:
+	PgImage should have axis
+	Spinbox with scientific notation
+
 	Masked arrays and fill values.
+
 	Config settings:
 		zoom factors
 		attribute windows
 
-	PgImage should have axis
-	Spinbox with scientific notation
-
 	Tooltips in all tables and trees
 	Button to select inspectors.
-	Re-order dimensions when a 1D array is used in a table
-	Make SequenceRTIs and ScalarRTIs sliceable
+
 	Inspector selection dropwindow (use in new window)
 	    Fix 'clone-window' in main menu (is there a need for a separate 'new window'?)
 
-	scipy.io.loadmat
 	probe
+	relative imports
+
+TODO version 0.3:
+	scipy.io.loadmat
 	Interaction in IPython
 	QSettings should not use titusjan by default
 	(auto)refresh
+
+    Meta arrays http://scipy-cookbook.readthedocs.org/items/MetaArray.html
+    Pandas
+
 
 Collectors:
 	test with Evoss sciamachy products
@@ -55,6 +62,9 @@ TODO Long term or nice to have:
 	http://pythonhosted.org/setuptools/setuptools.html#dynamic-discovery-of-services-and-plugins
 	
 THINK:
+    _updateRti should return False if not data is available. No exception should be raised as it
+        is not an unexpected case.
+
 	use decorators in AbstractLazyLoadTreeItem?
 	createFromFileName does not work with memory RTI. Options:
 		1) Implement resource attribute.

@@ -39,7 +39,8 @@ class Collector(QtGui.QWidget):
         The CollectorTree only stores the VisItems, the intelligence is located in the Collector 
         itself.
     """
-    FAKE_DIM_NAME = '-' # The name of the fake dimension with length 1
+
+    FAKE_DIM_NAME = '-'     # The name of the fake dimension with length 1
     FAKE_DIM_OFFSET = 1000  # Fake dimensions start here (so all arrays must have a smaller ndim)  
 
     contentsChanged = QtSignal()         
@@ -53,11 +54,13 @@ class Collector(QtGui.QWidget):
         self._rti = None
         
         self._signalsBlocked = False
-        self.COL_FIRST_COMBO = 1  # Column that contains the first (left most) combobox
-        self._comboLabels = []  # Will be set in clearAndSetComboBoxes
-        self._comboBoxes = []   # Will be set in clearAndSetComboBoxes
-        self._spinBoxes = []    # Will be set in createSpinBoxes 
-        
+        self.COL_FIRST_COMBO = 1     # Column that contains the first (left most) combobox
+        self.AXIS_POST_FIX = "-axis" # Added to the axis label to give the combox labels.
+        self._axisNames = []         # Axis names. Correspond to the independent variables
+        self._fullAxisNames = []       # Will be set in clearAndSetComboBoxes
+        self._comboBoxes = []        # Will be set in clearAndSetComboBoxes
+        self._spinBoxes = []         # Will be set in createSpinBoxes
+
         self.layout = QtGui.QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
@@ -77,9 +80,7 @@ class Collector(QtGui.QWidget):
         self.buttonLayout.addWidget(self.removeVisItemButton, stretch=0)
         self.buttonLayout.addStretch(stretch=1)
         self.layout.addLayout(self.buttonLayout, stretch=0)
-                
-        #self.clearAndSetComboBoxes([])
-        
+
         
     def sizeHint(self):
         """ The recommended size for the widget."""
@@ -106,17 +107,25 @@ class Collector(QtGui.QWidget):
 
 
     @property
-    def comboLabels(self): # TODO: rename?
-        """ Returns a copy of the combobox labels (since they are read only).
-            The combobox labels indicate the independent dimensions of the visualization.
+    def axisNames(self):
+        """ Returns a the axis names.
+            The axis names indicate the independent dimensions of the visualization.
         """
-        return tuple(self._comboLabels)    
+        return self._axisNames
+
+
+    @property
+    def fullAxisNames(self):
+        """ Returns the of the combobox labels.
+            The combobox labes the axisNames followed by '-axis'
+        """
+        return self._fullAxisNames
 
 
     @property
     def maxCombos(self):
         """ Returns the maximum number of combo boxes """
-        return len(self._comboLabels)
+        return len(self._fullAxisNames)
     
     
     def blockChildrenSignals(self, block):
@@ -143,28 +152,30 @@ class Collector(QtGui.QWidget):
         #model.setColumnCount(6)
     
     
-    def clearAndSetComboBoxes(self, comboLabels):
+    def clearAndSetComboBoxes(self, axesNames):
         """ Removes all VisItems before setting the new degree.
         """
-        logger.debug("Collector clearAndSetComboBoxes: {}".format(comboLabels))
-        check_is_a_sequence(comboLabels)
+        logger.debug("Collector clearAndSetComboBoxes: {}".format(axesNames))
+        check_is_a_sequence(axesNames)
         row = 0
         self._deleteComboBoxes(row)
         self.clear()
-        self._setComboLabels(comboLabels)
+        self._setAxesNames(axesNames)
         self._createComboBoxes(row)
         self._updateWidgets()
 
 
-    def _setComboLabels(self, comboLabels):
-        """ Sets the comboLables and updates the headers. Removes old values first. 
+    def _setAxesNames(self, axisNames):
+        """ Sets the axesnames, combobox lables and updates the headers. Removes old values first.
+            The comboLables is the axes name + '-axis'
         """
-        for col, label in enumerate(self._comboLabels, self.COL_FIRST_COMBO):
-            self._setHeaderLabel(col, '')
+        for idx in range(len(self._axisNames), self.COL_FIRST_COMBO):
+            self._setHeaderLabel(idx, '')
             
-        self._comboLabels = comboLabels
+        self._axisNames = tuple(axisNames)
+        self._fullAxisNames = tuple([axName + self.AXIS_POST_FIX for axName in axisNames])
         
-        for col, label in enumerate(self._comboLabels, self.COL_FIRST_COMBO):
+        for col, label in enumerate(self._fullAxisNames, self.COL_FIRST_COMBO):
             self._setHeaderLabel(col, label)
             
 
@@ -218,12 +229,12 @@ class Collector(QtGui.QWidget):
         
                 
     def _createComboBoxes(self, row):
-        """ Creates a combo box for each of the comboLabels
+        """ Creates a combo box for each of the fullAxisNames
         """  
         tree = self.tree
         model = self.tree.model()
         
-        for col, _comboLabel in enumerate(self.comboLabels, self.COL_FIRST_COMBO):
+        for col, _ in enumerate(self._axisNames, self.COL_FIRST_COMBO):
             if col >= model.columnCount():
                 model.setColumnCount(col + 1)
                 
@@ -454,7 +465,8 @@ class Collector(QtGui.QWidget):
         # Shuffle the dimensions to be in the order as specified by the combo boxes    
         comboDims = [self._comboBoxDimensionIndex(cb) for cb in self._comboBoxes]
         permutations = np.argsort(comboDims)
-        #logger.debug("Transposing dimensions: {}".format(permutations))
+        logger.debug("slicedArray.shape: {}".format(slicedArray.shape))
+        logger.debug("Transposing dimensions: {}".format(permutations))
         slicedArray = np.transpose(slicedArray, permutations)
 
         logging.debug("slicedArray.shape: {}".format(slicedArray.shape))
@@ -464,7 +476,7 @@ class Collector(QtGui.QWidget):
 
     def getSlicesString(self):
         """ Returns a string representation of the slices that are used to get the sliced array.
-            For example returns '[:, 5]' if the combo box selects dimension 9 and the spin box 5.
+            For example returns '[:, 5]' if the combo box selects dimension 0 and the spin box 5.
         """
         if not self.rtiIsSliceable:
             return ''  
@@ -478,11 +490,9 @@ class Collector(QtGui.QWidget):
             dimNr = spinBox.property("dim_nr")
             sliceList[dimNr] = str(spinBox.value())
         
-        # Shuffle the dimensions to be in the order as specified by the combo boxes    
-        comboDims = [self._comboBoxDimensionIndex(cb) for cb in self._comboBoxes]
-        permutations = np.argsort(comboDims)
-        sliceList = np.transpose(sliceList, permutations)
-        
+        # No need to shuffle combobox dimensions like in getSlicedArray; all combobox dimensions
+        # yield a colon.
+
         return "[" + ", ".join(sliceList) + "]"
 
     
@@ -501,25 +511,13 @@ class Collector(QtGui.QWidget):
 
 
     def dependentDimensionName(self):
-        """ Returns list of the names of the dependent dimensions. 
+        """ Returns the name of the dependent dimension.
             A good default is the name of the RTI.
         """
         return self.rti.nodeName if self.rti else ''
 
-    
-    def dependentDimensionUnit(self):
-        """ Returns list of the units of the dependent dimensions. 
-            A good default is the unit or units attribute name of the RTI.
-            Returns  empty string if the unit cannot be determined from the RTI attributes.
-        """
-        if self.rti:
-            attributes = self.rti.attributes
-            for key in ('units', 'unit'):
-                if key in attributes:
-                    return attributes[key]
-        return ''
 
-    
+
     def getRtiInfo(self):
         """ Returns a dictionary with information on the selected RTI (repo tree item).
             This can be used in string formatting of config options. For instance: the plot title
@@ -535,11 +533,22 @@ class Collector(QtGui.QWidget):
         """
         if self.rti is None:
             return {}
-        else:
-            rti = self.rti
-            return {'slices': self.getSlicesString(),
-                    'name': rti.nodeName,  
-                    'path': rti.nodePath }
+
+        rti = self.rti
+
+        # Info about the dependent dimension
+        info = {'slices': self.getSlicesString(),
+                'name': rti.nodeName,
+                'path': rti.nodePath,
+                'unit': rti.unit}
+
+        # Add the info of the independent dimensions (appended with the axis name of that dim).
+        for axisName, comboBox in zip(self._axisNames, self._comboBoxes):
+            dimName = comboBox.currentText()
+            key = '{}-dim'.format(axisName.lower())
+            info[key] = dimName
+
+        return info
 
 
         

@@ -61,7 +61,7 @@ class TableInspector(AbstractInspector):
         """ The names of the axes that this inspector visualizes.
             See the parent class documentation for a more detailed explanation.
         """
-        return tuple(['Rows', 'Columns'])
+        return tuple(['Y', 'X'])
 
 
     @classmethod

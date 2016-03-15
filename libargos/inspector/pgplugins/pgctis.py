@@ -147,7 +147,7 @@ class ViewBoxCti(GroupCti):
 
         # Axes (keeping references to the axis CTIs because they need to be updated quickly when
         # the range changes; self.configValue may be slow.)
-        #self.insertChild(BoolCti("aspect locked", False)) # TODO: implement?
+        self.aspectItem = self.insertChild(BoolCti("lock aspect ratio", False))
         self.xAxisItem = self.insertChild(PgAxisCti('X-axis', axisNumber=0))
         self.yAxisItem = self.insertChild(PgAxisCti('Y-axis', axisNumber=1))
 
@@ -183,6 +183,9 @@ class ViewBoxCti(GroupCti):
         """
         self._updatingViewBox = True # defer calling self.viewBoxChanged
         try:
+            viewBox.setAspectLocked(self.aspectItem.configValue)
+            # TODO: show axis/label
+
             autoRangeX = self.xAxisItem.autoRangeItem.data
             if autoRangeX:
                 #logger.debug("enableAutoRange: {}, {}".format(viewBox.XAxis, autoRangeX))

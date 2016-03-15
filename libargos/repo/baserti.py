@@ -329,7 +329,25 @@ class BaseRti(AbstractLazyLoadTreeItem):
             can override this.
         """
         return ['' for _dimNr in range(self.nDims)] # TODO: cache?
-    
+
+
+    @property
+    def unit(self):
+        """ Returns the units of the RTI.
+
+            The base implementation looks for one of the follown keys in the RTI attributes:
+            'unit', 'units', 'Unit', 'Units', 'UNIT', 'UNITS'. If these are not found, the empty
+            string is returned. Descendants can of course override this behavior.
+        """
+        attributes = self.attributes
+        if not attributes:
+            return '' # a premature optimization :-)
+
+        for key in ('unit', 'units', 'Unit', 'Units', 'UNIT', 'UNITS'):
+            if key in attributes:
+                return attributes[key]
+        else:
+            return ''
         
 #    @property
 #    def dimensionInfo(self):

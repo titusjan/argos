@@ -35,12 +35,37 @@ else:
 from libargos.info import DEBUGGING
 from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
+from libargos.config.choicecti import ChoiceCti
 from libargos.inspector.abstract import AbstractInspector
+from libargos.inspector.pgplugins.pgctis import ViewBoxCti
 from libargos.utils.cls import array_has_real_numbers
 
 logger = logging.getLogger(__name__)
 
-# TODO: look in imageAnalysis.py PyQtGraph example to see how to enable axis labels and disable the menu
+
+class PgImagePlot2dCti(MainGroupCti):
+    """ Configuration tree for a PgLinePlot1d inspector
+    """
+    def __init__(self, nodeName, defaultData=None):
+
+        super(PgImagePlot2dCti, self).__init__(nodeName, defaultData=defaultData)
+
+        self.insertChild(ChoiceCti('title', 0, editable=True,
+                                    configValues=["{path} {slices}", "{name} {slices}"]))
+
+        self.insertChild(ChoiceCti('y-label', 0, editable=True,
+                                    configValues=["{y-dim}"]))
+        self.insertChild(ChoiceCti('x-label', 0, editable=True,
+                                    configValues=["{x-dim}"]))
+
+
+        self.viewBoxCti = self.insertChild(ViewBoxCti('axes'))
+
+        self.insertChild(BoolCti('auto levels', True))
+
+
+
+
 class PgImagePlot2d(AbstractInspector):
     """ Inspector that contains a PyQtGraph 2-dimensional image plot
     """
@@ -50,29 +75,36 @@ class PgImagePlot2d(AbstractInspector):
         """
         super(PgImagePlot2d, self).__init__(collector, parent=parent)
         
-        self.viewBox = pg.ViewBox(border=pg.mkPen("#000000", width=1))#), lockAspect=1.0)
+        self.viewBox = pg.ViewBox(border=pg.mkPen("#000000", width=1))
         self.plotItem = pg.PlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
-                                    title='', enableMenu=True, viewBox=self.viewBox)  # TODO: enableMenu=False
+                                    title='', enableMenu=False, viewBox=self.viewBox)
         self.viewBox.setParent(self.plotItem)
 
         self.imageItem = pg.ImageItem()
         self.plotItem.addItem(self.imageItem)
 
-        self.graphicsView = pg.GraphicsView()
-        self.graphicsView.setCentralItem(self.plotItem)
-        self.contentsLayout.addWidget(self.graphicsView)
+        self.histLutItem = pg.HistogramLUTItem()
+        self.histLutItem.setImageItem(self.imageItem)
+
+        self.graphicsLayoutWidget = pg.GraphicsLayoutWidget()
+        self.titleLabel = self.graphicsLayoutWidget.addLabel('My label', 0, 0, colspan=2)
+        self.graphicsLayoutWidget.addItem(self.plotItem, 1, 0)
+        self.graphicsLayoutWidget.addItem(self.histLutItem, 1, 1)
+
+        self.contentsLayout.addWidget(self.graphicsLayoutWidget)
 
         # Connect signals
-        #self.viewBox.sigStateChanged.connect(self.config.viewBoxCti.viewBoxChanged)
+        self.viewBox.sigStateChanged.connect(self.config.viewBoxCti.viewBoxChanged)
         
         
     def finalize(self):
-        """ Is called before destruction. Can be used to clean-up resources
+        """ Is called before destruction. Can be used to clean-up resources.
         """
-        # Disconnect signals
-        #self.viewBox.sigStateChanged.disconnect(self.config.viewBoxCti.viewBoxChanged)
+        logger.debug("Finalizing: {}".format(self))
+
+        self.viewBox.sigStateChanged.disconnect(self.config.viewBoxCti.viewBoxChanged)
         self.plotItem.close()
-        self.graphicsView.close()
+        self.graphicsLayoutWidget.close()
 
         
     @classmethod
@@ -80,26 +112,20 @@ class PgImagePlot2d(AbstractInspector):
         """ The names of the axes that this inspector visualizes.
             See the parent class documentation for a more detailed explanation.
         """
-        return tuple(['Rows', 'Columns'])
+        return tuple(['Y', 'X'])
            
 
-    @classmethod        
+    @classmethod
     def createConfig(cls):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
-        rootItem = MainGroupCti(nodeName='inspector')
-        rootItem.insertChild(BoolCti('auto levels', defaultData=True))
-        rootItem.insertChild(BoolCti('auto range', defaultData=True))
-        rootItem.insertChild(BoolCti('lock aspect ratio', defaultData=False))
+        return PgImagePlot2dCti('inspector')
 
-        return rootItem
-    
                 
     def _initContents(self):
         """ Draws the inspector widget when no input is available. 
         """
-        #viewBox = self.imageView.view
-        self.viewBox.setAspectLocked(self.configValue('lock aspect ratio'))
+        self.viewBox.invertY(False) # TODO
 
 
     def _updateRti(self):
@@ -109,17 +135,27 @@ class PgImagePlot2d(AbstractInspector):
         
         if slicedArray is None or not array_has_real_numbers(slicedArray):
             self.imageItem.clear()
-            if not DEBUGGING: # TODO: is this an error?
+            self.titleLabel.setText('')
+            self.plotItem.setTitle('')
+            self.plotItem.setLabel('left', '')
+            self.plotItem.setLabel('bottom', '')
+            if DEBUGGING:
+                return
+            else: # TODO: this is not an error
                 raise ValueError("No data available or it does not contain real numbers")
-        else:
-            # TODO: cache config values?
-            autoRange = self.configValue('auto range')
-            autoLevels = self.configValue('auto levels')
-            
-            # Unfortunately, PyQtGraph uses the following dimension order: T, X, Y, Color.
-            # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0} 
-            # doesn't seem to do anything.
-            self.imageItem.setImage(slicedArray.transpose(),
-                                    autoRange=autoRange, autoLevels=autoLevels)
 
-        
+        rtiInfo = self.collector.getRtiInfo()
+        self.titleLabel.setText(self.configValue('title').format(**rtiInfo))
+        self.plotItem.setTitle(self.configValue('title').format(**rtiInfo))
+        self.plotItem.setLabel('left',   self.configValue('y-label').format(**rtiInfo))
+        self.plotItem.setLabel('bottom', self.configValue('x-label').format(**rtiInfo))
+
+        # Unfortunately, PyQtGraph uses the following dimension order: T, X, Y, Color.
+        # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0}
+        # doesn't seem to do anything.
+        self.imageItem.setImage(slicedArray.transpose(),
+                                autoLevels = self.configValue('auto levels'))
+
+        self.histLutItem.setLevels(slicedArray.min(), slicedArray.max())
+
+        self.config.viewBoxCti.updateViewBox(self.viewBox)

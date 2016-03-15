@@ -35,7 +35,7 @@ class CollectorTree(ToggleColumnTreeView):
         NOTE: this class is not meant to be used directly but is 'private' to the Collector().
         That is, plugins should interact with the Collector class, not the CollectorTree()
     """
-    HEADERS = ["item path", "item name"]
+    HEADERS = ["item path", "item name"] # TODO: this can't be right. Is this even used?
     (COL_ITEM_PATH, COL_ITEM_NAME) = range(len(HEADERS))    
     
     

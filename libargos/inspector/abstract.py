@@ -107,17 +107,7 @@ class AbstractInspector(QtGui.QStackedWidget):
             The names should not include the string "Axis"; the fullAxesNames returns that.
         """
         return tuple()
-    
-#    @classmethod OBSOLETE?
-#    def fullAxesNames(cls):
-#        """ The full names of the axes that this inspector visualizes.  
-#            
-#            This is the axis name plus the literal string '-Axis'. 
-#            
-#            Descendants do not need to override this method but should override axesNames instead.
-#            See also the axesNames documentation.
-#        """
-#        return tuple(axisName + '-Axis' for axisName in cls.axesNames())
+
     
     @property
     def collector(self):

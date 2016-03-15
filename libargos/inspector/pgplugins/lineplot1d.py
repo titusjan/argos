@@ -130,7 +130,7 @@ class PgLinePlot1d(AbstractInspector):
         """ The names of the axes that this inspector visualizes.
             See the parent class documentation for a more detailed explanation.
         """
-        return tuple(['X-axis'])
+        return tuple(['X'])
 
 
     @classmethod        
