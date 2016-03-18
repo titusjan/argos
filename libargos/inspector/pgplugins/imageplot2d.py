@@ -37,10 +37,24 @@ from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.inspector.abstract import AbstractInspector
-from libargos.inspector.pgplugins.pgctis import ViewBoxCti
+from libargos.inspector.pgplugins.pgctis import PgAxisCti, ViewBoxCti
 from libargos.utils.cls import array_has_real_numbers
 
 logger = logging.getLogger(__name__)
+
+
+class PgImageAxisCti(PgAxisCti):
+    """ Configuration tree item for a plot axis showing a dependend variable
+    """
+    def __init__(self, nodeName, defaultData=None, axisNumber=None, axisName=None):
+        """ Constructor
+        """
+        super(PgImageAxisCti, self).__init__(nodeName, defaultData=defaultData,
+                                             axisNumber=axisNumber)
+        self.axisName = axisName
+        self.insertChild(ChoiceCti('label', 0, editable=True,
+                                    configValues=["{{{}-dim}}".format(axisName)]),
+                         position=0)
 
 
 class PgImagePlot2dCti(MainGroupCti):
@@ -53,13 +67,10 @@ class PgImagePlot2dCti(MainGroupCti):
         self.insertChild(ChoiceCti('title', 0, editable=True,
                                     configValues=["{path} {slices}", "{name} {slices}"]))
 
-        self.insertChild(ChoiceCti('y-label', 0, editable=True,
-                                    configValues=["{y-dim}"]))
-        self.insertChild(ChoiceCti('x-label', 0, editable=True,
-                                    configValues=["{x-dim}"]))
-
-
-        self.viewBoxCti = self.insertChild(ViewBoxCti('axes'))
+        viewBoxCti = ViewBoxCti('axes',
+                                xAxisItem=PgImageAxisCti('x-axis', axisNumber=0, axisName='x'),
+                                yAxisItem=PgImageAxisCti('y-axis', axisNumber=1, axisName='y'))
+        self.viewBoxCti = self.insertChild(viewBoxCti)
 
         self.insertChild(BoolCti('auto levels', True))
 
@@ -147,8 +158,8 @@ class PgImagePlot2d(AbstractInspector):
         rtiInfo = self.collector.getRtiInfo()
         self.titleLabel.setText(self.configValue('title').format(**rtiInfo))
         self.plotItem.setTitle(self.configValue('title').format(**rtiInfo))
-        self.plotItem.setLabel('left',   self.configValue('y-label').format(**rtiInfo))
-        self.plotItem.setLabel('bottom', self.configValue('x-label').format(**rtiInfo))
+        self.plotItem.setLabel('left',   self.configValue('axes/y-axis/label').format(**rtiInfo)) # TODO: to ViewBox?
+        self.plotItem.setLabel('bottom', self.configValue('axes/x-axis/label').format(**rtiInfo))
 
         # Unfortunately, PyQtGraph uses the following dimension order: T, X, Y, Color.
         # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0}

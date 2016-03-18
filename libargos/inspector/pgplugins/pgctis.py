@@ -26,6 +26,7 @@ from libargos.config.boolcti import BoolCti
 from libargos.config.floatcti import FloatCti
 from libargos.config.untypedcti import UntypedCti
 from libargos.info import DEBUGGING
+from libargos.utils.cls import check_class
 
 logger = logging.getLogger(__name__)
 
@@ -90,15 +91,16 @@ class ViewBoxDebugCti(GroupCti):
 
 
 class PgAxisCti(GroupCti):
-    """ Configuration tree for a plot axis
+    """ Configuration tree item for a PyQtGraph plot axis.
+
+        This CTI is intended to be used as a child of a ViewBoxCti.
     """
     def __init__(self, nodeName, defaultData=None, axisNumber=None):
         """ Constructor
         """
         super(PgAxisCti, self).__init__(nodeName, defaultData=defaultData)
 
-        assert axisNumber in (0, 1), "axisName must be 0 or 1"
-        self._axisNumber = axisNumber
+        self.axisNumber = axisNumber
 
         #self.insertChild(BoolCti("show", True)) # TODO:
         self.insertChild(BoolCti('logarithmic', False))
@@ -112,7 +114,8 @@ class PgAxisCti(GroupCti):
 
 
     def getRange(self):
-        "Returns a tuple with the min and max range"
+        """Returns a tuple with the min and max range
+        """
         return (self.rangeMinItem.data, self.rangeMaxItem.data)
 
 
@@ -124,9 +127,12 @@ class PgAxisCti(GroupCti):
         #self.model.emitDataChanged(self.rangeItem)
 
         state = viewBox.state
-        autoRangeEnabled = bool(viewBox.autoRangeEnabled()[self._axisNumber])
+        axisNumber = self.axisNumber
+        assert axisNumber in (0, 1), "axisName must be 0 or 1"
 
-        self.rangeMinItem.data, self.rangeMaxItem.data = state['viewRange'][self._axisNumber]
+        autoRangeEnabled = bool(viewBox.autoRangeEnabled()[axisNumber])
+
+        self.rangeMinItem.data, self.rangeMaxItem.data = state['viewRange'][axisNumber]
         self.rangeMinItem.enabled = not autoRangeEnabled
         self.rangeMaxItem.enabled = not autoRangeEnabled
         self.autoRangeItem.data = autoRangeEnabled
@@ -135,21 +141,30 @@ class PgAxisCti(GroupCti):
 
 
 
-
-class ViewBoxCti(GroupCti):
-    """ Read-only config tree for inspecting a PyQtGraph ViewBox
+class ViewBoxCti(GroupCti): # TODO: rename to PgViewBoxCti?
+    """ Read-only config tree item for inspecting a PyQtGraph ViewBox
     """
-    def __init__(self, nodeName='axes'):
-
+    def __init__(self, nodeName='axes', xAxisItem=None, yAxisItem=None):
+        """ Constructor
+        """
         super(ViewBoxCti, self).__init__(nodeName, defaultData=None)
+        self._updatingViewBox = False
 
-        self._updatingViewBox = False #
-
-        # Axes (keeping references to the axis CTIs because they need to be updated quickly when
-        # the range changes; self.configValue may be slow.)
         self.aspectItem = self.insertChild(BoolCti("lock aspect ratio", False))
-        self.xAxisItem = self.insertChild(PgAxisCti('X-axis', axisNumber=0))
-        self.yAxisItem = self.insertChild(PgAxisCti('Y-axis', axisNumber=1))
+
+        # Keeping references to the axes CTIs because they need to be updated quickly when
+        # the range changes; getting by path may be slow.)
+        if xAxisItem is None:
+            self.xAxisItem = self.insertChild(PgAxisCti('x-axis', axisNumber=0))
+        else:
+            check_class(xAxisItem, PgAxisCti)
+            self.xAxisItem = self.insertChild(xAxisItem)
+
+        if yAxisItem is None:
+            self.yAxisItem = self.insertChild(PgAxisCti('y-axis', axisNumber=1))
+        else:
+            check_class(yAxisItem, PgAxisCti)
+            self.yAxisItem = self.insertChild(yAxisItem)
 
         if DEBUGGING:
             self.stateItem = self.insertChild(ViewBoxDebugCti('state', expanded=False))
@@ -157,8 +172,9 @@ class ViewBoxCti(GroupCti):
             self.stateItem = None
 
 
+
     def viewBoxChanged(self, viewBox):
-        """ Called when the x-range of the plot is changed. Updates the values in the config tree.
+        """ Called when the range of the plot is changed. Updates the values in the config tree.
 
             Is disabled during execution of updateViewBox so it doesn't prematurely update the
             config tree item settings.

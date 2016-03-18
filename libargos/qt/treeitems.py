@@ -226,9 +226,6 @@ class BaseTreeItem(object):
         if position is None:
             position = self.nChildren()
             
-        assert 0 <= position <= len(self.childItems), \
-            "position should be 0 < {} <= {}".format(position, len(self.childItems))
-            
         assert childItem.parentItem is None, "childItem already has a parent: {}".format(childItem)
         assert childItem._model is None, "childItem already has a model: {}".format(childItem)
             
