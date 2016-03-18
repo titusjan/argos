@@ -40,10 +40,11 @@ from libargos.config.qtctis import PenCti, ColorCti, createPenStyleCti, createPe
 from libargos.config.floatcti import FloatCti
 from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector
-from libargos.inspector.pgplugins.pgctis import ViewBoxCti
+from libargos.inspector.pgplugins.pgctis import ViewBoxCti, PgIndependendAxisCti, PgDependendAxisCti
 from libargos.utils.cls import array_has_real_numbers
 
 logger = logging.getLogger(__name__)
+
 
 
 class PgLinePlot1dCti(MainGroupCti):
@@ -57,15 +58,18 @@ class PgLinePlot1dCti(MainGroupCti):
                                     configValues=["{path} {slices}", "{name} {slices}"]))
         self.insertChild(BoolCti("anti-alias", True))
 
-        # Grid
+        # Grid (not in ViewBox but a separate group so it can be toggled on/off with one checkbox)
         gridItem = self.insertChild(BoolGroupCti('grid', True, expanded=False))
-        gridItem.insertChild(BoolCti('X-axis', True))
-        gridItem.insertChild(BoolCti('Y-axis', True))
+        gridItem.insertChild(BoolCti('x-axis', True))
+        gridItem.insertChild(BoolCti('y-axis', True))
         gridItem.insertChild(FloatCti('alpha', 0.20, 
                                       minValue=0.0, maxValue=1.0, stepSize=0.01, decimals=2))
 
         # Axes
-        self.viewBoxCti = self.insertChild(ViewBoxCti('axes'))
+        viewBoxCti = ViewBoxCti('axes',
+                        xAxisItem=PgIndependendAxisCti('x-axis', axisNumber=0, axisName='x'),
+                        yAxisItem=PgDependendAxisCti('y-axis', axisNumber=1, axisName='y'))
+        self.viewBoxCti = self.insertChild(viewBoxCti)
 
         # Pen
         penItem = self.insertChild(GroupCti('pen'))
@@ -100,15 +104,18 @@ class PgLinePlot1d(AbstractInspector):
 
         if USE_SIMPLE_PLOT:
             self.plotItem = SimplePlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
-                                           title='', enableMenu=True, viewBox=self.viewBox) # TODO: enableMenu=False
+                                           enableMenu=True, viewBox=self.viewBox) # TODO: enableMenu=False
         else:
             self.plotItem = pg.PlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
-                                        title='', enableMenu=True, viewBox=self.viewBox)
+                                        enableMenu=True, viewBox=self.viewBox)
         self.viewBox.setParent(self.plotItem)
 
-        self.graphicsView = pg.GraphicsView() # TODO: use scale to image?
-        self.graphicsView.setCentralItem(self.plotItem)
-        self.contentsLayout.addWidget(self.graphicsView)
+        self.graphicsLayoutWidget = pg.GraphicsLayoutWidget()
+        self.titleLabel = self.graphicsLayoutWidget.addLabel('<plot title goes here>', 0, 0)
+        self.graphicsLayoutWidget.addItem(self.plotItem, 1, 0)
+
+        self.contentsLayout.addWidget(self.graphicsLayoutWidget)
+
 
         # Connect signals
         self.viewBox.sigStateChanged.connect(self.config.viewBoxCti.viewBoxChanged)
@@ -122,7 +129,7 @@ class PgLinePlot1d(AbstractInspector):
         # Disconnect signals
         self.viewBox.sigStateChanged.disconnect(self.config.viewBoxCti.viewBoxChanged)
         self.plotItem.close()
-        self.graphicsView.close()
+        self.graphicsLayoutWidget.close()
 
         
     @classmethod
@@ -144,13 +151,18 @@ class PgLinePlot1d(AbstractInspector):
         """ Draws the inspector widget when no input is available.
             Creates an empty plot.
         """
-        self.plotItem.clear()
-        #self.plotWidget.showAxis('right')
-        self.plotItem.setLogMode(x=self.configValue('axes/X-axis/logarithmic'),
-                                 y=self.configValue('axes/Y-axis/logarithmic'))
+        self.titleLabel.setText('')
 
-        self.plotItem.showGrid(x=self.configValue('grid/X-axis'),
-                               y=self.configValue('grid/Y-axis'),
+        self.plotItem.clear()
+        self.plotItem.setLabel('left', '')
+        self.plotItem.setLabel('bottom', '')
+
+        #self.plotWidget.showAxis('right')
+        self.plotItem.setLogMode(x=self.configValue('axes/x-axis/logarithmic'),
+                                 y=self.configValue('axes/y-axis/logarithmic'))
+
+        self.plotItem.showGrid(x=self.configValue('grid/x-axis'),
+                               y=self.configValue('grid/y-axis'),
                                alpha=self.configValue('grid/alpha'))
         self.plotItem.updateGrid()
 
@@ -185,33 +197,22 @@ class PgLinePlot1d(AbstractInspector):
         """
         slicedArray = self.collector.getSlicedArray()
         if slicedArray is None or not array_has_real_numbers(slicedArray):
-            self.plotDataItem.clear()
-            self.plotItem.setTitle('')
-            self.plotItem.setLabel('left', '')
-            self.plotItem.setLabel('bottom', '')
-            # TODO: is this an error
-            if not DEBUGGING:
-                raise ValueError("No data available or it does not contain real numbers.")
-        
-        else:        
-            title = self.configValue('title').format(**self.collector.getRtiInfo())
-            self.plotItem.setTitle(title)
+            self._initContents()
+            if DEBUGGING:
+                return
+            else: # TODO: this is not an error
+                raise ValueError("No data available or it does not contain real numbers")
 
-            ylabel = self.collector.dependentDimensionName()
-            depUnit = self.collector.dependentDimensionUnit()
-            if depUnit:
-                ylabel += ' ({})'.format(depUnit)
-            self.plotItem.setLabel('left', ylabel)
+        # Valid plot data here
+        rtiInfo = self.collector.getRtiInfo()
 
-            xlabel = self.collector.independentDimensionNames()[0]
-            indepUnit = self.collector.independentDimensionUnits()[0]
-            if indepUnit:
-                xlabel += ' ({})'.format(indepUnit)
-            self.plotItem.setLabel('bottom', xlabel)
+        self.titleLabel.setText(self.configValue('title').format(**rtiInfo))
+        self.plotItem.setLabel('left',   self.configValue('axes/y-axis/label').format(**rtiInfo)) # TODO: to ViewBox?
+        self.plotItem.setLabel('bottom', self.configValue('axes/x-axis/label').format(**rtiInfo))
 
-            self.plotDataItem.setData(slicedArray)
+        self.plotDataItem.setData(slicedArray)
 
-            self.config.viewBoxCti.updateViewBox(self.viewBox)
+        self.config.viewBoxCti.updateViewBox(self.viewBox)
 
 
         

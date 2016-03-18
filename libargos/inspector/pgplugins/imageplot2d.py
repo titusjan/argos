@@ -88,7 +88,7 @@ class PgImagePlot2d(AbstractInspector):
         
         self.viewBox = pg.ViewBox(border=pg.mkPen("#000000", width=1))
         self.plotItem = pg.PlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
-                                    title='', enableMenu=False, viewBox=self.viewBox)
+                                    enableMenu=False, viewBox=self.viewBox)
         self.viewBox.setParent(self.plotItem)
 
         self.imageItem = pg.ImageItem()
@@ -137,6 +137,10 @@ class PgImagePlot2d(AbstractInspector):
         """ Draws the inspector widget when no input is available. 
         """
         self.viewBox.invertY(False) # TODO
+        self.imageItem.clear()
+        self.titleLabel.setText('')
+        self.plotItem.setLabel('left', '')
+        self.plotItem.setLabel('bottom', '')
 
 
     def _updateRti(self):
@@ -145,19 +149,16 @@ class PgImagePlot2d(AbstractInspector):
         slicedArray = self.collector.getSlicedArray()
         
         if slicedArray is None or not array_has_real_numbers(slicedArray):
-            self.imageItem.clear()
-            self.titleLabel.setText('')
-            self.plotItem.setTitle('')
-            self.plotItem.setLabel('left', '')
-            self.plotItem.setLabel('bottom', '')
+            self._initContents()
             if DEBUGGING:
                 return
             else: # TODO: this is not an error
                 raise ValueError("No data available or it does not contain real numbers")
 
+        # Valid plot data here
+
         rtiInfo = self.collector.getRtiInfo()
         self.titleLabel.setText(self.configValue('title').format(**rtiInfo))
-        self.plotItem.setTitle(self.configValue('title').format(**rtiInfo))
         self.plotItem.setLabel('left',   self.configValue('axes/y-axis/label').format(**rtiInfo)) # TODO: to ViewBox?
         self.plotItem.setLabel('bottom', self.configValue('axes/x-axis/label').format(**rtiInfo))
 

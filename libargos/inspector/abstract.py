@@ -96,7 +96,8 @@ class AbstractInspector(QtGui.QStackedWidget):
         """ A long description that will be displayed as help in the inspector-open dialog box.
         """
         return ""    
-    
+
+
     @classmethod
     def axesNames(cls):
         """ The names of the axes that this inspector visualizes.    
@@ -104,7 +105,8 @@ class AbstractInspector(QtGui.QStackedWidget):
             This determines the dimensionality of the inspector (e.g. an inspector that shows
             an image, and has axes names 'X' and 'Y', is 2-dimensional.
             
-            The names should not include the string "Axis"; the fullAxesNames returns that.
+            The names should not include the string "Axis"; the Collector.fullAxisNames()
+            returns that.
         """
         return tuple()
 

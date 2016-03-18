@@ -23,6 +23,7 @@ import logging
 
 from libargos.config.groupcti import GroupCti
 from libargos.config.boolcti import BoolCti
+from libargos.config.choicecti import ChoiceCti
 from libargos.config.floatcti import FloatCti
 from libargos.config.untypedcti import UntypedCti
 from libargos.info import DEBUGGING
@@ -138,6 +139,37 @@ class PgAxisCti(GroupCti):
         self.autoRangeItem.data = autoRangeEnabled
 
         self.model.emitDataChanged(self.rangeItem)
+
+
+
+class PgIndependendAxisCti(PgAxisCti):
+    """ Configuration tree item for a plot axis showing an independend variable
+    """
+    def __init__(self, nodeName, defaultData=None, axisNumber=None, axisName=None):
+        """ Constructor
+        """
+        super(PgIndependendAxisCti, self).__init__(nodeName, defaultData=defaultData,
+                                                   axisNumber=axisNumber)
+        self.axisName = axisName
+        self.insertChild(ChoiceCti('label', 0, editable=True,
+                                   configValues=["{{{}-dim}}".format(axisName)]),
+                         position=0)
+
+
+class PgDependendAxisCti(PgAxisCti):
+    """ Configuration tree item for a plot axis showing a dependend variable
+    """
+    def __init__(self, nodeName, defaultData=None, axisNumber=None, axisName=None):
+        """ Constructor
+        """
+        super(PgDependendAxisCti, self).__init__(nodeName, defaultData=defaultData,
+                                                 axisNumber=axisNumber)
+        self.axisName = axisName
+        self.insertChild(ChoiceCti('label', 1, editable=True,
+                                   configValues=["{name}", "{name} {unit}",
+                                                 "{path}", "{path} {unit}"]),
+                         position=0)
+
 
 
 
