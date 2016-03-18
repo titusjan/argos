@@ -102,8 +102,9 @@ class AbstractInspector(QtGui.QStackedWidget):
     def axesNames(cls):
         """ The names of the axes that this inspector visualizes.    
             
-            This determines the dimensionality of the inspector (e.g. an inspector that shows
-            an image, and has axes names 'X' and 'Y', is 2-dimensional.
+            This determines the dimensionality of the inspector. For example an inspector that shows
+            an image, and has axes names 'X' and 'Y', is 2-dimensional. The axesNames should be
+            row-first, so in this example: ['Y', 'X']
             
             The names should not include the string "Axis"; the Collector.fullAxisNames()
             returns that.
