@@ -169,15 +169,15 @@ class Collector(QtGui.QWidget):
         """ Sets the axesnames, combobox lables and updates the headers. Removes old values first.
             The comboLables is the axes name + '-axis'
         """
-        for idx in range(len(self._axisNames), self.COL_FIRST_COMBO):
-            self._setHeaderLabel(idx, '')
-            
+        for col, _ in enumerate(self._fullAxisNames, self.COL_FIRST_COMBO):
+            self._setHeaderLabel(col, '')
+
         self._axisNames = tuple(axisNames)
         self._fullAxisNames = tuple([axName + self.AXIS_POST_FIX for axName in axisNames])
         
         for col, label in enumerate(self._fullAxisNames, self.COL_FIRST_COMBO):
             self._setHeaderLabel(col, label)
-            
+
 
     def _setHeaderLabel(self, col, text):
         """ Sets the header of column col to text.
@@ -496,25 +496,25 @@ class Collector(QtGui.QWidget):
         return "[" + ", ".join(sliceList) + "]"
 
     
-    def independentDimensionNames(self):
-        """ Returns list of the names of the independent dimensions, which have been selected in 
-            the combo boxes.
-        """
-        return [combobox.currentText() for combobox in self._comboBoxes]
-
-        
-    def independentDimensionUnits(self):
-        """ Returns list of the units of the independent dimensions, which have been selected in 
-            the combo boxes. At the moment return '' for each independent dimension.
-        """
-        return ['' for _combobox in self._comboBoxes]
-
-
-    def dependentDimensionName(self):
-        """ Returns the name of the dependent dimension.
-            A good default is the name of the RTI.
-        """
-        return self.rti.nodeName if self.rti else ''
+    # def independentDimensionNames(self):
+    #     """ Returns list of the names of the independent dimensions, which have been selected in
+    #         the combo boxes.
+    #     """
+    #     return [combobox.currentText() for combobox in self._comboBoxes]
+    #
+    #
+    # def independentDimensionUnits(self):
+    #     """ Returns list of the units of the independent dimensions, which have been selected in
+    #         the combo boxes. At the moment return '' for each independent dimension.
+    #     """
+    #     return ['' for _combobox in self._comboBoxes]
+    #
+    #
+    # def dependentDimensionName(self):
+    #     """ Returns the name of the dependent dimension.
+    #         A good default is the name of the RTI.
+    #     """
+    #     return self.rti.nodeName if self.rti else ''
 
 
 
@@ -540,7 +540,8 @@ class Collector(QtGui.QWidget):
         info = {'slices': self.getSlicesString(),
                 'name': rti.nodeName,
                 'path': rti.nodePath,
-                'unit': rti.unit}
+                'unit': '({})'.format(rti.unit) if rti.unit else '',
+                'raw-unit': rti.unit}
 
         # Add the info of the independent dimensions (appended with the axis name of that dim).
         for axisName, comboBox in zip(self._axisNames, self._comboBoxes):
