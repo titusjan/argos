@@ -32,13 +32,18 @@ from libargos.utils.cls import check_class
 logger = logging.getLogger(__name__)
 
 
+class ViewBoxCtiMixin(object):
+    """
+    """
+
+
+
 
 class ViewBoxDebugCti(GroupCti):
     """ Read-only config tree for inspecting a PyQtGraph ViewBox
     """
     def __init__(self, nodeName, expanded=True):
 
-        # TODO: should configs have a link back to an inspector?
         super(ViewBoxDebugCti, self).__init__(nodeName, defaultData=None, expanded=expanded)
 
         self.insertChild(UntypedCti("targetRange", [[0,1], [0,1]],
@@ -129,7 +134,7 @@ class PgAxisCti(GroupCti):
 
         state = viewBox.state
         axisNumber = self.axisNumber
-        assert axisNumber in (0, 1), "axisName must be 0 or 1"
+        assert axisNumber in (0, 1), "axisNumber must be 0 or 1"
 
         autoRangeEnabled = bool(viewBox.autoRangeEnabled()[axisNumber])
 
@@ -139,6 +144,25 @@ class PgAxisCti(GroupCti):
         self.autoRangeItem.data = autoRangeEnabled
 
         self.model.emitDataChanged(self.rangeItem)
+
+
+    def apply(self, viewBox): # TODO: make viewBox a member?
+        """ Applies the configuration to the target axis it monitors.
+        """
+        autoRange = self.autoRangeItem.configValue
+
+        if autoRange:
+            #logger.debug("enableAutoRange: {}, {}".format(viewBox.XAxis, autoRangeX))
+            viewBox.enableAutoRange(self.axisNumber, autoRange)
+        else:
+            if self.axisNumber == viewBox.XAxis:
+                xRange, yRange = self.getRange(), None
+            else:
+                xRange, yRange = None, self.getRange()
+
+            # viewBox.setRange doesn't accept an axis number :-(
+            viewBox.setRange(xRange = xRange, yRange=yRange,
+                             padding=0, update=False, disableAutoRange=True)
 
 
 
@@ -151,9 +175,9 @@ class PgIndependendAxisCti(PgAxisCti):
         super(PgIndependendAxisCti, self).__init__(nodeName, defaultData=defaultData,
                                                    axisNumber=axisNumber)
         self.axisName = axisName
-        self.insertChild(ChoiceCti('label', 0, editable=True,
-                                   configValues=["{{{}-dim}}".format(axisName)]),
-                         position=0)
+        labelCti = ChoiceCti('label', 0, editable=True,
+                             configValues=["{{{}-dim}}".format(axisName)])
+        self.insertChild(labelCti, position=0)
 
 
 class PgDependendAxisCti(PgAxisCti):
@@ -165,11 +189,9 @@ class PgDependendAxisCti(PgAxisCti):
         super(PgDependendAxisCti, self).__init__(nodeName, defaultData=defaultData,
                                                  axisNumber=axisNumber)
         self.axisName = axisName
-        self.insertChild(ChoiceCti('label', 1, editable=True,
-                                   configValues=["{name}", "{name} {unit}",
-                                                 "{path}", "{path} {unit}"]),
-                         position=0)
-
+        labelCti = ChoiceCti('label', 1, editable=True,
+                             configValues=["{name}", "{name} {unit}", "{path}", "{path} {unit}"])
+        self.insertChild(labelCti, position=0)
 
 
 
@@ -227,10 +249,7 @@ class PgPlotItemCti(GroupCti):
             config tree item settings.
         """
         if self._applyInProgress:
-            #logger.debug("viewBoxChanged: ignored")
             return
-
-        #logger.debug("viewBoxChanged: {}".format(viewBox.autoRangeEnabled()))
 
         self.xAxisCti.viewBoxChanged(viewBox)
         self.yAxisCti.viewBoxChanged(viewBox)
@@ -246,25 +265,9 @@ class PgPlotItemCti(GroupCti):
         try:
             viewBox = self.plotItem.getViewBox()
             viewBox.setAspectLocked(self.aspectItem.configValue)
-            # TODO: show axis/label
 
-            autoRangeX = self.xAxisCti.autoRangeItem.data
-            if autoRangeX:
-                #logger.debug("enableAutoRange: {}, {}".format(viewBox.XAxis, autoRangeX))
-                viewBox.enableAutoRange(viewBox.XAxis, autoRangeX)
-            else:
-                #logger.debug("Setting xRange: {}".format(self.xAxisItem.getRange()))
-                viewBox.setRange(xRange = self.xAxisCti.getRange(),
-                                 padding=0, update=False, disableAutoRange=True)
-
-            autoRangeY = self.yAxisCti.autoRangeItem.data
-            if autoRangeY:
-                #logger.debug("enableAutoRange: {}, {}".format(viewBox.YAxis, autoRangeY))
-                viewBox.enableAutoRange(viewBox.YAxis, autoRangeY)
-            else:
-                #logger.debug("Setting yRange: {}".format(self.yAxisItem.getRange()))
-                viewBox.setRange(yRange = self.yAxisCti.getRange(),
-                                 padding=0, update=False, disableAutoRange=True)
+            self.xAxisCti.apply(viewBox)
+            self.yAxisCti.apply(viewBox)
         finally:
             self._applyInProgress = False
 
