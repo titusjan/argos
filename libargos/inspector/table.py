@@ -55,6 +55,8 @@ class TableInspector(AbstractInspector):
         self.tableView.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.tableView.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
 
+        self._config = TableInspectorCti('inspector')
+
 
     @classmethod
     def axesNames(cls):
@@ -62,13 +64,6 @@ class TableInspector(AbstractInspector):
             See the parent class documentation for a more detailed explanation.
         """
         return tuple(['Y', 'X'])
-
-
-    @classmethod
-    def createConfig(cls):
-        """ Creates a config tree item (CTI) hierarchy containing default children.
-        """
-        return TableInspectorCti('inspector')
 
 
     def _updateRti(self):

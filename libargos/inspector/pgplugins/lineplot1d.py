@@ -40,8 +40,8 @@ from libargos.config.qtctis import PenCti, ColorCti, createPenStyleCti, createPe
 from libargos.config.floatcti import FloatCti
 from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector
-from libargos.inspector.pgplugins.pgctis import ViewBoxCti, PgIndependendAxisCti, PgDependendAxisCti
-from libargos.utils.cls import array_has_real_numbers
+from libargos.inspector.pgplugins.pgctis import PgPlotItemCti, PgIndependendAxisCti, PgDependendAxisCti
+from libargos.utils.cls import array_has_real_numbers, check_class
 
 logger = logging.getLogger(__name__)
 
@@ -50,9 +50,17 @@ logger = logging.getLogger(__name__)
 class PgLinePlot1dCti(MainGroupCti):
     """ Configuration tree for a PgLinePlot1d inspector
     """
-    def __init__(self, nodeName, defaultData=None):
-        
+    def __init__(self, nodeName, pgLinePlot1d, defaultData=None):
+        """ Constructor
+
+            Maintains a link to the target pgLinePlot1d inspector, so that changes in the
+            configuration can be applied to the target by simply calling the apply method.
+            Vice versa, it can connect signals to the target.
+        """
         super(PgLinePlot1dCti, self).__init__(nodeName, defaultData=defaultData)
+
+        check_class(pgLinePlot1d, PgLinePlot1d)
+        self.pgLinePlot1d = pgLinePlot1d
     
         self.insertChild(ChoiceCti('title', 0, editable=True, 
                                     configValues=["{path} {slices}", "{name} {slices}"]))
@@ -66,10 +74,10 @@ class PgLinePlot1dCti(MainGroupCti):
                                       minValue=0.0, maxValue=1.0, stepSize=0.01, decimals=2))
 
         # Axes
-        viewBoxCti = ViewBoxCti('axes',
-                        xAxisItem=PgIndependendAxisCti('x-axis', axisNumber=0, axisName='x'),
-                        yAxisItem=PgDependendAxisCti('y-axis', axisNumber=1, axisName='y'))
-        self.viewBoxCti = self.insertChild(viewBoxCti)
+        plotItemCti = PgPlotItemCti('axes', plotItem=self.pgLinePlot1d.plotItem,
+                                    xAxisCti=PgIndependendAxisCti('x-axis', axisNumber=0, axisName='x'),
+                                    yAxisCti=PgDependendAxisCti('y-axis', axisNumber=1, axisName='y'))
+        self.plotItemCti = self.insertChild(plotItemCti)
 
         # Pen
         penItem = self.insertChild(GroupCti('pen'))
@@ -90,6 +98,11 @@ class PgLinePlot1dCti(MainGroupCti):
         symbolItem.insertChild(IntCti('size', 5, minValue=0, maxValue=100, stepSize=1))
 
 
+    def apply(self):
+        """ Applies the configuration to the target PgLinePlot1d it monitors.
+        """
+        self.plotItemCti.apply()
+
 
 class PgLinePlot1d(AbstractInspector):
     """ Inspector that contains a PyQtGraph 1-dimensional line plot
@@ -99,8 +112,8 @@ class PgLinePlot1d(AbstractInspector):
         """ Constructor. See AbstractInspector constructor for parameters.
         """
         super(PgLinePlot1d, self).__init__(collector, parent=parent)
-        
-        self.viewBox = pg.ViewBox(border=pg.mkPen("#000000", width=1))#), lockAspect=1.0)
+
+        self.viewBox = pg.ViewBox(border=pg.mkPen("#000000", width=1))
 
         if USE_SIMPLE_PLOT:
             self.plotItem = SimplePlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
@@ -116,18 +129,13 @@ class PgLinePlot1d(AbstractInspector):
 
         self.contentsLayout.addWidget(self.graphicsLayoutWidget)
 
+        self._config = PgLinePlot1dCti('inspector', pgLinePlot1d=self) # TODO: should be able to change nodeName without --reset
 
-        # Connect signals
-        self.viewBox.sigStateChanged.connect(self.config.viewBoxCti.viewBoxChanged)
-        
         
     def finalize(self):
         """ Is called before destruction. Can be used to clean-up resources
         """
         logger.debug("Finalizing: {}".format(self))
-        
-        # Disconnect signals
-        self.viewBox.sigStateChanged.disconnect(self.config.viewBoxCti.viewBoxChanged)
         self.plotItem.close()
         self.graphicsLayoutWidget.close()
 
@@ -140,13 +148,6 @@ class PgLinePlot1d(AbstractInspector):
         return tuple(['X'])
 
 
-    @classmethod        
-    def createConfig(cls):
-        """ Creates a config tree item (CTI) hierarchy containing default children.
-        """
-        return PgLinePlot1dCti('inspector') # TODO: should be able to change nodeName without --reset
-        
-                
     def _initContents(self):
         """ Draws the inspector widget when no input is available.
             Creates an empty plot.
@@ -212,7 +213,8 @@ class PgLinePlot1d(AbstractInspector):
 
         self.plotDataItem.setData(slicedArray)
 
-        self.config.viewBoxCti.updateViewBox(self.viewBox)
+        self.config.apply()
+
 
 
         

@@ -49,10 +49,8 @@ class RepoTreeView(ArgosTreeView):
         super(RepoTreeView, self).__init__(treeModel=repoTreeModel, parent=parent)
  
         self._collector = collector
-        self._config = self.createConfig()
+        self._config = self._createConfig()
 
-
-        
         treeHeader = self.header()
         treeHeader.resizeSection(RepoTreeModel.COL_NODE_NAME, COL_NODE_NAME_WIDTH)
         treeHeader.resizeSection(RepoTreeModel.COL_SHAPE, COL_SHAPE_WIDTH)  
@@ -155,8 +153,7 @@ class RepoTreeView(ArgosTreeView):
         return self._config
     
 
-    @classmethod        
-    def createConfig(cls):
+    def _createConfig(self):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
         rootItem = MainGroupCti('data repository')

@@ -135,7 +135,30 @@ class AbstractCti(BaseTreeItem):
         self._data = self.defaultData
         self._enabled = enabled
         self._expanded = expanded
-        
+
+
+    def finalize(self):
+        """ Can be used to cleanup resources. Should be called explicitly.
+            Recursively calls the _closeRecources method on all children and then on itself.
+            Descendants should override _closeRecources to do the actual closing of resources.
+        """
+        for child in self.childItems:
+            child.finalize()
+
+        # In contrast to the BaseRti there is no close() method, _closeResources is directly called
+        # because it only is needed when the config is deleted and catching exceptions makes no
+        # sense.
+        self._closeResources()
+
+
+    def _closeResources(self):
+        """ Can be overridden to close the underlying resources or disconnect signals.
+            The default implementation does nothing.
+            Is called by self.finalize when the cti is deleted. There is no corresponding
+            _openResources; all resources are claimed in the constructor.
+        """
+        pass
+
     
     def __eq__(self, other): 
         """ Returns true if self == other. 

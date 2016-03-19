@@ -301,7 +301,7 @@ class MainWindow(QtGui.QMainWindow):
     def constructWindowTitle(self):
         """ Constructs the window title given the current inspector and profile. 
         """
-        return "{} (#{}) {}-{}".format(self.inspectorName, self.windowNumber, 
+        return "{} #{} | {}-{}".format(self.inspectorName, self.windowNumber,
                                        PROJECT_NAME, self.argosApplication.profile)
 
 

@@ -47,7 +47,7 @@ class AbstractInspector(QtGui.QStackedWidget):
         
         self.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         
-        self._config = self.createConfig()
+        self._config = MainGroupCti(nodeName='inspector') # Is typically redefined.
         self._collector = collector
         
         self.errorWidget = MessageDisplay()
@@ -72,18 +72,11 @@ class AbstractInspector(QtGui.QStackedWidget):
     
     @property
     def config(self):
-        """ The root config tree item for this inspector 
+        """ The root config tree item for this inspector.
         """
         return self._config
     
 
-    @classmethod        
-    def createConfig(cls):
-        """ Creates a config tree item (CTI) hierarchy containing default children.
-        """
-        return MainGroupCti(nodeName='inspector')
-    
-            
     @property
     def windowNumber(self):
         """ The instance number of the window this inspector belongs to.
@@ -127,7 +120,8 @@ class AbstractInspector(QtGui.QStackedWidget):
     
     @QtSlot()
     def initContents(self):
-        """ Tries to initialize the widget contents. 
+        """ Tries to initialize the widget contents from the configuration.
+            At this point the inspectors widget and config have been created.
             Shows the error page in case an exception is raised during initialization.
             Descendants should override _initContents, not initContents.
         """
@@ -145,7 +139,8 @@ class AbstractInspector(QtGui.QStackedWidget):
                     
         
     def _initContents(self):
-        """ Is called by initContents to do the actual initialization. 
+        """ Is called by initContents to do the actual initialization of the widget from the
+            config. At this point the inspectors widget and config have been created.
             Descendants should override _initContents and not worry about exceptions; 
             the initContents will show the error page if an exception is raised.
         """
@@ -154,7 +149,7 @@ class AbstractInspector(QtGui.QStackedWidget):
     
     
     @QtSlot()
-    def updateRti(self):
+    def updateRti(self): # TODO: rename to refresh?
         """ Tries to draw the widget contents with the updated RTI. 
             Shows the error page in case an exception is raised while drawing the contents.
             Descendants should override _updateRti, not updateRti.

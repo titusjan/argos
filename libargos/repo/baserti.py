@@ -71,12 +71,24 @@ class BaseRti(AbstractLazyLoadTreeItem):
         """ Returns the name of the underlying the file. 
         """
         return self._fileName
+
+
+    def finalize(self):
+        """ Can be used to cleanup resources. Should be called explicitly.
+            Recursively calls the close method on all children and then on itself.
+            In turn, close calls _closeRecources; descendants should override the latter.
+        """
+        for child in self.childItems:
+            child.finalize()
+        self.close()
+
             
     @property
     def isOpen(self):
         "Returns True if the underlying resources are opened"
         return self._isOpen
-    
+
+
     def open(self):
         """ Opens underlying resources and sets isOpen flag. 
             It calls _openResources. Descendants should usually override the latter 
@@ -110,9 +122,10 @@ class BaseRti(AbstractLazyLoadTreeItem):
     
     
     def close(self):
-        """ Closes underlying resources and un-sets isOpen flag. 
-            It calls _closeResources. Descendants should usually override the latter 
-            function instead of this one.
+        """ Closes underlying resources and un-sets the isOpen flag.
+            Any exception that occurs is caught and put in the exception property.
+            This method calls _closeResources, which does the actual resource cleanup. Descendants
+            should typically override the latter instead of this one.
         """
         self.clearException()
         try: 
@@ -205,15 +218,6 @@ class BaseRti(AbstractLazyLoadTreeItem):
         """ The function that actually fetches the children. Default returns no children.
         """ 
         return []
-
-        
-    def finalize(self):
-        """ Can be used to cleanup resources. Should be called explicitly.
-            Finalizes its children before closing itself
-        """
-        for child in self.childItems:
-            child.finalize()
-        self.close()
 
 
     @property

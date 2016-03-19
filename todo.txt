@@ -53,7 +53,7 @@ TODO Long term or nice to have:
 	let repo tree view work with multile selected items
 	example RTI using XML file.
 	fits format
-	geotiff format (attributes). Other image formats.
+	geotiff format (attributes). (https://aws.amazon.com/public-data-sets/landsat/)
 	
 	Change profile from menu?
 	Plugin management window

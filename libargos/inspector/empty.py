@@ -36,9 +36,11 @@ class EmptyInspector(AbstractInspector):
     def __init__(self, collector, parent=None):
         
         super(EmptyInspector, self).__init__(collector, parent=parent)
-        
+
         self.label = QtGui.QLabel()
         self.contentsLayout.addWidget(self.label)
+
+        self._config = self._createConfig()
 
         
     @classmethod
@@ -49,8 +51,7 @@ class EmptyInspector(AbstractInspector):
         return tuple()
           
             
-    @classmethod        
-    def createConfig(cls):
+    def _createConfig(self):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
         rootItem = MainGroupCti('inspector')

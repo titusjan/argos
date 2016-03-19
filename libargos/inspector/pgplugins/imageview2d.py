@@ -39,6 +39,8 @@ class PgImageView2d(AbstractInspector):
         """ Constructor. See AbstractInspector constructor for parameters.
         """
         super(PgImageView2d, self).__init__(collector, parent=parent)
+
+        self._config = self._createConfig()
         
         self.imageView = pg.ImageView(name='2d_image_view_#{}'.format(self.windowNumber)) 
         self.contentsLayout.addWidget(self.imageView)
@@ -59,8 +61,7 @@ class PgImageView2d(AbstractInspector):
         return tuple(['Y', 'X'])
            
 
-    @classmethod        
-    def createConfig(cls):
+    def _createConfig(self):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
         rootItem = MainGroupCti(nodeName='inspector')

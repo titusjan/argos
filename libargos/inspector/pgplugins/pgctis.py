@@ -94,7 +94,7 @@ class ViewBoxDebugCti(GroupCti):
 class PgAxisCti(GroupCti):
     """ Configuration tree item for a PyQtGraph plot axis.
 
-        This CTI is intended to be used as a child of a ViewBoxCti.
+        This CTI is intended to be used as a child of a PgPlotItemCti.
     """
     def __init__(self, nodeName, defaultData=None, axisNumber=None):
         """ Constructor
@@ -173,86 +173,102 @@ class PgDependendAxisCti(PgAxisCti):
 
 
 
-class ViewBoxCti(GroupCti): # TODO: rename to PgViewBoxCti?
-    """ Read-only config tree item for inspecting a PyQtGraph ViewBox
+class PgPlotItemCti(GroupCti):
+    """ Config tree item for manipulating a PyQtGraph.PlotItem
     """
-    def __init__(self, nodeName='axes', xAxisItem=None, yAxisItem=None):
+    def __init__(self, nodeName='axes', plotItem=None,
+                 xAxisCti=None, yAxisCti=None):
         """ Constructor
         """
-        super(ViewBoxCti, self).__init__(nodeName, defaultData=None)
-        self._updatingViewBox = False
+        super(PgPlotItemCti, self).__init__(nodeName, defaultData=None)
 
+        #check_class(plotItem, (PlotItem, SimplePlotItem) # TODO
+        assert plotItem, "target plotItem is undefined"
+        self.plotItem = plotItem
+        self._applyInProgress = False
         self.aspectItem = self.insertChild(BoolCti("lock aspect ratio", False))
 
         # Keeping references to the axes CTIs because they need to be updated quickly when
         # the range changes; getting by path may be slow.)
-        if xAxisItem is None:
-            self.xAxisItem = self.insertChild(PgAxisCti('x-axis', axisNumber=0))
+        if xAxisCti is None:
+            self.xAxisCti = self.insertChild(PgAxisCti('x-axis', axisNumber=0))
         else:
-            check_class(xAxisItem, PgAxisCti)
-            self.xAxisItem = self.insertChild(xAxisItem)
+            check_class(xAxisCti, PgAxisCti)
+            self.xAxisCti = self.insertChild(xAxisCti)
 
-        if yAxisItem is None:
-            self.yAxisItem = self.insertChild(PgAxisCti('y-axis', axisNumber=1))
+        if yAxisCti is None:
+            self.yAxisCti = self.insertChild(PgAxisCti('y-axis', axisNumber=1))
         else:
-            check_class(yAxisItem, PgAxisCti)
-            self.yAxisItem = self.insertChild(yAxisItem)
+            check_class(yAxisCti, PgAxisCti)
+            self.yAxisCti = self.insertChild(yAxisCti)
 
         if DEBUGGING:
             self.stateItem = self.insertChild(ViewBoxDebugCti('state', expanded=False))
         else:
             self.stateItem = None
 
+        # Connect signals
+        viewBox = self.plotItem.getViewBox()
+        viewBox.sigStateChanged.connect(self.viewBoxChanged)
+
+
+    def _closeResources(self):
+        """ Disconnects signals.
+            Is called by self.finalize when the cti is deleted.
+        """
+        viewBox = self.plotItem.getViewBox()
+        viewBox.sigStateChanged.disconnect(self.viewBoxChanged)
 
 
     def viewBoxChanged(self, viewBox):
-        """ Called when the range of the plot is changed. Updates the values in the config tree.
+        """ Called when the range of the plot is changed. Refreshes the values in the config tree.
 
-            Is disabled during execution of updateViewBox so it doesn't prematurely update the
+            Is disabled during execution of apply so it doesn't prematurely refresh the
             config tree item settings.
         """
-        if self._updatingViewBox:
+        if self._applyInProgress:
             #logger.debug("viewBoxChanged: ignored")
             return
 
         #logger.debug("viewBoxChanged: {}".format(viewBox.autoRangeEnabled()))
 
-        self.xAxisItem.viewBoxChanged(viewBox)
-        self.yAxisItem.viewBoxChanged(viewBox)
+        self.xAxisCti.viewBoxChanged(viewBox)
+        self.yAxisCti.viewBoxChanged(viewBox)
 
         if self.stateItem:
             self.stateItem.viewBoxChanged(viewBox)
 
 
-
-    def updateViewBox(self, viewBox):
-        """ Updates the viewBox from the configuration values.
-            Returns the viewBox
+    def apply(self):
+        """ Applies the configuration to the target PlotItem it monitors.
         """
-        self._updatingViewBox = True # defer calling self.viewBoxChanged
+        self._applyInProgress = True # defer calling self.viewBoxChanged
         try:
+            viewBox = self.plotItem.getViewBox()
             viewBox.setAspectLocked(self.aspectItem.configValue)
             # TODO: show axis/label
 
-            autoRangeX = self.xAxisItem.autoRangeItem.data
+            autoRangeX = self.xAxisCti.autoRangeItem.data
             if autoRangeX:
                 #logger.debug("enableAutoRange: {}, {}".format(viewBox.XAxis, autoRangeX))
                 viewBox.enableAutoRange(viewBox.XAxis, autoRangeX)
             else:
                 #logger.debug("Setting xRange: {}".format(self.xAxisItem.getRange()))
-                viewBox.setRange(xRange = self.xAxisItem.getRange(),
+                viewBox.setRange(xRange = self.xAxisCti.getRange(),
                                  padding=0, update=False, disableAutoRange=True)
 
-            autoRangeY = self.yAxisItem.autoRangeItem.data
+            autoRangeY = self.yAxisCti.autoRangeItem.data
             if autoRangeY:
                 #logger.debug("enableAutoRange: {}, {}".format(viewBox.YAxis, autoRangeY))
                 viewBox.enableAutoRange(viewBox.YAxis, autoRangeY)
             else:
                 #logger.debug("Setting yRange: {}".format(self.yAxisItem.getRange()))
-                viewBox.setRange(yRange = self.yAxisItem.getRange(),
+                viewBox.setRange(yRange = self.yAxisCti.getRange(),
                                  padding=0, update=False, disableAutoRange=True)
         finally:
-            self._updatingViewBox = False
+            self._applyInProgress = False
 
+        # Call viewBoxChanged in case the newly applied configuration resulted in a change of the
+        # viewbox state.
         self.viewBoxChanged(viewBox)
-        return viewBox
+
