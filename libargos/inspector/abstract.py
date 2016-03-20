@@ -149,15 +149,15 @@ class AbstractInspector(QtGui.QStackedWidget):
     
     
     @QtSlot()
-    def updateRti(self): # TODO: rename to refresh?
+    def drawContents(self): # TODO: rename to refresh/apply?
         """ Tries to draw the widget contents with the updated RTI. 
             Shows the error page in case an exception is raised while drawing the contents.
-            Descendants should override _updateRti, not updateRti.
+            Descendants should override _drawContents, not drawContents.
         """
-        logger.debug("---- inspector updateRti(): {}".format(self))
+        logger.debug("---- inspector drawContents(): {}".format(self))
         try:
             self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
-            self._updateRti()
+            self._drawContents()
         except Exception as ex:
             logger.error("Error while drawing the inspector: {} ----".format(ex))
             #logger.execption(ex)
@@ -167,10 +167,10 @@ class AbstractInspector(QtGui.QStackedWidget):
                 raise
             
     
-    def _updateRti(self):
-        """ Is called by updateRti to do the actual drawing. 
-            Descendants should override _updateRti and not worry about exceptions; 
-            the updateRti will show the error page if an exception is raised.
+    def _drawContents(self):
+        """ Is called by drawContents to do the actual drawing.
+            Descendants should override _drawContents and not worry about exceptions;
+            the drawContents will show the error page if an exception is raised.
         """
         raise NotImplementedError()
         

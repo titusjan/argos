@@ -94,7 +94,7 @@ class EmptyInspector(AbstractInspector):
         return rootItem
         
 
-    def _updateRti(self):
+    def _drawContents(self):
         """ Draws the inspector widget when an RTI is updated.
         """
         logger.debug("EmptyInspector._drawContents: {}".format(self))
@@ -105,7 +105,7 @@ class EmptyInspector(AbstractInspector):
         else:
             text = str(slicedArray.shape)
         
-        logger.debug("_updateRti shape: {}".format(text))
+        logger.debug("_drawContents shape: {}".format(text))
         
         if DEBUGGING:
             self.label.setText("slice shape: {}".format(text))

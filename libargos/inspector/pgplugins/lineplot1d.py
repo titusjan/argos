@@ -194,7 +194,7 @@ class PgLinePlot1d(AbstractInspector):
                                                symbolPen=symbolPen, symbolBrush=symbolBrush,
                                                antialias=antiAlias)
 
-    def _updateRti(self):
+    def _drawContents(self):
         """ Draws the RTI
         """
         slicedArray = self.collector.getSlicedArray()

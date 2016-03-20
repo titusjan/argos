@@ -79,7 +79,7 @@ class PgImageView2d(AbstractInspector):
         viewBox.setAspectLocked(self.configValue('lock aspect ratio'))
 
 
-    def _updateRti(self):
+    def _drawContents(self):
         """ Draws the inspector widget when no input is available.
         """
         slicedArray = self.collector.getSlicedArray()

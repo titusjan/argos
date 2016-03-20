@@ -371,7 +371,7 @@ class MainWindow(QtGui.QMainWindow):
                     self._configTreeModel.insertItem(self.inspector.config, oldConfigPosition)
                     self.configTreeView.expandBranch()  
                     self.collector.clearAndSetComboBoxes(self.inspector.axesNames())
-                    self.inspector.initContents() # TODO: call this here?
+                    #self.inspector.initContents() # TODO: call this here?
                     centralLayout.addWidget(self.inspector)
             finally:
                 self.collector.blockSignals(oldBlockState)
@@ -408,7 +408,7 @@ class MainWindow(QtGui.QMainWindow):
         """
         logger.debug("collectorContentsChanged()")
         if self.inspector:
-            self.inspector.updateRti()
+            self.inspector.drawContents()
 
         
     @QtSlot(AbstractCti)
@@ -426,14 +426,14 @@ class MainWindow(QtGui.QMainWindow):
         self.drawWindowContents()
                         
             
-    def drawWindowContents(self):
+    def drawWindowContents(self): # TODO: rename to drawInspectorContents?
         """ Draws all contents of this windows inspector. This includes the inspector.
         """
         logger.debug("")
         logger.debug("-------- Drawing window contents: {} --------".format(self.windowTitle()))
         if self.inspector:
             self.inspector.initContents()
-            self.inspector.updateRti()
+            self.inspector.drawContents()
     
 
     # TODO: to repotreemodel? Note that the functionality will be common to selectors.

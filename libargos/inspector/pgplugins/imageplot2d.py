@@ -147,7 +147,7 @@ class PgImagePlot2d(AbstractInspector):
         self.plotItem.setLabel('bottom', '')
 
 
-    def _updateRti(self):
+    def _drawContents(self):
         """ Draws the inspector widget when no input is available.
         """
         slicedArray = self.collector.getSlicedArray()

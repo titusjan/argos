@@ -426,7 +426,7 @@ class Collector(QtGui.QWidget):
 
 
     def getSlicedArray(self):
-        """ Slice the rti using a slice made from the values of the combo and spin boxes
+        """ Slice the rti using a tuple of slices made from the values of the combo and spin boxes
             
             :returns: Numpy array with the same number of dimension as the number of 
                 comboboxes; returns None if no slice can be made.

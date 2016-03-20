@@ -64,7 +64,7 @@ TODO Long term or nice to have:
 	http://pythonhosted.org/setuptools/setuptools.html#dynamic-discovery-of-services-and-plugins
 	
 THINK:
-    _updateRti should return False if not data is available. No exception should be raised as it
+    _drawContents should return False if not data is available. No exception should be raised as it
         is not an unexpected case.
 
 	use decorators in AbstractLazyLoadTreeItem?
