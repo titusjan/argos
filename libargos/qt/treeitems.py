@@ -17,9 +17,11 @@ class BaseTreeItem(object):
         
             :param nodeName: short name describing this node. Is used to construct the nodePath.
                 Currently we don't check for uniqueness in the children but this may change.
+                The nodeName may not contain slashes (/).
         """
         check_class(nodeName, StringType, allow_none=False)
-        assert nodeName, "Node name may not be empty"
+        assert nodeName, "nodeName may not be empty"
+        assert '/' not in nodeName, "nodeName may not contain slashes"
         self._nodeName = str(nodeName)
         self._parentItem = None
         self._model = None 

@@ -37,13 +37,13 @@ from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.inspector.abstract import AbstractInspector
-from libargos.inspector.pgplugins.pgctis import PgAxisCti, PgPlotItemCti
+from libargos.inspector.pgplugins.pgctis import PgAxisCti, PgIndependendAxisCti, PgPlotItemCti
 from libargos.utils.cls import array_has_real_numbers, check_class
 
 logger = logging.getLogger(__name__)
 
 
-class PgImageAxisCti(PgAxisCti):
+class __not_used__PgImageAxisCti(PgAxisCti):
     """ Configuration tree item for a plot axis showing a dependend variable
     """
     def __init__(self, nodeName, defaultData=None, axisNumber=None, axisName=None):
@@ -74,9 +74,10 @@ class PgImagePlot2dCti(MainGroupCti):
         self.insertChild(ChoiceCti('title', 0, editable=True,
                                    configValues=["{path} {slices}", "{name} {slices}"]))
 
+        viewBox = pgImagePlot2d.plotItem.getViewBox()
         plotItemCti = PgPlotItemCti('axes', plotItem=pgImagePlot2d.plotItem,
-                                    xAxisCti=PgImageAxisCti('x-axis', axisNumber=0, axisName='x'),
-                                    yAxisCti=PgImageAxisCti('y-axis', axisNumber=1, axisName='y'))
+                        xAxisCti=PgIndependendAxisCti('x-axis', viewBox, 0, axisName='x'),
+                        yAxisCti=PgIndependendAxisCti('y-axis', viewBox, 1, axisName='y'))
         self.plotItemCti = self.insertChild(plotItemCti)
 
         self.insertChild(BoolCti('auto levels', True))

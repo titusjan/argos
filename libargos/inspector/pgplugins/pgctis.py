@@ -32,19 +32,12 @@ from libargos.utils.cls import check_class
 logger = logging.getLogger(__name__)
 
 
-class ViewBoxCtiMixin(object):
-    """
-    """
-
-
-
-
 class ViewBoxDebugCti(GroupCti):
     """ Read-only config tree for inspecting a PyQtGraph ViewBox
     """
     def __init__(self, nodeName, expanded=True):
 
-        super(ViewBoxDebugCti, self).__init__(nodeName, defaultData=None, expanded=expanded)
+        super(ViewBoxDebugCti, self).__init__(nodeName, expanded=expanded)
 
         self.insertChild(UntypedCti("targetRange", [[0,1], [0,1]],
             doc="Child coord. range visible [[xmin, xmax], [ymin, ymax]]"))
@@ -96,27 +89,42 @@ class ViewBoxDebugCti(GroupCti):
 
 
 
-class PgAxisCti(GroupCti):
-    """ Configuration tree item for a PyQtGraph plot axis.
+# class PgViewBoxCtiMixin():
+#     """ Mixin that adds two emtpy methods that are called by PgPlotItem on all its child items.
+#
+#         The methods are refresh
+#     """
 
-        This CTI is intended to be used as a child of a PgPlotItemCti.
+
+class PgAxisAutoRangeCti(GroupCti):
+    """ Configuration tree item is linked to the axis range.
+        Can toggle the axis' auto-range property on/off by means of checkbox
     """
-    def __init__(self, nodeName, defaultData=None, axisNumber=None):
-        """ Constructor
+    def __init__(self, viewBox, axisNumber, nodeName='range'):
+        """ Constructor.
+            The monitored axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
         """
-        super(PgAxisCti, self).__init__(nodeName, defaultData=defaultData)
-
+        super(PgAxisAutoRangeCti, self).__init__(nodeName)
+        assert axisNumber in (0, 1), "axisNumber must be 0 or 1"
+        self.viewBox = viewBox
         self.axisNumber = axisNumber
 
-        #self.insertChild(BoolCti("show", True)) # TODO:
-        self.insertChild(BoolCti('logarithmic', False))
+        self.rangeMinItem = self.insertChild(FloatCti('min', 0.0))
+        self.rangeMaxItem = self.insertChild(FloatCti('max', 0.0))
+        self.autoRangeItem = self.insertChild(BoolCti("auto-range", True))
 
-        # Keep a reference because this needs to be changed often/fast
-        self.rangeItem = self.insertChild(GroupCti('range'))
-        self.rangeMinItem = self.rangeItem.insertChild(FloatCti('min', 0.0))
-        self.rangeMaxItem = self.rangeItem.insertChild(FloatCti('max', 0.0))
 
-        self.autoRangeItem = self.rangeItem.insertChild(BoolCti("auto-range", True))
+    def refresh(self):
+        """ Refreshes the config values from the axes' state
+        """
+        self.rangeMinItem.data, self.rangeMaxItem.data = \
+            self.viewBox.state['viewRange'][self.axisNumber]
+        autoRangeEnabled = bool(self.viewBox.autoRangeEnabled()[self.axisNumber])
+        self.rangeMinItem.enabled = not autoRangeEnabled
+        self.rangeMaxItem.enabled = not autoRangeEnabled
+        self.autoRangeItem.data = autoRangeEnabled
+
+        self.model.emitDataChanged(self)
 
 
     def getRange(self):
@@ -125,55 +133,66 @@ class PgAxisCti(GroupCti):
         return (self.rangeMinItem.data, self.rangeMaxItem.data)
 
 
-    def viewBoxChanged(self, viewBox):
-        """ Called when the range of the axis is changed. Updates the range in the config tree.
-        """
-        #self.rangeMinItem.data, self.rangeMaxItem.data = newRange
-        #self.autoRangeItem.data = bool(viewBox.autoRangeEnabled()[self._axisNumber])
-        #self.model.emitDataChanged(self.rangeItem)
-
-        state = viewBox.state
-        axisNumber = self.axisNumber
-        assert axisNumber in (0, 1), "axisNumber must be 0 or 1"
-
-        autoRangeEnabled = bool(viewBox.autoRangeEnabled()[axisNumber])
-
-        self.rangeMinItem.data, self.rangeMaxItem.data = state['viewRange'][axisNumber]
-        self.rangeMinItem.enabled = not autoRangeEnabled
-        self.rangeMaxItem.enabled = not autoRangeEnabled
-        self.autoRangeItem.data = autoRangeEnabled
-
-        self.model.emitDataChanged(self.rangeItem)
-
-
-    def apply(self, viewBox): # TODO: make viewBox a member?
+    def apply(self):
         """ Applies the configuration to the target axis it monitors.
         """
         autoRange = self.autoRangeItem.configValue
 
         if autoRange:
             #logger.debug("enableAutoRange: {}, {}".format(viewBox.XAxis, autoRangeX))
-            viewBox.enableAutoRange(self.axisNumber, autoRange)
+            self.viewBox.enableAutoRange(self.axisNumber, autoRange)
         else:
-            if self.axisNumber == viewBox.XAxis:
+            if self.axisNumber == self.viewBox.XAxis:
                 xRange, yRange = self.getRange(), None
             else:
                 xRange, yRange = None, self.getRange()
 
             # viewBox.setRange doesn't accept an axis number :-(
-            viewBox.setRange(xRange = xRange, yRange=yRange,
-                             padding=0, update=False, disableAutoRange=True)
+            self.viewBox.setRange(xRange = xRange, yRange=yRange,
+                                  padding=0, update=False, disableAutoRange=True)
+
+
+
+class PgAxisCti(GroupCti):
+    """ Configuration tree item for a PyQtGraph plot axis.
+
+        This CTI is intended to be used as a child of a PgPlotItemCti.
+    """
+    def __init__(self, nodeName, viewBox, axisNumber):
+        """ Constructor
+        """
+        super(PgAxisCti, self).__init__(nodeName)
+
+        assert axisNumber in (0, 1), "axisNumber must be 0 or 1"
+        self.viewBox = viewBox
+        self.axisNumber = axisNumber
+
+        #self.insertChild(BoolCti("show", True)) # TODO:
+        self.insertChild(BoolCti('logarithmic', False))
+
+        self.rangeItem = self.insertChild(PgAxisAutoRangeCti(self.viewBox, self.axisNumber))
+
+
+    def refresh(self):
+        """ Called when the range of the axis is changed. Updates the range in the config tree.
+        """
+        self.rangeItem.refresh()
+
+
+    def apply(self):
+        """ Applies the configuration to the target axis it monitors.
+        """
+        self.rangeItem.apply()
 
 
 
 class PgIndependendAxisCti(PgAxisCti):
     """ Configuration tree item for a plot axis showing an independend variable
     """
-    def __init__(self, nodeName, defaultData=None, axisNumber=None, axisName=None):
+    def __init__(self, nodeName, viewBox, axisNumber, axisName):
         """ Constructor
         """
-        super(PgIndependendAxisCti, self).__init__(nodeName, defaultData=defaultData,
-                                                   axisNumber=axisNumber)
+        super(PgIndependendAxisCti, self).__init__(nodeName, viewBox, axisNumber)
         self.axisName = axisName
         labelCti = ChoiceCti('label', 0, editable=True,
                              configValues=["{{{}-dim}}".format(axisName)])
@@ -183,11 +202,10 @@ class PgIndependendAxisCti(PgAxisCti):
 class PgDependendAxisCti(PgAxisCti):
     """ Configuration tree item for a plot axis showing a dependend variable
     """
-    def __init__(self, nodeName, defaultData=None, axisNumber=None, axisName=None):
+    def __init__(self, nodeName, viewBox, axisNumber, axisName):
         """ Constructor
         """
-        super(PgDependendAxisCti, self).__init__(nodeName, defaultData=defaultData,
-                                                 axisNumber=axisNumber)
+        super(PgDependendAxisCti, self).__init__(nodeName, viewBox, axisNumber)
         self.axisName = axisName
         labelCti = ChoiceCti('label', 1, editable=True,
                              configValues=["{name}", "{name} {unit}", "{path}", "{path} {unit}"])
@@ -198,34 +216,34 @@ class PgDependendAxisCti(PgAxisCti):
 class PgPlotItemCti(GroupCti):
     """ Config tree item for manipulating a PyQtGraph.PlotItem
     """
-    def __init__(self, nodeName='axes', plotItem=None,
-                 xAxisCti=None, yAxisCti=None):
+    def __init__(self, nodeName='axes', plotItem=None, xAxisCti=None, yAxisCti=None):
         """ Constructor
         """
-        super(PgPlotItemCti, self).__init__(nodeName, defaultData=None)
+        super(PgPlotItemCti, self).__init__(nodeName)
 
         #check_class(plotItem, (PlotItem, SimplePlotItem) # TODO
         assert plotItem, "target plotItem is undefined"
-        self.plotItem = plotItem
         self._applyInProgress = False
         self.aspectItem = self.insertChild(BoolCti("lock aspect ratio", False))
+        self.plotItem = plotItem
+        viewBox = plotItem.getViewBox()
 
         # Keeping references to the axes CTIs because they need to be updated quickly when
         # the range changes; getting by path may be slow.)
         if xAxisCti is None:
-            self.xAxisCti = self.insertChild(PgAxisCti('x-axis', axisNumber=0))
+            self.xAxisCti = self.insertChild(PgAxisCti('x-axis', viewBox, 0))
         else:
             check_class(xAxisCti, PgAxisCti)
             self.xAxisCti = self.insertChild(xAxisCti)
 
         if yAxisCti is None:
-            self.yAxisCti = self.insertChild(PgAxisCti('y-axis', axisNumber=1))
+            self.yAxisCti = self.insertChild(PgAxisCti('y-axis', viewBox, 1))
         else:
             check_class(yAxisCti, PgAxisCti)
             self.yAxisCti = self.insertChild(yAxisCti)
 
         if DEBUGGING:
-            self.stateItem = self.insertChild(ViewBoxDebugCti('state', expanded=False))
+            self.stateItem = self.insertChild(ViewBoxDebugCti('viewbox state', expanded=False))
         else:
             self.stateItem = None
 
@@ -251,8 +269,8 @@ class PgPlotItemCti(GroupCti):
         if self._applyInProgress:
             return
 
-        self.xAxisCti.viewBoxChanged(viewBox)
-        self.yAxisCti.viewBoxChanged(viewBox)
+        self.xAxisCti.refresh()
+        self.yAxisCti.refresh()
 
         if self.stateItem:
             self.stateItem.viewBoxChanged(viewBox)
@@ -266,8 +284,8 @@ class PgPlotItemCti(GroupCti):
             viewBox = self.plotItem.getViewBox()
             viewBox.setAspectLocked(self.aspectItem.configValue)
 
-            self.xAxisCti.apply(viewBox)
-            self.yAxisCti.apply(viewBox)
+            self.xAxisCti.apply()
+            self.yAxisCti.apply()
         finally:
             self._applyInProgress = False
 

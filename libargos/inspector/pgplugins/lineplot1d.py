@@ -74,14 +74,15 @@ class PgLinePlot1dCti(MainGroupCti):
                                       minValue=0.0, maxValue=1.0, stepSize=0.01, decimals=2))
 
         # Axes
+        viewBox = pgLinePlot1d.plotItem.getViewBox()
         plotItemCti = PgPlotItemCti('axes', plotItem=self.pgLinePlot1d.plotItem,
-                                    xAxisCti=PgIndependendAxisCti('x-axis', axisNumber=0, axisName='x'),
-                                    yAxisCti=PgDependendAxisCti('y-axis', axisNumber=1, axisName='y'))
+                        xAxisCti=PgIndependendAxisCti('x-axis', viewBox, 0, axisName='x'),
+                        yAxisCti=PgDependendAxisCti('y-axis', viewBox, 1, axisName='y'))
         self.plotItemCti = self.insertChild(plotItemCti)
 
         # Pen
         penItem = self.insertChild(GroupCti('pen'))
-        penItem.insertChild(ColorCti('color', QtGui.QColor('#1C8857')))
+        penItem.insertChild(ColorCti('color', QtGui.QColor('#FF0066')))
         lineItem = penItem.insertChild(BoolCti('line', True, expanded=False))
         lineItem.insertChild(createPenStyleCti('style'))
         lineItem.insertChild(createPenWidthCti('width'))
@@ -159,8 +160,8 @@ class PgLinePlot1d(AbstractInspector):
         self.plotItem.setLabel('bottom', '')
 
         #self.plotWidget.showAxis('right')
-        self.plotItem.setLogMode(x=self.configValue('axes/x-axis/logarithmic'),
-                                 y=self.configValue('axes/y-axis/logarithmic'))
+        #self.plotItem.setLogMode(x=self.configValue('axes/x-axis/logarithmic'),
+        #                         y=self.configValue('axes/y-axis/logarithmic'))
 
         self.plotItem.showGrid(x=self.configValue('grid/x-axis'),
                                y=self.configValue('grid/y-axis'),

@@ -86,7 +86,7 @@ class EmptyInspector(AbstractInspector):
             
             rootItem.insertChild(ChoiceCti('hobbit', 2, editable=True, 
                                            configValues=['Frodo', 'Sam', 'Pippin', 'Merry']))
-            myPen = QtGui.QPen(QtGui.QColor('#FF0066'))
+            myPen = QtGui.QPen(QtGui.QColor('#1C8857'))
             myPen.setWidth(2)
             myPen.setStyle(Qt.DashDotDotLine)
             rootItem.insertChild(PenCti('line', False, resetTo=myPen)) 
