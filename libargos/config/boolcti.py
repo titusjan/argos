@@ -35,6 +35,14 @@ class  BoolCti(AbstractCti):
         """
         super(BoolCti, self).__init__(nodeName, defaultData, expanded=expanded)
         self.childrenDisabledWhenFalse = True
+
+
+    @property
+    def debugInfo(self):
+        """ Returns the string with debugging information
+        """
+        return repr(self.data)
+
     
     def _enforceDataType(self, data):
         """ Converts to bool so that self.data always is of that type.
@@ -108,8 +116,10 @@ class  BoolCti(AbstractCti):
         """ Sets the data to given a Qt.CheckState (Qt.Checked or Qt.Unchecked).
         """
         if checkState == Qt.Checked:
+            logger.debug("BoolCti.checkState setting to True")
             self.data = True
         elif checkState == Qt.Unchecked:
+            logger.debug("BoolCti.checkState setting to False")
             self.data = False
         else:
             raise ValueError("Unexpected check state: {!r}".format(checkState))
@@ -205,9 +215,9 @@ class BoolGroupCti(AbstractCti):
         elif checkState == Qt.Unchecked:
             commonData = False
         elif checkState == Qt.PartiallyChecked:
+            commonData = None
             # This never occurs, see remarks above in the classes' docstring
             assert False, "This never happens. Please report if it does."
-            commonData = None
         else:
             raise ValueError("Unexpected check state: {!r}".format(checkState))
 

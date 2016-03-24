@@ -37,24 +37,12 @@ from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.inspector.abstract import AbstractInspector
-from libargos.inspector.pgplugins.pgctis import PgAxisCti, PgIndependendAxisCti, PgPlotItemCti
+from libargos.inspector.pgplugins.pgctis import PgPlotItemCti, PgAxisLabelCti, PgAxisAutoRangeCti
 from libargos.utils.cls import array_has_real_numbers, check_class
 
 logger = logging.getLogger(__name__)
 
 
-class __not_used__PgImageAxisCti(PgAxisCti):
-    """ Configuration tree item for a plot axis showing a dependend variable
-    """
-    def __init__(self, nodeName, defaultData=None, axisNumber=None, axisName=None):
-        """ Constructor
-        """
-        super(PgImageAxisCti, self).__init__(nodeName, defaultData=defaultData,
-                                             axisNumber=axisNumber)
-        self.axisName = axisName
-        self.insertChild(ChoiceCti('label', 0, editable=True,
-                                    configValues=["{{{}-dim}}".format(axisName)]),
-                         position=0)
 
 
 class PgImagePlot2dCti(MainGroupCti):
@@ -74,19 +62,31 @@ class PgImagePlot2dCti(MainGroupCti):
         self.insertChild(ChoiceCti('title', 0, editable=True,
                                    configValues=["{path} {slices}", "{name} {slices}"]))
 
-        viewBox = pgImagePlot2d.plotItem.getViewBox()
-        plotItemCti = PgPlotItemCti('axes', plotItem=pgImagePlot2d.plotItem,
-                        xAxisCti=PgIndependendAxisCti('x-axis', viewBox, 0, axisName='x'),
-                        yAxisCti=PgIndependendAxisCti('y-axis', viewBox, 1, axisName='y'))
-        self.plotItemCti = self.insertChild(plotItemCti)
+        # Axes
+        plotItem = self.pgImagePlot2d.plotItem
+        self.plotItemCti = self.insertChild(PgPlotItemCti(plotItem))
+
+        xAxisCti = self.plotItemCti.xAxisCti
+        xAxisCti.insertChild(PgAxisLabelCti(plotItem, 'bottom', self.pgImagePlot2d.collector,
+                                            configValues=["{x-dim}"]))
+
+        yAxisCti = self.plotItemCti.yAxisCti
+        yAxisCti.insertChild(PgAxisLabelCti(plotItem, 'left', self.pgImagePlot2d.collector,
+                                            configValues=["{y-dim}"]))
 
         self.insertChild(BoolCti('auto levels', True))
 
 
-    def apply(self):
+    def initTarget(self):
         """ Applies the configuration to the target PgLinePlot1d it monitors.
         """
-        self.plotItemCti.apply()
+        self.plotItemCti.initTarget()
+
+
+    def drawTarget(self):
+        """ Applies the configuration to the target PgLinePlot1d it monitors.
+        """
+        self.plotItemCti.drawTarget()
 
 
 
@@ -143,8 +143,8 @@ class PgImagePlot2d(AbstractInspector):
         self.viewBox.invertY(False) # TODO
         self.imageItem.clear()
         self.titleLabel.setText('')
-        self.plotItem.setLabel('left', '')
-        self.plotItem.setLabel('bottom', '')
+
+        self.config.initTarget()
 
 
     def _drawContents(self):
@@ -163,8 +163,6 @@ class PgImagePlot2d(AbstractInspector):
 
         rtiInfo = self.collector.getRtiInfo()
         self.titleLabel.setText(self.configValue('title').format(**rtiInfo))
-        self.plotItem.setLabel('left',   self.configValue('axes/y-axis/label').format(**rtiInfo)) # TODO: to ViewBox?
-        self.plotItem.setLabel('bottom', self.configValue('axes/x-axis/label').format(**rtiInfo))
 
         # Unfortunately, PyQtGraph uses the following dimension order: T, X, Y, Color.
         # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0}
@@ -174,4 +172,4 @@ class PgImagePlot2d(AbstractInspector):
 
         self.histLutItem.setLevels(slicedArray.min(), slicedArray.max())
 
-        self.config.apply()
+        self.config.drawTarget()

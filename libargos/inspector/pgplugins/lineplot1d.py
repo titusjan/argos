@@ -40,7 +40,7 @@ from libargos.config.qtctis import PenCti, ColorCti, createPenStyleCti, createPe
 from libargos.config.floatcti import FloatCti
 from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector
-from libargos.inspector.pgplugins.pgctis import PgPlotItemCti, PgIndependendAxisCti, PgDependendAxisCti
+from libargos.inspector.pgplugins.pgctis import PgPlotItemCti, PgAxisLabelCti, PgAxisAutoRangeCti
 from libargos.utils.cls import array_has_real_numbers, check_class
 
 logger = logging.getLogger(__name__)
@@ -74,11 +74,16 @@ class PgLinePlot1dCti(MainGroupCti):
                                       minValue=0.0, maxValue=1.0, stepSize=0.01, decimals=2))
 
         # Axes
-        viewBox = pgLinePlot1d.plotItem.getViewBox()
-        plotItemCti = PgPlotItemCti('axes', plotItem=self.pgLinePlot1d.plotItem,
-                        xAxisCti=PgIndependendAxisCti('x-axis', viewBox, 0, axisName='x'),
-                        yAxisCti=PgDependendAxisCti('y-axis', viewBox, 1, axisName='y'))
-        self.plotItemCti = self.insertChild(plotItemCti)
+        plotItem = self.pgLinePlot1d.plotItem
+        self.plotItemCti = self.insertChild(PgPlotItemCti(plotItem))
+
+        xAxisCti = self.plotItemCti.xAxisCti
+        xAxisCti.insertChild(PgAxisLabelCti(plotItem, 'bottom', self.pgLinePlot1d.collector,
+                configValues=["{x-dim}"]))
+
+        yAxisCti = self.plotItemCti.yAxisCti
+        yAxisCti.insertChild(PgAxisLabelCti(plotItem, 'left', self.pgLinePlot1d.collector,
+                configValues=["{name} {unit}", "{path} {unit}", "{name}", "{path}", "{raw-unit}"]))
 
         # Pen
         penItem = self.insertChild(GroupCti('pen'))
@@ -99,10 +104,16 @@ class PgLinePlot1dCti(MainGroupCti):
         symbolItem.insertChild(IntCti('size', 5, minValue=0, maxValue=100, stepSize=1))
 
 
-    def apply(self):
+    def initTarget(self):
         """ Applies the configuration to the target PgLinePlot1d it monitors.
         """
-        self.plotItemCti.apply()
+        self.plotItemCti.initTarget()
+
+
+    def drawTarget(self):
+        """ Applies the configuration to the target PgLinePlot1d it monitors.
+        """
+        self.plotItemCti.drawTarget()
 
 
 class PgLinePlot1d(AbstractInspector):
@@ -156,8 +167,7 @@ class PgLinePlot1d(AbstractInspector):
         self.titleLabel.setText('')
 
         self.plotItem.clear()
-        self.plotItem.setLabel('left', '')
-        self.plotItem.setLabel('bottom', '')
+        self.config.initTarget()
 
         #self.plotWidget.showAxis('right')
         #self.plotItem.setLogMode(x=self.configValue('axes/x-axis/logarithmic'),
@@ -209,12 +219,10 @@ class PgLinePlot1d(AbstractInspector):
         rtiInfo = self.collector.getRtiInfo()
 
         self.titleLabel.setText(self.configValue('title').format(**rtiInfo))
-        self.plotItem.setLabel('left',   self.configValue('axes/y-axis/label').format(**rtiInfo)) # TODO: to ViewBox?
-        self.plotItem.setLabel('bottom', self.configValue('axes/x-axis/label').format(**rtiInfo))
 
         self.plotDataItem.setData(slicedArray)
 
-        self.config.apply()
+        self.config.drawTarget()
 
 
 

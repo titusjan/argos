@@ -119,7 +119,7 @@ class AbstractInspector(QtGui.QStackedWidget):
 
     
     @QtSlot()
-    def initContents(self):
+    def initContents(self): # TODO: rename to clearContents  or resetContents?
         """ Tries to initialize the widget contents from the configuration.
             At this point the inspectors widget and config have been created.
             Shows the error page in case an exception is raised during initialization.
@@ -149,7 +149,7 @@ class AbstractInspector(QtGui.QStackedWidget):
     
     
     @QtSlot()
-    def drawContents(self): # TODO: rename to refresh/apply?
+    def drawContents(self):
         """ Tries to draw the widget contents with the updated RTI. 
             Shows the error page in case an exception is raised while drawing the contents.
             Descendants should override _drawContents, not drawContents.
