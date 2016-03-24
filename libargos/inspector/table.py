@@ -76,6 +76,11 @@ class TableInspector(AbstractInspector):
         self.model.separateFields = self.configValue('separate fields')
         self.model.setSlicedArray(slicedArray)
 
+        # Don't put numbers in the header if the record is of compound type, a fields are
+        # placed in separate cells and the fake dimension is selected (combo index 0)
+        rtiInfo = self.collector.getRtiInfo()
+        self.model.numbersInHeaderX = rtiInfo and rtiInfo['x-dim'] != self.collector.FAKE_DIM_NAME
+
         horHeader = self.tableView.horizontalHeader()
         if self.configValue("resize to contents"):
             horHeader.setResizeMode(horHeader.ResizeToContents)
@@ -98,6 +103,8 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         """
         super(TableInspectorModel, self).__init__(parent)
         self.separateFields = separateFields
+        self.numbersInHeaderX = True
+        self.numbersInHeaderY = True # not used yet
         self._nRows = 0
         self._nCols = 0
         self._fieldNames = []
@@ -162,7 +169,7 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
                 nFields = len(self._fieldNames)
                 varNr = section // nFields
                 fieldNr = section % nFields
-                header = str(varNr) + ' : ' if self._nCols > 1 else ' : '
+                header = str(varNr) + ' : ' if self.numbersInHeaderX else ''
                 header += self._fieldNames[fieldNr]
                 return header
             else:

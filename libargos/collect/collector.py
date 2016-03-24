@@ -39,7 +39,6 @@ class Collector(QtGui.QWidget):
         The CollectorTree only stores the VisItems, the intelligence is located in the Collector 
         itself.
     """
-
     FAKE_DIM_NAME = '-'     # The name of the fake dimension with length 1
     FAKE_DIM_OFFSET = 1000  # Fake dimensions start here (so all arrays must have a smaller ndim)  
 
@@ -126,7 +125,13 @@ class Collector(QtGui.QWidget):
     def maxCombos(self):
         """ Returns the maximum number of combo boxes """
         return len(self._fullAxisNames)
-    
+
+
+    # @property
+    # def numCombos(self):
+    #     """ Returns the number of combo boxes """
+    #     return len(self._comboBoxes)
+
     
     def blockChildrenSignals(self, block):
         """ If block equals True, the signals of the combo boxes and spin boxes are blocked
@@ -298,9 +303,21 @@ class Collector(QtGui.QWidget):
 
             comboBox.setCurrentIndex(curIdx)
 
+
+    # def getComboBoxDimensionName(self, comboBoxNr):
+    #     """ Returns the currently selected dimension index of combo box nr comboBoxNr
+    #     """
+    #     self._comboBoxes[comboBoxNr].currentText()
+    #
+    #
+    # def getComboBoxDimensionIndex(self, comboBoxNr):
+    #     """ Returns the currently selected dimension index of combo box nr comboBoxNr
+    #     """
+    #     return self._comboBoxDimensionIndex(self._comboBoxes[comboBoxNr])
+
             
     def _comboBoxDimensionIndex(self, comboBox):
-        """ Returns the dimension index from the user data of the currently item of the combo box.
+        """ Returns the dimension index (from the user data) of the current item of the combo box.
         """
         return comboBox.itemData(comboBox.currentIndex())  
     
