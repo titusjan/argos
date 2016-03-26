@@ -267,8 +267,13 @@ class RepoTreeView(ArgosTreeView):
         fileRtiIndex = self.model().findFileRtiIndex(currentIndex)
         isExpanded = self.isExpanded(fileRtiIndex)
 
-        rtiRegItem.tryImportClass()
-        newRtiIndex = self.model().reloadFileAtIndex(fileRtiIndex, rtiClass=rtiRegItem.cls)
+        if rtiRegItem is None:
+            rtiClass = None
+        else:
+            rtiRegItem.tryImportClass()
+            rtiClass = rtiRegItem.cls
+
+        newRtiIndex = self.model().reloadFileAtIndex(fileRtiIndex, rtiClass=rtiClass)
         self.setExpanded(newRtiIndex, isExpanded)
         self.setCurrentIndex(newRtiIndex)
         return newRtiIndex
