@@ -24,6 +24,7 @@ from libargos.config.boolcti import BoolCti
 from libargos.inspector.abstract import AbstractInspector
 
 from libargos.qt import Qt, QtCore, QtGui
+from libargos.utils.cls import is_a_string, is_a_numpy_string
 
 logger = logging.getLogger(__name__)
 
@@ -147,9 +148,24 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
                 nFields = len(self._fieldNames)
                 varNr = col // nFields
                 fieldNr = col % nFields
-                return repr(self._slicedArray[row, varNr][self._fieldNames[fieldNr]])
+                cellValue = self._slicedArray[row, varNr][self._fieldNames[fieldNr]]
             else:
-                return repr(self._slicedArray[row, col])
+                cellValue = self._slicedArray[row, col]
+
+            if is_a_string(cellValue):
+                # Numpy strings must be converted to regular strings,
+                # otherwise they don't show up.
+                return unicode(cellValue)
+            else:
+                return repr(cellValue)
+
+            # if is_a_numpy_string(cellValue):
+            #     return unicode(cellValue)
+            # elif is_a_string(cellValue):
+            #     return cellValue
+            # else:
+            #     return repr(cellValue)
+
         else:
             return None
 

@@ -102,6 +102,9 @@ def __addTestData(argosApp):
                                          dtype=[('1st','f4'),('2nd',np.float32),('3rd','f4',(2,))])
     myDict['subDict'] = {'mean': np.ones(111), 'stddev': np.zeros(111, dtype=np.uint16)}
 
+    myDict['numpy string array']  = np.array(['Yackity', 'Smackity'])
+    myDict['numpy unicode array'] = np.array(['Table', u'ταБЬℓσ'])
+
 
     mappingRti = MappingRti(myDict, nodeName="myDict", fileName='')
     argosApp.repo.insertItem(mappingRti)

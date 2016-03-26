@@ -69,7 +69,7 @@ class AttributesPane(DetailTablePane):
                     # Seems a bug: https://github.com/numpy/numpy/issues/385
                     attrStr = repr(attrValue)
                 except Exception:
-                    attrStr = str(attrValue)
+                    attrStr = unicode(attrValue)
                 
                 try: 
                     type_str = type(attrValue).__name__
