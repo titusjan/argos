@@ -29,6 +29,15 @@ from libargos.utils.cls import is_a_string, is_a_numpy_string
 logger = logging.getLogger(__name__)
 
 
+def resizeAllSections(header, sectionSize):
+    """ Sets all sections (columns or rows) of a header to the same section size.
+
+        :param header: a QHeaderView
+        :param sectionSize: the new size of the header section in pixels
+    """
+    for idx in range(header.length()):
+        header.resizeSection(idx, sectionSize)
+
 
 class TableInspectorCti(MainGroupCti):
     """ Configuration tree for a PgLinePlot1d inspector
@@ -53,9 +62,16 @@ class TableInspector(AbstractInspector):
         self.tableView = QtGui.QTableView()
         self.contentsLayout.addWidget(self.tableView)
         self.tableView.setModel(self.model)
+
+        # Per pixel scrolling works better for large cells (e.g. containing XML strings).
+        # Perhaps we can make it configurable.
         self.tableView.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.tableView.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
 
+        self.tableView.horizontalHeader().setCascadingSectionResizes(False)
+        self.tableView.verticalHeader().setCascadingSectionResizes(False)
+
+        self._resizeToContents = None # Keep track of old value to detect changes.
         self._config = TableInspectorCti('inspector')
 
 
@@ -82,11 +98,22 @@ class TableInspector(AbstractInspector):
         rtiInfo = self.collector.getRtiInfo()
         self.model.numbersInHeaderX = rtiInfo and rtiInfo['x-dim'] != self.collector.FAKE_DIM_NAME
 
-        horHeader = self.tableView.horizontalHeader()
-        if self.configValue("resize to contents"):
-            horHeader.setResizeMode(horHeader.ResizeToContents)
-        else:
-            horHeader.setResizeMode(horHeader.Interactive)
+        if self.configValue("resize to contents") != self._resizeToContents:
+            logger.debug("Resize to contents changed to: {}".format(self._resizeToContents))
+            self._resizeToContents = self.configValue("resize to contents")
+
+            horHeader = self.tableView.horizontalHeader()
+            verHeader = self.tableView.verticalHeader()
+
+            if self._resizeToContents:
+                horHeader.setResizeMode(horHeader.ResizeToContents)
+                verHeader.setResizeMode(horHeader.ResizeToContents)
+            else:
+                # First disable resize to contents, then resize the sections.
+                horHeader.setResizeMode(horHeader.Interactive)
+                verHeader.setResizeMode(horHeader.Interactive)
+                resizeAllSections(horHeader, horHeader.defaultSectionSize())
+                resizeAllSections(verHeader, verHeader.defaultSectionSize())
 
 
 
