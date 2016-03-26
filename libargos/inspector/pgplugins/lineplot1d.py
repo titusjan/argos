@@ -83,7 +83,8 @@ class PgLinePlot1dCti(MainGroupCti):
         # Pen
         penItem = self.insertChild(GroupCti('pen'))
         penItem.insertChild(ColorCti('color', QtGui.QColor('#FF0066')))
-        lineItem = penItem.insertChild(BoolCti('line', True, expanded=False))
+        lineItem = penItem.insertChild(BoolCti('line', True, expanded=False,
+                                               childrenDisabledValue=False))
         lineItem.insertChild(createPenStyleCti('style'))
         lineItem.insertChild(createPenWidthCti('width'))
         defaultShadowPen = QtGui.QPen(QtGui.QColor('#BFBFBF'))
@@ -92,7 +93,8 @@ class PgLinePlot1dCti(MainGroupCti):
                                     resetTo=QtGui.QPen(defaultShadowPen), 
                                     includeNoneStyle=True, includeZeroWidth=True))
 
-        symbolItem = penItem.insertChild(BoolCti("symbol", False, expanded=False)) 
+        symbolItem = penItem.insertChild(BoolCti("symbol", False, expanded=False,
+                                         childrenDisabledValue=False))
         symbolItem.insertChild(ChoiceCti("shape", 0, 
            displayValues=['circle', 'square', 'triangle', 'diamond', 'plus'],  
            configValues=['o', 's', 't', 'd', '+']))

@@ -30,11 +30,28 @@ logger = logging.getLogger(__name__)
 class  BoolCti(AbstractCti):
     """ Config Tree Item to store an boolean. It can be edited using a check box
     """
-    def __init__(self, nodeName, defaultData, expanded=True):
+    def __init__(self, nodeName, defaultData, expanded=True,
+                 childrenDisabledValue=False):
         """ Constructor. For the parameters see the AbstractCti constructor documentation.
+
+            If the data is equal to childrenDisabledValue, the node's children will be
+            disabled.
+
+            (The data will always be a bool so if childrenDisabledValue == None,
+            the children will never be disabled.)
         """
         super(BoolCti, self).__init__(nodeName, defaultData, expanded=expanded)
-        self.childrenDisabledWhenFalse = True
+
+        self.childrenDisabledValue = childrenDisabledValue
+
+
+    @property
+    def debugInfo(self):
+        """ Returns a string with debugging information
+        """
+        return "{} (enabled={}, childDisabledVal={})".format(self.configValue, self.enabled,
+                                                             self.childrenDisabledValue)
+
     
     def _enforceDataType(self, data):
         """ Converts to bool so that self.data always is of that type.
@@ -48,6 +65,7 @@ class  BoolCti(AbstractCti):
         """
         return self._data
 
+
     @data.setter
     def data(self, data):
         """ Sets the data of this item. 
@@ -56,12 +74,11 @@ class  BoolCti(AbstractCti):
         # Descendants should convert the data to the desired type here
         self._data = self._enforceDataType(data)
 
-        if self.childrenDisabledWhenFalse and self.hasChildren():
-            #logger.debug("BoolCti.setData: {} for {}".format(data, self))
-            enabled = self.enabled
-            self.enableBranch(self.data and enabled)
-            self.enabled = enabled
-                
+        #logger.debug("BoolCti.setData: {} for {}".format(data, self))
+        enabled = self.enabled
+        self.enableBranch(enabled and self.data != self.childrenDisabledValue)
+        self.enabled = enabled
+
         
     @property
     def displayValue(self):
@@ -76,10 +93,11 @@ class  BoolCti(AbstractCti):
             Overridden from BaseTreeItem.
         """
         childItem = super(BoolCti, self).insertChild(childItem, position=None)
-        if self.childrenDisabledWhenFalse:
-            #logger.debug("BoolCti.insertChild: {}".format(childItem))
-            childItem.enableBranch(self.data)
-            childItem.enabled = self.enabled
+
+        enableChildren = self.enabled and self.data != self.childrenDisabledValue
+        #logger.debug("BoolCti.insertChild: {} enableChildren={}".format(childItem, enableChildren))
+        childItem.enableBranch(enableChildren)
+        childItem.enabled = enableChildren
         return childItem    
     
     
@@ -118,12 +136,11 @@ class  BoolCti(AbstractCti):
     def enableBranch(self, enabled):
         """ Sets the enabled member to True or False for a node and all it's children
         """
-        #logger.debug("BoolCti.insertChild: {}".format(childItem))
         self.enabled = enabled
-        
-        if self.childrenDisabledWhenFalse:
-            enabled = enabled and self.data
 
+        # Disabled children and further descendants
+        enabled = enabled and self.data != self.childrenDisabledValue
+        
         for child in self.childItems:
             child.enableBranch(enabled)            
 

@@ -21,6 +21,7 @@ import logging
 
 from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
+from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector
 
 from libargos.qt import Qt, QtCore, QtGui
@@ -39,6 +40,7 @@ def resizeAllSections(header, sectionSize):
         header.resizeSection(idx, sectionSize)
 
 
+
 class TableInspectorCti(MainGroupCti):
     """ Configuration tree for a PgLinePlot1d inspector
     """
@@ -47,7 +49,14 @@ class TableInspectorCti(MainGroupCti):
         super(TableInspectorCti, self).__init__(nodeName, defaultData=defaultData)
 
         self.insertChild(BoolCti("separate fields", True))
-        self.insertChild(BoolCti("resize to contents", True))
+        self.cell_auto_resize = self.insertChild(BoolCti("resize cells to contents", False,
+                                                         childrenDisabledValue=True))
+
+        # The initial values will be set in the constructor to the Qt defaults.
+        self.defaultRowHeight = self.cell_auto_resize.insertChild(
+                IntCti("row height", -1, minValue=20, maxValue=500, stepSize=5))
+        self.defaultColumnWidth = self.cell_auto_resize.insertChild(
+                IntCti("column width", -1, minValue=20, maxValue=500, stepSize=5))
 
 
 
@@ -68,11 +77,26 @@ class TableInspector(AbstractInspector):
         self.tableView.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.tableView.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
 
-        self.tableView.horizontalHeader().setCascadingSectionResizes(False)
-        self.tableView.verticalHeader().setCascadingSectionResizes(False)
+        horHeader = self.tableView.horizontalHeader()
+        verHeader = self.tableView.verticalHeader()
+        horHeader.setCascadingSectionResizes(False)
+        verHeader.setCascadingSectionResizes(False)
 
-        self._resizeToContents = None # Keep track of old value to detect changes.
+        # Some fields to keep track of old value to detect changes.
+        # TODO: refactor when _drawContents has 'cause' parameter
+        self._resizeToContents = None
+        self._defaultRowHeight = None
+        self._defaultColumnWidth = None
+
         self._config = TableInspectorCti('inspector')
+
+        if self.config.defaultRowHeight.configValue < 0: # If not yet initialized
+            self.config.defaultRowHeight.data = verHeader.defaultSectionSize()
+            self.config.defaultRowHeight.defaultData = verHeader.defaultSectionSize()
+
+        if self.config.defaultColumnWidth.configValue < 0: # If not yet initialized
+            self.config.defaultColumnWidth.data = horHeader.defaultSectionSize()
+            self.config.defaultColumnWidth.defaultData = horHeader.defaultSectionSize()
 
 
     @classmethod
@@ -98,9 +122,13 @@ class TableInspector(AbstractInspector):
         rtiInfo = self.collector.getRtiInfo()
         self.model.numbersInHeaderX = rtiInfo and rtiInfo['x-dim'] != self.collector.FAKE_DIM_NAME
 
-        if self.configValue("resize to contents") != self._resizeToContents:
-            logger.debug("Resize to contents changed to: {}".format(self._resizeToContents))
-            self._resizeToContents = self.configValue("resize to contents")
+        if (self.config.cell_auto_resize.configValue != self._resizeToContents or
+            self.config.defaultColumnWidth.configValue != self._defaultColumnWidth or
+            self.config.defaultRowHeight.configValue != self._defaultRowHeight):
+
+            self._resizeToContents = self.config.cell_auto_resize.configValue
+            self._defaultRowHeight = self.config.defaultRowHeight.configValue
+            self._defaultColumnWidth = self.config.defaultColumnWidth.configValue
 
             horHeader = self.tableView.horizontalHeader()
             verHeader = self.tableView.verticalHeader()
@@ -112,8 +140,8 @@ class TableInspector(AbstractInspector):
                 # First disable resize to contents, then resize the sections.
                 horHeader.setResizeMode(horHeader.Interactive)
                 verHeader.setResizeMode(horHeader.Interactive)
-                resizeAllSections(horHeader, horHeader.defaultSectionSize())
-                resizeAllSections(verHeader, verHeader.defaultSectionSize())
+                resizeAllSections(horHeader, self.config.defaultColumnWidth.configValue)
+                resizeAllSections(verHeader, self.config.defaultRowHeight.configValue)
 
 
 
@@ -125,9 +153,9 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
     def __init__(self, separateFields=True, parent = None):
         """ Constructor
 
-        :param separateFields: If True the fields of a compound array (recArray) have their
-            own separate cells.
-        :param parent: parent Qt widget. 
+            :param separateFields: If True the fields of a compound array (recArray) have their
+                own separate cells.
+            :param parent: parent Qt widget.
         """
         super(TableInspectorModel, self).__init__(parent)
         self.separateFields = separateFields

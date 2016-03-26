@@ -206,7 +206,8 @@ class PenCti(BoolCti):
             
             If includeNonStyle is True, an None-option will be prepended to the style choice
         """
-        super(PenCti, self).__init__(nodeName, defaultData, expanded=expanded)
+        super(PenCti, self).__init__(nodeName, defaultData, expanded=expanded,
+                                     childrenDisabledValue=False)
         # We don't need a similar initFrom parameter.
         qPen = QtGui.QPen(resetTo)
         
