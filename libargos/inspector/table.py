@@ -21,6 +21,7 @@ import logging
 
 from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
+from libargos.config.choicecti import ChoiceCti
 from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector
 
@@ -48,7 +49,9 @@ class TableInspectorCti(MainGroupCti):
 
         super(TableInspectorCti, self).__init__(nodeName, defaultData=defaultData)
 
+        self.insertChild(BoolCti("word wrap", True))
         self.insertChild(BoolCti("separate fields", True))
+
         self.cell_auto_resize = self.insertChild(BoolCti("resize cells to contents", False,
                                                          childrenDisabledValue=True))
 
@@ -59,6 +62,9 @@ class TableInspectorCti(MainGroupCti):
                 IntCti("column width", -1, minValue=20, maxValue=500, stepSize=5))
 
 
+        self.insertChild(ChoiceCti("scroll", displayValues=["per cell", "per pixel"],
+                                   configValues=[QtGui.QAbstractItemView.ScrollPerItem,
+                                                 QtGui.QAbstractItemView.ScrollPerPixel]))
 
 class TableInspector(AbstractInspector):
     """ Shows the sliced array in a table.
@@ -71,11 +77,6 @@ class TableInspector(AbstractInspector):
         self.tableView = QtGui.QTableView()
         self.contentsLayout.addWidget(self.tableView)
         self.tableView.setModel(self.model)
-
-        # Per pixel scrolling works better for large cells (e.g. containing XML strings).
-        # Perhaps we can make it configurable.
-        self.tableView.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.tableView.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
 
         horHeader = self.tableView.horizontalHeader()
         verHeader = self.tableView.verticalHeader()
@@ -114,6 +115,11 @@ class TableInspector(AbstractInspector):
         logger.debug("TableInspector._drawContents: {}".format(self))
         slicedArray = self.collector.getSlicedArray()
 
+        # Per pixel scrolling works better for large cells (e.g. containing XML strings).
+        scrollMode = self.configValue("scroll")
+        self.tableView.setHorizontalScrollMode(scrollMode)
+        self.tableView.setVerticalScrollMode(scrollMode)
+        self.tableView.setWordWrap(self.configValue('word wrap'))
         self.model.separateFields = self.configValue('separate fields')
         self.model.setSlicedArray(slicedArray)
 
@@ -142,8 +148,6 @@ class TableInspector(AbstractInspector):
                 verHeader.setResizeMode(horHeader.Interactive)
                 resizeAllSections(horHeader, self.config.defaultColumnWidth.configValue)
                 resizeAllSections(verHeader, self.config.defaultRowHeight.configValue)
-
-
 
 
 
