@@ -187,7 +187,6 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
                 self._nRows = 0
                 self._nCols = 0
                 self._fieldNames = []
-                self._separateFieldOrientation = None
             else:
                 self._nRows, self._nCols = self._slicedArray.shape
                 if self._slicedArray.dtype.names:

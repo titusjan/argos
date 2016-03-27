@@ -247,9 +247,11 @@ class H5pyFieldRti(BaseRti):
         
 
 class H5pyDatasetRti(BaseRti):
-    """ Repository Tree Item (RTI) that contains a HDF5 dataset. 
+    """ Repository Tree Item (RTI) that contains a HDF5 dataset.
+
+        This includes dimenions scales, which are then displayed with a different icon.
     """ 
-    _defaultIconGlyph = RtiIconFactory.ARRAY
+    #_defaultIconGlyph = RtiIconFactory.ARRAY # the iconGlyph property is overridden below
     _defaultIconColor = ICON_COLOR_H5PY
     
     def __init__(self, h5Dataset, nodeName, fileName=''):
@@ -259,6 +261,16 @@ class H5pyDatasetRti(BaseRti):
         check_class(h5Dataset, h5py.Dataset)
         self._h5Dataset = h5Dataset
         self._isCompound = bool(self._h5Dataset.dtype.names)
+
+
+    @property
+    def iconGlyph(self):
+        """ Shows an Array icon for regular datasets but a dimension icon for dimension scales
+        """
+        if self._h5Dataset.attrs.get('CLASS', None) == 'DIMENSION_SCALE':
+            return RtiIconFactory.DIMENSION
+        else:
+            return RtiIconFactory.ARRAY
 
             
     def hasChildren(self):
