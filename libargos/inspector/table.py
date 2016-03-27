@@ -19,6 +19,7 @@
 """
 import logging
 
+from libargos.collect.collector import FAKE_DIM_NAME
 from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
@@ -66,6 +67,8 @@ class TableInspectorCti(MainGroupCti):
                                    configValues=[QtGui.QAbstractItemView.ScrollPerItem,
                                                  QtGui.QAbstractItemView.ScrollPerPixel]))
 
+
+
 class TableInspector(AbstractInspector):
     """ Shows the sliced array in a table.
     """
@@ -107,26 +110,21 @@ class TableInspector(AbstractInspector):
         """
         return tuple(['Y', 'X'])
 
-
     def _drawContents(self):
         """ Draws the inspector widget when no input is available.
             The default implementation shows an error message. Descendants should override this.
         """
         logger.debug("TableInspector._drawContents: {}".format(self))
-        slicedArray = self.collector.getSlicedArray()
+
+        self.model.updateState(self.collector.getSlicedArray(),
+                               self.collector.getRtiInfo(),
+                               self.configValue('separate fields'))
 
         # Per pixel scrolling works better for large cells (e.g. containing XML strings).
         scrollMode = self.configValue("scroll")
         self.tableView.setHorizontalScrollMode(scrollMode)
         self.tableView.setVerticalScrollMode(scrollMode)
         self.tableView.setWordWrap(self.configValue('word wrap'))
-        self.model.separateFields = self.configValue('separate fields')
-        self.model.setSlicedArray(slicedArray)
-
-        # Don't put numbers in the header if the record is of compound type, a fields are
-        # placed in separate cells and the fake dimension is selected (combo index 0)
-        rtiInfo = self.collector.getRtiInfo()
-        self.model.numbersInHeaderX = rtiInfo and rtiInfo['x-dim'] != self.collector.FAKE_DIM_NAME
 
         if (self.config.cell_auto_resize.configValue != self._resizeToContents or
             self.config.defaultColumnWidth.configValue != self._defaultColumnWidth or
@@ -152,9 +150,10 @@ class TableInspector(AbstractInspector):
 
 
 class TableInspectorModel(QtCore.QAbstractTableModel):
-    """ Qt table model that gives access to the sliced array
+    """ Qt table model that gives access to the sliced array,
+        To be used in the TableInspector.
     """
-    def __init__(self, separateFields=True, parent = None):
+    def __init__(self, parent = None):
         """ Constructor
 
             :param separateFields: If True the fields of a compound array (recArray) have their
@@ -162,17 +161,24 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
             :param parent: parent Qt widget.
         """
         super(TableInspectorModel, self).__init__(parent)
-        self.separateFields = separateFields
-        self.numbersInHeaderX = True
-        self.numbersInHeaderY = True # not used yet
         self._nRows = 0
         self._nCols = 0
         self._fieldNames = []
         self._slicedArray = None
+        self._rtiInfo = {}
+
+        self._separateFields = True  # User config option
+        self._separateFieldOrientation = None # To store which axis is curenlty separated
+
+        # Don't put numbers in the header if the record is of compound type, a fields are
+        # placed in separate cells and the fake dimension is selected (combo index 0)
+        self._numbersInHeader = True
 
 
-    def setSlicedArray(self, slicedArray):
-        """ Sets the the sliced array
+    def updateState(self, slicedArray, rtiInfo, separateFields):
+        """ Sets the slicedArray and rtiInfo and other members. This will reset the model.
+
+            Will be called from the tableInspector._drawContents.
         """
         self.beginResetModel()
         try:
@@ -181,12 +187,32 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
                 self._nRows = 0
                 self._nCols = 0
                 self._fieldNames = []
+                self._separateFieldOrientation = None
             else:
                 self._nRows, self._nCols = self._slicedArray.shape
                 if self._slicedArray.dtype.names:
                     self._fieldNames = self._slicedArray.dtype.names
                 else:
                     self._fieldNames = []
+
+            self._rtiInfo = rtiInfo
+            self._separateFields = separateFields
+
+            if self._separateFields and self._fieldNames:
+
+                if self._rtiInfo['x-dim'] == FAKE_DIM_NAME:
+                    self._separateFieldOrientation = Qt.Horizontal
+                    self._numbersInHeader = False
+                elif self._rtiInfo['y-dim'] == FAKE_DIM_NAME:
+                    self._separateFieldOrientation = Qt.Vertical
+                    self._numbersInHeader = False
+                else:
+                    self._separateFieldOrientation = Qt.Horizontal
+                    self._numbersInHeader = True
+            else:
+                self._separateFieldOrientation = None
+                self._numbersInHeader = True
+
         finally:
             self.endResetModel()
 
@@ -203,11 +229,12 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         assert self._slicedArray is not None, "Sanity check failed." 
                
         if role == Qt.DisplayRole:
-            if self.separateFields and self._fieldNames:
-                nFields = len(self._fieldNames)
-                varNr = col // nFields
-                fieldNr = col % nFields
-                cellValue = self._slicedArray[row, varNr][self._fieldNames[fieldNr]]
+
+            nFields = len(self._fieldNames)
+            if self._separateFieldOrientation == Qt.Horizontal:
+                cellValue = self._slicedArray[row, col // nFields][self._fieldNames[col % nFields]]
+            elif self._separateFieldOrientation == Qt.Vertical:
+                cellValue = self._slicedArray[row // nFields, col][self._fieldNames[row % nFields]]
             else:
                 cellValue = self._slicedArray[row, col]
 
@@ -217,14 +244,6 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
                 return unicode(cellValue)
             else:
                 return repr(cellValue)
-
-            # if is_a_numpy_string(cellValue):
-            #     return unicode(cellValue)
-            # elif is_a_string(cellValue):
-            #     return cellValue
-            # else:
-            #     return repr(cellValue)
-
         else:
             return None
 
@@ -240,11 +259,12 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
             Reimplemented from QAbstractTableModel to make the headers start at 0.
         """
         if role == Qt.DisplayRole:
-            if self.separateFields and orientation == Qt.Horizontal and self._fieldNames:
+            if self._separateFieldOrientation == orientation:
+
                 nFields = len(self._fieldNames)
                 varNr = section // nFields
                 fieldNr = section % nFields
-                header = str(varNr) + ' : ' if self.numbersInHeaderX else ''
+                header = str(varNr) + ' : ' if self._numbersInHeader else ''
                 header += self._fieldNames[fieldNr]
                 return header
             else:
@@ -258,7 +278,10 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
             The 'parent' parameter can be a QModelIndex. It is ignored since the number of
             rows does not depend on the parent.
         """
-        return self._nRows
+        if self._separateFieldOrientation == Qt.Vertical:
+            return self._nRows * len(self._fieldNames)
+        else:
+            return self._nRows
 
 
     def columnCount(self, parent=None):
@@ -266,7 +289,7 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
             The 'parent' parameter can be a QModelIndex. It is ignored since the number of
             columns does not depend on the parent.
         """
-        if self.separateFields and self._fieldNames:
+        if self._separateFieldOrientation == Qt.Horizontal:
             return self._nCols * len(self._fieldNames)
         else:
             return self._nCols

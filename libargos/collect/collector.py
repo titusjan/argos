@@ -29,6 +29,10 @@ from libargos.widgets.constants import (TOP_DOCK_HEIGHT)
 
 logger = logging.getLogger(__name__)
 
+FAKE_DIM_NAME = '-'     # The name of the fake dimension with length 1
+FAKE_DIM_OFFSET = 1000  # Fake dimensions start here (so all arrays must have a smaller ndim)
+
+
 # Qt classes have many ancestors
 #pylint: disable=R0901
 
@@ -39,10 +43,7 @@ class Collector(QtGui.QWidget):
         The CollectorTree only stores the VisItems, the intelligence is located in the Collector 
         itself.
     """
-    FAKE_DIM_NAME = '-'     # The name of the fake dimension with length 1
-    FAKE_DIM_OFFSET = 1000  # Fake dimensions start here (so all arrays must have a smaller ndim)  
-
-    contentsChanged = QtSignal()         
+    contentsChanged = QtSignal()
     
     def __init__(self, windowNumber):
         """ Constructor
@@ -280,7 +281,7 @@ class Collector(QtGui.QWidget):
         
         for comboBoxNr, comboBox in enumerate(self._comboBoxes):
             # Add a fake dimension of length 1
-            comboBox.addItem(self.FAKE_DIM_NAME, userData = self.FAKE_DIM_OFFSET + comboBoxNr)
+            comboBox.addItem(FAKE_DIM_NAME, userData = FAKE_DIM_OFFSET + comboBoxNr)
             
             for dimNr in range(nDims):
                 comboBox.addItem(self._rti.dimensionNames[dimNr], userData=dimNr)
@@ -406,11 +407,11 @@ class Collector(QtGui.QWidget):
         
         # If one of the other combo boxes has the same value, set it to the fake dimension
         curDimIdx = self._comboBoxDimensionIndex(comboBox)
-        if curDimIdx < self.FAKE_DIM_OFFSET:
+        if curDimIdx < FAKE_DIM_OFFSET:
             otherComboBoxes = [cb for cb in self._comboBoxes if cb is not comboBox]
             for otherComboBox in otherComboBoxes:
                 if otherComboBox.currentIndex() == comboBox.currentIndex():
-                    #newIdx = otherComboBox.findData(self.FAKE_DIM_IDX)
+                    #newIdx = otherComboBox.findData(FAKE_DIM_IDX)
                     #otherComboBox.setCurrentIndex(newIdx)
                     otherComboBox.setCurrentIndex(0) # Fake dimension is always the first
         
@@ -540,25 +541,33 @@ class Collector(QtGui.QWidget):
             This can be used in string formatting of config options. For instance: the plot title
             can be specified as: '{path} {slices}', which will be expanded with the actual nodePath
             and slices-string of the RTI.
-            
+
+            If no RTI is selected the applicable values will be empty strings.
+
             The dictionary has the following contents:
                 slices : a string representation of the selected slice indices.
-                name: the nodeName of the RTI
-                path: the nodePath of the RTI
-            
-            Returns an empty dict when no RTI is selected.
+                name        : nodeName of the RTI
+                path        : nodePath of the RTI
+                unit        : unit of the RTI in parentheses
+                raw-unit    : unit of the RTI without parentheses (empty string if no unit given)
+                n-dim       : dimension selected in the combobox for axis n. The axis name will be
+                              in lower case (so e.g. x-dim, y-dim, etc)
         """
-        if self.rti is None:
-            return {}
-
-        rti = self.rti
 
         # Info about the dependent dimension
-        info = {'slices': self.getSlicesString(),
-                'name': rti.nodeName,
-                'path': rti.nodePath,
-                'unit': '({})'.format(rti.unit) if rti.unit else '',
-                'raw-unit': rti.unit}
+        rti = self.rti
+        if rti is None:
+            info = {'slices': '',
+                    'name': '',
+                    'path': '',
+                    'unit': '',
+                    'raw-unit': ''}
+        else:
+            info = {'slices': self.getSlicesString(),
+                    'name': rti.nodeName,
+                    'path': rti.nodePath,
+                    'unit': '({})'.format(rti.unit) if rti.unit else '',
+                    'raw-unit': rti.unit}
 
         # Add the info of the independent dimensions (appended with the axis name of that dim).
         for axisName, comboBox in zip(self._axisNames, self._comboBoxes):
