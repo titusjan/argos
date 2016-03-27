@@ -24,12 +24,19 @@ import pyqtgraph as pg
 
 logger = logging.getLogger(__name__)
 
-USE_SIMPLE_PLOT = True
+USE_SIMPLE_PLOT = False
+
 if USE_SIMPLE_PLOT:
     logger.warn("Using SimplePlotItem as PlotItem")
-    from pyqtgraph.graphicsItems.PlotItem.simpleplotitem import SimplePlotItem as PlotItem
+    from pyqtgraph.graphicsItems.PlotItem.simpleplotitem import SimplePlotItem
 else:
-    from pyqtgraph.graphicsItems.PlotItem import PlotItem
+    from pyqtgraph.graphicsItems.PlotItem import PlotItem as SimplePlotItem
+
+if USE_SIMPLE_PLOT:
+    logger.warn("Using SimplePlotItem as PlotItem")
+    from pyqtgraph.graphicsItems.PlotItem.simpleplotitem import SimplePlotItem as SimplePlotItem
+else:
+    from pyqtgraph.graphicsItems.PlotItem import SimplePlotItem
 
 
 from libargos.info import DEBUGGING
@@ -100,8 +107,8 @@ class PgImagePlot2d(AbstractInspector):
         super(PgImagePlot2d, self).__init__(collector, parent=parent)
 
         self.viewBox = pg.ViewBox(border=pg.mkPen("#000000", width=1))
-        self.plotItem = pg.PlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
-                                    enableMenu=False, viewBox=self.viewBox)
+        self.plotItem = SimplePlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
+                                       enableMenu=False, viewBox=self.viewBox)
         self.viewBox.setParent(self.plotItem)
 
         self.imageItem = pg.ImageItem()
@@ -118,7 +125,6 @@ class PgImagePlot2d(AbstractInspector):
         self.contentsLayout.addWidget(self.graphicsLayoutWidget)
 
         self._config = PgImagePlot2dCti('inspector', pgImagePlot2d=self)
-
 
         
     def finalize(self):

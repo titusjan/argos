@@ -207,8 +207,9 @@ class PgDependendAxisCti(PgAxisCti):
         """
         super(PgDependendAxisCti, self).__init__(nodeName, viewBox, axisNumber)
         self.axisName = axisName
-        labelCti = ChoiceCti('label', 1, editable=True,
-                             configValues=["{name}", "{name} {unit}", "{path}", "{path} {unit}"])
+        labelCti = ChoiceCti('label', 0, editable=True,
+                             configValues=["{name}", "{name} {unit}",
+                                           "{path}", "{path} {unit}", "{raw-unit}"])
         self.insertChild(labelCti, position=0)
 
 

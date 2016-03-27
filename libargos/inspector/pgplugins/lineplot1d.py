@@ -22,13 +22,15 @@ from __future__ import division, print_function
 import logging
 import pyqtgraph as pg
 
-USE_SIMPLE_PLOT = True
+logger = logging.getLogger(__name__)
+
+USE_SIMPLE_PLOT = False
 
 if USE_SIMPLE_PLOT:
+    logger.warn("Using SimplePlotItem as PlotItem")
     from pyqtgraph.graphicsItems.PlotItem.simpleplotitem import SimplePlotItem
 else:
-    from pyqtgraph.graphicsItems.PlotItem import PlotItem
-
+    from pyqtgraph.graphicsItems.PlotItem import PlotItem as SimplePlotItem
 
 
 from libargos.qt import QtGui
@@ -42,9 +44,6 @@ from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector
 from libargos.inspector.pgplugins.pgctis import PgPlotItemCti, PgIndependendAxisCti, PgDependendAxisCti
 from libargos.utils.cls import array_has_real_numbers, check_class
-
-logger = logging.getLogger(__name__)
-
 
 
 class PgLinePlot1dCti(MainGroupCti):
@@ -118,12 +117,8 @@ class PgLinePlot1d(AbstractInspector):
 
         self.viewBox = pg.ViewBox(border=pg.mkPen("#000000", width=1))
 
-        if USE_SIMPLE_PLOT:
-            self.plotItem = SimplePlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
-                                           enableMenu=True, viewBox=self.viewBox) # TODO: enableMenu=False
-        else:
-            self.plotItem = pg.PlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
-                                        enableMenu=True, viewBox=self.viewBox)
+        self.plotItem = SimplePlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
+                                       enableMenu=True, viewBox=self.viewBox) # TODO: enableMenu=False
         self.viewBox.setParent(self.plotItem)
 
         self.graphicsLayoutWidget = pg.GraphicsLayoutWidget()
