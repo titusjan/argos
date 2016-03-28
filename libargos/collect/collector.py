@@ -21,9 +21,9 @@ from __future__ import print_function
 import logging
 import numpy as np
 
-from libargos.collect.collectortree import CollectorTree
+from libargos.collect.collectortree import CollectorTree, CollectorSpinBox
 from libargos.repo.baserti import BaseRti
-from libargos.qt import QtGui, QtCore, QtSignal, QtSlot
+from libargos.qt import Qt, QtGui, QtCore, QtSignal, QtSlot
 from libargos.utils.cls import check_class, check_is_a_sequence
 from libargos.widgets.constants import (TOP_DOCK_HEIGHT)
 
@@ -35,6 +35,8 @@ FAKE_DIM_OFFSET = 1000  # Fake dimensions start here (so all arrays must have a 
 
 # Qt classes have many ancestors
 #pylint: disable=R0901
+
+
 
 class Collector(QtGui.QWidget): 
     """ Widget for collecting the selected data. 
@@ -94,7 +96,7 @@ class Collector(QtGui.QWidget):
     
     @property
     def rti(self):
-        """ The current repo tree item. Can be None.
+        """ The current repository tree item. Can be None.
         """
         return self._rti
 
@@ -146,8 +148,20 @@ class Collector(QtGui.QWidget):
         result = self._signalsBlocked
         self._signalsBlocked = block
         return result
-            
-            
+
+
+    def _setColumnCountForContents(self):
+        """ Sets the column count given the current axes and selected RTI.
+            Returns the newly set column count.
+        """
+        logger.debug("")
+        numRtiDims = self.rti.nDims if self.rti and self.rti.isSliceable else 0
+
+        colCount = self.COL_FIRST_COMBO + max(numRtiDims, len(self.axisNames))
+        self.tree.model().setColumnCount(colCount)
+        return colCount
+
+
     def clear(self):
         """ Removes all VisItems
         """
@@ -155,8 +169,8 @@ class Collector(QtGui.QWidget):
         # Don't use model.clear(). it will delete the column sizes 
         model.removeRows(0, 1)
         model.setRowCount(1)
-        #model.setColumnCount(6)
-    
+        self._setColumnCountForContents()
+
     
     def clearAndSetComboBoxes(self, axesNames):
         """ Removes all VisItems before setting the new degree.
@@ -228,7 +242,9 @@ class Collector(QtGui.QWidget):
         self._deleteSpinBoxes(row)
         self._populateComboBoxes(row)
         self._createSpinBoxes(row)
-    
+
+        self.tree.resizeColumnsToContents(startCol=self.COL_FIRST_COMBO)
+
         logging.debug("{} contentsChanged signal (_updateWidgets)"
                       .format("Blocked" if self.signalsBlocked() else "Emitting"))
         self.contentsChanged.emit()
@@ -239,13 +255,12 @@ class Collector(QtGui.QWidget):
         """  
         tree = self.tree
         model = self.tree.model()
+        self._setColumnCountForContents()
         
         for col, _ in enumerate(self._axisNames, self.COL_FIRST_COMBO):
-            if col >= model.columnCount():
-                model.setColumnCount(col + 1)
-                
             logger.debug("Adding combobox at ({}, {})".format(row, col))
             comboBox = QtGui.QComboBox()
+            # comboBox.setSizeAdjustPolicy(QtGui.QComboBox.AdjustToContents) # doesn't work (yet?)
             comboBox.activated.connect(self._comboBoxActivated)
             self._comboBoxes.append(comboBox)
             
@@ -341,6 +356,8 @@ class Collector(QtGui.QWidget):
             return     
 
         logger.debug("_createSpinBoxes, array shape: {}".format(self._rti.arrayShape))
+
+        self._setColumnCountForContents()
         
         tree = self.tree
         model = self.tree.model()
@@ -350,13 +367,15 @@ class Collector(QtGui.QWidget):
             
             if self._dimensionSelectedInComboBox(dimNr):
                 continue
-            
-            spinBox = QtGui.QSpinBox()
+
+            self._setHeaderLabel(col, '')
+
+            spinBox = CollectorSpinBox()
             self._spinBoxes.append(spinBox)
             
             spinBox.setKeyboardTracking(False)
             spinBox.setCorrectionMode(QtGui.QAbstractSpinBox.CorrectToNearestValue)
-            #spinBox.setMinimumWidth(...)
+
             spinBox.setMinimum(0)
             spinBox.setMaximum(dimSize - 1)
             spinBox.setSingleStep(1)
@@ -364,21 +383,17 @@ class Collector(QtGui.QWidget):
             spinBox.setPrefix("{}: ".format(self._rti.dimensionNames[dimNr]))
             spinBox.setSuffix("/{}".format(spinBox.maximum()))
             spinBox.setProperty("dim_nr", dimNr)
-            
+            #spinBox.adjustSize() # necessary?
+
             # This must be done after setValue to prevent emitting too many signals
             spinBox.valueChanged[int].connect(self._spinboxValueChanged)
 
-            #spinboxLabel = QtGui.QLabel(self.self._rti.dimensionNames[dimNr])
-            #editor = LabeledWidget(spinboxLabel, spinBox)
-
-            if col >= model.columnCount():
-                model.setColumnCount(col + 1)
-                self._setHeaderLabel(col, '')
-                
-            logger.debug("_createSpinBoxes, adding at ({}, {})".format(row, col))                
             tree.setIndexWidget(model.index(row, col), spinBox)
-            col += 1                         
-                    
+            col += 1
+
+        # Resize the spinbox columns to their new contents
+        self.tree.resizeColumnsToContents(startCol=self.COL_FIRST_COMBO + self.maxCombos)
+
 
     def _deleteSpinBoxes(self, row):
         """ Removes all spinboxes
@@ -389,7 +404,9 @@ class Collector(QtGui.QWidget):
         for col, spinBox in enumerate(self._spinBoxes, self.COL_FIRST_COMBO + self.maxCombos):
             spinBox.valueChanged[int].disconnect(self._spinboxValueChanged)
             tree.setIndexWidget(model.index(row, col), None)
-        self._spinBoxes = [] 
+        self._spinBoxes = []
+
+        self._setColumnCountForContents()
 
             
     @QtSlot(int)
@@ -560,12 +577,14 @@ class Collector(QtGui.QWidget):
             info = {'slices': '',
                     'name': '',
                     'path': '',
+                    'file-name': '',
                     'unit': '',
                     'raw-unit': ''}
         else:
             info = {'slices': self.getSlicesString(),
                     'name': rti.nodeName,
                     'path': rti.nodePath,
+                    'file-name': rti.fileName,
                     'unit': '({})'.format(rti.unit) if rti.unit else '',
                     'raw-unit': rti.unit}
 
