@@ -12,8 +12,6 @@ TODO version 0.2:
 	Tooltips in all tables and trees
 	Button to select inspectors.
 
-	Collector columns resize to contents? (Not the first col)
-
 	Inspector selection dropwindow (use in new window)
 	    Fix 'clone-window' in main menu (is there a need for a separate 'new window'?)
 
@@ -28,6 +26,8 @@ TODO version 0.3:
 
     Meta arrays http://scipy-cookbook.readthedocs.org/items/MetaArray.html
     Pandas
+
+    Matplotlib inspector
 
 
 Collectors:
