@@ -81,6 +81,21 @@ class RepoTreeModel(BaseTreeModel):
         elif role == Qt.ToolTipRole:
             if treeItem.exception:
                 return str(treeItem.exception)
+            if column == self.COL_NODE_NAME:
+                return treeItem.nodePath # Also path when hovering over the name
+            elif column == self.COL_NODE_PATH:
+                return treeItem.nodePath
+            elif column == self.COL_SHAPE:
+                if treeItem.isSliceable:
+                    return " x ".join(str(elem) for elem in treeItem.arrayShape)
+                else:
+                    return ""
+            elif column == self.COL_RTI_TYPE:
+                return type_name(treeItem)
+            elif column == self.COL_ELEM_TYPE:
+                return treeItem.elementTypeName
+            elif column == self.COL_FILE_NAME:
+                return treeItem.fileName if hasattr(treeItem, 'fileName') else ''
             else:
                 return None
         else:

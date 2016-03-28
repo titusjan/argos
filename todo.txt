@@ -9,7 +9,6 @@ TODO version 0.2:
 		zoom factors
 		attribute windows
 
-	Tooltips in all tables and trees
 	Button to select inspectors.
 
 	Inspector selection dropwindow (use in new window)
@@ -109,11 +108,7 @@ BUGS:
         /argos/OMI-Aura_L3-OMDOAO3e_2010m0602_v003-2011m1109t115919.he5/HDFEOS/GRIDS/ColumnAmountO3/Data Fields/TerrainHeight
 
 
-    	
-PYQT_GRAPH:
-	ImageView without the menu
-	ImageView.setImage(axes) only seems to look at the 't' dimension.
-	 
+
 	
 DATA & LIBS:
     http://pandas-datareader.readthedocs.org/en/latest/remote_data.html#google-finance

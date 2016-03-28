@@ -68,10 +68,12 @@ class PropertiesPane(DetailTablePane):
             table.setRowCount(len(propNames))
             
             for row, propName in enumerate(propNames):
+                nameItem = QtGui.QTableWidgetItem(propName)
+                nameItem.setToolTip(propName)
+                table.setItem(row, self.COL_PROP_NAME, nameItem)
                 propValue = repoModel.itemData(currentRti, row)
                 propItem = QtGui.QTableWidgetItem(propValue)
                 propItem.setToolTip(propValue)
-                table.setItem(row, self.COL_PROP_NAME, QtGui.QTableWidgetItem(propName))
                 table.setItem(row, self.COL_VALUE, propItem)
                 table.resizeRowToContents(row)
     
