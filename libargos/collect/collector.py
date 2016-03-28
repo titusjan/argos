@@ -260,7 +260,7 @@ class Collector(QtGui.QWidget):
         for col, _ in enumerate(self._axisNames, self.COL_FIRST_COMBO):
             logger.debug("Adding combobox at ({}, {})".format(row, col))
             comboBox = QtGui.QComboBox()
-            # comboBox.setSizeAdjustPolicy(QtGui.QComboBox.AdjustToContents) # doesn't work (yet?)
+            comboBox.setSizeAdjustPolicy(QtGui.QComboBox.AdjustToContents)
             comboBox.activated.connect(self._comboBoxActivated)
             self._comboBoxes.append(comboBox)
             
@@ -281,6 +281,7 @@ class Collector(QtGui.QWidget):
         self._comboBoxes = []
             
 
+    # TODO: why again don't we create the comboxes when a new RTI is selected (just like the spins)?
     def _populateComboBoxes(self, row):
         """ Populates the combo boxes with values of the repo tree item
         """
@@ -289,15 +290,19 @@ class Collector(QtGui.QWidget):
             comboBox.clear()
             
         if not self.rtiIsSliceable:
+            # Add an empty item to the combo boxes so that resize to contents works.
+            for comboBoxNr, comboBox in enumerate(self._comboBoxes):
+                comboBox.addItem('', userData=None)
+                comboBox.setEnabled(False)
             return
-        
+
         nDims = self._rti.nDims
         nCombos = len(self._comboBoxes)
         
         for comboBoxNr, comboBox in enumerate(self._comboBoxes):
             # Add a fake dimension of length 1
             comboBox.addItem(FAKE_DIM_NAME, userData = FAKE_DIM_OFFSET + comboBoxNr)
-            
+
             for dimNr in range(nDims):
                 comboBox.addItem(self._rti.dimensionNames[dimNr], userData=dimNr)
 
@@ -318,6 +323,8 @@ class Collector(QtGui.QWidget):
                 "curIdx should be <= {}, got {}".format(nDims + 1, curIdx)
 
             comboBox.setCurrentIndex(curIdx)
+            comboBox.setEnabled(True)
+            #comboBox.adjustSize() # necessary?
 
 
     # def getComboBoxDimensionName(self, comboBoxNr):
