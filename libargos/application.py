@@ -21,7 +21,7 @@ import sys, logging, platform
 
 from libargos.info import DEBUGGING, DEFAULT_PROFILE
 from libargos.inspector.registry import InspectorRegistry, DEFAULT_INSPECTOR
-from libargos.qt import QtCore
+from libargos.qt import QtCore, QtSlot
 from libargos.qt.misc import removeSettingsGroup, handleException, initQApplication
 from libargos.qt.registry import GRP_REGISTRY, nameToIdentifier
 from libargos.repo.repotreemodel import RepoTreeModel
@@ -351,8 +351,9 @@ class ArgosApplication(object):
         """
         for fileName in fileNames:
             self.repo.loadFile(fileName, rtiClass=rtiClass)
-            
-            
+
+
+    @QtSlot()
     def addNewMainWindow(self, settings=None, inspectorFullName=None):
         """ Creates and shows a new MainWindow.
         

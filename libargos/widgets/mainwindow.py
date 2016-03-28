@@ -379,7 +379,8 @@ class MainWindow(QtGui.QMainWindow):
             logger.debug("setInspectorFromRegItem: {}. Enabling updates.".format(inspectorRegItem))
             self.setUpdatesEnabled(True)
 
-        
+
+    @QtSlot()
     def openInspector(self):
         """ Opens the inspector dialog box to let the user change the current inspector.
         """
@@ -392,7 +393,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.setInspectorFromRegItem(inspectorRegItem)
                 self.drawWindowContents()
         
-    
+    @QtSlot()
     def openPluginsDialog(self):
         """ Shows the plugins dialog with the registered plugins
         """
@@ -562,7 +563,8 @@ class MainWindow(QtGui.QMainWindow):
         event.accept()
         logger.debug("closeEvent accepted")
         
-        
+
+    @QtSlot()
     def about(self):
         """ Shows the about message window. 
         """
@@ -570,7 +572,8 @@ class MainWindow(QtGui.QMainWindow):
         aboutDialog.show()
         aboutDialog.addDependencyInfo()
 
-        
+
+    @QtSlot()
     def myTest(self):
         """ Function for testing """
         logger.debug("myTest for window: {}".format(self.windowNumber))
