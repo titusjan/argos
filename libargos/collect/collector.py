@@ -247,7 +247,7 @@ class Collector(QtGui.QWidget):
 
         self.tree.resizeColumnsToContents(startCol=self.COL_FIRST_COMBO)
 
-        logging.debug("{} contentsChanged signal (_updateWidgets)"
+        logger.debug("{} contentsChanged signal (_updateWidgets)"
                       .format("Blocked" if self.signalsBlocked() else "Emitting"))
         self.contentsChanged.emit()
         
@@ -448,7 +448,7 @@ class Collector(QtGui.QWidget):
                             
         self.blockChildrenSignals(blocked)
         
-        logging.debug("{} contentsChanged signal (comboBox)"
+        logger.debug("{} contentsChanged signal (comboBox)"
                       .format("Blocked" if self.signalsBlocked() else "Emitting"))
         self.contentsChanged.emit()
         
@@ -464,7 +464,7 @@ class Collector(QtGui.QWidget):
             spinBox = self.sender()
         assert spinBox, "spinBox not defined and not the sender"
 
-        logging.debug("{} contentsChanged signal (spinBox)"
+        logger.debug("{} contentsChanged signal (spinBox)"
                       .format("Blocked" if self.signalsBlocked() else "Emitting"))            
         self.contentsChanged.emit()
 
@@ -475,7 +475,7 @@ class Collector(QtGui.QWidget):
             :returns: Numpy array with the same number of dimension as the number of 
                 comboboxes; returns None if no slice can be made.
         """
-        #logging.debug("getSlicedArray() called")
+        #logger.debug("getSlicedArray() called")
 
         if not self.rtiIsSliceable:
             return None  
@@ -493,7 +493,7 @@ class Collector(QtGui.QWidget):
         # interpreted as an index. With a tuple, array[(exp1, exp2, ..., expN)] is equivalent to 
         # array[exp1, exp2, ..., expN]. 
         # See: http://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
-        #logging.debug("Array slice: {}".format(str(sliceList)))
+        #logger.debug("Array slice: {}".format(str(sliceList)))
         slicedArray = self.rti[tuple(sliceList)]
         
         # Add fake dimensions of length 1 so that result.ndim will equal the number of combo boxes
@@ -513,7 +513,7 @@ class Collector(QtGui.QWidget):
         logger.debug("Transposing dimensions: {}".format(permutations))
         slicedArray = np.transpose(slicedArray, permutations)
 
-        logging.debug("slicedArray.shape: {}".format(slicedArray.shape))
+        logger.debug("slicedArray.shape: {}".format(slicedArray.shape))
 
         return slicedArray
 
