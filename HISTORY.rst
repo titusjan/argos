@@ -3,7 +3,7 @@
 History
 -------
 
-0.2.0-devel (2014-11-01)
+0.2.0-devel (2016-03-29)
 ---------------------
 
 * First useable release.
