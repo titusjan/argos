@@ -21,10 +21,9 @@
     See http://unidata.github.io/netcdf4-python/
 """
 
-import logging, os
+import logging, types
 from netCDF4 import Dataset, Variable, Dimension
 
-from libargos.qt import QtGui
 from libargos.utils.cls import check_class
 from libargos.repo.baserti import BaseRti
 from libargos.repo.iconfactory import RtiIconFactory
@@ -246,9 +245,14 @@ class NcdfVariableRti(BaseRti):
     def elementTypeName(self):
         """ String representation of the element type.
         """        
-        dtype =  self._ncVar.dtype 
-        return '<compound>' if dtype.names else str(dtype) # TODO: what if dtype.names does not exist
-    
+        dtype =  self._ncVar.dtype
+        if type(dtype) == types.TypeType:
+            # Handle the unexpected case that dtype is a regular Python type
+            # (happens e.g. in the /PROCESSOR/processing_configuration of the Trop LX files)
+            return dtype.__name__
+
+        return '<compound>' if dtype.names else str(dtype)
+
                
     @property
     def dimensionNames(self):
