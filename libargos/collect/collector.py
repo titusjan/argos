@@ -73,15 +73,15 @@ class Collector(QtGui.QWidget):
         self.tree = CollectorTree(self)
         self.layout.addWidget(self.tree)
         
-        # Add buttons
-        self.addVisItemButton = QtGui.QPushButton("Add")
-        self.addVisItemButton.setEnabled(False) # not yet implemented
-        self.buttonLayout.addWidget(self.addVisItemButton, stretch=0)
-        self.removeVisItemButton = QtGui.QPushButton("Remove")
-        self.removeVisItemButton.setEnabled(False) # not yet implemented
-        self.buttonLayout.addWidget(self.removeVisItemButton, stretch=0)
-        self.buttonLayout.addStretch(stretch=1)
-        self.layout.addLayout(self.buttonLayout, stretch=0)
+        # Add buttons (not yet implemented)
+        # self.addVisItemButton = QtGui.QPushButton("Add")
+        # self.addVisItemButton.setEnabled(False) # not yet implemented
+        # self.buttonLayout.addWidget(self.addVisItemButton, stretch=0)
+        # self.removeVisItemButton = QtGui.QPushButton("Remove")
+        # self.removeVisItemButton.setEnabled(False) # not yet implemented
+        # self.buttonLayout.addWidget(self.removeVisItemButton, stretch=0)
+        # self.buttonLayout.addStretch(stretch=1)
+        # self.layout.addLayout(self.buttonLayout, stretch=0)
 
         
     def sizeHint(self):
@@ -237,6 +237,8 @@ class Collector(QtGui.QWidget):
         pathItem = QtGui.QStandardItem(nodePath)
         pathItem.setToolTip(nodePath)
         pathItem.setEditable(False)
+        if self.rti is not None:
+            pathItem.setIcon(self.rti.decoration)
         model.setItem(row, 0, pathItem)
         
         self._deleteSpinBoxes(row)

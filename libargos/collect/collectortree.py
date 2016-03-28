@@ -51,6 +51,9 @@ class CollectorTree(ToggleColumnTreeView):
         self.setModel(model)
         self.setTextElideMode(Qt.ElideMiddle) # ellipsis appear in the middle of the text
 
+        self.setRootIsDecorated(False) # disable expand/collapse triangle
+        self.setUniformRowHeights(True)
+
         self.setAlternatingRowColors(True)
         self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
@@ -67,7 +70,7 @@ class CollectorTree(ToggleColumnTreeView):
         treeHeader.setResizeMode(QtGui.QHeaderView.Interactive) # don't set to stretch
 
         labels = [''] * model.columnCount()
-        labels[0] = "VisItem Path"
+        labels[0] = "path"
         model.setHorizontalHeaderLabels(labels)
         
         #enabled = dict((name, False) for name in self.HEADERS)
