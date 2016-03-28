@@ -107,7 +107,8 @@ BUGS:
     Pg image 2d plot breaks histogram
         /argos/OMI-Aura_L3-OMDOAO3e_2010m0602_v003-2011m1109t115919.he5/HDFEOS/GRIDS/ColumnAmountO3/Data Fields/TerrainHeight
 
-
+    image plot of /argos/occ/bg_corr_nominals/report.detector1.nc/DETECTOR1/illum shows a black box (autolevels.
+    /Users/titusjan/Data/argos/occ/bg_corr_nominals/report.detector1.nc
 
 	
 DATA & LIBS:

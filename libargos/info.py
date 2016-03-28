@@ -43,5 +43,5 @@ def program_directory():
 def icons_directory():
     """ Returns the program directory where this program is installed
     """
-    return os.path.join(program_directory(), 'img/icons')
+    return os.path.join(program_directory(), 'img/snipicons')
     
