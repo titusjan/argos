@@ -574,12 +574,9 @@ class MainWindow(QtGui.QMainWindow):
     def myTest(self):
         """ Function for testing """
         logger.debug("myTest for window: {}".format(self.windowNumber))
-        
-        pw = self.inspector.plotWidget
-        
-        pw.setRange(xRange = [0, 600], yRange = [2000, 4000], padding=0, 
-                    update=False, disableAutoRange=True)  
-            
+
+        self.collector.tree.resizeColumnsToContents(startCol=1)
+
 #        from libargos.qt.misc import printChildren
 #        printChildren(self.centralWidget())
 #        print()

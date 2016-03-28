@@ -284,7 +284,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
 
     
     @property
-    def nDims(self):
+    def nDims(self): # TODO: rename to numDims?
         """ The number of dimensions of the underlying array
             The base implementation returns len(self.arrayShape). Descendants may override this to
             provide a more efficient implementation

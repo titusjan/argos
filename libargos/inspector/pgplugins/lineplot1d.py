@@ -118,7 +118,7 @@ class PgLinePlot1d(AbstractInspector):
         self.viewBox = pg.ViewBox(border=pg.mkPen("#000000", width=1))
 
         self.plotItem = SimplePlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
-                                       enableMenu=True, viewBox=self.viewBox) # TODO: enableMenu=False
+                                       enableMenu=False, viewBox=self.viewBox)
         self.viewBox.setParent(self.plotItem)
 
         self.graphicsLayoutWidget = pg.GraphicsLayoutWidget()

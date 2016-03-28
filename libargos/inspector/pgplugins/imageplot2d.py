@@ -32,13 +32,6 @@ if USE_SIMPLE_PLOT:
 else:
     from pyqtgraph.graphicsItems.PlotItem import PlotItem as SimplePlotItem
 
-if USE_SIMPLE_PLOT:
-    logger.warn("Using SimplePlotItem as PlotItem")
-    from pyqtgraph.graphicsItems.PlotItem.simpleplotitem import SimplePlotItem as SimplePlotItem
-else:
-    from pyqtgraph.graphicsItems.PlotItem import SimplePlotItem
-
-
 from libargos.info import DEBUGGING
 from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
