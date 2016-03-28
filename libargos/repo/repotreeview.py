@@ -157,7 +157,7 @@ class RepoTreeView(ArgosTreeView):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
         rootItem = MainGroupCti('data repository')
-        rootItem.insertChild(BoolCti('show dimensions', False)) # Does nothing yet
+        rootItem.insertChild(BoolCti('my checkbox', False)) # Does nothing yet
         return rootItem
             
         
