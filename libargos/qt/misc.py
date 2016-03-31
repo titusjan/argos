@@ -96,7 +96,7 @@ def initQApplication():
     return app
     
 
-def initArgosApplicationSettings(app):
+def initArgosApplicationSettings(app): # TODO: this is Argos specific. Move somewhere else.
     """ Sets Argos specific attributes, such as the OrganizationName, so that the application
         persistent settings are read/written to the correct settings file/winreg. It is therefore
         important to call this function at startup. The ArgosApplication constructor does this. 
@@ -115,26 +115,60 @@ def initArgosApplicationSettings(app):
 # Exception Handling #
 ######################
 
+class ResizeDetailsMessageBox(QtGui.QMessageBox):
+    """ Message box that enlarges when the 'Show Details' button is clicked.
+        Can be used to better view stack traces. I could't find how to make a resizeable message
+        box but this it the next best thing.
+
+        Taken from:
+        http://stackoverflow.com/questions/2655354/how-to-allow-resizing-of-qmessagebox-in-pyqt4
+    """
+    def __init__(self, detailsBoxWidth=700, detailBoxHeight=300, *args, **kwargs):
+        """ Constructor
+            :param detailsBoxWidht: The width of the details text box (default=700)
+            :param detailBoxHeight: The heights of the details text box (default=700)
+        """
+        super(ResizeDetailsMessageBox, self).__init__(*args, **kwargs)
+        self.detailsBoxWidth = detailsBoxWidth
+        self.detailBoxHeight = detailBoxHeight
+
+
+    def resizeEvent(self, event):
+        """ Resizes the details box if present (i.e. when 'Show Details' button was clicked)
+        """
+        result = super(ResizeDetailsMessageBox, self).resizeEvent(event)
+
+        details_box = self.findChild(QtGui.QTextEdit)
+        if details_box is not None:
+            #details_box.setFixedSize(details_box.sizeHint())
+            details_box.setFixedSize(QtCore.QSize(self.detailsBoxWidth, self.detailBoxHeight))
+
+        return result
+
+
+
 def handleException(exc_type, exc_value, exc_traceback):
 
     traceback.format_exception(exc_type, exc_value, exc_traceback)
     
-    logger.critical("Bug: uncaught {}".format(exc_type.__name__), 
+    logger.critical("Bug: uncaught {}".format(exc_type.__name__),
                     exc_info=(exc_type, exc_value, exc_traceback))
     if info.DEBUGGING:
+        logger.info("Quitting application with exit code 1")
         sys.exit(1)
     else:
         # Constructing a QApplication in case this hasn't been done yet.
         if not QtGui.qApp:
             _app = QtGui.QApplication()
          
-        msgBox = QtGui.QMessageBox()
+        msgBox = ResizeDetailsMessageBox()
         msgBox.setText("Bug: uncaught {}".format(exc_type.__name__))
         msgBox.setInformativeText(str(exc_value))
         lst = traceback.format_exception(exc_type, exc_value, exc_traceback)
         msgBox.setDetailedText("".join(lst))
         msgBox.setIcon(QtGui.QMessageBox.Warning)
         msgBox.exec_()
+        logger.info("Quitting application with exit code 1")
         sys.exit(1)
                 
                 
