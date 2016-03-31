@@ -33,7 +33,7 @@ class RepoTreeModel(BaseTreeModel):
         for QTreeViews. The underlying data is stored as repository tree items (BaseRti 
         descendants).
     """
-    HEADERS = ["name", "path", "shape", "elem type", "tree item", 
+    HEADERS = ["name", "path", "shape", "type", "tree item",
                "is open", "file name", "exception"]
     (COL_NODE_NAME, COL_NODE_PATH, COL_SHAPE, COL_ELEM_TYPE, COL_RTI_TYPE, 
      COL_IS_OPEN, COL_FILE_NAME, COL_EXCEPTION) = range(len(HEADERS))
@@ -81,6 +81,21 @@ class RepoTreeModel(BaseTreeModel):
         elif role == Qt.ToolTipRole:
             if treeItem.exception:
                 return str(treeItem.exception)
+            if column == self.COL_NODE_NAME:
+                return treeItem.nodePath # Also path when hovering over the name
+            elif column == self.COL_NODE_PATH:
+                return treeItem.nodePath
+            elif column == self.COL_SHAPE:
+                if treeItem.isSliceable:
+                    return " x ".join(str(elem) for elem in treeItem.arrayShape)
+                else:
+                    return ""
+            elif column == self.COL_RTI_TYPE:
+                return type_name(treeItem)
+            elif column == self.COL_ELEM_TYPE:
+                return treeItem.elementTypeName
+            elif column == self.COL_FILE_NAME:
+                return treeItem.fileName if hasattr(treeItem, 'fileName') else ''
             else:
                 return None
         else:

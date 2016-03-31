@@ -3,16 +3,13 @@ TODO version 0.2:
 	PgImage should have axis
 	Spinbox with scientific notation
 
-	Masked arrays and fill values.
+	Masked arrays and fill values. (/Users/titusjan/Data/argos/OMI-Aura_L3-OMDOAO3e_2010m0602_v003-2011m1109t115919.he5)
 
 	Config settings:
 		zoom factors
 		attribute windows
 
-	Tooltips in all tables and trees
 	Button to select inspectors.
-
-	Collector columns resize to contents? (Not the first col)
 
 	Inspector selection dropwindow (use in new window)
 	    Fix 'clone-window' in main menu (is there a need for a separate 'new window'?)
@@ -28,6 +25,8 @@ TODO version 0.3:
 
     Meta arrays http://scipy-cookbook.readthedocs.org/items/MetaArray.html
     Pandas
+
+    Matplotlib inspector
 
 
 Collectors:
@@ -108,12 +107,9 @@ BUGS:
     Pg image 2d plot breaks histogram
         /argos/OMI-Aura_L3-OMDOAO3e_2010m0602_v003-2011m1109t115919.he5/HDFEOS/GRIDS/ColumnAmountO3/Data Fields/TerrainHeight
 
+    image plot of /argos/occ/bg_corr_nominals/report.detector1.nc/DETECTOR1/illum shows a black box (autolevels.
+    /Users/titusjan/Data/argos/occ/bg_corr_nominals/report.detector1.nc
 
-    	
-PYQT_GRAPH:
-	ImageView without the menu
-	ImageView.setImage(axes) only seems to look at the 't' dimension.
-	 
 	
 DATA & LIBS:
     http://pandas-datareader.readthedocs.org/en/latest/remote_data.html#google-finance

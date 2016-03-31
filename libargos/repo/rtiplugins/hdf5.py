@@ -23,6 +23,7 @@
 
 import logging, os
 import h5py
+import numpy as np
 
 from libargos.qt import QtGui
 from libargos.utils.cls import check_class
@@ -60,7 +61,90 @@ def dimNamesFromDataset(h5Dataset):
             dimNames.append('Dim{}'.format(dimNr)) # For now, just number them
                              
     return dimNames
-    
+
+
+def dataSetElementType(h5Dataset):
+    """ Returns a string describing the element type of the dataset
+    """
+    dtype =  h5Dataset.dtype
+
+    if dtype.names:
+        return '<compound>'
+    else:
+        if dtype.metadata and 'vlen' in dtype.metadata:
+            vlen_type = dtype.metadata['vlen']
+
+            if vlen_type == str:
+                return "<vlen ascii>"
+            elif vlen_type == unicode:
+                return "<vlen unicode>"
+            else:
+                logger.warn("Unexpected vlen type: {!r}".format(vlen_type))
+                return "<vlen string>"
+
+    return str(dtype)
+
+
+
+
+class H5pyScalarRti(BaseRti):
+    """ Repository Tree Item (RTI) that contains a scalar HDF-5 variable.
+
+    """
+    _defaultIconGlyph = RtiIconFactory.SCALAR
+    _defaultIconColor = ICON_COLOR_H5PY
+
+    def __init__(self, h5Dataset, nodeName='', fileName=''):
+        """ Constructor
+        """
+        super(H5pyScalarRti, self).__init__(nodeName = nodeName, fileName=fileName)
+        check_class(h5Dataset, h5py.Dataset)
+        self._h5Dataset = h5Dataset
+
+
+    def hasChildren(self):
+        """ Returns False. Leaf nodes never have children. """
+        return False
+
+
+    @property
+    def isSliceable(self):
+        """ Returns True because the underlying data can be sliced.
+            The scalar will be wrapped in an array with one element so it can be inspected.
+        """
+        return True
+
+
+    def __getitem__(self, index):
+        """ Called when using the RTI with an index (e.g. rti[0]).
+            The scalar will be wrapped in an array with one element so it can be inspected.
+        """
+        array = np.array([self._h5Dataset[()]]) # slice with empty tuple
+        assert array.shape == (1, ), "Scalar wrapper shape mismatch: {}".format(array.shape)
+        return array[index] # Use the index to ensure the slice has the correct shape
+
+
+    @property
+    def arrayShape(self):
+        """ Returns the shape of the wrapper array. Will always be the tuple (1, )
+        """
+        return (1, )
+
+
+    @property
+    def elementTypeName(self):
+        """ String representation of the element type.
+        """
+        return dataSetElementType(self._h5Dataset)
+
+
+    @property
+    def attributes(self):
+        """ The attributes dictionary.
+        """
+        return self._h5Dataset.attrs
+
+
 
 
 class H5pyFieldRti(BaseRti):
@@ -77,11 +161,13 @@ class H5pyFieldRti(BaseRti):
         check_class(h5Dataset, h5py.Dataset)
         self._h5Dataset = h5Dataset
 
+
     def hasChildren(self):
         """ Returns False. Field nodes never have children. 
         """
         return False
-   
+
+
     @property
     def attributes(self):
         """ The attributes dictionary. 
@@ -148,7 +234,7 @@ class H5pyFieldRti(BaseRti):
         """
         fieldName = self.nodeName
         return str(self._h5Dataset.dtype.fields[fieldName][0])
-    
+
 
     @property
     def dimensionNames(self):
@@ -161,9 +247,11 @@ class H5pyFieldRti(BaseRti):
         
 
 class H5pyDatasetRti(BaseRti):
-    """ Repository Tree Item (RTI) that contains a HDF5 dataset. 
+    """ Repository Tree Item (RTI) that contains a HDF5 dataset.
+
+        This includes dimenions scales, which are then displayed with a different icon.
     """ 
-    _defaultIconGlyph = RtiIconFactory.ARRAY
+    #_defaultIconGlyph = RtiIconFactory.ARRAY # the iconGlyph property is overridden below
     _defaultIconColor = ICON_COLOR_H5PY
     
     def __init__(self, h5Dataset, nodeName, fileName=''):
@@ -173,6 +261,16 @@ class H5pyDatasetRti(BaseRti):
         check_class(h5Dataset, h5py.Dataset)
         self._h5Dataset = h5Dataset
         self._isCompound = bool(self._h5Dataset.dtype.names)
+
+
+    @property
+    def iconGlyph(self):
+        """ Shows an Array icon for regular datasets but a dimension icon for dimension scales
+        """
+        if self._h5Dataset.attrs.get('CLASS', None) == 'DIMENSION_SCALE':
+            return RtiIconFactory.DIMENSION
+        else:
+            return RtiIconFactory.ARRAY
 
             
     def hasChildren(self):
@@ -205,9 +303,8 @@ class H5pyDatasetRti(BaseRti):
     @property
     def elementTypeName(self):
         """ String representation of the element type.
-        """        
-        dtype =  self._h5Dataset.dtype 
-        return '<compound>' if dtype.names else str(dtype)
+        """
+        return dataSetElementType(self._h5Dataset)
 
 
     @property
@@ -277,8 +374,12 @@ class H5pyGroupRti(BaseRti):
                 childItems.append(H5pyGroupRti(h5Child, nodeName=childName, 
                                                fileName=self.fileName))
             elif isinstance(h5Child, h5py.Dataset):
-                childItems.append(H5pyDatasetRti(h5Child, nodeName=childName, 
-                                                 fileName=self.fileName))
+                if len(h5Child.shape) == 0:
+                    childItems.append(H5pyScalarRti(h5Child, nodeName=childName,
+                                                    fileName=self.fileName))
+                else:
+                    childItems.append(H5pyDatasetRti(h5Child, nodeName=childName,
+                                                     fileName=self.fileName))
             else:
                 logger.warn("Unexpected HDF-5 type (ignored): {}".format(type(h5Child)))
                         

@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import logging
 
-from libargos.qt import Qt, QtGui, QtSlot
+from libargos.qt import Qt, QtCore, QtGui, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
 
 logger = logging.getLogger(__name__)
@@ -46,10 +46,13 @@ class CollectorTree(ToggleColumnTreeView):
         
         self._comboLabels = None
 
-        nCols = 4
+        nCols = 1
         model = QtGui.QStandardItemModel(3, nCols)
         self.setModel(model)
         self.setTextElideMode(Qt.ElideMiddle) # ellipsis appear in the middle of the text
+
+        self.setRootIsDecorated(False) # disable expand/collapse triangle
+        self.setUniformRowHeights(True)
 
         self.setAlternatingRowColors(True)
         self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
@@ -63,19 +66,111 @@ class CollectorTree(ToggleColumnTreeView):
         treeHeader.setStretchLastSection(False)
         treeHeader.setMovable(False)
         
-        treeHeader.resizeSection(0, 300) # For item path
+        treeHeader.resizeSection(0, 400) # For item path
         treeHeader.setResizeMode(QtGui.QHeaderView.Interactive) # don't set to stretch
-        treeHeader.setStretchLastSection(True)
-
-        for col in range(1, nCols):
-            treeHeader.resizeSection(col, 150)
 
         labels = [''] * model.columnCount()
-        labels[0] = "VisItem Path"
+        labels[0] = "path"
         model.setHorizontalHeaderLabels(labels)
         
         #enabled = dict((name, False) for name in self.HEADERS)
         #checked = dict((name, True) for name in self.HEADERS)
         #self.addHeaderContextMenu(checked=checked, enabled=enabled, checkable={})
     
+
+    def resizeColumnsToContents(self, startCol=None, stopCol=None):
+        """ Resizes all columns to the contents
+        """
+        numCols = self.model().columnCount()
+        startCol = 0 if startCol is None else max(startCol, 0)
+        stopCol  = numCols if stopCol is None else min(stopCol, numCols)
+
+        row = 0
+        for col in range(startCol, stopCol):
+            indexWidget = self.indexWidget(self.model().index(row, col))
+
+            if indexWidget:
+                contentsWidth = indexWidget.sizeHint().width()
+            else:
+                contentsWidth = self.header().sectionSizeHint(col)
+
+            self.header().resizeSection(col, contentsWidth)
+
+
+
+class CollectorSpinBox(QtGui.QSpinBox):
+    """ A spinbox for use in the collector.
+        Overrides the sizeHint so that is not truncated when large dimension names are selected
+    """
+    def __init__(self, *args, **kwargs):
+        """ Constructor
+        """
+        super(CollectorSpinBox, self).__init__(*args, **kwargs)
+        self._cachedSizeHint = None
+
+
+    def sizeHint(self):
+        """ Reimplemented from the C++ Qt source of QAbstractSpinBox.sizeHint, but without
+            truncating to a maximum of 18 characters.
+        """
+        # The cache is invalid after the prefix, postfix and other properties
+        # have been set. I disabled it because sizeHint isn't called that often.
+        #if self._cachedSizeHint is not None:
+        #    return self._cachedSizeHint
+
+        orgSizeHint = super(CollectorSpinBox, self).sizeHint()
+
+        self.ensurePolished()
+        d = self
+        fm = QtGui.QFontMetrics(self.fontMetrics())
+
+        # This was h = d.edit.sizeHint().height(), but that didn't work. In the end we set the
+        # height to the height calculated from the parent.
+        h = orgSizeHint.height()
+        w = 0
+
+        # QLatin1Char seems not to be implemented.
+        # Using regular string literals and hope for the best
+        s = d.prefix() + d.textFromValue(d.minimum()) + d.suffix() + ' '
+
+        # We disabled truncating the string here!!
+        #s = s[:18]
+        w = max(w, fm.width(s))
+
+        s = d.prefix() + d.textFromValue(d.maximum()) + d.suffix() + ' '
+
+        # We disabled truncating the string here!!
+        #s = s[:18]
+        w = max(w, fm.width(s))
+        if len(d.specialValueText()):
+            s = d.specialValueText()
+            w = max(w, fm.width(s))
+
+        w += 2 # cursor blinking space
+
+        opt = QtGui.QStyleOptionSpinBox()
+        self.initStyleOption(opt)
+        hint = QtCore.QSize(w, h)
+        extra = QtCore.QSize(35, 6)
+
+        opt.rect.setSize(hint + extra)
+        extra += hint - self.style().subControlRect(QtGui.QStyle.CC_SpinBox, opt,
+                                                    QtGui.QStyle.SC_SpinBoxEditField, self).size()
+
+        # get closer to final result by repeating the calculation
+        opt.rect.setSize(hint + extra)
+        extra += hint - self.style().subControlRect(QtGui.QStyle.CC_SpinBox, opt,
+                                                    QtGui.QStyle.SC_SpinBoxEditField, self).size()
+        hint += extra
+
+        opt.rect = self.rect()
+        result = (self.style().sizeFromContents(QtGui.QStyle.CT_SpinBox, opt, hint, self)
+                  .expandedTo(QtGui.QApplication.globalStrut()))
+        self._cachedSizeHint = result
+
+        # Use the height ancestor's sizeHint
+        result.setHeight(orgSizeHint.height())
+
+        return result
+
 

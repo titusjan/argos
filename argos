@@ -44,8 +44,8 @@ def main():
                 E.g. 'Qt/Table'""")
 
     parser.add_argument('-s', '--select', dest='selectPath',
-        help="""Full path name of a repository tree item, whic will be selected at start-up.
-                E.g. 'filename/varname/fieldname'""")
+        help="""Full path name of a repository tree item that will be selected at start-up.
+                E.g. 'file/var/fieldname'""")
 
     parser.add_argument('-p', '--profile', dest='profile', default=DEFAULT_PROFILE, 
         help="Can be used to have different persistent settings for different use cases.")

@@ -69,16 +69,20 @@ class AttributesPane(DetailTablePane):
                     # Seems a bug: https://github.com/numpy/numpy/issues/385
                     attrStr = repr(attrValue)
                 except Exception:
-                    attrStr = str(attrValue)
+                    attrStr = unicode(attrValue)
                 
                 try: 
                     type_str = type(attrValue).__name__
                 except Exception as ex:
                     logger.exception(ex)
                     type_str = "<???>"
-                
-                table.setItem(row, self.COL_ATTR_NAME, QtGui.QTableWidgetItem(attrName))
-                table.setItem(row, self.COL_VALUE, QtGui.QTableWidgetItem(attrStr))
+
+                nameItem = QtGui.QTableWidgetItem(attrName)
+                nameItem.setToolTip(attrName)
+                table.setItem(row, self.COL_ATTR_NAME, nameItem)
+                valItem = QtGui.QTableWidgetItem(attrStr)
+                valItem.setToolTip(attrStr)
+                table.setItem(row, self.COL_VALUE, valItem)
                 table.setItem(row, self.COL_ELEM_TYPE, QtGui.QTableWidgetItem(type_str))
                 table.resizeRowToContents(row)
     

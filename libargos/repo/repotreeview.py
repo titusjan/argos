@@ -157,7 +157,7 @@ class RepoTreeView(ArgosTreeView):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
         rootItem = MainGroupCti('data repository')
-        rootItem.insertChild(BoolCti('show dimensions', False)) # Does nothing yet
+        rootItem.insertChild(BoolCti('my checkbox', False)) # Does nothing yet
         return rootItem
             
         
@@ -267,8 +267,13 @@ class RepoTreeView(ArgosTreeView):
         fileRtiIndex = self.model().findFileRtiIndex(currentIndex)
         isExpanded = self.isExpanded(fileRtiIndex)
 
-        rtiRegItem.tryImportClass()
-        newRtiIndex = self.model().reloadFileAtIndex(fileRtiIndex, rtiClass=rtiRegItem.cls)
+        if rtiRegItem is None:
+            rtiClass = None
+        else:
+            rtiRegItem.tryImportClass()
+            rtiClass = rtiRegItem.cls
+
+        newRtiIndex = self.model().reloadFileAtIndex(fileRtiIndex, rtiClass=rtiClass)
         self.setExpanded(newRtiIndex, isExpanded)
         self.setCurrentIndex(newRtiIndex)
         return newRtiIndex

@@ -21,7 +21,7 @@ import sys, logging, platform
 
 from libargos.info import DEBUGGING, DEFAULT_PROFILE
 from libargos.inspector.registry import InspectorRegistry, DEFAULT_INSPECTOR
-from libargos.qt import QtCore
+from libargos.qt import QtCore, QtSlot
 from libargos.qt.misc import removeSettingsGroup, handleException, initQApplication
 from libargos.qt.registry import GRP_REGISTRY, nameToIdentifier
 from libargos.repo.repotreemodel import RepoTreeModel
@@ -101,6 +101,9 @@ def __addTestData(argosApp):
     myDict['structured_arr3'] = np.array([(1.5,2.5,(2.0, )),(3.,4.,(5., )),(1.,3.,(2.,))],
                                          dtype=[('1st','f4'),('2nd',np.float32),('3rd','f4',(2,))])
     myDict['subDict'] = {'mean': np.ones(111), 'stddev': np.zeros(111, dtype=np.uint16)}
+
+    myDict['numpy string array']  = np.array(['Yackity', 'Smackity'])
+    myDict['numpy unicode array'] = np.array(['Table', u'ταБЬℓσ'])
 
 
     mappingRti = MappingRti(myDict, nodeName="myDict", fileName='')
@@ -348,8 +351,9 @@ class ArgosApplication(object):
         """
         for fileName in fileNames:
             self.repo.loadFile(fileName, rtiClass=rtiClass)
-            
-            
+
+
+    @QtSlot()
     def addNewMainWindow(self, settings=None, inspectorFullName=None):
         """ Creates and shows a new MainWindow.
         

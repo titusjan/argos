@@ -259,7 +259,6 @@ class PgAxisCti(GroupCti):
             childItem.drawTarget()
 
 
-
 class PgPlotItemCti(GroupCti):
     """ Config tree item for manipulating a PyQtGraph.PlotItem
     """

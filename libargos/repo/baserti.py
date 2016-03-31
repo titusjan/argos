@@ -63,7 +63,8 @@ class BaseRti(AbstractLazyLoadTreeItem):
         """
         # See https://julien.danjou.info/blog/2013/guide-python-static-class-abstract-methods
         #logger.debug("Trying to create object of class: {!r}".format(cls))
-        return cls(nodeName=os.path.basename(fileName), fileName=fileName)
+        basename = os.path.basename(os.path.realpath(fileName)) # strips trailing slashes
+        return cls(nodeName=basename, fileName=fileName)
 
     
     @property
@@ -109,7 +110,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
         except Exception as ex:
             if DEBUGGING:
                 raise            
-            logger.error("Error during tree item open: {}".format(ex))
+            logger.exception("Error during tree item open: {}".format(ex))
             self.setException(ex)
             
         
@@ -284,7 +285,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
 
     
     @property
-    def nDims(self):
+    def nDims(self): # TODO: rename to numDims?
         """ The number of dimensions of the underlying array
             The base implementation returns len(self.arrayShape). Descendants may override this to
             provide a more efficient implementation

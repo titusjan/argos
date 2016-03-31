@@ -43,7 +43,10 @@ def type_name(var):
     
 
 def is_a_string(var, allow_none=False):
-    """ Returns True if var is a string (regular or unicode)
+    """ Returns True if var is a string (ascii or unicode)
+
+        Also returns True if the var is a numpy string (numpy.string_, numpy.unicode_).
+        Use is_a_numpy_string to test only for numpy strings.
 
         :param var: variable of which we want to know if it is a string
         :type var: any type
@@ -51,6 +54,18 @@ def is_a_string(var, allow_none=False):
         :rtype: Boolean
     """
     return isinstance(var, StringType) or (var is None and allow_none)
+
+
+
+def is_a_numpy_string(var, allow_none=False):
+    """ Returns True if var is of type: numpy.string_, numpy.unicode_
+
+        :param var: variable of which we want to know if it is a string
+        :type var: any type
+        :returns: True if var is of type string
+        :rtype: Boolean
+    """
+    return isinstance(var, (np.string_, np.unicode_)) or (var is None and allow_none)
 
 
 def is_a_sequence(var, allow_none=False):

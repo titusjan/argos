@@ -392,7 +392,8 @@ class MappingRti(BaseRti):
         if self._dictionary is None:
             return super(MappingRti, self).elementTypeName
         else:
-            return type_name(self._dictionary)
+            return '' # A dictionary has no single element type
+            #return type_name(self._dictionary)
 
 
     def _fetchAllChildren(self):

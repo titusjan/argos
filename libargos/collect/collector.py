@@ -21,16 +21,22 @@ from __future__ import print_function
 import logging
 import numpy as np
 
-from libargos.collect.collectortree import CollectorTree
+from libargos.collect.collectortree import CollectorTree, CollectorSpinBox
 from libargos.repo.baserti import BaseRti
-from libargos.qt import QtGui, QtCore, QtSignal, QtSlot
+from libargos.qt import Qt, QtGui, QtCore, QtSignal, QtSlot
 from libargos.utils.cls import check_class, check_is_a_sequence
 from libargos.widgets.constants import (TOP_DOCK_HEIGHT)
 
 logger = logging.getLogger(__name__)
 
+FAKE_DIM_NAME = '-'     # The name of the fake dimension with length 1
+FAKE_DIM_OFFSET = 1000  # Fake dimensions start here (so all arrays must have a smaller ndim)
+
+
 # Qt classes have many ancestors
 #pylint: disable=R0901
+
+
 
 class Collector(QtGui.QWidget): 
     """ Widget for collecting the selected data. 
@@ -39,11 +45,7 @@ class Collector(QtGui.QWidget):
         The CollectorTree only stores the VisItems, the intelligence is located in the Collector 
         itself.
     """
-
-    FAKE_DIM_NAME = '-'     # The name of the fake dimension with length 1
-    FAKE_DIM_OFFSET = 1000  # Fake dimensions start here (so all arrays must have a smaller ndim)  
-
-    contentsChanged = QtSignal()         
+    contentsChanged = QtSignal()
     
     def __init__(self, windowNumber):
         """ Constructor
@@ -71,15 +73,15 @@ class Collector(QtGui.QWidget):
         self.tree = CollectorTree(self)
         self.layout.addWidget(self.tree)
         
-        # Add buttons
-        self.addVisItemButton = QtGui.QPushButton("Add")
-        self.addVisItemButton.setEnabled(False) # not yet implemented
-        self.buttonLayout.addWidget(self.addVisItemButton, stretch=0)
-        self.removeVisItemButton = QtGui.QPushButton("Remove")
-        self.removeVisItemButton.setEnabled(False) # not yet implemented
-        self.buttonLayout.addWidget(self.removeVisItemButton, stretch=0)
-        self.buttonLayout.addStretch(stretch=1)
-        self.layout.addLayout(self.buttonLayout, stretch=0)
+        # Add buttons (not yet implemented)
+        # self.addVisItemButton = QtGui.QPushButton("Add")
+        # self.addVisItemButton.setEnabled(False) # not yet implemented
+        # self.buttonLayout.addWidget(self.addVisItemButton, stretch=0)
+        # self.removeVisItemButton = QtGui.QPushButton("Remove")
+        # self.removeVisItemButton.setEnabled(False) # not yet implemented
+        # self.buttonLayout.addWidget(self.removeVisItemButton, stretch=0)
+        # self.buttonLayout.addStretch(stretch=1)
+        # self.layout.addLayout(self.buttonLayout, stretch=0)
 
         
     def sizeHint(self):
@@ -94,7 +96,7 @@ class Collector(QtGui.QWidget):
     
     @property
     def rti(self):
-        """ The current repo tree item. Can be None.
+        """ The current repository tree item. Can be None.
         """
         return self._rti
 
@@ -126,7 +128,13 @@ class Collector(QtGui.QWidget):
     def maxCombos(self):
         """ Returns the maximum number of combo boxes """
         return len(self._fullAxisNames)
-    
+
+
+    # @property
+    # def numCombos(self):
+    #     """ Returns the number of combo boxes """
+    #     return len(self._comboBoxes)
+
     
     def blockChildrenSignals(self, block):
         """ If block equals True, the signals of the combo boxes and spin boxes are blocked
@@ -140,8 +148,20 @@ class Collector(QtGui.QWidget):
         result = self._signalsBlocked
         self._signalsBlocked = block
         return result
-            
-            
+
+
+    def _setColumnCountForContents(self):
+        """ Sets the column count given the current axes and selected RTI.
+            Returns the newly set column count.
+        """
+        logger.debug("")
+        numRtiDims = self.rti.nDims if self.rti and self.rti.isSliceable else 0
+
+        colCount = self.COL_FIRST_COMBO + max(numRtiDims, len(self.axisNames))
+        self.tree.model().setColumnCount(colCount)
+        return colCount
+
+
     def clear(self):
         """ Removes all VisItems
         """
@@ -149,8 +169,8 @@ class Collector(QtGui.QWidget):
         # Don't use model.clear(). it will delete the column sizes 
         model.removeRows(0, 1)
         model.setRowCount(1)
-        #model.setColumnCount(6)
-    
+        self._setColumnCountForContents()
+
     
     def clearAndSetComboBoxes(self, axesNames):
         """ Removes all VisItems before setting the new degree.
@@ -217,13 +237,17 @@ class Collector(QtGui.QWidget):
         pathItem = QtGui.QStandardItem(nodePath)
         pathItem.setToolTip(nodePath)
         pathItem.setEditable(False)
+        if self.rti is not None:
+            pathItem.setIcon(self.rti.decoration)
         model.setItem(row, 0, pathItem)
         
         self._deleteSpinBoxes(row)
         self._populateComboBoxes(row)
         self._createSpinBoxes(row)
-    
-        logging.debug("{} contentsChanged signal (_updateWidgets)"
+
+        self.tree.resizeColumnsToContents(startCol=self.COL_FIRST_COMBO)
+
+        logger.debug("{} contentsChanged signal (_updateWidgets)"
                       .format("Blocked" if self.signalsBlocked() else "Emitting"))
         self.contentsChanged.emit()
         
@@ -233,13 +257,12 @@ class Collector(QtGui.QWidget):
         """  
         tree = self.tree
         model = self.tree.model()
+        self._setColumnCountForContents()
         
         for col, _ in enumerate(self._axisNames, self.COL_FIRST_COMBO):
-            if col >= model.columnCount():
-                model.setColumnCount(col + 1)
-                
             logger.debug("Adding combobox at ({}, {})".format(row, col))
             comboBox = QtGui.QComboBox()
+            comboBox.setSizeAdjustPolicy(QtGui.QComboBox.AdjustToContents)
             comboBox.activated.connect(self._comboBoxActivated)
             self._comboBoxes.append(comboBox)
             
@@ -260,6 +283,7 @@ class Collector(QtGui.QWidget):
         self._comboBoxes = []
             
 
+    # TODO: why again don't we create the comboxes when a new RTI is selected (just like the spins)?
     def _populateComboBoxes(self, row):
         """ Populates the combo boxes with values of the repo tree item
         """
@@ -268,15 +292,19 @@ class Collector(QtGui.QWidget):
             comboBox.clear()
             
         if not self.rtiIsSliceable:
+            # Add an empty item to the combo boxes so that resize to contents works.
+            for comboBoxNr, comboBox in enumerate(self._comboBoxes):
+                comboBox.addItem('', userData=None)
+                comboBox.setEnabled(False)
             return
-        
+
         nDims = self._rti.nDims
         nCombos = len(self._comboBoxes)
         
         for comboBoxNr, comboBox in enumerate(self._comboBoxes):
             # Add a fake dimension of length 1
-            comboBox.addItem(self.FAKE_DIM_NAME, userData = self.FAKE_DIM_OFFSET + comboBoxNr)
-            
+            comboBox.addItem(FAKE_DIM_NAME, userData = FAKE_DIM_OFFSET + comboBoxNr)
+
             for dimNr in range(nDims):
                 comboBox.addItem(self._rti.dimensionNames[dimNr], userData=dimNr)
 
@@ -297,10 +325,24 @@ class Collector(QtGui.QWidget):
                 "curIdx should be <= {}, got {}".format(nDims + 1, curIdx)
 
             comboBox.setCurrentIndex(curIdx)
+            comboBox.setEnabled(True)
+            #comboBox.adjustSize() # necessary?
+
+
+    # def getComboBoxDimensionName(self, comboBoxNr):
+    #     """ Returns the currently selected dimension index of combo box nr comboBoxNr
+    #     """
+    #     self._comboBoxes[comboBoxNr].currentText()
+    #
+    #
+    # def getComboBoxDimensionIndex(self, comboBoxNr):
+    #     """ Returns the currently selected dimension index of combo box nr comboBoxNr
+    #     """
+    #     return self._comboBoxDimensionIndex(self._comboBoxes[comboBoxNr])
 
             
     def _comboBoxDimensionIndex(self, comboBox):
-        """ Returns the dimension index from the user data of the currently item of the combo box.
+        """ Returns the dimension index (from the user data) of the current item of the combo box.
         """
         return comboBox.itemData(comboBox.currentIndex())  
     
@@ -323,6 +365,8 @@ class Collector(QtGui.QWidget):
             return     
 
         logger.debug("_createSpinBoxes, array shape: {}".format(self._rti.arrayShape))
+
+        self._setColumnCountForContents()
         
         tree = self.tree
         model = self.tree.model()
@@ -332,13 +376,15 @@ class Collector(QtGui.QWidget):
             
             if self._dimensionSelectedInComboBox(dimNr):
                 continue
-            
-            spinBox = QtGui.QSpinBox()
+
+            self._setHeaderLabel(col, '')
+
+            spinBox = CollectorSpinBox()
             self._spinBoxes.append(spinBox)
             
             spinBox.setKeyboardTracking(False)
             spinBox.setCorrectionMode(QtGui.QAbstractSpinBox.CorrectToNearestValue)
-            #spinBox.setMinimumWidth(...)
+
             spinBox.setMinimum(0)
             spinBox.setMaximum(dimSize - 1)
             spinBox.setSingleStep(1)
@@ -346,21 +392,17 @@ class Collector(QtGui.QWidget):
             spinBox.setPrefix("{}: ".format(self._rti.dimensionNames[dimNr]))
             spinBox.setSuffix("/{}".format(spinBox.maximum()))
             spinBox.setProperty("dim_nr", dimNr)
-            
+            #spinBox.adjustSize() # necessary?
+
             # This must be done after setValue to prevent emitting too many signals
             spinBox.valueChanged[int].connect(self._spinboxValueChanged)
 
-            #spinboxLabel = QtGui.QLabel(self.self._rti.dimensionNames[dimNr])
-            #editor = LabeledWidget(spinboxLabel, spinBox)
-
-            if col >= model.columnCount():
-                model.setColumnCount(col + 1)
-                self._setHeaderLabel(col, '')
-                
-            logger.debug("_createSpinBoxes, adding at ({}, {})".format(row, col))                
             tree.setIndexWidget(model.index(row, col), spinBox)
-            col += 1                         
-                    
+            col += 1
+
+        # Resize the spinbox columns to their new contents
+        self.tree.resizeColumnsToContents(startCol=self.COL_FIRST_COMBO + self.maxCombos)
+
 
     def _deleteSpinBoxes(self, row):
         """ Removes all spinboxes
@@ -371,7 +413,9 @@ class Collector(QtGui.QWidget):
         for col, spinBox in enumerate(self._spinBoxes, self.COL_FIRST_COMBO + self.maxCombos):
             spinBox.valueChanged[int].disconnect(self._spinboxValueChanged)
             tree.setIndexWidget(model.index(row, col), None)
-        self._spinBoxes = [] 
+        self._spinBoxes = []
+
+        self._setColumnCountForContents()
 
             
     @QtSlot(int)
@@ -389,11 +433,11 @@ class Collector(QtGui.QWidget):
         
         # If one of the other combo boxes has the same value, set it to the fake dimension
         curDimIdx = self._comboBoxDimensionIndex(comboBox)
-        if curDimIdx < self.FAKE_DIM_OFFSET:
+        if curDimIdx < FAKE_DIM_OFFSET:
             otherComboBoxes = [cb for cb in self._comboBoxes if cb is not comboBox]
             for otherComboBox in otherComboBoxes:
                 if otherComboBox.currentIndex() == comboBox.currentIndex():
-                    #newIdx = otherComboBox.findData(self.FAKE_DIM_IDX)
+                    #newIdx = otherComboBox.findData(FAKE_DIM_IDX)
                     #otherComboBox.setCurrentIndex(newIdx)
                     otherComboBox.setCurrentIndex(0) # Fake dimension is always the first
         
@@ -404,7 +448,7 @@ class Collector(QtGui.QWidget):
                             
         self.blockChildrenSignals(blocked)
         
-        logging.debug("{} contentsChanged signal (comboBox)"
+        logger.debug("{} contentsChanged signal (comboBox)"
                       .format("Blocked" if self.signalsBlocked() else "Emitting"))
         self.contentsChanged.emit()
         
@@ -420,7 +464,7 @@ class Collector(QtGui.QWidget):
             spinBox = self.sender()
         assert spinBox, "spinBox not defined and not the sender"
 
-        logging.debug("{} contentsChanged signal (spinBox)"
+        logger.debug("{} contentsChanged signal (spinBox)"
                       .format("Blocked" if self.signalsBlocked() else "Emitting"))            
         self.contentsChanged.emit()
 
@@ -431,7 +475,7 @@ class Collector(QtGui.QWidget):
             :returns: Numpy array with the same number of dimension as the number of 
                 comboboxes; returns None if no slice can be made.
         """
-        #logging.debug("getSlicedArray() called")
+        #logger.debug("getSlicedArray() called")
 
         if not self.rtiIsSliceable:
             return None  
@@ -449,7 +493,7 @@ class Collector(QtGui.QWidget):
         # interpreted as an index. With a tuple, array[(exp1, exp2, ..., expN)] is equivalent to 
         # array[exp1, exp2, ..., expN]. 
         # See: http://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
-        #logging.debug("Array slice: {}".format(str(sliceList)))
+        #logger.debug("Array slice: {}".format(str(sliceList)))
         slicedArray = self.rti[tuple(sliceList)]
         
         # Add fake dimensions of length 1 so that result.ndim will equal the number of combo boxes
@@ -469,7 +513,7 @@ class Collector(QtGui.QWidget):
         logger.debug("Transposing dimensions: {}".format(permutations))
         slicedArray = np.transpose(slicedArray, permutations)
 
-        logging.debug("slicedArray.shape: {}".format(slicedArray.shape))
+        logger.debug("slicedArray.shape: {}".format(slicedArray.shape))
 
         return slicedArray
 
@@ -523,25 +567,35 @@ class Collector(QtGui.QWidget):
             This can be used in string formatting of config options. For instance: the plot title
             can be specified as: '{path} {slices}', which will be expanded with the actual nodePath
             and slices-string of the RTI.
-            
+
+            If no RTI is selected the applicable values will be empty strings.
+
             The dictionary has the following contents:
                 slices : a string representation of the selected slice indices.
-                name: the nodeName of the RTI
-                path: the nodePath of the RTI
-            
-            Returns an empty dict when no RTI is selected.
+                name        : nodeName of the RTI
+                path        : nodePath of the RTI
+                unit        : unit of the RTI in parentheses
+                raw-unit    : unit of the RTI without parentheses (empty string if no unit given)
+                n-dim       : dimension selected in the combobox for axis n. The axis name will be
+                              in lower case (so e.g. x-dim, y-dim, etc)
         """
-        if self.rti is None:
-            return {}
-
-        rti = self.rti
 
         # Info about the dependent dimension
-        info = {'slices': self.getSlicesString(),
-                'name': rti.nodeName,
-                'path': rti.nodePath,
-                'unit': '({})'.format(rti.unit) if rti.unit else '',
-                'raw-unit': rti.unit}
+        rti = self.rti
+        if rti is None:
+            info = {'slices': '',
+                    'name': '',
+                    'path': '',
+                    'file-name': '',
+                    'unit': '',
+                    'raw-unit': ''}
+        else:
+            info = {'slices': self.getSlicesString(),
+                    'name': rti.nodeName,
+                    'path': rti.nodePath,
+                    'file-name': rti.fileName,
+                    'unit': '({})'.format(rti.unit) if rti.unit else '',
+                    'raw-unit': rti.unit}
 
         # Add the info of the independent dimensions (appended with the axis name of that dim).
         for axisName, comboBox in zip(self._axisNames, self._comboBoxes):

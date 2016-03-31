@@ -19,9 +19,9 @@
 """
 import os
 
-DEBUGGING = True
+DEBUGGING = False
 
-VERSION = '0.2.0-devel'
+VERSION = '0.2.0'
 REPO_NAME = "argos"
 SCRIPT_NAME = "argos"
 PACKAGE_NAME = "libargos"
@@ -43,5 +43,5 @@ def program_directory():
 def icons_directory():
     """ Returns the program directory where this program is installed
     """
-    return os.path.join(program_directory(), 'img/icons')
+    return os.path.join(program_directory(), 'img/snipicons')
     
