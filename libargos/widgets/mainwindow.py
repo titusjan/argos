@@ -369,12 +369,10 @@ class MainWindow(QtGui.QMainWindow):
                 else:
                     key = self.inspectorRegItem.identifier
                     nonDefaults = self._persistentSettings.get(key, {})
-                    logger.debug("nonDefaults: {}".format(nonDefaults))
                     self.inspector.config.setValuesFromDict(nonDefaults)
                     self._configTreeModel.insertItem(self.inspector.config, oldConfigPosition)
                     self.configTreeView.expandBranch()  
                     self.collector.clearAndSetComboBoxes(self.inspector.axesNames())
-                    #self.inspector.initContents() # TODO: call this here?
                     centralLayout.addWidget(self.inspector)
             finally:
                 self.collector.blockSignals(oldBlockState)
@@ -420,14 +418,14 @@ class MainWindow(QtGui.QMainWindow):
             Will draw the window contents.
         """
         logger.debug("configContentsChanged: {}".format(configTreeItem))
-        
-        # Store the old config values for persistence
+        self.drawInspectorContents()
+
+        # Store the old config values for persistence. Must be done after the inspector was drawn
+        # because this may update some derived config values (e.g. ranges)
         if self.inspectorRegItem and self.inspector:
             key = self.inspectorRegItem.identifier
             self._persistentSettings[key] = self.inspector.config.getNonDefaultsDict()
-        
-        self.drawInspectorContents()
-                        
+
             
     def drawInspectorContents(self):
         """ Draws all contents of this window's inspector.

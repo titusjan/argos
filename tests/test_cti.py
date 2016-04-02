@@ -16,24 +16,23 @@ from libargos.config.qtctis import ColorCti
 class TestUntypedCtis(unittest.TestCase):
 
     def setUp(self):
-        self.invisibleRootItem = UntypedCti(nodeName='<invisible-root>', data=0.123456789012345678901234567890)
-        self.invisibleRootItem.insertChild(UntypedCti(nodeName='kid', data=-7))
+        self.invisibleRootItem = UntypedCti(nodeName='<invisible-root>', defaultData=0.123456789012345678901234567890)
+        self.invisibleRootItem.insertChild(UntypedCti(nodeName='kid', defaultData=-7))
 
 
     def test__eq__(self):
         
-        ctiIn = UntypedCti('parent', 7, defaultData=7)
+        ctiIn = UntypedCti('parent', defaultData=7)
         self.assertEqual(ctiIn, ctiIn)
-        self.assertEqual(ctiIn, UntypedCti('parent', 7, defaultData=7))
+        self.assertEqual(ctiIn, UntypedCti('parent', defaultData=7))
 
-        self.assertNotEqual(ctiIn, UntypedCti('parent', 7, defaultData=9))
-        self.assertNotEqual(ctiIn, UntypedCti('parent', 9, defaultData=7))
+        self.assertNotEqual(ctiIn, UntypedCti('parent', defaultData=9))
 
-        ctiOut = UntypedCti('parent', 7, defaultData=7)
-        ctiIn.insertChild(UntypedCti('kid', 22, defaultData=23))
+        ctiOut = UntypedCti('parent', defaultData=7)
+        ctiIn.insertChild(UntypedCti('kid', defaultData=23))
         self.assertNotEqual(ctiIn, ctiOut)
 
-        ctiOut.insertChild(UntypedCti('kid', 22, defaultData=23))
+        ctiOut.insertChild(UntypedCti('kid', defaultData=23))
         self.assertEqual(ctiIn, ctiOut)
 
         ctiIn.childItems[0].data = 99    
@@ -58,7 +57,7 @@ class TestUntypedCtis(unittest.TestCase):
     def testNonDefaults(self):
         
         # A data different than its default should be restored 
-        ctiIn  = UntypedCti('parent', 6, defaultData=7)
+        ctiIn  = UntypedCti('parent', defaultData=7)
         defDict = ctiIn.getNonDefaultsDict()
         #print(defDict)
         ctiOut = UntypedCti('parent', defaultData=7)
@@ -67,7 +66,7 @@ class TestUntypedCtis(unittest.TestCase):
         
         # A data is not written if it's the default and 
         # is read correctly if the default stays the same 
-        ctiIn  = UntypedCti('parent', 7, defaultData=7)
+        ctiIn  = UntypedCti('parent', defaultData=7)
         defDict = ctiIn.getNonDefaultsDict()
         #print(defDict)
         ctiOut = UntypedCti('parent', defaultData=7)
@@ -75,7 +74,7 @@ class TestUntypedCtis(unittest.TestCase):
         self.assertEqual(ctiIn, ctiOut)
         
         # A default data should have no effect it the default changes in the future.
-        ctiIn  = UntypedCti('parent', 7, defaultData=7)
+        ctiIn  = UntypedCti('parent', defaultData=7)
         defDict = ctiIn.getNonDefaultsDict()
         #print(defDict)
         ctiOut = UntypedCti('parent', defaultData=9)
@@ -84,8 +83,8 @@ class TestUntypedCtis(unittest.TestCase):
 
         # Test children
         ctiIn  = UntypedCti('parent', defaultData=6)
-        ctiIn.insertChild(UntypedCti('child1', 1, defaultData=1))
-        ctiIn.insertChild(UntypedCti('child2', 3, defaultData=2))
+        ctiIn.insertChild(UntypedCti('child1', defaultData=1))
+        ctiIn.insertChild(UntypedCti('child2', defaultData=2))
         defDict = ctiIn.getNonDefaultsDict()
         #print(defDict)
         ctiOut = UntypedCti('parent', defaultData=6)
@@ -103,8 +102,8 @@ class TestUntypedCtis(unittest.TestCase):
 class TestSimpleCtis(unittest.TestCase):
 
     def setUp(self):
-        self.invisibleRootItem = UntypedCti(nodeName='<invisible-root>', data=0.123456789012345678901234567890)
-        self.invisibleRootItem.insertChild(UntypedCti(nodeName='kid', data=-7))
+        self.invisibleRootItem = UntypedCti(nodeName='<invisible-root>', defaultData=0.123456789012345678901234567890)
+        self.invisibleRootItem.insertChild(UntypedCti(nodeName='kid', defaultData=-7))
 
     def tearDown(self):
         pass
@@ -134,8 +133,11 @@ class TestSimpleCtis(unittest.TestCase):
         
     def testClosedLoop(self):
         # A data different than its default should be restored 
-        ctiIn  = ColorCti('parent', '#123456', defaultData='#ABCDEF')
+        ctiIn  = ColorCti('parent', defaultData='#ABCDEF')
+        ctiIn.data='#DEADBE' # works only if data is set, otherwise ctiOut.data will be None
         ctiOut = self.closedLoop(ctiIn)
+        print("ctiIn {}".format(ctiIn.__dict__))
+        print("ctiOut {}".format(ctiOut.__dict__))
         self.assertEqual(ctiIn, ctiOut)
 
 

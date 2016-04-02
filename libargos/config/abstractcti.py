@@ -339,14 +339,21 @@ class AbstractCti(BaseTreeItem):
 
     def _nodeGetNonDefaultsDict(self):
         """ Retrieves this nodes` values as a dictionary to be used for persistence.
+            A dictionary with the data value will be returned if the data is not equal to the
+            defaultData, the node is enabled and the node is editable. Otherwise and empty
+            dictionary is returned.
+
             Non-recursive auxiliary function for getNonDefaultsDict
         """
         dct = {}
-        if self.data != self.defaultData:
+        isEditable = bool(int(self.valueColumnItemFlags) and Qt.ItemIsEditable)
+        if (self.data != self.defaultData and self.enabled and isEditable):
             dct['data'] = self.data
         return dct
             
 
+    # TODO: think of smaller format. E.g. {'name1': val, 'n2', v2, _children = {...}}
+    # Or just {'node/path/name1': value, ...}
     def getNonDefaultsDict(self):
         """ Recursively retrieves values as a dictionary to be used for persistence.
             Does not save defaultData and other properties, only stores values if they differ from 
@@ -368,7 +375,7 @@ class AbstractCti(BaseTreeItem):
         
         if dct:
             dct['nodeName'] = self.nodeName
-            
+
         return dct
                 
 
