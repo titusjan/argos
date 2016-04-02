@@ -78,17 +78,6 @@ class PgImagePlot2dCti(MainGroupCti):
         self.insertChild(BoolCti('auto levels', True))
 
 
-    def initTarget(self):
-        """ Applies the configuration to the target PgLinePlot1d it monitors.
-        """
-        self.plotItemCti.initTarget()
-
-
-    def drawTarget(self):
-        """ Applies the configuration to the target PgLinePlot1d it monitors.
-        """
-        self.plotItemCti.drawTarget()
-
 
 
 class PgImagePlot2d(AbstractInspector):
@@ -141,9 +130,8 @@ class PgImagePlot2d(AbstractInspector):
         """ Draws the inspector widget when no input is available. 
         """
         #self.imageItem.clear() # Don't use clear as it alters the (auto)range.
-        self.imageItem.setImage(None)
+        self.imageItem.setImage(None) # TODO: this also alters the auto(range). Use clear again?
         self.titleLabel.setText('')
-        #self.config.initTarget()
 
 
     def _drawContents(self):
@@ -157,13 +145,7 @@ class PgImagePlot2d(AbstractInspector):
             self._clearContents()
             return
 
-        logger.debug("x-autorange: {!r}".format(self.configValue('axes/x-axis/range/auto-range')))
-        logger.debug("y-autorange: {!r}".format(self.configValue('axes/y-axis/range/auto-range')))
-
-        #self.imageItem.clear()
-
-        logger.debug("x-autorange: {!r}".format(self.configValue('axes/x-axis/range/auto-range')))
-        logger.debug("y-autorange: {!r}".format(self.configValue('axes/y-axis/range/auto-range')))
+        #self.imageItem.clear() # Don't use clear as it resets the autoscale enabled?
 
         # Valid plot data here
 
@@ -178,4 +160,4 @@ class PgImagePlot2d(AbstractInspector):
 
         self.histLutItem.setLevels(slicedArray.min(), slicedArray.max())
 
-        self.config.drawTarget()
+        self.config.updateTarget()

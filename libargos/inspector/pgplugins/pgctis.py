@@ -35,9 +35,11 @@ logger = logging.getLogger(__name__)
 class ViewBoxDebugCti(GroupCti): # TODO: somehow don't save the state for this class
     """ Read-only config tree for inspecting a PyQtGraph ViewBox
     """
-    def __init__(self, nodeName, expanded=True):
+    def __init__(self, nodeName, viewBox, expanded=False):
 
         super(ViewBoxDebugCti, self).__init__(nodeName, expanded=expanded)
+
+        self.viewBox = viewBox
 
         self.insertChild(UntypedCti("targetRange", [[0,1], [0,1]],
             doc="Child coord. range visible [[xmin, xmax], [ymin, ymax]]"))
@@ -74,10 +76,10 @@ class ViewBoxDebugCti(GroupCti): # TODO: somehow don't save the state for this c
             doc="Maximum and minimum Y range"))
 
 
-    def viewBoxChanged(self, viewBox):
+    def _refreshNodeFromTarget(self):
         """ Updates the config settings
         """
-        for key, value in viewBox.state.items():
+        for key, value in self.viewBox.state.items():
             if key != "limits":
                 childItem = self.childByNodeName(key)
                 childItem.data = value
@@ -87,14 +89,6 @@ class ViewBoxDebugCti(GroupCti): # TODO: somehow don't save the state for this c
                     limitChildItem = self.limitsItem.childByNodeName(limitKey)
                     limitChildItem.data = limitValue
 
-
-
-class PgAxisCtiMixin():
-    """ Mixin that adds two emtpy methods that are called by PgPlotItem on all its child items.
-
-        The methods are refresh
-    """
-    pass
 
 
 class PgAxisAutoRangeCti(GroupCti):
@@ -115,7 +109,7 @@ class PgAxisAutoRangeCti(GroupCti):
         self.autoRangeItem = self.insertChild(BoolCti("auto-range", True))
 
 
-    def refresh(self):
+    def _refreshNodeFromTarget(self):
         """ Refreshes the config values from the axes' state
         """
         self.rangeMinItem.data, self.rangeMaxItem.data = \
@@ -135,9 +129,6 @@ class PgAxisAutoRangeCti(GroupCti):
         """
         return (self.rangeMinItem.data, self.rangeMaxItem.data)
 
-
-    # This is called from initTarget and drawTarget.
-    # TODO: refactor the inspector to remove initContents
 
     def _setAutoRange(self):
         """ Sets the auto range
@@ -160,14 +151,8 @@ class PgAxisAutoRangeCti(GroupCti):
             self.viewBox.setRange(xRange = xRange, yRange=yRange,
                                   padding=0, update=False, disableAutoRange=True)
 
-    def initTarget(self):
-        """ Applies the configuration to the target axis it monitors.
-        """
-        #er wordt wel een refresh gedaan hierna, waardoor de checkbox weer op de originele staat terecht komt
-        #self._setAutoRange()
 
-
-    def drawTarget(self):
+    def _updateTargetFromNode(self):
         """ Applies the configuration to the target axis it monitors.
         """
         self._setAutoRange()
@@ -199,19 +184,7 @@ class PgAxisLabelCti(ChoiceCti):
         self.axisPosition = axisPosition
 
 
-    def refresh(self):
-        """ Called when the range of the axis is changed. Updates the range in the config tree.
-        """
-        pass
-
-
-    def initTarget(self):
-        """ Applies the configuration to the target axis it monitors.
-        """
-        self.plotItem.setLabel(self.axisPosition, '')
-
-
-    def drawTarget(self):
+    def _updateTargetFromNode(self):
         """ Applies the configuration to the target axis it monitors.
         """
         rtiInfo = self.collector.getRtiInfo()
@@ -239,26 +212,6 @@ class PgAxisCti(GroupCti):
         self.rangeItem = self.insertChild(PgAxisAutoRangeCti(self.viewBox, self.axisNumber))
 
 
-    def refresh(self):
-        """ Called when the range of the axis is changed. Updates the range in the config tree.
-        """
-        for childItem in self.childItems:
-            childItem.refresh()
-
-
-    def initTarget(self):
-        """ Inits the applicable elements in the target this config is linked to.
-        """
-        for childItem in self.childItems:
-            childItem.initTarget()
-
-
-    def drawTarget(self):
-        """ Draws the applicable elements in the target this config is linked to
-        """
-        for childItem in self.childItems:
-            childItem.drawTarget()
-
 
 class PgPlotItemCti(GroupCti):
     """ Config tree item for manipulating a PyQtGraph.PlotItem
@@ -270,7 +223,7 @@ class PgPlotItemCti(GroupCti):
 
         #check_class(plotItem, (PlotItem, SimplePlotItem) # TODO
         assert plotItem, "target plotItem is undefined"
-        self._blockRefresh = False
+
         self.aspectItem = self.insertChild(BoolCti("lock aspect ratio", False))
         self.plotItem = plotItem
         viewBox = plotItem.getViewBox()
@@ -290,13 +243,13 @@ class PgPlotItemCti(GroupCti):
             self.yAxisCti = self.insertChild(yAxisCti)
 
         if DEBUGGING:
-            self.stateItem = self.insertChild(ViewBoxDebugCti('viewbox state', expanded=False))
+            self.stateItem = self.insertChild(ViewBoxDebugCti('viewbox state', viewBox))
         else:
             self.stateItem = None
 
         # Connect signals
         viewBox = self.plotItem.getViewBox()
-        viewBox.sigStateChanged.connect(self.viewBoxChanged)
+        viewBox.sigStateChanged.connect(self.refreshFromTarget)
 
 
     def _closeResources(self):
@@ -304,58 +257,5 @@ class PgPlotItemCti(GroupCti):
             Is called by self.finalize when the cti is deleted.
         """
         viewBox = self.plotItem.getViewBox()
-        viewBox.sigStateChanged.disconnect(self.viewBoxChanged)
-
-
-    def viewBoxChanged(self, viewBox):
-        """ Called when the range of the plot is changed. Refreshes the values in the config tree.
-
-            Is disabled during execution of apply so it doesn't prematurely refresh the
-            config tree item settings.
-        """
-        if self._blockRefresh:
-            return
-
-        self.xAxisCti.refresh()
-        self.yAxisCti.refresh()
-
-        if self.stateItem:
-            self.stateItem.viewBoxChanged(viewBox)
-
-
-    def initTarget(self):
-        """ Initializes/empties the target PlotItem
-        """
-        self._blockRefresh = True # defer calling self.viewBoxChanged
-        try:
-            viewBox = self.plotItem.getViewBox()
-            viewBox.setAspectLocked(self.aspectItem.configValue)
-
-            self.xAxisCti.initTarget()
-            self.yAxisCti.initTarget()
-        finally:
-            self._blockRefresh = False
-
-        # Call viewBoxChanged in case the newly applied configuration resulted in a change of the
-        # viewbox state.
-        self.viewBoxChanged(viewBox)
-
-
-
-    def drawTarget(self):
-        """ Applies the configuration to the target PlotItem it monitors.
-        """
-        self._blockRefresh = True # defer calling self.viewBoxChanged
-        try:
-            viewBox = self.plotItem.getViewBox()
-            viewBox.setAspectLocked(self.aspectItem.configValue)
-
-            self.xAxisCti.drawTarget()
-            self.yAxisCti.drawTarget()
-        finally:
-            self._blockRefresh = False
-
-        # Call viewBoxChanged in case the newly applied configuration resulted in a change of the
-        # viewbox state.
-        self.viewBoxChanged(viewBox)
+        viewBox.sigStateChanged.disconnect(self.refreshFromTarget)
 

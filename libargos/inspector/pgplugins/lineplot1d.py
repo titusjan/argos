@@ -106,16 +106,6 @@ class PgLinePlot1dCti(MainGroupCti):
         symbolItem.insertChild(IntCti('size', 5, minValue=0, maxValue=100, stepSize=1))
 
 
-    def initTarget(self):
-        """ Applies the configuration to the target PgLinePlot1d it monitors.
-        """
-        self.plotItemCti.initTarget()
-
-
-    def drawTarget(self):
-        """ Applies the configuration to the target PgLinePlot1d it monitors.
-        """
-        self.plotItemCti.drawTarget()
 
 
 class PgLinePlot1d(AbstractInspector):
@@ -163,8 +153,6 @@ class PgLinePlot1d(AbstractInspector):
         """
         self.plotItem.clear()
         self.titleLabel.setText('')
-        self.config.initTarget()
-
 
 
     def _drawContents(self):
@@ -214,11 +202,9 @@ class PgLinePlot1d(AbstractInspector):
                                                symbolPen=symbolPen, symbolBrush=symbolBrush,
                                                antialias=antiAlias)
 
-
-
         self.plotDataItem.setData(slicedArray)
 
-        self.config.drawTarget()
+        self.config.updateTarget()
 
 
 

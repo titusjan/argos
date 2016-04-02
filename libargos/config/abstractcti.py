@@ -135,6 +135,7 @@ class AbstractCti(BaseTreeItem):
         self._data = self.defaultData
         self._enabled = enabled
         self._expanded = expanded
+        self._blockRefresh = False
 
 
     def finalize(self):
@@ -302,8 +303,59 @@ class AbstractCti(BaseTreeItem):
         if resetChildren:
             for child in self.childItems:
                 child.resetToDefault(resetChildren=True)
-                
-    
+
+
+    def refreshFromTarget(self):
+        """ Refreshes the configuration frp, the target it monitors (if present).
+            Recursively call _refreshNodeFromTarget for itself and all children. Subclasses should
+            typically override _refreshNodeFromTarget instead of this function.
+            During updateTarget's execution refreshFromTarget is blocked to avoid loops.
+        """
+        if self._blockRefresh:
+            return
+
+        self._refreshNodeFromTarget()
+        for child in self.childItems:
+            child.refreshFromTarget()
+
+
+    def _refreshNodeFromTarget(self):
+        """ Refreshes the configuration from the target it monitors (if present).
+            The default implementation does nothing; subclasses can override it.
+            During updateTarget's execution refreshFromTarget is blocked to avoid loops.
+        """
+        pass
+
+
+    def updateTarget(self):
+        """ Applies the configuration to the target it monitors (if present).
+            Recursively call _updateTargetFromNode for itself and all children. Subclasses should
+            typically override _updateTargetFromNode instead of this function.
+            During updateTarget's execution refreshFromTarget is blocked to avoid loops.
+        """
+        oldBlockRefresh = self._blockRefresh
+        self._blockRefresh = True # defer calling self.viewBoxChanged
+        try:
+            self._updateTargetFromNode()
+            for child in self.childItems:
+                child.updateTarget()
+        finally:
+            self._blockRefresh = oldBlockRefresh
+
+        # Call refreshFromTarget in case the newly applied configuration resulted in a change of the
+        # target's state.
+        self.refreshFromTarget()
+
+
+    def _updateTargetFromNode(self):
+        """ Applies the configuration to the target it monitors (if present).
+            The default implementation does nothing; subclasses can override it.
+            During updateTarget's execution refreshFromTarget is blocked to avoid loops.
+        """
+        pass
+
+
+
     #################
     # serialization #
     #################
