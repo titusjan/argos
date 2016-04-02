@@ -38,7 +38,13 @@ class AbstractInspector(QtGui.QStackedWidget):
     CONTENTS_PAGE_IDX = 1
     
     def __init__(self, collector, parent=None):
-        """ Constructor
+        """ Constructor.
+
+            When subclassing the AbstractInspector try to minimize the work done in the constructor.
+            Place all functionality that may raise an exception in drawContents or clearContents,
+            these functions will show an error page and prevent the application from aborting. If
+            an exception occurs in the constructor it is not caught!
+
             :param collector: the data collector from where this inspector gets its data
             :param parent: parent widget.
         """
@@ -117,37 +123,7 @@ class AbstractInspector(QtGui.QStackedWidget):
         """
         return self.config.findByNodePath(nodePath).configValue
 
-    
-    @QtSlot()
-    def initContents(self): # TODO: rename to clearContents  or resetContents?
-        """ Tries to initialize the widget contents from the configuration.
-            At this point the inspectors widget and config have been created.
-            Shows the error page in case an exception is raised during initialization.
-            Descendants should override _initContents, not initContents.
-        """
-        logger.debug("---- inspector initContents(): {} ----".format(self))
-        try:
-            self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
-            self._initContents()
-        except Exception as ex:
-            logger.error("Error while initializing the inspector: {}".format(ex))
-            #logger.execption(ex)
-            self.setCurrentIndex(self.ERROR_PAGE_IDX)
-            self._showError(msg=str(ex), title=type_name(ex))
-            if DEBUGGING:
-                raise
-                    
-        
-    def _initContents(self):
-        """ Is called by initContents to do the actual initialization of the widget from the
-            config. At this point the inspectors widget and config have been created.
-            Descendants should override _initContents and not worry about exceptions; 
-            the initContents will show the error page if an exception is raised.
-        """
-        #raise NotImplementedError()
-        pass # TODO: abstract?
-    
-    
+
     @QtSlot()
     def drawContents(self):
         """ Tries to draw the widget contents with the updated RTI. 
@@ -159,13 +135,13 @@ class AbstractInspector(QtGui.QStackedWidget):
             self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
             self._drawContents()
         except Exception as ex:
-            logger.error("Error while drawing the inspector: {} ----".format(ex))
-            #logger.execption(ex)
-            self.setCurrentIndex(self.ERROR_PAGE_IDX)
-            self._showError(msg=str(ex), title=type_name(ex))
             if DEBUGGING:
                 raise
-            
+            logger.error("Error while drawing the inspector: {} ----".format(ex))
+            logger.exception(ex)
+            self.setCurrentIndex(self.ERROR_PAGE_IDX)
+            self._showError(msg=str(ex), title=type_name(ex))
+
     
     def _drawContents(self):
         """ Is called by drawContents to do the actual drawing.

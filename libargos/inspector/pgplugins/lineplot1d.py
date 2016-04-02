@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 USE_SIMPLE_PLOT = False
 
 if USE_SIMPLE_PLOT:
+    # An experimental simplification of PlotItem. Not included in the distribution
     logger.warn("Using SimplePlotItem as PlotItem")
     from pyqtgraph.graphicsItems.PlotItem.simpleplotitem import SimplePlotItem
 else:
@@ -157,18 +158,30 @@ class PgLinePlot1d(AbstractInspector):
         return tuple(['X'])
 
 
-    def _initContents(self):
+    def _clearContents(self):
         """ Draws the inspector widget when no input is available.
-            Creates an empty plot.
         """
-        self.titleLabel.setText('')
-
         self.plotItem.clear()
+        self.titleLabel.setText('')
         self.config.initTarget()
 
-        #self.plotWidget.showAxis('right')
-        #self.plotItem.setLogMode(x=self.configValue('axes/x-axis/logarithmic'),
-        #                         y=self.configValue('axes/y-axis/logarithmic'))
+
+
+    def _drawContents(self):
+        """ Draws the RTI
+        """
+        slicedArray = self.collector.getSlicedArray()
+        if slicedArray is None or not array_has_real_numbers(slicedArray):
+            logger.debug("Clearing inspector: no data available or it does not contain real numbers")
+            self._clearContents()
+            return
+
+        # Valid plot data here
+        rtiInfo = self.collector.getRtiInfo()
+
+        self.plotItem.clear() # TODO
+
+        self.titleLabel.setText(self.configValue('title').format(**rtiInfo))
 
         self.plotItem.showGrid(x=self.configValue('grid/x-axis'),
                                y=self.configValue('grid/y-axis'),
@@ -177,7 +190,7 @@ class PgLinePlot1d(AbstractInspector):
 
         antiAlias = self.configValue('anti-alias')
         color = self.configValue('pen/color')
-        
+
         if self.configValue('pen/line'):
             pen = QtGui.QPen()
             pen.setCosmetic(True)
@@ -189,7 +202,7 @@ class PgLinePlot1d(AbstractInspector):
         else:
             pen = None
             shadowPen = None
-        
+
         drawSymbols = self.configValue('pen/symbol')
         symbolShape = self.configValue('pen/symbol/shape') if drawSymbols else None
         symbolSize  = self.configValue('pen/symbol/size') if drawSymbols else 0.0
@@ -201,21 +214,7 @@ class PgLinePlot1d(AbstractInspector):
                                                symbolPen=symbolPen, symbolBrush=symbolBrush,
                                                antialias=antiAlias)
 
-    def _drawContents(self):
-        """ Draws the RTI
-        """
-        slicedArray = self.collector.getSlicedArray()
-        if slicedArray is None or not array_has_real_numbers(slicedArray):
-            self._initContents()
-            if DEBUGGING:
-                return
-            else: # TODO: this is not an error
-                raise ValueError("No data available or it does not contain real numbers")
 
-        # Valid plot data here
-        rtiInfo = self.collector.getRtiInfo()
-
-        self.titleLabel.setText(self.configValue('title').format(**rtiInfo))
 
         self.plotDataItem.setData(slicedArray)
 

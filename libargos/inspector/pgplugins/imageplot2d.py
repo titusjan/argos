@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 USE_SIMPLE_PLOT = False
 
 if USE_SIMPLE_PLOT:
+    # An experimental simplification of PlotItem. Not included in the distribution
     logger.warn("Using SimplePlotItem as PlotItem")
     from pyqtgraph.graphicsItems.PlotItem.simpleplotitem import SimplePlotItem
 else:
@@ -136,27 +137,33 @@ class PgImagePlot2d(AbstractInspector):
         return tuple(['Y', 'X'])
 
                 
-    def _initContents(self):
+    def _clearContents(self):
         """ Draws the inspector widget when no input is available. 
         """
-        self.viewBox.invertY(False) # TODO
-        self.imageItem.clear()
+        #self.imageItem.clear() # Don't use clear as it alters the (auto)range.
+        self.imageItem.setImage(None)
         self.titleLabel.setText('')
-
-        self.config.initTarget()
+        #self.config.initTarget()
 
 
     def _drawContents(self):
         """ Draws the inspector widget when no input is available.
         """
+        logger.debug("_drawContents: {}_drawContents".format(self))
+
         slicedArray = self.collector.getSlicedArray()
-        
         if slicedArray is None or not array_has_real_numbers(slicedArray):
-            self._initContents()
-            if DEBUGGING:
-                return
-            else: # TODO: this is not an error
-                raise ValueError("No data available or it does not contain real numbers")
+            logger.debug("Clearing inspector: no data available or it does not contain real numbers")
+            self._clearContents()
+            return
+
+        logger.debug("x-autorange: {!r}".format(self.configValue('axes/x-axis/range/auto-range')))
+        logger.debug("y-autorange: {!r}".format(self.configValue('axes/y-axis/range/auto-range')))
+
+        #self.imageItem.clear()
+
+        logger.debug("x-autorange: {!r}".format(self.configValue('axes/x-axis/range/auto-range')))
+        logger.debug("y-autorange: {!r}".format(self.configValue('axes/y-axis/range/auto-range')))
 
         # Valid plot data here
 

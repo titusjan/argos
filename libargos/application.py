@@ -370,7 +370,7 @@ class ArgosApplication(object):
             mainWindow.setInspectorById(inspectorId)
             
         self.mainWindows.append(mainWindow)
-        mainWindow.drawWindowContents()
+        mainWindow.drawInspectorContents()
         mainWindow.show()
         
         if platform.system() == 'Darwin':

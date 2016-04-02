@@ -318,11 +318,13 @@ class MainWindow(QtGui.QMainWindow):
         
     def setInspectorFromRegItem(self, inspectorRegItem):
         """ Sets the central inspector widget given a inspectorRegItem.
-            
+
+            Does NOT draw the new inspector, this is the responsibility of the caller.
+            It does however update the inspector node in the config tree.
+
             If inspectorRegItem is None, the inspector will be unset. Also, if the underlying class 
             cannot be imported a warning is logged and the inspector is unset.
               
-            NOTE: does not draw the new inspector, this is the responsibility of the caller.
         """
         check_class(inspectorRegItem, InspectorRegItem, allow_none=True)
         
@@ -367,6 +369,7 @@ class MainWindow(QtGui.QMainWindow):
                 else:
                     key = self.inspectorRegItem.identifier
                     nonDefaults = self._persistentSettings.get(key, {})
+                    logger.debug("nonDefaults: {}".format(nonDefaults))
                     self.inspector.config.setValuesFromDict(nonDefaults)
                     self._configTreeModel.insertItem(self.inspector.config, oldConfigPosition)
                     self.configTreeView.expandBranch()  
@@ -391,7 +394,7 @@ class MainWindow(QtGui.QMainWindow):
             inspectorRegItem = dialog.getCurrentInspectorRegItem()
             if inspectorRegItem is not None: 
                 self.setInspectorFromRegItem(inspectorRegItem)
-                self.drawWindowContents()
+                self.drawInspectorContents()
         
     @QtSlot()
     def openPluginsDialog(self):
@@ -408,8 +411,7 @@ class MainWindow(QtGui.QMainWindow):
         """ Slot that updates the UI whenever the contents of the collector has changed. 
         """
         logger.debug("collectorContentsChanged()")
-        if self.inspector:
-            self.inspector.drawContents()
+        self.drawInspectorContents()
 
         
     @QtSlot(AbstractCti)
@@ -424,17 +426,23 @@ class MainWindow(QtGui.QMainWindow):
             key = self.inspectorRegItem.identifier
             self._persistentSettings[key] = self.inspector.config.getNonDefaultsDict()
         
-        self.drawWindowContents()
+        self.drawInspectorContents()
                         
             
-    def drawWindowContents(self): # TODO: rename to drawInspectorContents?
-        """ Draws all contents of this windows inspector. This includes the inspector.
+    def drawInspectorContents(self):
+        """ Draws all contents of this window's inspector.
         """
         logger.debug("")
-        logger.debug("-------- Drawing window contents: {} --------".format(self.windowTitle()))
+        logger.debug("-------- Drawing inspector of window: {} --------".format(self.windowTitle()))
         if self.inspector:
-            self.inspector.initContents()
+            try:
+                logger.debug("x-autorange: {!r}".format(self.inspector.configValue('axes/x-axis/range/auto-range')))
+                logger.debug("y-autorange: {!r}".format(self.inspector.configValue('axes/y-axis/range/auto-range')))
+            except:
+                pass
             self.inspector.drawContents()
+        else:
+            logger.debug("No inspector selected")
     
 
     # TODO: to repotreemodel? Note that the functionality will be common to selectors.

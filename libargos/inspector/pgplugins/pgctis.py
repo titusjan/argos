@@ -32,7 +32,7 @@ from libargos.utils.cls import check_class
 logger = logging.getLogger(__name__)
 
 
-class ViewBoxDebugCti(GroupCti):
+class ViewBoxDebugCti(GroupCti): # TODO: somehow don't save the state for this class
     """ Read-only config tree for inspecting a PyQtGraph ViewBox
     """
     def __init__(self, nodeName, expanded=True):
@@ -144,6 +144,7 @@ class PgAxisAutoRangeCti(GroupCti):
         """
         autoRange = self.autoRangeItem.configValue
         logger.debug("enableAutoRange: axis {}, {}".format(self.axisNumber, autoRange))
+        #assert False, "stopped"
 
         if autoRange:
             self.viewBox.enableAutoRange(self.axisNumber, autoRange)
@@ -163,7 +164,7 @@ class PgAxisAutoRangeCti(GroupCti):
         """ Applies the configuration to the target axis it monitors.
         """
         #er wordt wel een refresh gedaan hierna, waardoor de checkbox weer op de originele staat terecht komt
-        self._setAutoRange()
+        #self._setAutoRange()
 
 
     def drawTarget(self):
@@ -207,7 +208,7 @@ class PgAxisLabelCti(ChoiceCti):
     def initTarget(self):
         """ Applies the configuration to the target axis it monitors.
         """
-        self.plotItem.setLabel('left', '')
+        self.plotItem.setLabel(self.axisPosition, '')
 
 
     def drawTarget(self):

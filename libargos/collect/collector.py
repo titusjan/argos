@@ -154,7 +154,6 @@ class Collector(QtGui.QWidget):
         """ Sets the column count given the current axes and selected RTI.
             Returns the newly set column count.
         """
-        logger.debug("")
         numRtiDims = self.rti.nDims if self.rti and self.rti.isSliceable else 0
 
         colCount = self.COL_FIRST_COMBO + max(numRtiDims, len(self.axisNames))
