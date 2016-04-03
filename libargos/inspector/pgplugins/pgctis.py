@@ -24,7 +24,7 @@ import logging
 from libargos.config.groupcti import GroupCti
 from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
-from libargos.config.floatcti import FloatCti
+from libargos.config.floatcti import SnFloatCti
 from libargos.config.untypedcti import UntypedCti
 from libargos.info import DEBUGGING
 from libargos.utils.cls import check_class
@@ -104,8 +104,8 @@ class PgAxisAutoRangeCti(GroupCti):
         self.viewBox = viewBox
         self.axisNumber = axisNumber
 
-        self.rangeMinItem = self.insertChild(FloatCti('min', 0.0))
-        self.rangeMaxItem = self.insertChild(FloatCti('max', 0.0))
+        self.rangeMinItem = self.insertChild(SnFloatCti('min', 0.0))
+        self.rangeMaxItem = self.insertChild(SnFloatCti('max', 0.0))
         self.autoRangeItem = self.insertChild(BoolCti("auto-range", True))
 
 
@@ -116,7 +116,7 @@ class PgAxisAutoRangeCti(GroupCti):
             self.viewBox.state['viewRange'][self.axisNumber]
         autoRangeEnabled = bool(self.viewBox.autoRangeEnabled()[self.axisNumber])
 
-        logger.debug("PgAxisAutoRangeCti.refresh: axis {}, {}".format(self.axisNumber, autoRangeEnabled))
+        #logger.debug("PgAxisAutoRangeCti.refresh: axis {}, {}".format(self.axisNumber, autoRangeEnabled))
         self.rangeMinItem.enabled = not autoRangeEnabled
         self.rangeMaxItem.enabled = not autoRangeEnabled
         self.autoRangeItem.data = autoRangeEnabled
