@@ -61,7 +61,7 @@ class EmptyInspector(AbstractInspector):
             from libargos.config.untypedcti import UntypedCti
             from libargos.config.stringcti import StringCti
             from libargos.config.intcti import IntCti
-            from libargos.config.floatcti import FloatCti
+            from libargos.config.floatcti import FloatCti, SnFloatCti
             from libargos.config.boolcti import BoolCti, BoolGroupCti
             from libargos.config.choicecti import ChoiceCti
             from libargos.config.qtctis import PenCti
@@ -80,6 +80,8 @@ class EmptyInspector(AbstractInspector):
             rootItem.insertChild(StringCti('letter', 'aa', maxLength = 1))
             grpItem.insertChild(FloatCti('width', 2, minValue =5, stepSize=0.45, 
                                          decimals=3, specialValueText="so very special"))
+            grpItem.insertChild(SnFloatCti('scientific'))
+
             gridItem = rootItem.insertChild(BoolGroupCti('grid', True))
             gridItem.insertChild(BoolCti('X-Axis', True))
             gridItem.insertChild(BoolCti('Y-Axis', False))

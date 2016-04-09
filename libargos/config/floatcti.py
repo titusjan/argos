@@ -194,7 +194,7 @@ class SnFloatCti(AbstractCti):
             return self.specialValueText
         else:
             # See
-            return "{:.{precission}g}".format(data, precission=self.precision)
+            return "{:.{precission}e}".format(data, precission=self.precision)
 
 
     @property

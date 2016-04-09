@@ -1,9 +1,13 @@
 """ Contains ScientificDoubleSpinBox, a QDoubleSpinBox that can handle scientific notation.
 
-    Greatefully copied and adapted from:
+    Gratefully copied and adapted from:
         https://www.jdreaver.com/posts/2014-07-28-scientific-notation-spin-box-pyside.html
 
+    At the moment only scientific notation (%e) is supported, no regular notation (%f). This
+    is for simplicity.
+
 """
+from __future__ import division
 
 import re, logging
 import numpy as np
@@ -16,6 +20,8 @@ logger = logging.getLogger(__name__)
 # part.
 REGEXP_FLOAT = re.compile(r'(([+-]?\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)')
 
+SMALL_STEPS = 10 # 10 small steps (up/down arrow) in large step (page up/down)
+STEP_FACTOR = np.power(10.0, 1.0 / SMALL_STEPS)
 
 def format_float(value):
     """Modified form of the 'g' format specifier.
@@ -44,16 +50,17 @@ class FloatValidator(QtGui.QValidator):
         return match.groups()[0] if match else ""
 
 
+
 class ScientificDoubleSpinBox(QtGui.QDoubleSpinBox):
     """ A QDoubleSpinBox that can handle scientific notation.
     """
     def __init__(self, precision=6, *args, **kwargs):
         self.precision = precision
         super(ScientificDoubleSpinBox, self).__init__(*args, **kwargs)
-        self.setMinimum(-np.inf)
-        self.setMaximum(np.inf)
+        self.setMinimum(np.finfo('d').min)
+        self.setMaximum(np.finfo('d').max)
         self.validator = FloatValidator()
-        self.setDecimals(1000)
+        self.setDecimals(323) # because of the limitations of the double type (see Qt docs).
 
     def validate(self, text, position):
         return self.validator.validate(text, position)
@@ -65,13 +72,67 @@ class ScientificDoubleSpinBox(QtGui.QDoubleSpinBox):
         return float(text)
 
     def textFromValue(self, value):
-        return format_float(value)
+        return "{:.{precission}e}".format(value, precission=self.precision)
 
     def stepBy(self, steps):
-        text = self.cleanText()
+        """ Function that is called whenever the user triggers a step. The steps parameter
+            indicates how many steps were taken, e.g. Pressing Qt::Key_Down will trigger a call to
+            stepBy(-1), whereas pressing Qt::Key_Prior will trigger a call to stepBy(10).
+        """
+        oldValue = self.value()
+
+        if oldValue == 0:
+            return steps
+
+        if steps == 1:
+            newValue = self.value() * STEP_FACTOR
+        elif steps == -1:
+            newValue = self.value() / STEP_FACTOR
+        elif steps == 10:
+            newValue = self.value() * 10
+        elif steps == -10:
+            newValue = self.value() / 10
+        else:
+            raise ValueError("Invalid step size: {!r}, value={}".format(steps, value))
+
+        newValue = float(newValue)
+
+        if newValue < self.minimum():
+            newValue = self.minimum()
+
+        if newValue > self.maximum():
+            newValue = self.maximum()
+
+        logger.debug("stepBy {}: {} -> {}".format(steps, oldValue, newValue))
+        try:
+            self.setValue(newValue)
+        except:
+            logger.warn("Unable to set spinbox to: {!r}".format(newValue))
+            self.setValue(oldValue)
+
+
+    def __old__stepBy(self, steps):
+        #text = self.cleanText()
+        text = "{:.17}".format(self.value())
         groups = REGEXP_FLOAT.search(text).groups()
-        decimal = float(groups[1])
-        decimal += steps
-        new_string = "{:g}".format(decimal) + (groups[3] if groups[3] else "")
+        mantissa = float(groups[1])
+        mantissa += steps
+        new_string = "{:.{precission}f}".format(mantissa, precission=self.precision) + (groups[3] if groups[3] else "")
         self.lineEdit().setText(new_string)
 
+
+if __name__ == "__main__":
+    import sys
+
+    def main():
+        """ Small stand-alone test
+        """
+        app = QtGui.QApplication(sys.argv[1:])
+        win = ScientificDoubleSpinBox()
+        win.raise_()
+        win.show()
+        sys.exit(app.exec_())
+
+
+    #######
+    main()
