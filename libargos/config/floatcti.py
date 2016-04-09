@@ -234,9 +234,7 @@ class SnFloatCtiEditor(AbstractCtiEditor):
         else:
             spinBox.setMaximum(cti.maxValue)
 
-        #spinBox.setSingleStep(cti.stepSize)
-        #spinBox.setDecimals(cti.decimals)
-        #spinBox.setKeyboardTracking(False)
+        spinBox.setKeyboardTracking(False)
 
         if cti.specialValueText is not None:
             spinBox.setSpecialValueText(cti.specialValueText)
@@ -264,6 +262,7 @@ class SnFloatCtiEditor(AbstractCtiEditor):
         """ Provides the main editor widget with a data to manipulate.
         """
         self.spinBox.setValue(data)
+        self.spinBox.selectAll()
 
 
     def getData(self):

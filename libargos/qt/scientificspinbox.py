@@ -20,8 +20,6 @@ logger = logging.getLogger(__name__)
 # part.
 REGEXP_FLOAT = re.compile(r'(([+-]?\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)')
 
-SMALL_STEPS = 10 # 10 small steps (up/down arrow) in large step (page up/down)
-STEP_FACTOR = np.power(10.0, 1.0 / SMALL_STEPS)
 
 def format_float(value):
     """Modified form of the 'g' format specifier.
@@ -54,7 +52,23 @@ class FloatValidator(QtGui.QValidator):
 class ScientificDoubleSpinBox(QtGui.QDoubleSpinBox):
     """ A QDoubleSpinBox that can handle scientific notation.
     """
-    def __init__(self, precision=6, *args, **kwargs):
+    def __init__(self,
+                 precision=6,
+                 largeStepFactor=10,
+                 smallStepsPerLargeStep=10,
+                 *args, **kwargs):
+        """ Constructor.
+
+            In contrast to the QDoubleSpinbox the (page)up/down let the value grow exponentially.
+            That is, the spinbox value is multiplied by a small step factor when the up-arrow is
+            pressed, and by a larger factor if page-up is pressed. A large step multiplies the value
+            spinbox value with largeStepFactor (default 10). The smallStepsPerLargeStep does then
+            specify how many up-arrow key presses are needed to increase to largeStepFactor.
+
+            :param precision: The precision used in the scientific notation.
+            :param largeStepFactor: default 10
+            :param smallStepsPerLargeStep: default 10
+        """
         self.precision = precision
         super(ScientificDoubleSpinBox, self).__init__(*args, **kwargs)
         self.setMinimum(np.finfo('d').min)
@@ -62,17 +76,74 @@ class ScientificDoubleSpinBox(QtGui.QDoubleSpinBox):
         self.validator = FloatValidator()
         self.setDecimals(323) # because of the limitations of the double type (see Qt docs).
 
+        self._smallStepFactor = None # determined by _smallStepsPerLargeStep and _largeStepFactor
+        self._smallStepsPerLargeStep = None
+        self._largeStepFactor = largeStepFactor
+        self.smallStepsPerLargeStep = smallStepsPerLargeStep
+
+
     def validate(self, text, position):
-        return self.validator.validate(text, position)
+        result = self.validator.validate(text, position)
+        #logger.debug("validate result: {}".format(result))
+        return result
+
 
     def fixup(self, text):
-        return self.validator.fixup(text)
+        result = self.validator.fixup(text)
+        #logger.debug("fixup: {}".format(result))
+        return result
+
 
     def valueFromText(self, text):
         return float(text)
 
+
     def textFromValue(self, value):
         return "{:.{precission}e}".format(value, precission=self.precision)
+
+
+    @property
+    def largeStepFactor(self):
+        """ The spinbox will be multiplied with this factor whenever page up is pressed.
+        """
+        return self._largeStepFactor
+
+
+    @largeStepFactor.setter
+    def largeStepFactor(self, largeStepFactor):
+        """ The spinbox will be multiplied with this factor whenever page up is pressed.
+        """
+        self._largeStepFactor = largeStepFactor
+
+
+    @property
+    def smallStepFactor(self):
+        """ The spinbox will be multiplied with this factor whenever page up is pressed.
+            Read-only property. Setting is done via largeStepFactor and smallStepsPerLargeStep.
+        """
+        return self._smallStepFactor
+
+
+    @property
+    def smallStepsPerLargeStep(self):
+        """ The number of small steps that go in a large one.
+
+            The spinbox value is increased with a small step when the up-arrow is pressed, and by
+            a large step if page-up is pressed. A large step increases the value increases the
+            spinbox value with largeStepFactor (default 10). The smallStepsPerLargeStep does then
+            specify how many up-arrow key presses are needed to increase to largeStepFactor.
+        """
+        return self._smallStepsPerLargeStep
+
+
+    @smallStepsPerLargeStep.setter
+    def smallStepsPerLargeStep(self, smallStepsPerLargeStep):
+        """ Sets the number of small steps that go in a large one.
+
+        """
+        self._smallStepsPerLargeStep = smallStepsPerLargeStep
+        self._smallStepFactor = np.power(self.largeStepFactor, 1.0 / smallStepsPerLargeStep)
+
 
     def stepBy(self, steps):
         """ Function that is called whenever the user triggers a step. The steps parameter
@@ -82,18 +153,17 @@ class ScientificDoubleSpinBox(QtGui.QDoubleSpinBox):
         oldValue = self.value()
 
         if oldValue == 0:
-            return steps
-
-        if steps == 1:
-            newValue = self.value() * STEP_FACTOR
+            newValue = steps
+        elif steps == 1:
+            newValue = self.value() * self.smallStepFactor
         elif steps == -1:
-            newValue = self.value() / STEP_FACTOR
+            newValue = self.value() / self.smallStepFactor
         elif steps == 10:
-            newValue = self.value() * 10
+            newValue = self.value() * self.largeStepFactor
         elif steps == -10:
-            newValue = self.value() / 10
+            newValue = self.value() / self.largeStepFactor
         else:
-            raise ValueError("Invalid step size: {!r}, value={}".format(steps, value))
+            raise ValueError("Invalid step size: {!r}, value={}".format(steps, oldValue))
 
         newValue = float(newValue)
 
@@ -103,34 +173,32 @@ class ScientificDoubleSpinBox(QtGui.QDoubleSpinBox):
         if newValue > self.maximum():
             newValue = self.maximum()
 
-        logger.debug("stepBy {}: {} -> {}".format(steps, oldValue, newValue))
+        #logger.debug("stepBy {}: {} -> {}".format(steps, oldValue, newValue))
         try:
             self.setValue(newValue)
-        except:
+        except Exception:
+            # TODO: does this ever happen? Better validation (e.g. catch underflows)
             logger.warn("Unable to set spinbox to: {!r}".format(newValue))
             self.setValue(oldValue)
 
-
-    def __old__stepBy(self, steps):
-        #text = self.cleanText()
-        text = "{:.17}".format(self.value())
-        groups = REGEXP_FLOAT.search(text).groups()
-        mantissa = float(groups[1])
-        mantissa += steps
-        new_string = "{:.{precission}f}".format(mantissa, precission=self.precision) + (groups[3] if groups[3] else "")
-        self.lineEdit().setText(new_string)
 
 
 if __name__ == "__main__":
     import sys
 
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(level='DEBUG', stream=sys.stderr,
+        format='%(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s')
+
     def main():
         """ Small stand-alone test
         """
         app = QtGui.QApplication(sys.argv[1:])
-        win = ScientificDoubleSpinBox()
-        win.raise_()
-        win.show()
+        spinBox = ScientificDoubleSpinBox(precision = 9, largeStepFactor=2, smallStepsPerLargeStep=3)
+        spinBox.selectAll()
+        spinBox.setSingleStep(2)
+        spinBox.raise_()
+        spinBox.show()
         sys.exit(app.exec_())
 
 
