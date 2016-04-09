@@ -66,7 +66,7 @@ class FloatCti(AbstractCti):
         if self.specialValueText is not None and data == self.minValue:
             return self.specialValueText
         else:
-            return "{:.{precission}f}".format(data, precission=self.decimals)
+            return "{:.{precision}f}".format(data, precision=self.decimals)
         
         
     @property
@@ -149,7 +149,7 @@ class SnFloatCti(AbstractCti):
     """ Config Tree Item to store a floating point number. It can be edited using a QDoubleSpinBox.
     """
     def __init__(self, nodeName, defaultData=0,
-                 minValue = None, maxValue = None, decimals = 2,
+                 minValue = None, maxValue = None, precision = 2,
                  specialValueText=None):
         """ Constructor.
 
@@ -164,7 +164,7 @@ class SnFloatCti(AbstractCti):
         """
         super(SnFloatCti, self).__init__(nodeName, defaultData)
 
-        self.decimals = decimals
+        self._precision = precision
         self.minValue = minValue
         self.maxValue = maxValue
 
@@ -178,7 +178,17 @@ class SnFloatCti(AbstractCti):
             this property returns self.decimals - 1.
             See https://docs.python.org/2/library/string.html#format-specification-mini-language
         """
-        return self.decimals + 1
+        return self._precision
+
+
+    @precision.setter
+    def precision(self, precision):
+        """ Returns precision used in the string formatting. I.e. {:{width}.{precision}g)}
+            When using the :g format, the following holds, decimals = precision - 1. Therefore
+            this property returns self.decimals - 1.
+            See https://docs.python.org/2/library/string.html#format-specification-mini-language
+        """
+        self._precision = int(precision)
 
 
     def _enforceDataType(self, data):
@@ -193,8 +203,8 @@ class SnFloatCti(AbstractCti):
         if self.specialValueText is not None and data == self.minValue:
             return self.specialValueText
         else:
-            # See
-            return "{:.{precission}e}".format(data, precission=self.precision)
+            logger.debug("_dataToString: {}".format(self.precision))
+            return "{:.{precision}g}".format(data, precision=self.precision)
 
 
     @property

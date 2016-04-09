@@ -3,9 +3,6 @@
     Gratefully copied and adapted from:
         https://www.jdreaver.com/posts/2014-07-28-scientific-notation-spin-box-pyside.html
 
-    At the moment only scientific notation (%e) is supported, no regular notation (%f). This
-    is for simplicity.
-
 """
 from __future__ import division
 
@@ -21,7 +18,7 @@ logger = logging.getLogger(__name__)
 REGEXP_FLOAT = re.compile(r'(([+-]?\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)')
 
 
-def format_float(value):
+def format_float(value): # not used
     """Modified form of the 'g' format specifier.
     """
     string = "{:g}".format(value).replace("e+", "e")
@@ -99,7 +96,7 @@ class ScientificDoubleSpinBox(QtGui.QDoubleSpinBox):
 
 
     def textFromValue(self, value):
-        return "{:.{precission}e}".format(value, precission=self.precision)
+        return "{:.{precission}g}".format(value, precission=self.precision)
 
 
     @property

@@ -20,6 +20,7 @@
 from __future__ import division, print_function
 
 import logging
+import numpy as np
 
 from libargos.config.groupcti import GroupCti
 from libargos.config.boolcti import BoolCti
@@ -104,14 +105,32 @@ class PgAxisAutoRangeCti(GroupCti):
         self.viewBox = viewBox
         self.axisNumber = axisNumber
 
-        self.rangeMinItem = self.insertChild(SnFloatCti('min', 0.0))
-        self.rangeMaxItem = self.insertChild(SnFloatCti('max', 0.0))
+        self.rangeMinItem = self.insertChild(SnFloatCti('min', 0.0)) # TODO: dynamic precision.
+        self.rangeMaxItem = self.insertChild(SnFloatCti('max', 1.0))
         self.autoRangeItem = self.insertChild(BoolCti("auto-range", True))
 
 
     def _refreshNodeFromTarget(self):
         """ Refreshes the config values from the axes' state
         """
+        # Set the precision from by looking how many decimals are neede to show the difference
+        # between the minimum and maximum, given the maximum. E.g. if min = 0.04 and max = 0.07,
+        # we would only need zero decimals behind the point as we can write the range as
+        # [4e-2, 7e-2]. However if min = 1.04 and max = 1.07, we need 2 decimals behind the point.
+        # So while the range is the same size, we need more decimals because we are not zoomed in
+        # around zero.
+        rangeMin, rangeMax = self.viewBox.state['viewRange'][self.axisNumber]
+        maxOrder = int(np.log10(np.abs(max(rangeMax, rangeMin))))
+        diffOrder = int(np.log10(np.abs(rangeMax - rangeMin)))
+
+        extraDigits = 2 # add some extra digits to make each pan/zoom action show a difference.
+        precision = min(25, max(extraDigits + 1, abs(maxOrder - diffOrder) + extraDigits)) # clip
+        #logger.debug("maxOrder: {}, diffOrder: {}, precision: {}"
+        #             .format(maxOrder, diffOrder, precision))
+
+        self.rangeMinItem.precision = precision
+        self.rangeMaxItem.precision = precision
+
         self.rangeMinItem.data, self.rangeMaxItem.data = \
             self.viewBox.state['viewRange'][self.axisNumber]
         autoRangeEnabled = bool(self.viewBox.autoRangeEnabled()[self.axisNumber])
