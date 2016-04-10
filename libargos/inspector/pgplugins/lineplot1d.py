@@ -43,7 +43,7 @@ from libargos.config.qtctis import PenCti, ColorCti, createPenStyleCti, createPe
 from libargos.config.floatcti import FloatCti
 from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector
-from libargos.inspector.pgplugins.pgctis import PgPlotItemCti, PgAxisLabelCti, PgAxisAutoRangeCti
+from libargos.inspector.pgplugins.pgctis import PgPlotItemCti, PgAxisLabelCti
 from libargos.utils.cls import array_has_real_numbers, check_class
 
 

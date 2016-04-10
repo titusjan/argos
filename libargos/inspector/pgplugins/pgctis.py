@@ -91,92 +91,91 @@ class ViewBoxDebugCti(GroupCti): # TODO: somehow don't save the state for this c
                     limitChildItem.data = limitValue
 
 
-
-class PgAxisAutoRangeCti(GroupCti):
-    """ Configuration tree item is linked to the axis range.
-        Can toggle the axis' auto-range property on/off by means of checkbox
-    """
-    def __init__(self, viewBox, axisNumber, nodeName='range'):
-        """ Constructor.
-            The monitored axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
-        """
-        super(PgAxisAutoRangeCti, self).__init__(nodeName)
-        assert axisNumber in (0, 1), "axisNumber must be 0 or 1"
-        self.viewBox = viewBox
-        self.axisNumber = axisNumber
-
-        self.rangeMinItem = self.insertChild(SnFloatCti('min', 0.0)) # TODO: dynamic precision.
-        self.rangeMaxItem = self.insertChild(SnFloatCti('max', 1.0))
-        self.autoRangeItem = self.insertChild(BoolCti("auto-range", True))
-
-
-    def _refreshNodeFromTarget(self):
-        """ Refreshes the config values from the axes' state
-        """
-        # Set the precision from by looking how many decimals are neede to show the difference
-        # between the minimum and maximum, given the maximum. E.g. if min = 0.04 and max = 0.07,
-        # we would only need zero decimals behind the point as we can write the range as
-        # [4e-2, 7e-2]. However if min = 1.04 and max = 1.07, we need 2 decimals behind the point.
-        # So while the range is the same size, we need more decimals because we are not zoomed in
-        # around zero.
-        rangeMin, rangeMax = self.viewBox.state['viewRange'][self.axisNumber]
-        maxOrder = int(np.log10(np.abs(max(rangeMax, rangeMin))))
-        diffOrder = int(np.log10(np.abs(rangeMax - rangeMin)))
-
-        extraDigits = 2 # add some extra digits to make each pan/zoom action show a difference.
-        precision = min(25, max(extraDigits + 1, abs(maxOrder - diffOrder) + extraDigits)) # clip
-        #logger.debug("maxOrder: {}, diffOrder: {}, precision: {}"
-        #             .format(maxOrder, diffOrder, precision))
-
-        self.rangeMinItem.precision = precision
-        self.rangeMaxItem.precision = precision
-
-        self.rangeMinItem.data, self.rangeMaxItem.data = \
-            self.viewBox.state['viewRange'][self.axisNumber]
-        autoRangeEnabled = bool(self.viewBox.autoRangeEnabled()[self.axisNumber])
-
-        #logger.debug("PgAxisAutoRangeCti.refresh: axis {}, {}".format(self.axisNumber, autoRangeEnabled))
-        self.rangeMinItem.enabled = not autoRangeEnabled
-        self.rangeMaxItem.enabled = not autoRangeEnabled
-        self.autoRangeItem.data = autoRangeEnabled
-
-        self.model.emitDataChanged(self)
-
-
-    def getRange(self):
-        """Returns a tuple with the min and max range
-        """
-        return (self.rangeMinItem.data, self.rangeMaxItem.data)
-
-
-    def _setAutoRange(self):
-        """ Sets the auto range
-        """
-        autoRange = self.autoRangeItem.configValue
-        logger.debug("enableAutoRange: axis {}, {}".format(self.axisNumber, autoRange))
-        #assert False, "stopped"
-
-        if autoRange:
-            self.viewBox.enableAutoRange(self.axisNumber, autoRange)
-        else:
-            if self.axisNumber == self.viewBox.XAxis:
-                xRange, yRange = self.getRange(), None
-            else:
-                xRange, yRange = None, self.getRange()
-
-            logger.debug("setRange: xRange={}, yRange={}".format(xRange, yRange))
-
-            # viewBox.setRange doesn't accept an axis number :-(
-            self.viewBox.setRange(xRange = xRange, yRange=yRange,
-                                  padding=0, update=False, disableAutoRange=True)
-
-
-    def _updateTargetFromNode(self):
-        """ Applies the configuration to the target axis it monitors.
-        """
-        self._setAutoRange()
-
-
+#
+# class PgAxisRangeCti(GroupCti):
+#     """ Configuration tree item is linked to the axis range.
+#         Can toggle the axis' auto-range property on/off by means of checkbox
+#     """
+#     def __init__(self, viewBox, axisNumber, nodeName='range'):
+#         """ Constructor.
+#             The monitored axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
+#         """
+#         super(PgAxisRangeCti, self).__init__(nodeName)
+#         assert axisNumber in (0, 1), "axisNumber must be 0 or 1"
+#         self.viewBox = viewBox
+#         self.axisNumber = axisNumber
+#
+#         self.rangeMinItem = self.insertChild(SnFloatCti('min', 0.0))
+#         self.rangeMaxItem = self.insertChild(SnFloatCti('max', 1.0))
+#         self.autoRangeItem = self.insertChild(BoolCti("auto-range", True))
+#
+#
+#     def _refreshNodeFromTarget(self):
+#         """ Refreshes the config values from the axes' state
+#         """
+#         # Set the precision from by looking how many decimals are neede to show the difference
+#         # between the minimum and maximum, given the maximum. E.g. if min = 0.04 and max = 0.07,
+#         # we would only need zero decimals behind the point as we can write the range as
+#         # [4e-2, 7e-2]. However if min = 1.04 and max = 1.07, we need 2 decimals behind the point.
+#         # So while the range is the same size, we need more decimals because we are not zoomed in
+#         # around zero.
+#         rangeMin, rangeMax = self.viewBox.state['viewRange'][self.axisNumber]
+#         maxOrder = int(np.log10(np.abs(max(rangeMax, rangeMin))))
+#         diffOrder = int(np.log10(np.abs(rangeMax - rangeMin)))
+#
+#         extraDigits = 2 # add some extra digits to make each pan/zoom action show a difference.
+#         precision = min(25, max(extraDigits + 1, abs(maxOrder - diffOrder) + extraDigits)) # clip
+#         #logger.debug("maxOrder: {}, diffOrder: {}, precision: {}"
+#         #             .format(maxOrder, diffOrder, precision))
+#
+#         self.rangeMinItem.precision = precision
+#         self.rangeMaxItem.precision = precision
+#
+#         self.rangeMinItem.data, self.rangeMaxItem.data = rangeMin, rangeMax
+#         autoRangeEnabled = bool(self.viewBox.autoRangeEnabled()[self.axisNumber])
+#
+#         #logger.debug("PgAxisRangeCti.refresh: axis {}, {}".format(self.axisNumber, autoRangeEnabled))
+#         self.rangeMinItem.enabled = not autoRangeEnabled
+#         self.rangeMaxItem.enabled = not autoRangeEnabled
+#         #self.autoRangeItem.data = autoRangeEnabled
+#
+#         self.model.emitDataChanged(self)
+#
+#
+#     def getRange(self):
+#         """Returns a tuple with the min and max range
+#         """
+#         return (self.rangeMinItem.data, self.rangeMaxItem.data)
+#
+#
+#     def _setAutoRange(self):
+#         """ Sets the auto range
+#         """
+#         autoRange = self.autoRangeItem.configValue
+#         logger.debug("enableAutoRange: axis {}, {}".format(self.axisNumber, autoRange))
+#         #assert False, "stopped"
+#
+#         if autoRange:
+#             self.viewBox.enableAutoRange(self.axisNumber, autoRange)
+#         else:
+#             if self.axisNumber == self.viewBox.XAxis:
+#                 xRange, yRange = self.getRange(), None
+#             else:
+#                 xRange, yRange = None, self.getRange()
+#
+#             logger.debug("setRange: xRange={}, yRange={}".format(xRange, yRange))
+#
+#             # viewBox.setRange doesn't accept an axis number :-(
+#             self.viewBox.setRange(xRange = xRange, yRange=yRange,
+#                                   padding=0, update=False, disableAutoRange=True)
+#
+#
+#     def _updateTargetFromNode(self):
+#         """ Applies the configuration to the target axis it monitors.
+#         """
+#         self._setAutoRange()
+#
+#
 
 
 class PgAxisLabelCti(ChoiceCti):
@@ -211,24 +210,168 @@ class PgAxisLabelCti(ChoiceCti):
 
 
 
+class PgAxisRangeCti(GroupCti):
+    """ Configuration tree item is linked to the axis range.
+        Can toggle the axis' auto-range property on/off by means of checkbox
+    """
+    def __init__(self, plotItem, axisNumber, nodeName='range'):
+        """ Constructor.
+            The monitored axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
+        """
+        super(PgAxisRangeCti, self).__init__(nodeName)
+        assert axisNumber in (0, 1), "axisNumber must be 0 or 1"
+        self.plotItem = plotItem
+        self.viewBox = plotItem.getViewBox()
+        self.axisNumber = axisNumber
+
+        self.rangeMinItem = self.insertChild(SnFloatCti('min', 0.0))
+        self.rangeMaxItem = self.insertChild(SnFloatCti('max', 1.0))
+        self.autoRangeItem = self.insertChild(BoolCti("auto-range", True))
+
+        #logger.debug("Disconnecting: autoBtn.clicked(self.autoBtnClicked)")
+        #self.plotItem.autoBtn.clicked.disconnect(self.plotItem.autoBtnClicked)
+
+        # Connect signals
+        self.plotItem.autoBtn.clicked.connect(self._turnAutoRangeOn)
+        self.viewBox.sigRangeChangedManually.connect(self._setAutoRangeOff)
+
+
+    def _closeResources(self):
+        """ Disconnects signals.
+            Is called by self.finalize when the cti is deleted.
+        """
+        self.plotItem.autoBtn.clicked.disconnect(self._turnAutoRangeOn)
+        self.viewBox.sigRangeChangedManually.disconnect(self._setAutoRangeOff)
+
+
+    def _refreshNodeFromTarget(self, *args, **kwargs):
+        """ Refreshes the configuration from the target it monitors (if present).
+            The default implementation does nothing; subclasses can override it.
+            During updateTarget's execution refreshFromTarget is blocked to avoid loops.
+
+            The *args and **kwargs arguments are ignored but make it possible to use this as a slot
+            for signals with arguments.
+        """
+        logger.debug("  {}._refreshNodeFromTarget: {} {}".format(self.nodePath, args, kwargs))
+        self._refreshAutoRange()
+        self._refreshMinMax(self.viewBox, self.viewBox.state['viewRange'])
+
+
+    def _refreshMinMax(self, viewBox, ranges):
+        """ Refreshes the min max config values from the axes' state.
+
+            ranges = [[xmin, xmax], [ymin, ymax]]
+        """
+        # Set the precision from by looking how many decimals are neede to show the difference
+        # between the minimum and maximum, given the maximum. E.g. if min = 0.04 and max = 0.07,
+        # we would only need zero decimals behind the point as we can write the range as
+        # [4e-2, 7e-2]. However if min = 1.04 and max = 1.07, we need 2 decimals behind the point.
+        # So while the range is the same size, we need more decimals because we are not zoomed in
+        # around zero.
+        assert viewBox == self.viewBox, \
+            "sanity check failed: {} != {}".format(viewBox, self.viewBox)
+
+        rangeMin, rangeMax = ranges[self.axisNumber]
+        logger.debug("    _refreshMinMax: {}, {}".format(rangeMin, rangeMax))
+
+        maxOrder = int(np.log10(np.abs(max(rangeMax, rangeMin))))
+        diffOrder = int(np.log10(np.abs(rangeMax - rangeMin)))
+
+        extraDigits = 2 # add some extra digits to make each pan/zoom action show a difference.
+        precision = min(25, max(extraDigits + 1, abs(maxOrder - diffOrder) + extraDigits)) # clip
+        #logger.debug("maxOrder: {}, diffOrder: {}, precision: {}"
+        #             .format(maxOrder, diffOrder, precision))
+
+        self.rangeMinItem.precision = precision
+        self.rangeMaxItem.precision = precision
+        self.rangeMinItem.data, self.rangeMaxItem.data = rangeMin, rangeMax
+
+        # Update values in the tree
+        self.model.emitDataChanged(self.rangeMinItem)
+        self.model.emitDataChanged(self.rangeMaxItem)
+
+
+    def _refreshAutoRange(self):
+        """ The min and max config items will be disabled if auto range is on.
+        """
+        enabled = self.autoRangeItem.configValue
+        logger.debug("    _refreshAutoRange: enabled={}".format(enabled))
+        self.rangeMinItem.enabled = not enabled
+        self.rangeMaxItem.enabled = not enabled
+        self.model.emitDataChanged(self)
+
+
+    def _turnAutoRangeOn(self):
+        """ Turns on the auto range checkbox.
+        """
+        # We don't need to update the target. It is assumed that the the viewbox auto button is
+        # still connected to viewBox.autoBtnClicked, which updates the range. # TODO: this is not yet True
+        self.autoRangeItem.data = True
+        self._refreshNodeFromTarget()
+
+
+    def _setAutoRangeOff(self):
+        """ Turns off the auto range checkbox.
+        """
+        self.autoRangeItem.data = False
+        self._refreshNodeFromTarget()
+
+
+    def getRange(self):
+        """Returns a tuple with the min and max range
+        """
+        return (self.rangeMinItem.data, self.rangeMaxItem.data)
+
+
+    def _updateTargetFromNode(self):
+        """ Applies the configuration to the target axis it monitors.
+        """
+        autoRange = self.autoRangeItem.configValue
+        logger.debug("enableAutoRange: axis {}, {}".format(self.axisNumber, autoRange))
+
+        if autoRange:
+            padding = None # PyQtGraph default: between 0.02 and 0.1 dep. on the size of the ViewBox
+            rect = self.viewBox.childrenBoundingRect() # taken from viewBox.autoRange()
+            if rect is not None:
+                if self.axisNumber == self.viewBox.XAxis:
+                    xRange, yRange = (rect.left(), rect.right()), None
+                else:
+                    xRange, yRange = None, (rect.bottom(), rect.top())
+            else:
+                logger.warn("No children bbox. Plot range not updated.") # does this happen?
+                return
+        else:
+            padding = 0
+            if self.axisNumber == self.viewBox.XAxis:
+                xRange, yRange = self.getRange(), None
+            else:
+                xRange, yRange = None, self.getRange()
+
+        # viewBox.setRange doesn't accept an axis number :-(
+        logger.debug("setRange: xRange={}, yRange={}, padding={}".format(xRange, yRange, padding))
+        self.viewBox.setRange(xRange = xRange, yRange=yRange, padding=padding,
+                              update=False, disableAutoRange=True)
+
+
+
 class PgAxisCti(GroupCti):
     """ Configuration tree item for a PyQtGraph plot axis.
 
         This CTI is intended to be used as a child of a PgPlotItemCti.
     """
-    def __init__(self, nodeName, viewBox, axisNumber):
+    def __init__(self, nodeName, plotItem, axisNumber):
         """ Constructor
         """
         super(PgAxisCti, self).__init__(nodeName)
 
         assert axisNumber in (0, 1), "axisNumber must be 0 or 1"
-        self.viewBox = viewBox
+        self.plotItem = plotItem
         self.axisNumber = axisNumber
 
         #self.insertChild(BoolCti("show", True)) # TODO:
         #self.insertChild(BoolCti('logarithmic', False))
 
-        self.rangeItem = self.insertChild(PgAxisAutoRangeCti(self.viewBox, self.axisNumber))
+        self.rangeItem = self.insertChild(PgAxisRangeCti(self.plotItem, self.axisNumber))
 
 
 
@@ -250,13 +393,13 @@ class PgPlotItemCti(GroupCti):
         # Keeping references to the axes CTIs because they need to be updated quickly when
         # the range changes; getting by path may be slow.)
         if xAxisCti is None:
-            self.xAxisCti = self.insertChild(PgAxisCti('x-axis', viewBox, 0))
+            self.xAxisCti = self.insertChild(PgAxisCti('x-axis', plotItem, 0))
         else:
             check_class(xAxisCti, PgAxisCti)
             self.xAxisCti = self.insertChild(xAxisCti)
 
         if yAxisCti is None:
-            self.yAxisCti = self.insertChild(PgAxisCti('y-axis', viewBox, 1))
+            self.yAxisCti = self.insertChild(PgAxisCti('y-axis', plotItem, 1))
         else:
             check_class(yAxisCti, PgAxisCti)
             self.yAxisCti = self.insertChild(yAxisCti)
@@ -267,14 +410,43 @@ class PgPlotItemCti(GroupCti):
             self.stateItem = None
 
         # Connect signals
-        viewBox = self.plotItem.getViewBox()
-        viewBox.sigStateChanged.connect(self.refreshFromTarget)
-
+        if DEBUGGING:
+            viewBox = self.plotItem.getViewBox()
+            viewBox.sigStateChanged.connect(self.vbStateChanged)
+            viewBox.sigRangeChanged.connect(self.vbRangeChanged)
+            viewBox.sigXRangeChanged.connect(self.vbXRangeChanged)
+            viewBox.sigYRangeChanged.connect(self.vbYRangeChanged)
+            viewBox.sigRangeChangedManually.connect(self.vbRangeChangedManually)
 
     def _closeResources(self):
         """ Disconnects signals.
             Is called by self.finalize when the cti is deleted.
         """
-        viewBox = self.plotItem.getViewBox()
-        viewBox.sigStateChanged.disconnect(self.refreshFromTarget)
+        if DEBUGGING:
+            viewBox = self.plotItem.getViewBox()
+            viewBox.sigStateChanged.disconnect(self.vbStateChanged)
+            viewBox.sigRangeChanged.disconnect(self.vbRangeChanged)
+            viewBox.sigXRangeChanged.disconnect(self.vbXRangeChanged)
+            viewBox.sigYRangeChanged.disconnect(self.vbYRangeChanged)
+            viewBox.sigRangeChangedManually.disconnect(self.vbRangeChangedManually)
 
+
+    def vbStateChanged(self, *args, **kwargs):
+        #logger.debug("viewBox state changed: {} {}".format(args, kwargs))
+        pass
+
+    def vbRangeChanged(self, *args, **kwargs):
+        #logger.debug("viewBox range changed: {} {}".format(args, kwargs))
+        pass
+
+    def vbXRangeChanged(self, *args, **kwargs):
+        #logger.debug("viewBox X-range changed: {} {}".format(args, kwargs))
+        pass
+
+    def vbYRangeChanged(self, *args, **kwargs):
+        #logger.debug("viewBox Y-range changed: {} {}".format(args, kwargs))
+        pass
+
+    def vbRangeChangedManually(self, *args, **kwargs):
+        #logger.debug("viewBox range changed manually: {} {}".format(args, kwargs))
+        pass

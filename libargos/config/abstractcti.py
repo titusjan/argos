@@ -323,28 +323,35 @@ class AbstractCti(BaseTreeItem):
         """ Refreshes the configuration from the target it monitors (if present).
             The default implementation does nothing; subclasses can override it.
             During updateTarget's execution refreshFromTarget is blocked to avoid loops.
+            Typically called from inspector.drawTarget
         """
         pass
 
 
-    def updateTarget(self):
+    def updateTarget(self, level=0):
         """ Applies the configuration to the target it monitors (if present).
             Recursively call _updateTargetFromNode for itself and all children. Subclasses should
             typically override _updateTargetFromNode instead of this function.
-            During updateTarget's execution refreshFromTarget is blocked to avoid loops.
+            During updateTarget's execution refreshFromTarget is blocked to avoid loops. At the end
+            a call to refresh is made so that any changes in the target are reflected again in the
+            configuration tree items.
+
+            :param level: the level of recursion.
         """
         oldBlockRefresh = self._blockRefresh
         self._blockRefresh = True # defer calling self.viewBoxChanged
         try:
             self._updateTargetFromNode()
             for child in self.childItems:
-                child.updateTarget()
+                child.updateTarget(level = level + 1)
         finally:
             self._blockRefresh = oldBlockRefresh
 
         # Call refreshFromTarget in case the newly applied configuration resulted in a change of the
         # target's state.
-        self.refreshFromTarget()
+        if level == 0:
+            logger.debug("Calling refreshFromTarget from updateTarget: {}".format(self.nodePath))
+            self.refreshFromTarget()
 
 
     def _updateTargetFromNode(self):
@@ -644,7 +651,7 @@ class AbstractCtiEditor(QtGui.QWidget):
         """
         self.delegate.commitData.emit(self)
         self.delegate.closeEditor.emit(self, QtGui.QAbstractItemDelegate.NoHint)   # CLOSES SELF!
-        
+
     
     @QtSlot(bool)
     def resetEditorValue(self, checked=False):

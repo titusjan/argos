@@ -50,8 +50,7 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         size = QtCore.QSize()
         size.setHeight(TREE_ROW_HEIGHT)
         return size
-        
-        
+
     
     def createEditor(self, parent, option, index):
         """ Returns the widget used to change data from the model and can be reimplemented to 
@@ -115,6 +114,7 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
             logger.warn(ex)
         else:
             # The value is set via the model so that signals are emitted
+            logger.debug("ConfigItemDelegate.setModelData: {}".format(data))
             model.setData(index, data, Qt.EditRole)
 
 

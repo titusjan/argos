@@ -203,7 +203,6 @@ class SnFloatCti(AbstractCti):
         if self.specialValueText is not None and data == self.minValue:
             return self.specialValueText
         else:
-            logger.debug("_dataToString: {}".format(self.precision))
             return "{:.{precision}g}".format(data, precision=self.precision)
 
 
@@ -211,9 +210,9 @@ class SnFloatCti(AbstractCti):
     def debugInfo(self):
         """ Returns the string with debugging information
         """
-        return ("min = {}, max = {}, decimals = {}, specVal = {}"
-                .format(self.minValue, self.maxValue,
-                        self.decimals, self.specialValueText))
+        return ("enabled = {}, min = {}, max = {}, precision = {}, specVal = {}"
+                .format(self.enabled, self.minValue, self.maxValue,
+                        self.precision, self.specialValueText))
 
 
     def createEditor(self, delegate, parent, option):
@@ -272,7 +271,7 @@ class SnFloatCtiEditor(AbstractCtiEditor):
         """ Provides the main editor widget with a data to manipulate.
         """
         self.spinBox.setValue(data)
-        self.spinBox.selectAll()
+        #self.spinBox.selectAll()
 
 
     def getData(self):

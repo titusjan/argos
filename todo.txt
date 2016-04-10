@@ -128,6 +128,8 @@ DATA & LIBS:
 	http://www.gdngeoservices.nl/wms/dinomap/M11M0802
 	
 	https://scihub.esa.int/
+
+	http://www.virtualobservatory.org/use/
 	
 	# NOAA
 	http://www.ngdc.noaa.gov/mgg/topo/gltiles.html

@@ -38,7 +38,7 @@ from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.inspector.abstract import AbstractInspector
-from libargos.inspector.pgplugins.pgctis import PgPlotItemCti, PgAxisLabelCti, PgAxisAutoRangeCti
+from libargos.inspector.pgplugins.pgctis import PgPlotItemCti, PgAxisLabelCti
 from libargos.utils.cls import array_has_real_numbers, check_class
 
 logger = logging.getLogger(__name__)
