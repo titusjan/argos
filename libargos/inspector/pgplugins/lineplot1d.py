@@ -24,16 +24,6 @@ import pyqtgraph as pg
 
 logger = logging.getLogger(__name__)
 
-USE_SIMPLE_PLOT = False
-
-if USE_SIMPLE_PLOT:
-    # An experimental simplification of PlotItem. Not included in the distribution
-    logger.warn("Using SimplePlotItem as PlotItem")
-    from pyqtgraph.graphicsItems.PlotItem.simpleplotitem import SimplePlotItem
-else:
-    from pyqtgraph.graphicsItems.PlotItem import PlotItem as SimplePlotItem
-
-
 from libargos.qt import QtGui
 from libargos.info import DEBUGGING
 from libargos.config.groupcti import MainGroupCti, GroupCti
@@ -44,6 +34,7 @@ from libargos.config.floatcti import FloatCti
 from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector
 from libargos.inspector.pgplugins.pgctis import PgPlotItemCti, PgAxisLabelCti
+from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.utils.cls import array_has_real_numbers, check_class
 
 
@@ -79,11 +70,12 @@ class PgLinePlot1dCti(MainGroupCti):
 
         xAxisCti = self.plotItemCti.xAxisCti
         xAxisCti.insertChild(PgAxisLabelCti(plotItem, 'bottom', self.pgLinePlot1d.collector,
-                configValues=["{x-dim}"]))
+                configValues=["{x-dim}"]), position=-1)
 
         yAxisCti = self.plotItemCti.yAxisCti
         yAxisCti.insertChild(PgAxisLabelCti(plotItem, 'left', self.pgLinePlot1d.collector,
-                configValues=["{name} {unit}", "{path} {unit}", "{name}", "{path}", "{raw-unit}"]))
+                configValues=["{name} {unit}", "{path} {unit}", "{name}", "{path}", "{raw-unit}"]),
+                position=-1)
 
         # Pen
         penItem = self.insertChild(GroupCti('pen'))
@@ -119,8 +111,8 @@ class PgLinePlot1d(AbstractInspector):
 
         self.viewBox = pg.ViewBox(border=pg.mkPen("#000000", width=1))
 
-        self.plotItem = SimplePlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
-                                       enableMenu=False, viewBox=self.viewBox)
+        self.plotItem = ArgosPgPlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
+                                        enableMenu=False, viewBox=self.viewBox)
         self.viewBox.setParent(self.plotItem)
 
         self.graphicsLayoutWidget = pg.GraphicsLayoutWidget()

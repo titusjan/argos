@@ -228,11 +228,8 @@ class PgAxisRangeCti(GroupCti):
         self.rangeMaxItem = self.insertChild(SnFloatCti('max', 1.0))
         self.autoRangeItem = self.insertChild(BoolCti("auto-range", True))
 
-        #logger.debug("Disconnecting: autoBtn.clicked(self.autoBtnClicked)")
-        #self.plotItem.autoBtn.clicked.disconnect(self.plotItem.autoBtnClicked)
-
         # Connect signals
-        self.plotItem.autoBtn.clicked.connect(self._turnAutoRangeOn)
+        self.plotItem.autoBtn.clicked.connect(self._setAutoRangeOn)
         self.viewBox.sigRangeChangedManually.connect(self._setAutoRangeOff)
 
 
@@ -240,7 +237,7 @@ class PgAxisRangeCti(GroupCti):
         """ Disconnects signals.
             Is called by self.finalize when the cti is deleted.
         """
-        self.plotItem.autoBtn.clicked.disconnect(self._turnAutoRangeOn)
+        self.plotItem.autoBtn.clicked.disconnect(self._setAutoRangeOn)
         self.viewBox.sigRangeChangedManually.disconnect(self._setAutoRangeOff)
 
 
@@ -301,18 +298,22 @@ class PgAxisRangeCti(GroupCti):
         self.model.emitDataChanged(self)
 
 
-    def _turnAutoRangeOn(self):
+    def _setAutoRangeOn(self):
         """ Turns on the auto range checkbox.
+            Calls _updateTargetFromNode to calculate the new range.
         """
-        # We don't need to update the target. It is assumed that the the viewbox auto button is
-        # still connected to viewBox.autoBtnClicked, which updates the range. # TODO: this is not yet True
         self.autoRangeItem.data = True
+        self.model.itemChanged.emit(self) # TODO: move to PgPlotItemCti
+        # TODO: reset should go to minimum target
         self._refreshNodeFromTarget()
 
 
     def _setAutoRangeOff(self):
         """ Turns off the auto range checkbox.
+            Calls _refreshNodeFromTarget, not _updateTargetFromNode because setting auto range off
+            does not require a redraw of the target.
         """
+        model = self.autoRangeItem.model
         self.autoRangeItem.data = False
         self._refreshNodeFromTarget()
 

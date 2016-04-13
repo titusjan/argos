@@ -53,6 +53,8 @@ TODO Long term or nice to have:
 	example RTI using XML file.
 	fits format http://fits.gsfc.nasa.gov/ (astropy)
 	geotiff format (attributes). (https://aws.amazon.com/public-data-sets/landsat/)
+	grib format: https://github.com/jswhit/pygrib
+	bufr format: https://en.wikipedia.org/wiki/BUFR
 	
 	Change profile from menu?
 	Plugin management window
