@@ -33,7 +33,8 @@ from libargos.config.qtctis import PenCti, ColorCti, createPenStyleCti, createPe
 from libargos.config.floatcti import FloatCti
 from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector
-from libargos.inspector.pgplugins.pgctis import PgPlotItemCti, PgAxisLabelCti
+from libargos.inspector.pgplugins.pgctis import PgPlotItemCti, PgAxisLabelCti, PgAxisLogModeCti
+from libargos.inspector.pgplugins.pgctis import X_AXIS, Y_AXIS
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.utils.cls import array_has_real_numbers, check_class
 
@@ -70,13 +71,17 @@ class PgLinePlot1dCti(MainGroupCti):
 
         xAxisCti = self.plotItemCti.xAxisCti
         xAxisCti.insertChild(PgAxisLabelCti(plotItem, 'bottom', self.pgLinePlot1d.collector,
-                configValues=["{x-dim}"]), position=-1)
+            defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{x-dim}"]))
+        # No logarithmic X-Axis as long as it only shows the array index and no abcissa.
+        #xAxisCti.insertChild(PgAxisLogModeCti(plotItem, X_AXIS))
 
         yAxisCti = self.plotItemCti.yAxisCti
         yAxisCti.insertChild(PgAxisLabelCti(plotItem, 'left', self.pgLinePlot1d.collector,
-                configValues=["{name} {unit}", "{path} {unit}", "{name}", "{path}", "{raw-unit}"]),
-                position=-1)
+            defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{name} {unit}", "{path} {unit}",
+                                         "{name}", "{path}", "{raw-unit}"]))
+        yAxisCti.insertChild(PgAxisLogModeCti(plotItem, Y_AXIS))
 
+        #self.insertChild(BoolCti("show", True)) # TODO:
         # Pen
         penItem = self.insertChild(GroupCti('pen'))
         penItem.insertChild(ColorCti('color', QtGui.QColor('#FF0066')))

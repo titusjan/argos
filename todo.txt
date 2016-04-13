@@ -112,7 +112,9 @@ BUGS:
     image plot of /argos/occ/bg_corr_nominals/report.detector1.nc/DETECTOR1/illum shows a black box (autolevels.
     /Users/titusjan/Data/argos/occ/bg_corr_nominals/report.detector1.nc
 
-	
+	PyQtGraph: in logarithmic mode shows only minor tick marks between 0 and 1^x. E.g. nog 1.1eX
+	PyQtGraph: viewBox.xInvert seems to only invert the tickmarks not the data. yInvert does work properly.
+
 DATA & LIBS:
     http://pandas-datareader.readthedocs.org/en/latest/remote_data.html#google-finance
     
