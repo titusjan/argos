@@ -22,6 +22,8 @@ from __future__ import division, print_function
 import logging
 import pyqtgraph as pg
 
+from libargos.qt import QtCore, QtSignal
+
 logger = logging.getLogger(__name__)
 
 USE_SIMPLE_PLOT = False
@@ -39,15 +41,25 @@ class ArgosPgPlotItem(SimplePlotItem):
     """ Wrapper arround pyqtgraph.graphicsItems.PlotItem
         Overrides the autoBtnClicked method.
     """
+    sigClicked = QtSignal()
+
     def autoBtnClicked(self):
         """ Hides the button but does not enable/disable autorange.
             That will be done by PgAxisRangeCti
         """
         logger.debug("ArgosPgPlotItem.autoBtnClicked, mode:{}".format(self.autoBtn.mode))
         if self.autoBtn.mode == 'auto':
-            #self.enableAutoRange()
             self.autoBtn.hide()
-        else:
-            pass
-            #self.disableAutoRange()
+
+
+    def mouseClickEvent(self, ev):
+        """
+        """
+        logger.debug("mouseReleaseEvent")
+        if ev.button() == QtCore.Qt.MiddleButton:
+            logger.debug("Clicked middle mouse. Emitting sigClicked")
+
+            # This gives RuntimeError: wrapped C/C++ object of type PlotCurveItem has been deleted
+            # TODO: fix
+            #self.sigClicked.emit()
 

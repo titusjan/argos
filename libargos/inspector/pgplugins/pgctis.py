@@ -407,6 +407,7 @@ class PgPlotItemCti(GroupCti):
 
         # Connect signals
         self.plotItem.autoBtn.clicked.connect(self._setAutoRangeOn)
+        self.plotItem.sigClicked.connect(self._setAutoRangeOn)
 
 
     def _closeResources(self):
@@ -414,6 +415,7 @@ class PgPlotItemCti(GroupCti):
             Is called by self.finalize when the cti is deleted.
         """
         self.plotItem.autoBtn.clicked.disconnect(self._setAutoRangeOn)
+        self.plotItem.sigClicked.disconnect(self._setAutoRangeOn)
 
 
     def _updateTargetFromNode(self):
@@ -427,10 +429,10 @@ class PgPlotItemCti(GroupCti):
         """ Turns on the auto range checkbox.
             Calls _updateTargetFromNode to calculate the new range.
         """
+        logger.debug("_setAutoRangeOn")
         for axisCti in [self.xAxisCti, self.yAxisCti]:
             for childCti in axisCti.childItems:
                 if isinstance(childCti, PgAxisRangeCti):
                     childCti.autoRangeItem.data = True
         self.model.itemChanged.emit(self)
-        #self._refreshNodeFromTarget()
 
