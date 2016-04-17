@@ -20,10 +20,12 @@
 from __future__ import division, print_function
 
 import logging
+import numpy as np
 import pyqtgraph as pg
 
 logger = logging.getLogger(__name__)
 
+from collections import OrderedDict
 from libargos.qt import QtGui
 from libargos.info import DEBUGGING
 from libargos.config.groupcti import MainGroupCti, GroupCti
@@ -33,10 +35,30 @@ from libargos.config.qtctis import PenCti, ColorCti, createPenStyleCti, createPe
 from libargos.config.floatcti import FloatCti
 from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector
-from libargos.inspector.pgplugins.pgctis import PgPlotItemCti, PgAxisLabelCti, PgAxisLogModeCti
-from libargos.inspector.pgplugins.pgctis import X_AXIS, Y_AXIS
+from libargos.inspector.pgplugins.pgctis import (PgPlotItemCti, PgAxisLabelCti, PgAxisLogModeCti,
+                                                 PgAxisRangeCti, X_AXIS, Y_AXIS)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.utils.cls import array_has_real_numbers, check_class
+
+# Python closures are late-binding
+# http://docs.python-guide.org/en/latest/writing/gotchas/#late-binding-closures
+def makeInspectorPercentileRangeFn(inspector, percentage):
+    """ Generates a function that calculates the range of the sliced array of the inspector
+        by discarding a percentage of the outliers (at both ends, minimum and maximum)
+
+        The first parameter is an inspector, and not an array, because we would then have to
+        regenerate ther range function every time sliced array of an inspector changes.
+    """
+    def calcRange():
+        """ Calculates the range from the sliced array. Discards percentage of the minimum and
+            percentage of the maximum values of the inspector.slicedArray
+        """
+        array = inspector.slicedArray
+        logger.debug("Discarding {}% from id: {}".format(percentage, id(array)))
+        return np.percentile(array, (percentage, 100-percentage) )
+
+    return calcRange
+
 
 
 class PgLinePlot1dCti(MainGroupCti):
@@ -58,14 +80,14 @@ class PgLinePlot1dCti(MainGroupCti):
                                     configValues=["{path} {slices}", "{name} {slices}"]))
         self.insertChild(BoolCti("anti-alias", True))
 
-        # Grid (not in ViewBox but a separate group so it can be toggled on/off with one checkbox)
+        # Grid (in a separate group so it can be toggled on/off with one checkbox)
         gridItem = self.insertChild(BoolGroupCti('grid', True, expanded=False))
         gridItem.insertChild(BoolCti('x-axis', True))
         gridItem.insertChild(BoolCti('y-axis', True))
         gridItem.insertChild(FloatCti('alpha', 0.20, 
                                       minValue=0.0, maxValue=1.0, stepSize=0.01, decimals=2))
 
-        # Axes
+        #### Axes ####
         plotItem = self.pgLinePlot1d.plotItem
         self.plotItemCti = self.insertChild(PgPlotItemCti(plotItem))
 
@@ -74,6 +96,7 @@ class PgLinePlot1dCti(MainGroupCti):
             defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{x-dim}"]))
         # No logarithmic X-Axis as long as it only shows the array index and no abcissa.
         #xAxisCti.insertChild(PgAxisLogModeCti(plotItem, X_AXIS))
+        xAxisCti.insertChild(PgAxisRangeCti(plotItem, X_AXIS))
 
         yAxisCti = self.plotItemCti.yAxisCti
         yAxisCti.insertChild(PgAxisLabelCti(plotItem, 'left', self.pgLinePlot1d.collector,
@@ -81,8 +104,15 @@ class PgLinePlot1dCti(MainGroupCti):
                                          "{name}", "{path}", "{raw-unit}"]))
         yAxisCti.insertChild(PgAxisLogModeCti(plotItem, Y_AXIS))
 
-        #self.insertChild(BoolCti("show", True)) # TODO:
-        # Pen
+        rangeFunctions = OrderedDict({PgAxisRangeCti.PYQT_RANGE: None})
+        rangeFunctions['use all data'] = makeInspectorPercentileRangeFn(self.pgLinePlot1d, 0.0)
+        for percentage in [0.1, 0.2, 0.5, 1, 2, 5, 10, 20]:
+            label = "discard {}%".format(percentage)
+            rangeFunctions[label] = makeInspectorPercentileRangeFn(self.pgLinePlot1d, percentage)
+
+        yAxisCti.insertChild(PgAxisRangeCti(plotItem, Y_AXIS, rangeFunctions))
+
+        #### Pen ####
         penItem = self.insertChild(GroupCti('pen'))
         penItem.insertChild(ColorCti('color', QtGui.QColor('#FF0066')))
         lineItem = penItem.insertChild(BoolCti('line', True, expanded=False,
@@ -155,8 +185,12 @@ class PgLinePlot1d(AbstractInspector):
     def _drawContents(self):
         """ Draws the RTI
         """
-        slicedArray = self.collector.getSlicedArray()
-        if slicedArray is None or not array_has_real_numbers(slicedArray):
+        # The sliced array is kept in memory. This may be different per inspector, e.g. 3D
+        # inspectors may decide that this uses to much memory. The slice is therefor not stored
+        # in the collector.
+        self.slicedArray = self.collector.getSlicedArray()
+
+        if self.slicedArray is None or not array_has_real_numbers(self.slicedArray):
             logger.debug("Clearing inspector: no data available or it does not contain real numbers")
             self._clearContents()
             return
@@ -191,7 +225,7 @@ class PgLinePlot1d(AbstractInspector):
         drawSymbols = self.configValue('pen/symbol')
         symbolShape = self.configValue('pen/symbol/shape') if drawSymbols else None
         symbolSize  = self.configValue('pen/symbol/size') if drawSymbols else 0.0
-        symbolPen   = pen if drawSymbols else None
+        symbolPen = None # otherwise the symbols will also have dotted/solid line.
         symbolBrush = QtGui.QBrush(color) if drawSymbols else None
 
         self.plotDataItem = self.plotItem.plot(pen=pen, shadowPen=shadowPen,
@@ -199,10 +233,8 @@ class PgLinePlot1d(AbstractInspector):
                                                symbolPen=symbolPen, symbolBrush=symbolBrush,
                                                antialias=antiAlias)
 
-        self.plotDataItem.setData(slicedArray)
+        self.plotDataItem.setData(self.slicedArray)
 
         self.config.updateTarget()
 
 
-
-        

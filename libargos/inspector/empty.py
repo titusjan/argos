@@ -29,9 +29,6 @@ logger = logging.getLogger(__name__)
 
 class EmptyInspector(AbstractInspector):
     """ Empty inspector, mainly for debugging purposes.
-    
-        Displays the shape of the selected array if Argos is in debugging mode, otherwise
-        the widget is empty.
     """
     def __init__(self, collector, parent=None):
         
@@ -76,10 +73,10 @@ class EmptyInspector(AbstractInspector):
             disabledItem.enabled=False
     
             grpItem.insertChild(IntCti('line-1 color', 7, minValue = -5, stepSize=2, 
-                                       specialValueText="I'm special"))
+                                       prefix="@", suffix="%", specialValueText="I'm special"))
             rootItem.insertChild(StringCti('letter', 'aa', maxLength = 1))
-            grpItem.insertChild(FloatCti('width', 2, minValue =5, stepSize=0.45, 
-                                         decimals=3, specialValueText="so very special"))
+            grpItem.insertChild(FloatCti('width', 2, minValue =5, stepSize=0.45, decimals=3,
+                                         prefix="@", suffix="%", specialValueText="so very special"))
             grpItem.insertChild(SnFloatCti('scientific'))
 
             gridItem = rootItem.insertChild(BoolGroupCti('grid', True))

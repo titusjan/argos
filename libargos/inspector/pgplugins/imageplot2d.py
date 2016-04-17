@@ -27,8 +27,8 @@ from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.inspector.abstract import AbstractInspector
-from libargos.inspector.pgplugins.pgctis import PgPlotItemCti, PgAxisLabelCti, PgAxisFlipCti
-from libargos.inspector.pgplugins.pgctis import PgAxisShowCti, X_AXIS, Y_AXIS
+from libargos.inspector.pgplugins.pgctis import (PgPlotItemCti, PgAxisLabelCti, PgAxisFlipCti,
+                                                 PgAxisRangeCti, X_AXIS, Y_AXIS)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.utils.cls import array_has_real_numbers, check_class
 
@@ -52,7 +52,7 @@ class PgImagePlot2dCti(MainGroupCti):
         self.insertChild(ChoiceCti('title', 0, editable=True,
                                    configValues=["{path} {slices}", "{name} {slices}"]))
 
-        # Axes
+        #### Axes ####
         plotItem = self.pgImagePlot2d.plotItem
         self.plotItemCti = self.insertChild(PgPlotItemCti(plotItem))
 
@@ -61,13 +61,16 @@ class PgImagePlot2dCti(MainGroupCti):
         xAxisCti.insertChild(PgAxisLabelCti(plotItem, 'bottom', self.pgImagePlot2d.collector,
             defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{x-dim}"]))
         xAxisCti.insertChild(PgAxisFlipCti(plotItem, X_AXIS))
+        xAxisCti.insertChild(PgAxisRangeCti(plotItem, X_AXIS))
 
         yAxisCti = self.plotItemCti.yAxisCti
         #yAxisCti.insertChild(PgAxisShowCti(plotItem, 'left'))  # disabled, seems broken
         yAxisCti.insertChild(PgAxisLabelCti(plotItem, 'left', self.pgImagePlot2d.collector,
             defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{y-dim}"]))
         yAxisCti.insertChild(PgAxisFlipCti(plotItem, Y_AXIS))
+        yAxisCti.insertChild(PgAxisRangeCti(plotItem, Y_AXIS))
 
+        #### Color scale ####
         self.insertChild(BoolCti('auto levels', True))
 
 

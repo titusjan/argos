@@ -31,12 +31,14 @@ class IntCti(AbstractCti):
     """
     def __init__(self, nodeName, defaultData=0, 
                  minValue = None, maxValue = None, stepSize = 1, 
-                 specialValueText=None):
+                 prefix='', suffix='', specialValueText=None):
         """ Constructor.
             
             :param minValue: minimum data allowed when editing (use None for no minimum)
             :param maxValue: maximum data allowed when editing (use None for no maximum)
             :param stepSize: steps between values when editing (default = 1)
+            :param prefix: prepended to the start of the displayed value in the spinbox
+            :param suffix: prepended to the end of the displayed value in the spinbox
             :param specialValueText: if set, this text will be displayed when the the minValue 
                 is selected. It is up to the cti user to interpret this as a special case.            
                     
@@ -47,6 +49,8 @@ class IntCti(AbstractCti):
         self.minValue = minValue
         self.maxValue = maxValue
         self.stepSize = stepSize
+        self.prefix = prefix
+        self.suffix = suffix
         self.specialValueText = specialValueText
         
     
@@ -62,8 +66,8 @@ class IntCti(AbstractCti):
         if self.specialValueText is not None and data == self.minValue:
             return self.specialValueText
         else:
-            return str(data)    
-    
+            return "{}{}{}".format(self.prefix, data, self.suffix)
+
     
     @property
     def debugInfo(self):
@@ -90,6 +94,7 @@ class IntCtiEditor(AbstractCtiEditor):
         super(IntCtiEditor, self).__init__(cti, delegate, parent=parent)
         
         spinBox = QtGui.QSpinBox(parent)
+        spinBox.setKeyboardTracking(False)
 
         if cti.minValue is None:
             spinBox.setMinimum(np.iinfo('i').min)
@@ -102,8 +107,9 @@ class IntCtiEditor(AbstractCtiEditor):
             spinBox.setMaximum(cti.maxValue) 
 
         spinBox.setSingleStep(cti.stepSize)
-        spinBox.setKeyboardTracking(False)
-        
+        spinBox.setPrefix(cti.prefix)
+        spinBox.setSuffix(cti.suffix)
+
         if cti.specialValueText is not None:
             spinBox.setSpecialValueText(cti.specialValueText)
                     

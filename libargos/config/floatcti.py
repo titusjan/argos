@@ -32,7 +32,7 @@ class FloatCti(AbstractCti):
     """
     def __init__(self, nodeName, defaultData=0, 
                  minValue = None, maxValue = None, stepSize = 1.0, decimals = 2, 
-                 specialValueText=None):
+                 prefix='', suffix='', specialValueText=None):
         """ Constructor.
             
             :param minValue: minimum data allowed when editing (use None for no minimum)
@@ -40,7 +40,9 @@ class FloatCti(AbstractCti):
             :param stepSize: steps between values when editing (default = 1)
             :param decimals: Sets how many decimals the spin box will use for displaying.
                 Note: The maximum, minimum and value might change as a result of changing this.
-            :param specialValueText: if set, this text will be displayed when the the minValue 
+            :param prefix: prepended to the start of the displayed value in the spinbox
+            :param suffix: prepended to the end of the displayed value in the spinbox
+            :param specialValueText: if set, this text will be displayed when the the minValue
                 is selected. It is up to the cti user to interpret this as a special case.
                     
             For the (other) parameters see the AbstractCti constructor documentation.
@@ -51,6 +53,8 @@ class FloatCti(AbstractCti):
         self.minValue = minValue
         self.maxValue = maxValue
         self.stepSize = stepSize
+        self.prefix = prefix
+        self.suffix = suffix
         self.specialValueText = specialValueText
     
         
@@ -66,15 +70,15 @@ class FloatCti(AbstractCti):
         if self.specialValueText is not None and data == self.minValue:
             return self.specialValueText
         else:
-            return "{:.{precision}f}".format(data, precision=self.decimals)
-        
+            return "{}{:.{}f}{}".format(self.prefix, data, self.decimals, self.suffix)
+
         
     @property
     def debugInfo(self):
         """ Returns the string with debugging information
         """
         return ("min = {}, max = {}, step = {}, decimals = {}, specVal = {}"
-                .format(self.minValue, self.maxValue, self.stepSize, 
+                .format(self.minValue, self.maxValue, self.stepSize,
                         self.decimals, self.specialValueText))
     
     
@@ -95,6 +99,7 @@ class FloatCtiEditor(AbstractCtiEditor):
         super(FloatCtiEditor, self).__init__(cti, delegate, parent=parent)
         
         spinBox = QtGui.QDoubleSpinBox(parent)
+        spinBox.setKeyboardTracking(False)
 
         if cti.minValue is None:
             spinBox.setMinimum(np.finfo('d').min)
@@ -108,7 +113,8 @@ class FloatCtiEditor(AbstractCtiEditor):
 
         spinBox.setSingleStep(cti.stepSize)
         spinBox.setDecimals(cti.decimals)
-        spinBox.setKeyboardTracking(False)
+        spinBox.setPrefix(cti.prefix)
+        spinBox.setSuffix(cti.suffix)
         
         if cti.specialValueText is not None:
             spinBox.setSpecialValueText(cti.specialValueText)
@@ -150,13 +156,15 @@ class SnFloatCti(AbstractCti):
     """
     def __init__(self, nodeName, defaultData=0,
                  minValue = None, maxValue = None, precision = 2,
-                 specialValueText=None):
+                 prefix='', suffix='', specialValueText=None):
         """ Constructor.
 
             :param minValue: minimum data allowed when editing (use None for no minimum)
             :param maxValue: maximum data allowed when editing (use None for no maximum)
             :param decimals: Sets how many decimals the spin box will use for displaying.
                 Note: The maximum, minimum and value might change as a result of changing this.
+            :param prefix: prepended to the start of the displayed value in the spinbox
+            :param suffix: prepended to the end of the displayed value in the spinbox
             :param specialValueText: if set, this text will be displayed when the the minValue
                 is selected. It is up to the cti user to interpret this as a special case.
 
@@ -167,7 +175,8 @@ class SnFloatCti(AbstractCti):
         self._precision = precision
         self.minValue = minValue
         self.maxValue = maxValue
-
+        self.prefix = prefix
+        self.suffix = suffix
         self.specialValueText = specialValueText
 
 
@@ -203,7 +212,7 @@ class SnFloatCti(AbstractCti):
         if self.specialValueText is not None and data == self.minValue:
             return self.specialValueText
         else:
-            return "{:.{precision}g}".format(data, precision=self.precision)
+            return "{}{:.{}g}{}".format(self.prefix, data, self.precision, self.suffix)
 
 
     @property
@@ -232,6 +241,7 @@ class SnFloatCtiEditor(AbstractCtiEditor):
         super(SnFloatCtiEditor, self).__init__(cti, delegate, parent=parent)
 
         spinBox = ScientificDoubleSpinBox(precision=precision, parent=parent)
+        spinBox.setKeyboardTracking(False)
 
         if cti.minValue is None:
             spinBox.setMinimum(np.finfo('d').min)
@@ -243,7 +253,8 @@ class SnFloatCtiEditor(AbstractCtiEditor):
         else:
             spinBox.setMaximum(cti.maxValue)
 
-        spinBox.setKeyboardTracking(False)
+        spinBox.setPrefix(cti.prefix)
+        spinBox.setSuffix(cti.suffix)
 
         if cti.specialValueText is not None:
             spinBox.setSpecialValueText(cti.specialValueText)
