@@ -238,11 +238,11 @@ class PgAxisRangeCti(GroupCti):
     """
     PYQT_RANGE = 'by PyQtGraph'
 
-    def __init__(self, viewBox, axisNumber, rangeFunctions=None, nodeName='range'):
+    def __init__(self, viewBox, axisNumber, autoRangeMethods=None, nodeName='range'):
         """ Constructor.
             The target axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
 
-            If given, rangeFunctions must be a (label to function) dictionary that will be used
+            If given, autoRangeMethods must be a (label to function) dictionary that will be used
             to populate the (auto range) method ChoiceCti. If not give, the there will not be
             a method choice and the autorange implemented by PyQtGraph will be used.
         """
@@ -255,20 +255,23 @@ class PgAxisRangeCti(GroupCti):
 
         self.rangeMinCti = self.insertChild(SnFloatCti('min', 0.0))
         self.rangeMaxCti = self.insertChild(SnFloatCti('max', 1.0))
-        self.autoRangeCti = self.insertChild(BoolCti("auto-range", True))
 
-        if rangeFunctions:
-            self._rangeFunctions = rangeFunctions
-            self.methodCti = ChoiceCti("method", configValues=rangeFunctions.keys())
-            self.autoRangeCti.insertChild(self.methodCti)
-        else:
-            rangeFunction = makePyQtAutoRangeFn(self.viewBox, self.axisNumber)
-            self._rangeFunctions = {self.PYQT_RANGE: rangeFunction}
+        if not autoRangeMethods:
+            #rangeFunction = makePyQtAutoRangeFn(self.viewBox, self.axisNumber)
+            #self._rangeFunctions = {self.PYQT_RANGE: rangeFunction}
+            self.autoRangeCti = None
             self.methodCti = None
+            self.paddingCti = None
+        else:
+            self.autoRangeCti = self.insertChild(BoolCti("auto-range", True))
+            self._rangeFunctions = autoRangeMethods
+            self.methodCti = ChoiceCti("method", configValues=autoRangeMethods.keys())
+            self.autoRangeCti.insertChild(self.methodCti)
 
-        self.paddingCti = IntCti("padding", -1, suffix="%", specialValueText="dynamic",
-                                 minValue=-1, maxValue=1000, stepSize=1)
-        self.autoRangeCti.insertChild(self.paddingCti)
+            self.paddingCti = IntCti("padding", -1, suffix="%", specialValueText="dynamic",
+                                     minValue=-1, maxValue=1000, stepSize=1)
+            self.autoRangeCti.insertChild(self.paddingCti)
+
 
         # Connect signals
         self.viewBox.sigRangeChangedManually.connect(self._setAutoRangeOff)
@@ -326,7 +329,7 @@ class PgAxisRangeCti(GroupCti):
     def _refreshAutoRange(self):
         """ The min and max config items will be disabled if auto range is on.
         """
-        enabled = self.autoRangeCti.configValue
+        enabled = self.autoRangeCti and self.autoRangeCti.configValue
         self.rangeMinCti.enabled = not enabled
         self.rangeMaxCti.enabled = not enabled
         self.model.emitDataChanged(self)
@@ -343,18 +346,18 @@ class PgAxisRangeCti(GroupCti):
             Calls _refreshNodeFromTarget, not _updateTargetFromNode because setting auto range off
             does not require a redraw of the target.
         """
-        self.autoRangeCti.data = False
+        if self.autoRangeCti:
+            self.autoRangeCti.data = False
         self._refreshNodeFromTarget()
 
 
     def calculateRange(self):
         """ Calculates the range depending on the config settings.
         """
-        if not self.autoRangeCti.configValue:
+        if not self.autoRangeCti or not self.autoRangeCti.configValue:
             return (self.rangeMinCti.data, self.rangeMaxCti.data)
         else:
-            method = self.methodCti.configValue if self.methodCti else self.PYQT_RANGE
-            rangeFunction = self._rangeFunctions[method]
+            rangeFunction = self._rangeFunctions[self.methodCti.configValue]
             logger.debug("Calling range_function: {}".format(rangeFunction))
             return rangeFunction()
 
@@ -362,7 +365,7 @@ class PgAxisRangeCti(GroupCti):
     def _updateTargetFromNode(self):
         """ Applies the configuration to the target axis.
         """
-        if not self.autoRangeCti.configValue:
+        if not self.autoRangeCti or not self.autoRangeCti.configValue:
             padding = 0
         elif self.paddingCti.configValue == -1: # specialValueText
             # PyQtGraph dynamice padding: between 0.02 and 0.1 dep. on the size of the ViewBox
@@ -440,10 +443,8 @@ class PgPlotItemCti(GroupCti):
             check_class(yAxisCti, PgAxisCti)
             self.yAxisCti = self.insertChild(yAxisCti)
 
-        if DEBUGGING:
-            self.stateItem = self.insertChild(ViewBoxDebugCti('viewbox state', viewBox))
-        else:
-            self.stateItem = None
+        if False and DEBUGGING:
+            self.insertChild(ViewBoxDebugCti('viewbox state', viewBox))
 
         # Connect signals
         self.plotItem.autoBtn.clicked.connect(self._setAutoRangeOn)
