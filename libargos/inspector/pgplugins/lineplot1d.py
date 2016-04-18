@@ -35,8 +35,9 @@ from libargos.config.qtctis import PenCti, ColorCti, createPenStyleCti, createPe
 from libargos.config.floatcti import FloatCti
 from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector
-from libargos.inspector.pgplugins.pgctis import (PgPlotItemCti, PgAxisLabelCti, PgAxisLogModeCti,
-                                                 PgAxisRangeCti, X_AXIS, Y_AXIS)
+from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, makePyQtAutoRangeFn,
+                                                 PgPlotItemCti, PgAxisLabelCti, PgAxisLogModeCti,
+                                                 PgAxisRangeCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.utils.cls import array_has_real_numbers, check_class
 
@@ -55,7 +56,7 @@ def makeInspectorPercentileRangeFn(inspector, percentage):
         """
         array = inspector.slicedArray
         logger.debug("Discarding {}% from id: {}".format(percentage, id(array)))
-        return np.percentile(array, (percentage, 100-percentage) )
+        return np.nanpercentile(array, (percentage, 100-percentage) )
 
     return calcRange
 
@@ -89,6 +90,7 @@ class PgLinePlot1dCti(MainGroupCti):
 
         #### Axes ####
         plotItem = self.pgLinePlot1d.plotItem
+        viewBox = plotItem.getViewBox()
         self.plotItemCti = self.insertChild(PgPlotItemCti(plotItem))
 
         xAxisCti = self.plotItemCti.xAxisCti
@@ -96,7 +98,7 @@ class PgLinePlot1dCti(MainGroupCti):
             defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{x-dim}"]))
         # No logarithmic X-Axis as long as it only shows the array index and no abcissa.
         #xAxisCti.insertChild(PgAxisLogModeCti(plotItem, X_AXIS))
-        xAxisCti.insertChild(PgAxisRangeCti(plotItem, X_AXIS))
+        xAxisCti.insertChild(PgAxisRangeCti(viewBox, X_AXIS))
 
         yAxisCti = self.plotItemCti.yAxisCti
         yAxisCti.insertChild(PgAxisLabelCti(plotItem, 'left', self.pgLinePlot1d.collector,
@@ -104,13 +106,14 @@ class PgLinePlot1dCti(MainGroupCti):
                                          "{name}", "{path}", "{raw-unit}"]))
         yAxisCti.insertChild(PgAxisLogModeCti(plotItem, Y_AXIS))
 
-        rangeFunctions = OrderedDict({PgAxisRangeCti.PYQT_RANGE: None})
+        rangeFunctions = OrderedDict()
+        rangeFunctions[PgAxisRangeCti.PYQT_RANGE + ' :-)'] = makePyQtAutoRangeFn(viewBox, Y_AXIS)
         rangeFunctions['use all data'] = makeInspectorPercentileRangeFn(self.pgLinePlot1d, 0.0)
         for percentage in [0.1, 0.2, 0.5, 1, 2, 5, 10, 20]:
             label = "discard {}%".format(percentage)
             rangeFunctions[label] = makeInspectorPercentileRangeFn(self.pgLinePlot1d, percentage)
 
-        yAxisCti.insertChild(PgAxisRangeCti(plotItem, Y_AXIS, rangeFunctions))
+        yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS, rangeFunctions))
 
         #### Pen ####
         penItem = self.insertChild(GroupCti('pen'))

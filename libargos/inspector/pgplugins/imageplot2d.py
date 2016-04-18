@@ -20,6 +20,7 @@
 from __future__ import division, print_function
 
 import logging
+import numpy as np
 import pyqtgraph as pg
 
 from libargos.info import DEBUGGING
@@ -54,24 +55,29 @@ class PgImagePlot2dCti(MainGroupCti):
 
         #### Axes ####
         plotItem = self.pgImagePlot2d.plotItem
+        viewBox = plotItem.getViewBox()
         self.plotItemCti = self.insertChild(PgPlotItemCti(plotItem))
 
         xAxisCti = self.plotItemCti.xAxisCti
         #xAxisCti.insertChild(PgAxisShowCti(plotItem, 'bottom')) # disabled, seems broken
         xAxisCti.insertChild(PgAxisLabelCti(plotItem, 'bottom', self.pgImagePlot2d.collector,
             defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{x-dim}"]))
-        xAxisCti.insertChild(PgAxisFlipCti(plotItem, X_AXIS))
-        xAxisCti.insertChild(PgAxisRangeCti(plotItem, X_AXIS))
+        xAxisCti.insertChild(PgAxisFlipCti(viewBox, X_AXIS))
+        xAxisCti.insertChild(PgAxisRangeCti(viewBox, X_AXIS))
 
         yAxisCti = self.plotItemCti.yAxisCti
         #yAxisCti.insertChild(PgAxisShowCti(plotItem, 'left'))  # disabled, seems broken
         yAxisCti.insertChild(PgAxisLabelCti(plotItem, 'left', self.pgImagePlot2d.collector,
             defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{y-dim}"]))
-        yAxisCti.insertChild(PgAxisFlipCti(plotItem, Y_AXIS))
-        yAxisCti.insertChild(PgAxisRangeCti(plotItem, Y_AXIS))
+        yAxisCti.insertChild(PgAxisFlipCti(viewBox, Y_AXIS))
+        yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS))
 
         #### Color scale ####
         self.insertChild(BoolCti('auto levels', True))
+
+        histViewBox = pgImagePlot2d.histLutItem.vb
+        histViewBox.enableAutoRange(Y_AXIS, False)
+        self.insertChild(PgAxisRangeCti(histViewBox, Y_AXIS, nodeName='histogram range'))
 
 
 
@@ -147,12 +153,16 @@ class PgImagePlot2d(AbstractInspector):
         rtiInfo = self.collector.getRtiInfo()
         self.titleLabel.setText(self.configValue('title').format(**rtiInfo))
 
+        logger.debug("Calculating sliced arraylevels...")
+        levels = (np.nanmin(slicedArray), np.nanmax(slicedArray))
+        logger.debug("Calculating sliced arraylevels: {}".format(levels))
+
         # Unfortunately, PyQtGraph uses the following dimension order: T, X, Y, Color.
         # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0}
         # doesn't seem to do anything.
         self.imageItem.setImage(slicedArray.transpose(),
                                 autoLevels = self.configValue('auto levels'))
 
-        self.histLutItem.setLevels(slicedArray.min(), slicedArray.max())
+        self.histLutItem.setLevels(levels[0], levels[1])
 
         self.config.updateTarget()

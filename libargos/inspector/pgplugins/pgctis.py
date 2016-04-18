@@ -39,6 +39,33 @@ Y_AXIS = pg.ViewBox.YAxis
 VALID_AXIS_POSITIONS =  ('left', 'right', 'bottom', 'top')
 
 
+
+# Python closures are late-binding
+# http://docs.python-guide.org/en/latest/writing/gotchas/#late-binding-closures
+def makePyQtAutoRangeFn(viewBox, axisNumber):
+    """ Generates a function that calculates the range of an axis of a PyQtGraph ViewBox.
+    """
+    assert axisNumber in (X_AXIS, Y_AXIS), "axisNumber must be 0 or 1"
+
+    def calcRange():
+        """ Calculates the range from the sliced array. Discards percentage of the minimum and
+            percentage of the maximum values of the inspector.slicedArray
+        """
+        rect = viewBox.childrenBoundingRect() # taken from viewBox.autoRange()
+        if rect is not None:
+            if axisNumber == X_AXIS:
+                return rect.left(), rect.right()
+            else:
+                return rect.bottom(), rect.top()
+        else:
+            # Does this happen? Probably when the plot is empty.
+            raise AssertionError("No children bbox. Plot range not updated.")
+
+    return calcRange
+
+
+
+
 class ViewBoxDebugCti(GroupCti):
     """ Read-only config tree for inspecting a PyQtGraph ViewBox
     """
@@ -184,14 +211,14 @@ class PgAxisLogModeCti(BoolCti):
 class PgAxisFlipCti(BoolCti):
     """ BoolCti that flips an axis when True.
     """
-    def __init__(self, plotItem, axisNumber, nodeName='flipped', defaultData=False):
+    def __init__(self, viewBox, axisNumber, nodeName='flipped', defaultData=False):
         """ Constructor.
-            The target axis is specified by plotItem and axisNumber (0 for x-axis, 1 for y-axis)
+            The target axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
         """
         super(PgAxisFlipCti, self).__init__(nodeName, defaultData=defaultData)
+        check_class(viewBox, pg.ViewBox)
         assert axisNumber in (X_AXIS, Y_AXIS), "axisNumber must be 0 or 1"
-        self.plotItem = plotItem # TODO: viewbox parameter instead of plotItem?
-        self.viewBox = plotItem.getViewBox()
+        self.viewBox = viewBox
         self.axisNumber = axisNumber
 
 
@@ -211,29 +238,32 @@ class PgAxisRangeCti(GroupCti):
     """
     PYQT_RANGE = 'by PyQtGraph'
 
-    def __init__(self, plotItem, axisNumber, rangeFunctions=None, nodeName='range'):
+    def __init__(self, viewBox, axisNumber, rangeFunctions=None, nodeName='range'):
         """ Constructor.
-            The target axis is specified by plotItem and axisNumber (0 for x-axis, 1 for y-axis)
+            The target axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
 
             If given, rangeFunctions must be a (label to function) dictionary that will be used
             to populate the (auto range) method ChoiceCti. If not give, the there will not be
             a method choice and the autorange implemented by PyQtGraph will be used.
         """
         super(PgAxisRangeCti, self).__init__(nodeName)
+        check_class(viewBox, pg.ViewBox)
         assert axisNumber in (X_AXIS, Y_AXIS), "axisNumber must be 0 or 1"
-        self._plotItem = plotItem # TODO: viewbox parameter instead of plotItem?
-        self.viewBox = plotItem.getViewBox()
+
+        self.viewBox = viewBox
         self.axisNumber = axisNumber
-        self._rangeFunctions = {} if rangeFunctions is None else rangeFunctions
 
         self.rangeMinCti = self.insertChild(SnFloatCti('min', 0.0))
         self.rangeMaxCti = self.insertChild(SnFloatCti('max', 1.0))
         self.autoRangeCti = self.insertChild(BoolCti("auto-range", True))
 
         if rangeFunctions:
+            self._rangeFunctions = rangeFunctions
             self.methodCti = ChoiceCti("method", configValues=rangeFunctions.keys())
             self.autoRangeCti.insertChild(self.methodCti)
         else:
+            rangeFunction = makePyQtAutoRangeFn(self.viewBox, self.axisNumber)
+            self._rangeFunctions = {self.PYQT_RANGE: rangeFunction}
             self.methodCti = None
 
         self.paddingCti = IntCti("padding", -1, suffix="%", specialValueText="dynamic",
@@ -261,10 +291,10 @@ class PgAxisRangeCti(GroupCti):
         """
         #logger.debug("  {}._refreshNodeFromTarget: {} {}".format(self.nodePath, args, kwargs))
         self._refreshAutoRange()
-        self._refreshMinMax(self.viewBox, self.viewBox.state['viewRange'])
+        self._refreshMinMax(self.getTargetRange())
 
 
-    def _refreshMinMax(self, viewBox, ranges):
+    def _refreshMinMax(self, axisRange):
         """ Refreshes the min max config values from the axes' state.
 
             ranges = [[xmin, xmax], [ymin, ymax]]
@@ -275,12 +305,7 @@ class PgAxisRangeCti(GroupCti):
         # [4e-2, 7e-2]. However if min = 1.04 and max = 1.07, we need 2 decimals behind the point.
         # So while the range is the same size, we need more decimals because we are not zoomed in
         # around zero.
-        assert viewBox == self.viewBox, \
-            "sanity check failed: {} != {}".format(viewBox, self.viewBox)
-
-        rangeMin, rangeMax = ranges[self.axisNumber]
-        #logger.debug("    _refreshMinMax: {}, {}".format(rangeMin, rangeMax))
-
+        rangeMin, rangeMax = axisRange
         maxOrder = int(np.log10(np.abs(max(rangeMax, rangeMin))))
         diffOrder = int(np.log10(np.abs(rangeMax - rangeMin)))
 
@@ -302,7 +327,6 @@ class PgAxisRangeCti(GroupCti):
         """ The min and max config items will be disabled if auto range is on.
         """
         enabled = self.autoRangeCti.configValue
-        #logger.debug("    _refreshAutoRange: enabled={}".format(enabled))
         self.rangeMinCti.enabled = not enabled
         self.rangeMaxCti.enabled = not enabled
         self.model.emitDataChanged(self)
@@ -323,26 +347,16 @@ class PgAxisRangeCti(GroupCti):
         self._refreshNodeFromTarget()
 
 
-    def axisRange(self):
+    def calculateRange(self):
         """ Calculates the range depending on the config settings.
         """
         if not self.autoRangeCti.configValue:
             return (self.rangeMinCti.data, self.rangeMaxCti.data)
         else:
-            if not self.methodCti or self.methodCti.configValue == self.PYQT_RANGE: # TODO: make generic
-                rect = self.viewBox.childrenBoundingRect() # taken from viewBox.autoRange()
-                if rect is not None:
-                    if self.axisNumber == X_AXIS:
-                        return rect.left(), rect.right()
-                    else:
-                        return rect.bottom(), rect.top()
-                else:
-                    # Does this happen? Probably when the plot is empty.
-                    raise AssertionError("No children bbox. Plot range not updated.")
-            else:
-                rangeFunction = self._rangeFunctions[self.methodCti.configValue]
-                logger.debug("Calling range_function: {}".format(rangeFunction))
-                return rangeFunction()
+            method = self.methodCti.configValue if self.methodCti else self.PYQT_RANGE
+            rangeFunction = self._rangeFunctions[method]
+            logger.debug("Calling range_function: {}".format(rangeFunction))
+            return rangeFunction()
 
 
     def _updateTargetFromNode(self):
@@ -356,37 +370,43 @@ class PgAxisRangeCti(GroupCti):
         else:
             padding = self.paddingCti.configValue / 100
 
-        axisRange = self.axisRange()
-        logger.debug("axisRange: {}, padding={}".format(axisRange, padding))
-        if not np.all(np.isfinite(axisRange)):
-            logger.warn("New axis range is not finite. Plot range not updated")
+        targetRange = self.calculateRange()
+        logger.debug("axisRange: {}, padding={}".format(targetRange, padding))
+        if not np.all(np.isfinite(targetRange)):
+            logger.warn("New target range is not finite. Plot range not updated")
             return
 
+        self.setTargetRange(targetRange, padding=padding)
+
+
+    def getTargetRange(self):
+        """ Gets the range of the target
+        """
+        return self.viewBox.state['viewRange'][self.axisNumber]
+
+
+    def setTargetRange(self, targetRange, padding=None):
+        """ Sets the range of the target.
+        """
+        # The padding paramater is a bit of a hack. TODO: how better?
         # viewBox.setRange doesn't accept an axis number :-(
         if self.axisNumber == X_AXIS:
-            xRange, yRange = axisRange, None
+            xRange, yRange = targetRange, None
         else:
-            xRange, yRange = None, axisRange
+            xRange, yRange = None, targetRange
 
         self.viewBox.setRange(xRange = xRange, yRange=yRange, padding=padding,
                               update=False, disableAutoRange=True)
 
 
 
+
 class PgAxisCti(GroupCti):
     """ Configuration tree item for a PyQtGraph plot axis.
 
-        This CTI is intended to be used as a child of a PgPlotItemCti.
+        Currently nothing more than a GroupCti.
     """
-    def __init__(self, plotItem, axisNumber, nodeName):
-        """ Constructor. A PgAxisRangeCti will be inserted by default.
-            The target axis is specified by plotItem and axisNumber (0 for x-axis, 1 for y-axis)
-        """
-        super(PgAxisCti, self).__init__(nodeName)
-
-        assert axisNumber in (X_AXIS, Y_AXIS), "axisNumber must be 0 or 1"
-        self.plotItem = plotItem      # TODO: can this go?
-        self.axisNumber = axisNumber
+    pass
 
 
 
@@ -409,13 +429,13 @@ class PgPlotItemCti(GroupCti):
         # Keeping references to the axes CTIs because they need to be updated quickly when
         # the range changes; getting by path may be slow.)
         if xAxisCti is None:
-            self.xAxisCti = self.insertChild(PgAxisCti(plotItem, X_AXIS, 'x-axis'))
+            self.xAxisCti = self.insertChild(PgAxisCti('x-axis'))
         else:
             check_class(xAxisCti, PgAxisCti)
             self.xAxisCti = self.insertChild(xAxisCti)
 
         if yAxisCti is None:
-            self.yAxisCti = self.insertChild(PgAxisCti(plotItem, Y_AXIS, 'y-axis'))
+            self.yAxisCti = self.insertChild(PgAxisCti('y-axis'))
         else:
             check_class(yAxisCti, PgAxisCti)
             self.yAxisCti = self.insertChild(yAxisCti)
