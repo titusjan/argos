@@ -25,7 +25,6 @@ import pyqtgraph as pg
 
 logger = logging.getLogger(__name__)
 
-from collections import OrderedDict
 from libargos.qt import QtGui
 from libargos.info import DEBUGGING
 from libargos.config.groupcti import MainGroupCti, GroupCti
@@ -36,30 +35,11 @@ from libargos.config.floatcti import FloatCti
 from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector
 from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, makePyQtAutoRangeFn,
+                                                 defaultAutoRangeMethods,
                                                  PgPlotItemCti, PgAxisLabelCti, PgAxisLogModeCti,
                                                  PgAxisRangeCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.utils.cls import array_has_real_numbers, check_class
-
-# Python closures are late-binding
-# http://docs.python-guide.org/en/latest/writing/gotchas/#late-binding-closures
-def makeInspectorPercentileRangeFn(inspector, percentage):
-    """ Generates a function that calculates the range of the sliced array of the inspector
-        by discarding a percentage of the outliers (at both ends, minimum and maximum)
-
-        The first parameter is an inspector, and not an array, because we would then have to
-        regenerate ther range function every time sliced array of an inspector changes.
-    """
-    def calcRange():
-        """ Calculates the range from the sliced array. Discards percentage of the minimum and
-            percentage of the maximum values of the inspector.slicedArray
-        """
-        array = inspector.slicedArray
-        logger.debug("Discarding {}% from id: {}".format(percentage, id(array)))
-        return np.nanpercentile(array, (percentage, 100-percentage) )
-
-    return calcRange
-
 
 
 class PgLinePlot1dCti(MainGroupCti):
@@ -106,13 +86,8 @@ class PgLinePlot1dCti(MainGroupCti):
                                          "{name}", "{path}", "{raw-unit}"]))
         yAxisCti.insertChild(PgAxisLogModeCti(plotItem, Y_AXIS))
 
-        rangeFunctions = OrderedDict()
-        rangeFunctions[PgAxisRangeCti.PYQT_RANGE + ' :-)'] = makePyQtAutoRangeFn(viewBox, Y_AXIS)
-        rangeFunctions['use all data'] = makeInspectorPercentileRangeFn(self.pgLinePlot1d, 0.0)
-        for percentage in [0.1, 0.2, 0.5, 1, 2, 5, 10, 20]:
-            label = "discard {}%".format(percentage)
-            rangeFunctions[label] = makeInspectorPercentileRangeFn(self.pgLinePlot1d, percentage)
-
+        rangeFunctions = defaultAutoRangeMethods(self.pgLinePlot1d,
+            {PgAxisRangeCti.PYQT_RANGE: makePyQtAutoRangeFn(viewBox, Y_AXIS)})
         yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS, rangeFunctions))
 
         #### Pen ####
@@ -146,6 +121,11 @@ class PgLinePlot1d(AbstractInspector):
         """ Constructor. See AbstractInspector constructor for parameters.
         """
         super(PgLinePlot1d, self).__init__(collector, parent=parent)
+
+        # The sliced array is kept in memory. This may be different per inspector, e.g. 3D
+        # inspectors may decide that this uses to much memory. The slice is therefor not stored
+        # in the collector.
+        self.slicedArray = None
 
         self.viewBox = pg.ViewBox(border=pg.mkPen("#000000", width=1))
 
@@ -188,9 +168,6 @@ class PgLinePlot1d(AbstractInspector):
     def _drawContents(self):
         """ Draws the RTI
         """
-        # The sliced array is kept in memory. This may be different per inspector, e.g. 3D
-        # inspectors may decide that this uses to much memory. The slice is therefor not stored
-        # in the collector.
         self.slicedArray = self.collector.getSlicedArray()
 
         if self.slicedArray is None or not array_has_real_numbers(self.slicedArray):

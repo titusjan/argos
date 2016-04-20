@@ -28,8 +28,9 @@ from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.inspector.abstract import AbstractInspector
-from libargos.inspector.pgplugins.pgctis import (PgPlotItemCti, PgAxisLabelCti, PgAxisFlipCti,
-                                                 PgAxisRangeCti, X_AXIS, Y_AXIS)
+from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, defaultAutoRangeMethods,
+                                                 PgPlotItemCti, PgAxisLabelCti, PgAxisFlipCti,
+                                                 PgAxisRangeCti, PgHistLutRangeCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.utils.cls import array_has_real_numbers, check_class
 
@@ -73,11 +74,14 @@ class PgImagePlot2dCti(MainGroupCti):
         yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS))
 
         #### Color scale ####
-        self.insertChild(BoolCti('auto levels', True))
+        rangeFunctions = defaultAutoRangeMethods(self.pgImagePlot2d)
+        self.insertChild(PgHistLutRangeCti(pgImagePlot2d.histLutItem, rangeFunctions,
+                                           nodeName="color range"))
 
         histViewBox = pgImagePlot2d.histLutItem.vb
         histViewBox.enableAutoRange(Y_AXIS, False)
-        self.insertChild(PgAxisRangeCti(histViewBox, Y_AXIS, nodeName='histogram range'))
+        self.histRangeCti = self.insertChild(PgAxisRangeCti(histViewBox, Y_AXIS, nodeName='histogram range'))
+        self.histRangeCti.insertChild(PgAxisFlipCti(histViewBox, Y_AXIS))
 
 
 
@@ -89,6 +93,11 @@ class PgImagePlot2d(AbstractInspector):
         """ Constructor. See AbstractInspector constructor for parameters.
         """
         super(PgImagePlot2d, self).__init__(collector, parent=parent)
+
+        # The sliced array is kept in memory. This may be different per inspector, e.g. 3D
+        # inspectors may decide that this uses to much memory. The slice is therefor not stored
+        # in the collector.
+        self.slicedArray = None
 
         self.viewBox = pg.ViewBox(border=pg.mkPen("#000000", width=1))
         self.plotItem = ArgosPgPlotItem(name='2d_image_plot_#{}'.format(self.windowNumber),
@@ -140,8 +149,8 @@ class PgImagePlot2d(AbstractInspector):
         """
         logger.debug("_drawContents: {}_drawContents".format(self))
 
-        slicedArray = self.collector.getSlicedArray()
-        if slicedArray is None or not array_has_real_numbers(slicedArray):
+        self.slicedArray = self.collector.getSlicedArray()
+        if self.slicedArray is None or not array_has_real_numbers(self.slicedArray):
             logger.debug("Clearing inspector: no data available or it does not contain real numbers")
             self._clearContents()
             return
@@ -154,15 +163,13 @@ class PgImagePlot2d(AbstractInspector):
         self.titleLabel.setText(self.configValue('title').format(**rtiInfo))
 
         logger.debug("Calculating sliced arraylevels...")
-        levels = (np.nanmin(slicedArray), np.nanmax(slicedArray))
+        levels = (np.nanmin(self.slicedArray), np.nanmax(self.slicedArray))
         logger.debug("Calculating sliced arraylevels: {}".format(levels))
 
-        # Unfortunately, PyQtGraph uses the following dimension order: T, X, Y, Color.
+        # PyQtGraph uses the following dimension order: T, X, Y, Color.
         # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0}
         # doesn't seem to do anything.
-        self.imageItem.setImage(slicedArray.transpose(),
-                                autoLevels = self.configValue('auto levels'))
-
+        self.imageItem.setImage(self.slicedArray.transpose(), autoLevels=False)
         self.histLutItem.setLevels(levels[0], levels[1])
 
         self.config.updateTarget()
