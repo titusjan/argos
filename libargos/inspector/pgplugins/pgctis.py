@@ -65,8 +65,6 @@ def makePyQtAutoRangeFn(viewBox, axisNumber):
     return calcRange
 
 
-
-
 class ViewBoxDebugCti(GroupCti):
     """ Read-only config tree for inspecting a PyQtGraph ViewBox
     """
@@ -220,7 +218,6 @@ class AbstractRangeCti(GroupCti):
             The *args and **kwargs arguments are ignored but make it possible to use this as a slot
             for signals with arguments.
         """
-        #logger.debug("  {}._refreshNodeFromTarget: {} {}".format(self.nodePath, args, kwargs))
         self._refreshAutoRange()
         self._refreshMinMax(self.getTargetRange())
 
@@ -258,6 +255,7 @@ class AbstractRangeCti(GroupCti):
         """ The min and max config items will be disabled if auto range is on.
         """
         enabled = self.autoRangeCti and self.autoRangeCti.configValue
+
         self.rangeMinCti.enabled = not enabled
         self.rangeMaxCti.enabled = not enabled
         self.model.emitDataChanged(self)
@@ -286,7 +284,6 @@ class AbstractRangeCti(GroupCti):
             return (self.rangeMinCti.data, self.rangeMaxCti.data)
         else:
             rangeFunction = self._rangeFunctions[self.autoRangeMethod]
-            logger.debug("Calling range_function: {}".format(rangeFunction))
             return rangeFunction()
 
 
@@ -302,7 +299,7 @@ class AbstractRangeCti(GroupCti):
             padding = self.paddingCti.configValue / 100
 
         targetRange = self.calculateRange()
-        logger.debug("axisRange: {}, padding={}".format(targetRange, padding))
+        #logger.debug("axisRange: {}, padding={}".format(targetRange, padding))
         if not np.all(np.isfinite(targetRange)):
             logger.warn("New target range is not finite. Plot range not updated")
             return
@@ -341,14 +338,17 @@ class PgHistLutRangeCti(AbstractRangeCti):
         self.histLutItem = histLutItem
 
         # Connect signals
+        #  sigLevelChangeFinished is triggered only at the end of a drag
         self.histLutItem.sigLevelsChanged.connect(self._setAutoRangeOff)
+        #self.histLutItem.sigLevelChangeFinished.connect(self._setAutoRangeOff)
 
 
     def _closeResources(self):
         """ Disconnects signals.
             Is called by self.finalize when the cti is deleted.
         """
-        self.histLutItem.sigLevelsChanged.disconnect(self._setAutoRangeOff)
+        self.histLutItem.sigLevelsChanged.connect(self._setAutoRangeOff)
+        #self.histLutItem.sigLevelChangeFinished.disconnect(self._setAutoRangeOff)
 
 
     def getTargetRange(self):

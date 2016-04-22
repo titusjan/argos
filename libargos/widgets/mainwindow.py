@@ -433,11 +433,6 @@ class MainWindow(QtGui.QMainWindow):
         logger.debug("")
         logger.debug("-------- Drawing inspector of window: {} --------".format(self.windowTitle()))
         if self.inspector:
-            try:
-                logger.debug("x-autorange: {!r}".format(self.inspector.configValue('axes/x-axis/range/auto-range')))
-                logger.debug("y-autorange: {!r}".format(self.inspector.configValue('axes/y-axis/range/auto-range')))
-            except:
-                pass
             self.inspector.drawContents()
         else:
             logger.debug("No inspector selected")

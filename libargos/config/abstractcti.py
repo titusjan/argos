@@ -305,7 +305,7 @@ class AbstractCti(BaseTreeItem):
                 child.resetToDefault(resetChildren=True)
 
 
-    def refreshFromTarget(self):
+    def refreshFromTarget(self, level=0):
         """ Refreshes the configuration frp, the target it monitors (if present).
             Recursively call _refreshNodeFromTarget for itself and all children. Subclasses should
             typically override _refreshNodeFromTarget instead of this function.
@@ -314,9 +314,12 @@ class AbstractCti(BaseTreeItem):
         if self._blockRefresh:
             return
 
+        if level == 0:
+            logger.debug("refreshFromTarget: {}".format(self.nodePath))
+
         self._refreshNodeFromTarget()
         for child in self.childItems:
-            child.refreshFromTarget()
+            child.refreshFromTarget(level=level + 1)
 
 
     def _refreshNodeFromTarget(self):
@@ -338,6 +341,9 @@ class AbstractCti(BaseTreeItem):
 
             :param level: the level of recursion.
         """
+        if level == 0:
+            logger.debug("updateTarget: {}".format(self.nodePath))
+
         oldBlockRefresh = self._blockRefresh
         self._blockRefresh = True # defer calling self.viewBoxChanged
         try:

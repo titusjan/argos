@@ -147,8 +147,6 @@ class PgImagePlot2d(AbstractInspector):
     def _drawContents(self):
         """ Draws the inspector widget when no input is available.
         """
-        logger.debug("_drawContents: {}_drawContents".format(self))
-
         self.slicedArray = self.collector.getSlicedArray()
         if self.slicedArray is None or not array_has_real_numbers(self.slicedArray):
             logger.debug("Clearing inspector: no data available or it does not contain real numbers")
@@ -162,14 +160,16 @@ class PgImagePlot2d(AbstractInspector):
         rtiInfo = self.collector.getRtiInfo()
         self.titleLabel.setText(self.configValue('title').format(**rtiInfo))
 
-        logger.debug("Calculating sliced arraylevels...")
-        levels = (np.nanmin(self.slicedArray), np.nanmax(self.slicedArray))
-        logger.debug("Calculating sliced arraylevels: {}".format(levels))
-
         # PyQtGraph uses the following dimension order: T, X, Y, Color.
         # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0}
         # doesn't seem to do anything.
         self.imageItem.setImage(self.slicedArray.transpose(), autoLevels=False)
+
+        # Block signals to prevent sigLevelChange triggering _setAutoRangeOff
+        levels = (np.nanmin(self.slicedArray), np.nanmax(self.slicedArray))
+        oldBlockValue = self.histLutItem.blockSignals(True)
         self.histLutItem.setLevels(levels[0], levels[1])
+        self.histLutItem.blockSignals(oldBlockValue)
 
         self.config.updateTarget()
+
