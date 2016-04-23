@@ -24,12 +24,13 @@ import numpy as np
 import pyqtgraph as pg
 
 from libargos.info import DEBUGGING
-from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
+from libargos.config.groupcti import MainGroupCti
 from libargos.inspector.abstract import AbstractInspector
 from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, defaultAutoRangeMethods,
-                                                 PgPlotItemCti, PgAxisLabelCti, PgAxisFlipCti,
+                                                 PgMainPlotItemCti, PgAxisLabelCti,
+                                                 PgAxisFlipCti, PgAspectRatioCti,
                                                  PgAxisRangeCti, PgHistLutRangeCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.utils.cls import array_has_real_numbers, check_class
@@ -37,36 +38,37 @@ from libargos.utils.cls import array_has_real_numbers, check_class
 logger = logging.getLogger(__name__)
 
 
-class PgImagePlot2dCti(MainGroupCti):
+class PgImagePlot2dCti(PgMainPlotItemCti):
     """ Configuration tree for a PgLinePlot1d inspector
     """
-    def __init__(self, nodeName, pgImagePlot2d, defaultData=None):
+    def __init__(self, pgImagePlot2d, nodeName):
         """ Constructor
 
             Maintains a link to the target pgImagePlot2d inspector, so that changes in the
             configuration can be applied to the target by simply calling the apply method.
             Vice versa, it can connect signals to the target.
         """
-        super(PgImagePlot2dCti, self).__init__(nodeName, defaultData=defaultData)
+        super(PgImagePlot2dCti, self).__init__(pgImagePlot2d.plotItem, nodeName)
         check_class(pgImagePlot2d, PgImagePlot2d)
         self.pgImagePlot2d = pgImagePlot2d
-
-        self.insertChild(ChoiceCti('title', 0, editable=True,
-                                   configValues=["{path} {slices}", "{name} {slices}"]))
-
-        #### Axes ####
         plotItem = self.pgImagePlot2d.plotItem
         viewBox = plotItem.getViewBox()
-        self.plotItemCti = self.insertChild(PgPlotItemCti(plotItem))
 
-        xAxisCti = self.plotItemCti.xAxisCti
+        self.insertChild(ChoiceCti('title', 0, editable=True,
+                                   configValues=["{path} {slices}", "{name} {slices}"]),
+                         position=-2) # before the xAxisCti and yAxisCti
+
+        #### Axes ####
+        self.aspectLockedCti = self.insertChild(PgAspectRatioCti(viewBox), position=-2)
+
+        xAxisCti = self.xAxisCti
         #xAxisCti.insertChild(PgAxisShowCti(plotItem, 'bottom')) # disabled, seems broken
         xAxisCti.insertChild(PgAxisLabelCti(plotItem, 'bottom', self.pgImagePlot2d.collector,
             defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{x-dim}"]))
         xAxisCti.insertChild(PgAxisFlipCti(viewBox, X_AXIS))
         xAxisCti.insertChild(PgAxisRangeCti(viewBox, X_AXIS))
 
-        yAxisCti = self.plotItemCti.yAxisCti
+        yAxisCti = self.yAxisCti
         #yAxisCti.insertChild(PgAxisShowCti(plotItem, 'left'))  # disabled, seems broken
         yAxisCti.insertChild(PgAxisLabelCti(plotItem, 'left', self.pgImagePlot2d.collector,
             defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{y-dim}"]))
@@ -80,8 +82,8 @@ class PgImagePlot2dCti(MainGroupCti):
 
         histViewBox = pgImagePlot2d.histLutItem.vb
         histViewBox.enableAutoRange(Y_AXIS, False)
-        self.histRangeCti = self.insertChild(PgAxisRangeCti(histViewBox, Y_AXIS, nodeName='histogram range'))
-        self.histRangeCti.insertChild(PgAxisFlipCti(histViewBox, Y_AXIS))
+        self.histRangeCti = self.insertChild(PgAxisRangeCti(histViewBox, Y_AXIS,
+                                                            nodeName='histogram range'))
 
 
 
@@ -117,7 +119,7 @@ class PgImagePlot2d(AbstractInspector):
 
         self.contentsLayout.addWidget(self.graphicsLayoutWidget)
 
-        self._config = PgImagePlot2dCti('inspector', pgImagePlot2d=self)
+        self._config = PgImagePlot2dCti(pgImagePlot2d=self, nodeName='inspector')
 
         
     def finalize(self):

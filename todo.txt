@@ -141,7 +141,7 @@ DATA & LIBS:
 	http://data.giss.nasa.gov/gistemp/
 	http://archive.stsci.edu/genlinks_search.php?target=&resolver=SIMBAD&Submit=Search
 	
-	
+
 	# OMI L3
 	http://mirador.gsfc.nasa.gov/cgi-bin/mirador/granlist.pl?page=1&location=%28-90,-180%29,%2890,180%29&dataSet=OMDOAO3e&version=003&allversion=003&startTime=2010-06-02T00:00:01Z&endTime=2010-06-02T23:59:59Z&keyword=OMDOAO3e&longname=OMI/Aura%20Ozone%20%28O3%29%20DOAS%20Total%20Column%20Daily%20L3%20Global%200.25deg%20Lat/Lon%20Grid&CGISESSID=3a77ae56c199ee231e300480e6fc5edc&prodpg=http://mirador.gsfc.nasa.gov/collections/OMDOAO3e__003.shtml
 	http://www.temis.nl/airpollution/no2.html
@@ -167,3 +167,13 @@ DATA & LIBS:
 	http://tools.medialab.sciences-po.fr/iwanthue/tutorial.php
 	http://vis4.net/blog/posts/avoid-equidistant-hsv-colors/
     http://soliton.vm.bytemark.co.uk/pub/cpt-city/
+
+    # voxel data
+    http://www.gris.uni-tuebingen.de/edu/areas/scivis/volren/datasets/datasets.html
+    http://www.gris.uni-tuebingen.de/edu/areas/scivis/volren/datasets/new.html
+
+    # USGC/NASA
+    http://nsidc.org/data/modis/index.html
+    https://earthdata.nasa.gov/
+    https://lpdaac.usgs.gov/dataset_discovery/aster/aster_products_table
+    https://lpdaac.usgs.gov/data_access

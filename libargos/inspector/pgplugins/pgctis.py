@@ -24,8 +24,8 @@ import numpy as np
 import pyqtgraph as pg
 
 from collections import OrderedDict
-from libargos.config.groupcti import GroupCti
-from libargos.config.boolcti import BoolCti
+from libargos.config.groupcti import GroupCti, MainGroupCti
+from libargos.config.boolcti import BoolCti, BoolGroupCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.intcti import IntCti
 from libargos.config.floatcti import SnFloatCti, FloatCti
@@ -164,7 +164,7 @@ class AbstractRangeCti(GroupCti):
 
         Is an abstract class. Descendants must override getTargetRange and setTargetRange
     """
-    def __init__(self, autoRangeFunctions=None, nodeName='range'):
+    def __init__(self, autoRangeFunctions=None, nodeName='range', expanded=False):
         """ Constructor.
             The target axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
 
@@ -174,7 +174,7 @@ class AbstractRangeCti(GroupCti):
             If autoRangeMethods has one element there will be an auto-range child without a method
             child CTI (the function from the autoRangeMethods dictionary will be the default).
         """
-        super(AbstractRangeCti, self).__init__(nodeName)
+        super(AbstractRangeCti, self).__init__(nodeName, expanded=expanded)
 
         self.rangeMinCti = self.insertChild(SnFloatCti('min', 0.0))
         self.rangeMaxCti = self.insertChild(SnFloatCti('max', 1.0))
@@ -185,7 +185,7 @@ class AbstractRangeCti(GroupCti):
         self.paddingCti = None
 
         if autoRangeFunctions is not None:
-            self.autoRangeCti = self.insertChild(BoolCti("auto-range", True))
+            self.autoRangeCti = self.insertChild(BoolCti("auto-range", True, expanded=False))
             self._rangeFunctions = autoRangeFunctions
 
             if len(autoRangeFunctions) > 1:
@@ -324,7 +324,7 @@ class AbstractRangeCti(GroupCti):
 class PgHistLutRangeCti(AbstractRangeCti):
     """ Configuration tree item is linked to the HistogramLUTItem range.
     """
-    def __init__(self, histLutItem, autoRangeFunctions=None, nodeName='color range'):
+    def __init__(self, histLutItem, autoRangeFunctions=None, nodeName='color range', expanded=True):
         """ Constructor.
             The target axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
 
@@ -333,7 +333,7 @@ class PgHistLutRangeCti(AbstractRangeCti):
             a method choice and the autorange implemented by PyQtGraph will be used.
         """
         super(PgHistLutRangeCti, self).__init__(autoRangeFunctions=autoRangeFunctions,
-                                                nodeName=nodeName)
+                                                nodeName=nodeName, expanded=expanded)
         check_class(histLutItem, pg.HistogramLUTItem)
         self.histLutItem = histLutItem
 
@@ -370,7 +370,8 @@ class PgAxisRangeCti(AbstractRangeCti):
     """
     PYQT_RANGE = 'by PyQtGraph'
 
-    def __init__(self, viewBox, axisNumber, autoRangeFunctions=None, nodeName='range'):
+    def __init__(self, viewBox, axisNumber, autoRangeFunctions=None,
+                 nodeName='range', expanded=True):
         """ Constructor.
             The target axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
 
@@ -381,16 +382,15 @@ class PgAxisRangeCti(AbstractRangeCti):
         if autoRangeFunctions is None:
             autoRangeFunctions = {self.PYQT_RANGE: makePyQtAutoRangeFn(viewBox, axisNumber)}
 
-        super(PgAxisRangeCti, self).__init__(autoRangeFunctions=autoRangeFunctions, nodeName=nodeName)
+        super(PgAxisRangeCti, self).__init__(autoRangeFunctions=autoRangeFunctions,
+                                             nodeName=nodeName, expanded=expanded)
         check_class(viewBox, pg.ViewBox)
         assert axisNumber in (X_AXIS, Y_AXIS), "axisNumber must be 0 or 1"
 
         self.viewBox = viewBox
         self.axisNumber = axisNumber
 
-        if DEBUGGING:
-            self.insertChild(ViewBoxDebugCti('viewbox state', self.viewBox))
-
+        # self.insertChild(ViewBoxDebugCti('viewbox state', self.viewBox))
 
         # Connect signals
         self.viewBox.sigRangeChangedManually.connect(self._setAutoRangeOff)
@@ -424,10 +424,32 @@ class PgAxisRangeCti(AbstractRangeCti):
 
 
 
+class PgAspectRatioCti(BoolCti):
+    """ BoolCti for locking and specifying the aspect ratio (x/y)
+    """
+    def __init__(self, viewBox, nodeName="lock aspect ratio", defaultData=False, expanded=False):
+        """ Constructor.
+            The target axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
+        """
+        super(PgAspectRatioCti, self).__init__(nodeName, defaultData=defaultData, expanded=expanded)
+        check_class(viewBox, pg.ViewBox)
+
+        self.aspectRatioCti = self.insertChild(FloatCti("ratio", 1.0, minValue=0.0))
+        self.viewBox = viewBox
+
+
+    def _updateTargetFromNode(self):
+        """ Applies the configuration to its target axis
+        """
+        self.viewBox.setAspectLocked(lock=self.configValue, ratio=self.aspectRatioCti.configValue)
+
+
+
 class PgAxisFlipCti(BoolCti):
     """ BoolCti that flips an axis when True.
     """
-    def __init__(self, viewBox, axisNumber, nodeName='flipped', defaultData=False):
+    def __init__(self, viewBox, axisNumber, nodeName='flipped', defaultData=False
+                 ):
         """ Constructor.
             The target axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
         """
@@ -531,6 +553,37 @@ class PgAxisLogModeCti(BoolCti):
         self.plotItem.setLogMode(x=xMode, y=yMode)
 
 
+
+class PgGridCti(BoolGroupCti):
+    """ CTI for toggling the the grid on and off.
+
+        Has child CTIs for toggling the X and Y axes separately. These are typically not added
+        as children of PgAxisCti objects so that the user can enable both grids with one checkbox.
+        Also includes a child to configure the transparency (alpha) of the grid.
+    """
+    def __init__(self, plotItem, nodeName="grid", defaultData=True, expanded=False):
+        """ Constructor.
+            The target axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
+        """
+        super(PgGridCti, self).__init__(nodeName, defaultData=defaultData, expanded=expanded)
+        check_class(plotItem, pg.PlotItem)
+        self.plotItem = plotItem
+
+        self.xGridCti = self.insertChild(BoolCti('x-axis', defaultData))
+        self.yGridCti = self.insertChild(BoolCti('y-axis', defaultData))
+        self.alphaCti = self.insertChild(FloatCti('alpha', 0.20,
+            minValue=0.0, maxValue=1.0, stepSize=0.01, decimals=2))
+
+
+    def _updateTargetFromNode(self):
+        """ Applies the configuration to the grid of the plot item.
+        """
+        self.plotItem.showGrid(x=self.xGridCti.configValue, y=self.yGridCti.configValue,
+                               alpha=self.alphaCti.configValue)
+        self.plotItem.updateGrid()
+
+
+
 class PgAxisCti(GroupCti):
     """ Configuration tree item for a PyQtGraph plot axis.
 
@@ -539,25 +592,19 @@ class PgAxisCti(GroupCti):
     pass
 
 
-
-class PgPlotItemCti(GroupCti):
-    """ Config tree item for manipulating a PyQtGraph.PlotItem
+# Not really happy with this solution.
+class PgMainPlotItemCti(MainGroupCti):
+    """ Config tree item that has a plot item as its main target.
+        Inherits from a MainGroupCti because it usually corresponds to a inspector.
     """
     def __init__(self, plotItem, nodeName='axes', xAxisCti=None, yAxisCti=None):
         """ Constructor
         """
-        super(PgPlotItemCti, self).__init__(nodeName)
+        super(PgMainPlotItemCti, self).__init__(nodeName)
         assert plotItem, "target plotItem is undefined"
 
-        # x/y. How do we disable this?
-        self.aspectLockedCti = self.insertChild(BoolCti("lock aspect ratio", False, expanded=False))
-        self.aspectRatioCti = self.aspectLockedCti.insertChild(FloatCti("ratio", 1.0, minValue=0.0))
-
         self.plotItem = plotItem
-        viewBox = plotItem.getViewBox()
 
-        # Keeping references to the axes CTIs because they need to be updated quickly when
-        # the range changes; getting by path may be slow.)
         if xAxisCti is None:
             self.xAxisCti = self.insertChild(PgAxisCti('x-axis'))
         else:
@@ -570,12 +617,9 @@ class PgPlotItemCti(GroupCti):
             check_class(yAxisCti, PgAxisCti)
             self.yAxisCti = self.insertChild(yAxisCti)
 
-        if True:
-            self.insertChild(ViewBoxDebugCti('viewbox state', viewBox))
-
         # Connect signals
         self.plotItem.autoBtn.clicked.connect(self._setAutoRangeOn)
-        self.plotItem.sigClicked.connect(self._setAutoRangeOn)
+        #self.plotItem.sigClicked.connect(self._setAutoRangeOn)
 
 
     def _closeResources(self):
@@ -583,14 +627,7 @@ class PgPlotItemCti(GroupCti):
             Is called by self.finalize when the cti is deleted.
         """
         self.plotItem.autoBtn.clicked.disconnect(self._setAutoRangeOn)
-        self.plotItem.sigClicked.disconnect(self._setAutoRangeOn)
-
-
-    def _updateTargetFromNode(self):
-        """ Applies the configuration to the target axis it monitors.
-        """
-        self.plotItem.setAspectLocked(lock=self.aspectLockedCti.configValue,
-                                      ratio=self.aspectRatioCti.configValue)
+        #self.plotItem.sigClicked.disconnect(self._setAutoRangeOn)
 
 
     def _setAutoRangeOn(self):

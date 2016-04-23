@@ -27,60 +27,54 @@ logger = logging.getLogger(__name__)
 
 from libargos.qt import QtGui
 from libargos.info import DEBUGGING
-from libargos.config.groupcti import MainGroupCti, GroupCti
-from libargos.config.boolcti import BoolGroupCti, BoolCti
+from libargos.config.groupcti import  GroupCti
+from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.qtctis import PenCti, ColorCti, createPenStyleCti, createPenWidthCti
-from libargos.config.floatcti import FloatCti
 from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector
 from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, makePyQtAutoRangeFn,
-                                                 defaultAutoRangeMethods,
-                                                 PgPlotItemCti, PgAxisLabelCti, PgAxisLogModeCti,
-                                                 PgAxisRangeCti)
+                                                 defaultAutoRangeMethods, PgGridCti,
+                                                 PgMainPlotItemCti, PgAxisLabelCti,
+                                                 PgAxisLogModeCti, PgAxisRangeCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.utils.cls import array_has_real_numbers, check_class
 
 
-class PgLinePlot1dCti(MainGroupCti):
+class PgLinePlot1dCti(PgMainPlotItemCti):
     """ Configuration tree for a PgLinePlot1d inspector
     """
-    def __init__(self, nodeName, pgLinePlot1d, defaultData=None):
+    def __init__(self, pgLinePlot1d, nodeName):
         """ Constructor
 
             Maintains a link to the target pgLinePlot1d inspector, so that changes in the
             configuration can be applied to the target by simply calling the apply method.
             Vice versa, it can connect signals to the target.
         """
-        super(PgLinePlot1dCti, self).__init__(nodeName, defaultData=defaultData)
+        super(PgLinePlot1dCti, self).__init__(pgLinePlot1d.plotItem, nodeName=nodeName)
 
         check_class(pgLinePlot1d, PgLinePlot1d)
         self.pgLinePlot1d = pgLinePlot1d
     
         self.insertChild(ChoiceCti('title', 0, editable=True, 
-                                    configValues=["{path} {slices}", "{name} {slices}"]))
-        self.insertChild(BoolCti("anti-alias", True))
-
-        # Grid (in a separate group so it can be toggled on/off with one checkbox)
-        gridItem = self.insertChild(BoolGroupCti('grid', True, expanded=False))
-        gridItem.insertChild(BoolCti('x-axis', True))
-        gridItem.insertChild(BoolCti('y-axis', True))
-        gridItem.insertChild(FloatCti('alpha', 0.20, 
-                                      minValue=0.0, maxValue=1.0, stepSize=0.01, decimals=2))
+                                    configValues=["{path} {slices}", "{name} {slices}"]),
+                         position=-2)
+        self.insertChild(BoolCti("anti-alias", True), position=-2)
 
         #### Axes ####
         plotItem = self.pgLinePlot1d.plotItem
         viewBox = plotItem.getViewBox()
-        self.plotItemCti = self.insertChild(PgPlotItemCti(plotItem))
 
-        xAxisCti = self.plotItemCti.xAxisCti
+        self.insertChild(PgGridCti(plotItem), position=-2) # before the xAxisCti and yAxisCti
+
+        xAxisCti = self.xAxisCti
         xAxisCti.insertChild(PgAxisLabelCti(plotItem, 'bottom', self.pgLinePlot1d.collector,
             defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{x-dim}"]))
         # No logarithmic X-Axis as long as it only shows the array index and no abcissa.
         #xAxisCti.insertChild(PgAxisLogModeCti(plotItem, X_AXIS))
         xAxisCti.insertChild(PgAxisRangeCti(viewBox, X_AXIS))
 
-        yAxisCti = self.plotItemCti.yAxisCti
+        yAxisCti = self.yAxisCti
         yAxisCti.insertChild(PgAxisLabelCti(plotItem, 'left', self.pgLinePlot1d.collector,
             defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{name} {unit}", "{path} {unit}",
                                          "{name}", "{path}", "{raw-unit}"]))
@@ -139,7 +133,7 @@ class PgLinePlot1d(AbstractInspector):
 
         self.contentsLayout.addWidget(self.graphicsLayoutWidget)
 
-        self._config = PgLinePlot1dCti('inspector', pgLinePlot1d=self) # TODO: should be able to change nodeName without --reset
+        self._config = PgLinePlot1dCti(pgLinePlot1d=self, nodeName='inspector') # TODO: should be able to change nodeName without --reset
 
         
     def finalize(self):
@@ -181,11 +175,6 @@ class PgLinePlot1d(AbstractInspector):
         self.plotItem.clear() # TODO
 
         self.titleLabel.setText(self.configValue('title').format(**rtiInfo))
-
-        self.plotItem.showGrid(x=self.configValue('grid/x-axis'),
-                               y=self.configValue('grid/y-axis'),
-                               alpha=self.configValue('grid/alpha'))
-        self.plotItem.updateGrid()
 
         antiAlias = self.configValue('anti-alias')
         color = self.configValue('pen/color')

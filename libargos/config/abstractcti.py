@@ -356,7 +356,6 @@ class AbstractCti(BaseTreeItem):
         # Call refreshFromTarget in case the newly applied configuration resulted in a change of the
         # target's state.
         if level == 0:
-            logger.debug("Calling refreshFromTarget from updateTarget: {}".format(self.nodePath))
             self.refreshFromTarget()
 
 
