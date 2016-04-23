@@ -166,7 +166,9 @@ DATA & LIBS:
 	# color palette
 	http://tools.medialab.sciences-po.fr/iwanthue/tutorial.php
 	http://vis4.net/blog/posts/avoid-equidistant-hsv-colors/
-    http://soliton.vm.bytemark.co.uk/pub/cpt-city/
+	http://soliton.vm.bytemark.co.uk/pub/cpt-city/
+    https://vis4.net/blog/posts/mastering-multi-hued-color-scales/
+    https://gka.github.io/palettes/#colors=lightyellow,orange,deeppink,darkred|steps=10|bez=1|coL=1
 
     # voxel data
     http://www.gris.uni-tuebingen.de/edu/areas/scivis/volren/datasets/datasets.html

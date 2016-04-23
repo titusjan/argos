@@ -31,7 +31,8 @@ from libargos.inspector.abstract import AbstractInspector
 from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, defaultAutoRangeMethods,
                                                  PgMainPlotItemCti, PgAxisLabelCti,
                                                  PgAxisFlipCti, PgAspectRatioCti,
-                                                 PgAxisRangeCti, PgHistLutRangeCti)
+                                                 PgAxisRangeCti, PgHistLutColorRangeCti,
+                                                 PgGradientEditorItemCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.utils.cls import array_has_real_numbers, check_class
 
@@ -76,9 +77,10 @@ class PgImagePlot2dCti(PgMainPlotItemCti):
         yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS))
 
         #### Color scale ####
+        self.insertChild(PgGradientEditorItemCti(self.pgImagePlot2d.histLutItem.gradient))
         rangeFunctions = defaultAutoRangeMethods(self.pgImagePlot2d)
-        self.insertChild(PgHistLutRangeCti(pgImagePlot2d.histLutItem, rangeFunctions,
-                                           nodeName="color range"))
+        self.insertChild(PgHistLutColorRangeCti(pgImagePlot2d.histLutItem, rangeFunctions,
+                                                nodeName="color range"))
 
         histViewBox = pgImagePlot2d.histLutItem.vb
         histViewBox.enableAutoRange(Y_AXIS, False)
@@ -109,8 +111,9 @@ class PgImagePlot2d(AbstractInspector):
         self.imageItem = pg.ImageItem()
         self.plotItem.addItem(self.imageItem)
 
-        self.histLutItem = pg.HistogramLUTItem()
+        self.histLutItem = pg.HistogramLUTItem() # what about GradientLegend?
         self.histLutItem.setImageItem(self.imageItem)
+        self.histLutItem.vb.setMenuEnabled(False)
 
         self.graphicsLayoutWidget = pg.GraphicsLayoutWidget()
         self.titleLabel = self.graphicsLayoutWidget.addLabel('<Title label>', 0, 0, colspan=2)

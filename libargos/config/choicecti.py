@@ -43,6 +43,9 @@ class ChoiceCti(AbstractCti):
             If displayValues is None, the configValues are used as displayValues.
                     
             For the (other) parameters see the AbstractCti constructor documentation.
+
+            The defaultData can be set to a negative value, e.g. use -1 to select the last item
+            by default. However, it will be converted to a positive value in the constructor.
         """
         self.editable = editable
         self._configValues = [] if configValues is None else configValues
@@ -62,9 +65,14 @@ class ChoiceCti(AbstractCti):
         
     
     def _enforceDataType(self, data):
-        """ Converts to int so that this CTI always stores that type. 
+        """ Converts to int so that this CTI always stores that type.
+
+            The data be set to a negative value, e.g. use -1 to select the last item
+            by default. However, it will be converted to a positive by this method.
         """
         idx = int(data)
+        if idx < 0:
+            idx += len(self._displayValues)
         assert 0 <= idx < len(self._displayValues), \
             "Index should be >= 0 and < {}. Got {}".format(len(self._displayValues), idx)
         return idx

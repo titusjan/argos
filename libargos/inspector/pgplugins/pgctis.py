@@ -32,6 +32,7 @@ from libargos.config.floatcti import SnFloatCti, FloatCti
 from libargos.config.untypedcti import UntypedCti
 from libargos.info import DEBUGGING
 from libargos.utils.cls import check_class
+from pyqtgraph.graphicsItems.GradientEditorItem import Gradients as GRADIENTS
 
 logger = logging.getLogger(__name__)
 
@@ -316,52 +317,11 @@ class AbstractRangeCti(GroupCti):
     def setTargetRange(self, targetRange, padding=None):
         """ Sets the range of the target.
         """
-        # The padding parameter is a bit of a hack. TODO: better?
+        # The padding parameter is a bit of a hack.
+        # TODO: move to PgAxisRangeCti or implement in PgHistLutColorRangeCti?
+        # That last option may be useful to colorize images with uints, which currently don't
+        # show out black pixels for the maximum values (e.g. 255)
         raise NotImplementedError("Abstract method. Please override.")
-
-
-
-class PgHistLutRangeCti(AbstractRangeCti):
-    """ Configuration tree item is linked to the HistogramLUTItem range.
-    """
-    def __init__(self, histLutItem, autoRangeFunctions=None, nodeName='color range', expanded=True):
-        """ Constructor.
-            The target axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
-
-            If given, autoRangeFunctions must be a (label to function) dictionary that will be used
-            to populate the (auto range) method ChoiceCti. If not give, the there will not be
-            a method choice and the autorange implemented by PyQtGraph will be used.
-        """
-        super(PgHistLutRangeCti, self).__init__(autoRangeFunctions=autoRangeFunctions,
-                                                nodeName=nodeName, expanded=expanded)
-        check_class(histLutItem, pg.HistogramLUTItem)
-        self.histLutItem = histLutItem
-
-        # Connect signals
-        #  sigLevelChangeFinished is triggered only at the end of a drag
-        self.histLutItem.sigLevelsChanged.connect(self._setAutoRangeOff)
-        #self.histLutItem.sigLevelChangeFinished.connect(self._setAutoRangeOff)
-
-
-    def _closeResources(self):
-        """ Disconnects signals.
-            Is called by self.finalize when the cti is deleted.
-        """
-        self.histLutItem.sigLevelsChanged.connect(self._setAutoRangeOff)
-        #self.histLutItem.sigLevelChangeFinished.disconnect(self._setAutoRangeOff)
-
-
-    def getTargetRange(self):
-        """ Gets the range of the target
-        """
-        return self.histLutItem.getLevels()
-
-
-    def setTargetRange(self, targetRange, padding=None):
-        """ Sets the range of the target.
-        """
-        rangeMin, rangeMax = targetRange
-        self.histLutItem.setLevels(rangeMin, rangeMax)
 
 
 
@@ -412,7 +372,6 @@ class PgAxisRangeCti(AbstractRangeCti):
     def setTargetRange(self, targetRange, padding=None):
         """ Sets the range of the target.
         """
-        # The padding paramater is a bit of a hack. TODO: how better?
         # viewBox.setRange doesn't accept an axis number :-(
         if self.axisNumber == X_AXIS:
             xRange, yRange = targetRange, None
@@ -422,6 +381,72 @@ class PgAxisRangeCti(AbstractRangeCti):
         self.viewBox.setRange(xRange = xRange, yRange=yRange, padding=padding,
                               update=False, disableAutoRange=True)
 
+
+
+class PgHistLutColorRangeCti(AbstractRangeCti):
+    """ Configuration tree item is linked to the HistogramLUTItem range.
+    """
+    def __init__(self, histLutItem, autoRangeFunctions=None, nodeName='color range', expanded=True):
+        """ Constructor.
+            The target axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
+
+            If given, autoRangeFunctions must be a (label to function) dictionary that will be used
+            to populate the (auto range) method ChoiceCti. If not give, the there will not be
+            a method choice and the autorange implemented by PyQtGraph will be used.
+        """
+        super(PgHistLutColorRangeCti, self).__init__(autoRangeFunctions=autoRangeFunctions,
+                                                     nodeName=nodeName, expanded=expanded)
+        check_class(histLutItem, pg.HistogramLUTItem)
+        self.histLutItem = histLutItem
+
+        # Connect signals
+        #  sigLevelChangeFinished is triggered only at the end of a drag
+        self.histLutItem.sigLevelsChanged.connect(self._setAutoRangeOff)
+        #self.histLutItem.sigLevelChangeFinished.connect(self._setAutoRangeOff)
+
+
+    def _closeResources(self):
+        """ Disconnects signals.
+            Is called by self.finalize when the cti is deleted.
+        """
+        self.histLutItem.sigLevelsChanged.connect(self._setAutoRangeOff)
+        #self.histLutItem.sigLevelChangeFinished.disconnect(self._setAutoRangeOff)
+
+
+    def getTargetRange(self):
+        """ Gets the (color) range of the HistogramLUTItem
+        """
+        return self.histLutItem.getLevels()
+
+
+    def setTargetRange(self, targetRange, padding=None):
+        """ Sets the (color) range of the HistogramLUTItem
+            The padding variable is ignored.
+        """
+        rangeMin, rangeMax = targetRange
+        self.histLutItem.setLevels(rangeMin, rangeMax)
+
+
+class PgGradientEditorItemCti(ChoiceCti):
+    """ Lets the user select one of the standard color scales in a GradientEditorItem
+    """
+    def __init__(self, gradientEditorItem, nodeName="color scale", defaultData=-1):
+        """ Constructor.
+            The gradientEditorItem must be a PyQtGraph.GradientEditorItem.
+            The configValues are taken from pyqtgraph.graphicsItems.GradientEditorItem.Gradients
+            which is an OrderedDict of color scales. By default the last item from this list is
+            chosen, which is they 'grey' color scale.
+        """
+        super(PgGradientEditorItemCti, self).__init__(nodeName, defaultData=defaultData,
+                                                      configValues=GRADIENTS.keys())
+        check_class(gradientEditorItem, pg.GradientEditorItem)
+        self.gradientEditorItem = gradientEditorItem
+
+
+    def _updateTargetFromNode(self):
+        """ Applies the configuration to its target axis
+        """
+        self.gradientEditorItem.loadPreset(self.configValue)
 
 
 class PgAspectRatioCti(BoolCti):
