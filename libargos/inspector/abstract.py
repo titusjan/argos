@@ -27,6 +27,12 @@ from libargos.widgets.display import MessageDisplay
 
 logger = logging.getLogger(__name__)
 
+class InvalidDataError(TypeError):
+    """ Exception that should be raised if the inspector cannot handle this type of data.
+        Can be used to distuingish the situation from other exceptions an then, for example,
+        draw an empty plot instead of the error message pane.
+    """
+    pass
 
 
 class AbstractInspector(QtGui.QStackedWidget):
@@ -129,11 +135,32 @@ class AbstractInspector(QtGui.QStackedWidget):
         """ Tries to draw the widget contents with the updated RTI. 
             Shows the error page in case an exception is raised while drawing the contents.
             Descendants should override _drawContents, not drawContents.
+
+            During the call of _drawContents, the updating of the configuration tree is blocked to
+            avoid circular effects loops. After that a call to self.config.refreshFromTarget() is
+            made to refresh the configuration tree with possible new values from the inspector (the
+            inspector is the configuration's target).
         """
         logger.debug("---- inspector drawContents(): {}".format(self))
         try:
             self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
-            self._drawContents()
+
+            wasBlocked = self.config.model.setRefreshBlocked(True)
+            try:
+                self._drawContents()
+                logger.debug("_drawContents finished successfully")
+            finally:
+                self.config.model.setRefreshBlocked(wasBlocked)
+
+            # Call refreshFromTarget in case the newly applied configuration resulted in a change
+            # of the state of the configuration's target's (i.e. the inspector state)
+            logger.debug("_drawContents finished successfully, calling refreshFromTarget...")
+            self.config.refreshFromTarget()
+            logger.debug("refreshFromTarget finished successfully")
+
+        except InvalidDataError as ex:
+            logger.info("Unable to draw the inspector contents: {}".format(ex))
+
         except Exception as ex:
             if DEBUGGING:
                 raise
@@ -141,6 +168,8 @@ class AbstractInspector(QtGui.QStackedWidget):
             logger.exception(ex)
             self.setCurrentIndex(self.ERROR_PAGE_IDX)
             self._showError(msg=str(ex), title=type_name(ex))
+        else:
+            logger.debug("---- drawContents finished successfully")
 
     
     def _drawContents(self):

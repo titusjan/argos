@@ -70,7 +70,7 @@ class MainWindow(QtGui.QMainWindow):
         self._detailDockWidgets = []
         self._argosApplication = argosApplication
         self._configTreeModel = ConfigTreeModel()
-        self._persistentSettings = {}  # non-default values for all used plugins
+        self._inspectorsNonDefaults = {}  # non-default values for all used plugins
 
         self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
@@ -305,6 +305,21 @@ class MainWindow(QtGui.QMainWindow):
                                        PROJECT_NAME, self.argosApplication.profile)
 
 
+    def _updateNonDefaultsForCurrentInspector(self):
+        """ Store the (non-default) config values for the current inspector in a local dictionary.
+            This dictionary is later used to store value for persistence.
+
+            This function nust be called after the inspector was drawn because that may update
+            some derived config values (e.g. ranges)
+        """
+        if self.inspectorRegItem and self.inspector:
+            key = self.inspectorRegItem.identifier
+            logger.debug("_updateNonDefaultsForCurrentInspector: {}".format(key))
+            self._inspectorsNonDefaults[key] = self.inspector.config.getNonDefaultsDict()
+        else:
+            logger.debug("_updateNonDefaultsForCurrentInspector: NO CURRENT INSPECTOR")
+
+
     def setInspectorById(self, identifier):
         """ Sets the central inspector widget given a inspector ID.
             Will raise a KeyError if the ID is not found in the registry.
@@ -337,13 +352,15 @@ class MainWindow(QtGui.QMainWindow):
             if self.inspector is None: # can be None at start-up
                 oldConfigPosition = None
             else:
+                self._updateNonDefaultsForCurrentInspector()
+
                 # Remove old inspector configuration from tree            
                 oldConfigPosition = self.inspector.config.childNumber()
                 configPath = self.inspector.config.nodePath
                 _, oldConfigIndex = self._configTreeModel.findItemAndIndexPath(configPath)[-1]
                 self._configTreeModel.deleteItemAtIndex(oldConfigIndex)
                             
-                self.inspector.finalize()
+                self.inspector.finalize() # TODO: before removing config
                 centralLayout.removeWidget(self.inspector)
                 self.inspector.deleteLater()
                 
@@ -368,7 +385,8 @@ class MainWindow(QtGui.QMainWindow):
                     self.collector.clearAndSetComboBoxes([])
                 else:
                     key = self.inspectorRegItem.identifier
-                    nonDefaults = self._persistentSettings.get(key, {})
+                    nonDefaults = self._inspectorsNonDefaults.get(key, {})
+                    logger.debug("setting non defaults: {}".format(nonDefaults))
                     self.inspector.config.setValuesFromDict(nonDefaults)
                     self._configTreeModel.insertItem(self.inspector.config, oldConfigPosition)
                     self.configTreeView.expandBranch()  
@@ -420,13 +438,7 @@ class MainWindow(QtGui.QMainWindow):
         logger.debug("configContentsChanged: {}".format(configTreeItem))
         self.drawInspectorContents()
 
-        # Store the old config values for persistence. Must be done after the inspector was drawn
-        # because this may update some derived config values (e.g. ranges)
-        if self.inspectorRegItem and self.inspector:
-            key = self.inspectorRegItem.identifier
-            self._persistentSettings[key] = self.inspector.config.getNonDefaultsDict()
 
-            
     def drawInspectorContents(self):
         """ Draws all contents of this window's inspector.
         """
@@ -516,7 +528,7 @@ class MainWindow(QtGui.QMainWindow):
         try:
             for key in settings.childKeys():
                 json = settings.value(key)
-                self._persistentSettings[key] = ctiLoads(json) 
+                self._inspectorsNonDefaults[key] = ctiLoads(json)
         finally:
             settings.endGroup()
 
@@ -531,16 +543,19 @@ class MainWindow(QtGui.QMainWindow):
 
     def saveProfile(self, settings=None):
         """ Writes the view settings to the persistent store
-        """         
+        """
+        self._updateNonDefaultsForCurrentInspector()
+
         if settings is None:
             settings = QtCore.QSettings()  
         logger.debug("Writing settings to: {}".format(settings.group()))
         
         settings.beginGroup('cfg_inspectors')
         try:
-            for key, nonDefaults in self._persistentSettings.items():
+            for key, nonDefaults in self._inspectorsNonDefaults.items():
                 if nonDefaults:
                     settings.setValue(key, ctiDumps(nonDefaults)) # TODO: do we need JSON?
+                    logger.debug("Writing non defaults for {}: {}".format(key, nonDefaults))
         finally:
             settings.endGroup()
         

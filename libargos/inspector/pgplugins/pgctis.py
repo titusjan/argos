@@ -130,8 +130,8 @@ def makeInspectorPercentileRangeFn(inspector, percentage):
     """ Generates a function that calculates the range of the sliced array of the inspector
         by discarding a percentage of the outliers (at both ends, minimum and maximum)
 
-        The first parameter is an inspector, and not an array, because we would then have to
-        regenerate ther range function every time sliced array of an inspector changes.
+        The first parameter is an inspector, it's not an array, because we would then have to
+        regenerate the range function every time sliced array of an inspector changes.
     """
     assert hasattr(inspector, "slicedArray"), "The inspector must have a 'slicedArray' attribute."
 
@@ -219,8 +219,13 @@ class AbstractRangeCti(GroupCti):
             The *args and **kwargs arguments are ignored but make it possible to use this as a slot
             for signals with arguments.
         """
+        # if not self.autoRangeCti or not self.autoRangeCti.configValue:
+        #     newRange = (self.rangeMinCti.data, self.rangeMaxCti.data)
+        # else:
+        #     newRange = self.getTargetRange()
         self._refreshAutoRange()
-        self._refreshMinMax(self.getTargetRange())
+        newRange = self.getTargetRange()
+        self._refreshMinMax(newRange)
 
 
     def _refreshMinMax(self, axisRange):
@@ -232,9 +237,10 @@ class AbstractRangeCti(GroupCti):
         # between the minimum and maximum, given the maximum. E.g. if min = 0.04 and max = 0.07,
         # we would only need zero decimals behind the point as we can write the range as
         # [4e-2, 7e-2]. However if min = 1.04 and max = 1.07, we need 2 decimals behind the point.
-        # So while the range is the same size, we need more decimals because we are not zoomed in
+        # So, while the range is the same size we need more decimals because we are not zoomed in
         # around zero.
         rangeMin, rangeMax = axisRange
+        # TODO: catch OverflowError: cannot convert float infinity to integer
         maxOrder = int(np.log10(np.abs(max(rangeMax, rangeMin))))
         diffOrder = int(np.log10(np.abs(rangeMax - rangeMin)))
 
@@ -256,7 +262,6 @@ class AbstractRangeCti(GroupCti):
         """ The min and max config items will be disabled if auto range is on.
         """
         enabled = self.autoRangeCti and self.autoRangeCti.configValue
-
         self.rangeMinCti.enabled = not enabled
         self.rangeMaxCti.enabled = not enabled
         self.model.emitDataChanged(self)
@@ -273,9 +278,15 @@ class AbstractRangeCti(GroupCti):
             Calls _refreshNodeFromTarget, not _updateTargetFromNode because setting auto range off
             does not require a redraw of the target.
         """
+        # TODO: catch exceptions. How?
+        # /argos/hdf-eos/DeepBlue-SeaWiFS-1.0_L3_20100101_v002-20110527T191319Z.h5/aerosol_optical_thickness_stddev_ocean
+        if self.getRefreshBlocked():
+            logger.debug("Set autorange off blocked for {}".format(self.nodeName))
+            return
+
         if self.autoRangeCti:
             self.autoRangeCti.data = False
-        self._refreshNodeFromTarget()
+        self.refreshFromTarget()
 
 
     def calculateRange(self):
@@ -294,7 +305,7 @@ class AbstractRangeCti(GroupCti):
         if not self.autoRangeCti or not self.autoRangeCti.configValue:
             padding = 0
         elif self.paddingCti.configValue == -1: # specialValueText
-            # PyQtGraph dynamice padding: between 0.02 and 0.1 dep. on the size of the ViewBox
+            # PyQtGraph dynamic padding: between 0.02 and 0.1 dep. on the size of the ViewBox
             padding = None
         else:
             padding = self.paddingCti.configValue / 100
@@ -338,6 +349,8 @@ class PgAxisRangeCti(AbstractRangeCti):
             If given, autoRangeFunctions must be a (label to function) dictionary that will be used
             to populate the (auto range) method ChoiceCti. If not give, the there will not be
             a method choice and the autorange implemented by PyQtGraph will be used.
+
+            Side effect: the viewBox autorange will be set to False.
         """
         if autoRangeFunctions is None:
             autoRangeFunctions = {self.PYQT_RANGE: makePyQtAutoRangeFn(viewBox, axisNumber)}
@@ -349,6 +362,12 @@ class PgAxisRangeCti(AbstractRangeCti):
 
         self.viewBox = viewBox
         self.axisNumber = axisNumber
+        self.viewBox.disableAutoRange(axisNumber)
+
+        # Autorange must be disabled as not to interfere with this class
+        axisAutoRange = self.viewBox.autoRangeEnabled()[axisNumber]
+        assert axisAutoRange is False, \
+            "Autorange is {!r} for axis {} of {}".format(axisAutoRange, axisNumber, self.nodePath)
 
         # self.insertChild(ViewBoxDebugCti('viewbox state', self.viewBox))
 
@@ -378,9 +397,15 @@ class PgAxisRangeCti(AbstractRangeCti):
         else:
             xRange, yRange = None, targetRange
 
+        # Do not set disableAutoRange to True in setRange; it trigger 'one last' auto range.
+        # This is why the viewBox autorange must be False at construction.
         self.viewBox.setRange(xRange = xRange, yRange=yRange, padding=padding,
-                              update=False, disableAutoRange=True)
+                              update=False, disableAutoRange=False)
 
+        # Sanity check (can only work if we calculate padding ourself
+        #if self.viewBox.state['viewRange'][self.axisNumber] != targetRange:
+        #    raise AssertionError("ViewRange update failed: {} != {}"
+        #        .format(self.viewBox.state['viewRange'][self.axisNumber], targetRange))
 
 
 class PgHistLutColorRangeCti(AbstractRangeCti):

@@ -360,7 +360,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             return
         
         item = self.getItem(itemIndex, "<no item>")
-        logger.debug("deleteItemAtIndex: removing {!r}".format(item))
+        logger.debug("deleteItemAtIndex: removing {}".format(item))
         
         parentIndex = itemIndex.parent()
         parentItem = self.getItem(parentIndex, altItem=self.invisibleRootItem)

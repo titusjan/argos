@@ -297,8 +297,8 @@ class RepoTreeView(ArgosTreeView):
         rti = self.model().getItem(currentIndex, None)
         assert rti is not None, "sanity check failed. No RTI at current item"
 
-        logger.debug("Adding rti to collector: {}".format(rti.nodePath))
+        logger.info("Adding rti to collector: {}".format(rti.nodePath))
         self.collector.setRti(rti)
-        #if rti.asArray is not None: # TODO: maybe later
+        #if rti.asArray is not None: # TODO: maybe later, first test how robust it is now
         #    self.collector.setRti(rti)
             

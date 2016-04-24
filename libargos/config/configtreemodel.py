@@ -48,6 +48,8 @@ class ConfigTreeModel(BaseTreeModel):
         self._invisibleRootItem = GroupCti(self.INVISIBLE_ROOT_NAME)
         self._invisibleRootItem.model = self
         #self.dataChanged.connect(self.debug)
+        self._refreshBlocked = False
+
 
 
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
@@ -210,8 +212,27 @@ class ConfigTreeModel(BaseTreeModel):
         checkItem = self.getItem(indexLeft)
         assert checkItem is treeItem, "{} != {}".format(checkItem, treeItem) # TODO: remove
         self.dataChanged.emit(indexLeft, indexRight)
+
+
+    def getRefreshBlocked(self):
+        """ If set the configuration should not be updated.
+            This setting is part of the model so that is shared by all CTIs.
+        """
+        return self._refreshBlocked
                 
          
+    def setRefreshBlocked(self, blocked):
+        """ Set to True to indicate that set the configuration should not be updated.
+            This setting is part of the model so that is shared by all CTIs.
+            Returns the old value.
+        """
+        wasBlocked = self._refreshBlocked
+        logger.debug("Setting refreshBlocked from {} to {}".format(wasBlocked, blocked))
+        self._refreshBlocked = blocked
+        return wasBlocked
+
+
+
     def __obsolete__readModelSettings(self, key, settings):
         """ Reads the persistent program settings.
         

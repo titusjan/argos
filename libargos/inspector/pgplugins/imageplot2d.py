@@ -27,7 +27,7 @@ from libargos.info import DEBUGGING
 from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.groupcti import MainGroupCti
-from libargos.inspector.abstract import AbstractInspector
+from libargos.inspector.abstract import AbstractInspector, InvalidDataError
 from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, defaultAutoRangeMethods,
                                                  PgMainPlotItemCti, PgAxisLabelCti,
                                                  PgAxisFlipCti, PgAspectRatioCti,
@@ -107,6 +107,7 @@ class PgImagePlot2d(AbstractInspector):
         self.plotItem = ArgosPgPlotItem(name='2d_image_plot_#{}'.format(self.windowNumber),
                                         enableMenu=False, viewBox=self.viewBox)
         self.viewBox.setParent(self.plotItem)
+        #self.viewBox.disableAutoRange('xy')
 
         self.imageItem = pg.ImageItem()
         self.plotItem.addItem(self.imageItem)
@@ -144,6 +145,7 @@ class PgImagePlot2d(AbstractInspector):
     def _clearContents(self):
         """ Draws the inspector widget when no input is available. 
         """
+        logger.debug("Clearing inspector contents")
         #self.imageItem.clear() # Don't use clear as it alters the (auto)range.
         self.imageItem.setImage(None) # TODO: this also alters the auto(range). Use clear again?
         self.titleLabel.setText('')
@@ -154,9 +156,8 @@ class PgImagePlot2d(AbstractInspector):
         """
         self.slicedArray = self.collector.getSlicedArray()
         if self.slicedArray is None or not array_has_real_numbers(self.slicedArray):
-            logger.debug("Clearing inspector: no data available or it does not contain real numbers")
             self._clearContents()
-            return
+            raise InvalidDataError("No data available or it does not contain real numbers")
 
         #self.imageItem.clear() # Don't use clear as it resets the autoscale enabled?
 
@@ -169,12 +170,6 @@ class PgImagePlot2d(AbstractInspector):
         # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0}
         # doesn't seem to do anything.
         self.imageItem.setImage(self.slicedArray.transpose(), autoLevels=False)
-
-        # Block signals to prevent sigLevelChange triggering _setAutoRangeOff
-        levels = (np.nanmin(self.slicedArray), np.nanmax(self.slicedArray))
-        oldBlockValue = self.histLutItem.blockSignals(True)
-        self.histLutItem.setLevels(levels[0], levels[1])
-        self.histLutItem.blockSignals(oldBlockValue)
 
         self.config.updateTarget()
 

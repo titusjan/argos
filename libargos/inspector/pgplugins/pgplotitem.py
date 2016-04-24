@@ -31,13 +31,13 @@ USE_SIMPLE_PLOT = False
 if USE_SIMPLE_PLOT:
     # An experimental simplification of PlotItem. Not included in the distribution
     logger.warn("Using SimplePlotItem as PlotItem")
-    from pyqtgraph.graphicsItems.PlotItem.simpleplotitem import SimplePlotItem
+    from pyqtgraph.graphicsItems.PlotItem.simpleplotitem import SimplePlotItem as PlotItem
 else:
-    from pyqtgraph.graphicsItems.PlotItem import PlotItem as SimplePlotItem
+    from pyqtgraph.graphicsItems.PlotItem import PlotItem
 
 
 
-class ArgosPgPlotItem(SimplePlotItem):
+class ArgosPgPlotItem(PlotItem):
     """ Wrapper arround pyqtgraph.graphicsItems.PlotItem
         Overrides the autoBtnClicked method.
     """

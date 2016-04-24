@@ -305,16 +305,25 @@ class AbstractCti(BaseTreeItem):
                 child.resetToDefault(resetChildren=True)
 
 
+    def getRefreshBlocked(self):
+        """ If True the calls to _refreshNodeFromTarget are blocked.
+            This calls self.model.getRefreshBlocked(), so this value is always equal for all
+            config tree items in the model
+        """
+        return self.model.getRefreshBlocked()
+
+
     def refreshFromTarget(self, level=0):
         """ Refreshes the configuration frp, the target it monitors (if present).
             Recursively call _refreshNodeFromTarget for itself and all children. Subclasses should
             typically override _refreshNodeFromTarget instead of this function.
             During updateTarget's execution refreshFromTarget is blocked to avoid loops.
         """
-        if self._blockRefresh:
+        if self.getRefreshBlocked():
+            logger.debug("_refreshNodeFromTarget blocked")
             return
 
-        if level == 0:
+        if False and level == 0:
             logger.debug("refreshFromTarget: {}".format(self.nodePath))
 
         self._refreshNodeFromTarget()
@@ -335,28 +344,15 @@ class AbstractCti(BaseTreeItem):
         """ Applies the configuration to the target it monitors (if present).
             Recursively call _updateTargetFromNode for itself and all children. Subclasses should
             typically override _updateTargetFromNode instead of this function.
-            During updateTarget's execution refreshFromTarget is blocked to avoid loops. At the end
-            a call to refresh is made so that any changes in the target are reflected again in the
-            configuration tree items.
 
             :param level: the level of recursion.
         """
         if level == 0:
             logger.debug("updateTarget: {}".format(self.nodePath))
 
-        oldBlockRefresh = self._blockRefresh
-        self._blockRefresh = True # defer calling self.viewBoxChanged
-        try:
-            self._updateTargetFromNode()
-            for child in self.childItems:
-                child.updateTarget(level = level + 1)
-        finally:
-            self._blockRefresh = oldBlockRefresh
-
-        # Call refreshFromTarget in case the newly applied configuration resulted in a change of the
-        # target's state.
-        if level == 0:
-            self.refreshFromTarget()
+        self._updateTargetFromNode()
+        for child in self.childItems:
+            child.updateTarget(level = level + 1)
 
 
     def _updateTargetFromNode(self):

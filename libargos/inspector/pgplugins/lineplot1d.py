@@ -32,7 +32,7 @@ from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.qtctis import PenCti, ColorCti, createPenStyleCti, createPenWidthCti
 from libargos.config.intcti import IntCti
-from libargos.inspector.abstract import AbstractInspector
+from libargos.inspector.abstract import AbstractInspector, InvalidDataError
 from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, makePyQtAutoRangeFn,
                                                  defaultAutoRangeMethods, PgGridCti,
                                                  PgMainPlotItemCti, PgAxisLabelCti,
@@ -165,9 +165,8 @@ class PgLinePlot1d(AbstractInspector):
         self.slicedArray = self.collector.getSlicedArray()
 
         if self.slicedArray is None or not array_has_real_numbers(self.slicedArray):
-            logger.debug("Clearing inspector: no data available or it does not contain real numbers")
             self._clearContents()
-            return
+            raise InvalidDataError("No data available or it does not contain real numbers")
 
         # Valid plot data here
         rtiInfo = self.collector.getRtiInfo()
