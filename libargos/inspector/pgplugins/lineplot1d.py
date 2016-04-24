@@ -33,7 +33,7 @@ from libargos.config.choicecti import ChoiceCti
 from libargos.config.qtctis import PenCti, ColorCti, createPenStyleCti, createPenWidthCti
 from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector, InvalidDataError
-from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, makePyQtAutoRangeFn,
+from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES, makePyQtAutoRangeFn,
                                                  defaultAutoRangeMethods, PgGridCti,
                                                  PgMainPlotItemCti, PgAxisLabelCti,
                                                  PgAxisLogModeCti, PgAxisRangeCti)
@@ -122,6 +122,7 @@ class PgLinePlot1d(AbstractInspector):
         self.slicedArray = None
 
         self.viewBox = pg.ViewBox(border=pg.mkPen("#000000", width=1))
+        self.viewBox.disableAutoRange(BOTH_AXES)
 
         self.plotItem = ArgosPgPlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
                                         enableMenu=False, viewBox=self.viewBox)

@@ -38,6 +38,7 @@ logger = logging.getLogger(__name__)
 
 X_AXIS = pg.ViewBox.XAxis
 Y_AXIS = pg.ViewBox.YAxis
+BOTH_AXES = pg.ViewBox.XYAxes
 VALID_AXIS_POSITIONS =  ('left', 'right', 'bottom', 'top')
 
 
@@ -349,8 +350,6 @@ class PgAxisRangeCti(AbstractRangeCti):
             If given, autoRangeFunctions must be a (label to function) dictionary that will be used
             to populate the (auto range) method ChoiceCti. If not give, the there will not be
             a method choice and the autorange implemented by PyQtGraph will be used.
-
-            Side effect: the viewBox autorange will be set to False.
         """
         if autoRangeFunctions is None:
             autoRangeFunctions = {self.PYQT_RANGE: makePyQtAutoRangeFn(viewBox, axisNumber)}
@@ -362,7 +361,6 @@ class PgAxisRangeCti(AbstractRangeCti):
 
         self.viewBox = viewBox
         self.axisNumber = axisNumber
-        self.viewBox.disableAutoRange(axisNumber)
 
         # Autorange must be disabled as not to interfere with this class
         axisAutoRange = self.viewBox.autoRangeEnabled()[axisNumber]

@@ -28,7 +28,8 @@ from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.groupcti import MainGroupCti
 from libargos.inspector.abstract import AbstractInspector, InvalidDataError
-from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, defaultAutoRangeMethods,
+from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES,
+                                                 defaultAutoRangeMethods,
                                                  PgMainPlotItemCti, PgAxisLabelCti,
                                                  PgAxisFlipCti, PgAspectRatioCti,
                                                  PgAxisRangeCti, PgHistLutColorRangeCti,
@@ -107,7 +108,7 @@ class PgImagePlot2d(AbstractInspector):
         self.plotItem = ArgosPgPlotItem(name='2d_image_plot_#{}'.format(self.windowNumber),
                                         enableMenu=False, viewBox=self.viewBox)
         self.viewBox.setParent(self.plotItem)
-        #self.viewBox.disableAutoRange('xy')
+        self.viewBox.disableAutoRange(BOTH_AXES)
 
         self.imageItem = pg.ImageItem()
         self.plotItem.addItem(self.imageItem)
