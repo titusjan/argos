@@ -220,10 +220,6 @@ class AbstractRangeCti(GroupCti):
             The *args and **kwargs arguments are ignored but make it possible to use this as a slot
             for signals with arguments.
         """
-        # if not self.autoRangeCti or not self.autoRangeCti.configValue:
-        #     newRange = (self.rangeMinCti.data, self.rangeMaxCti.data)
-        # else:
-        #     newRange = self.getTargetRange()
         self._refreshAutoRange()
         newRange = self.getTargetRange()
         self._refreshMinMax(newRange)
@@ -241,12 +237,11 @@ class AbstractRangeCti(GroupCti):
         # So, while the range is the same size we need more decimals because we are not zoomed in
         # around zero.
         rangeMin, rangeMax = axisRange
-        # TODO: catch OverflowError: cannot convert float infinity to integer
-        maxOrder = int(np.log10(np.abs(max(rangeMax, rangeMin))))
-        diffOrder = int(np.log10(np.abs(rangeMax - rangeMin)))
+        maxOrder = np.log10(np.abs(max(rangeMax, rangeMin)))
+        diffOrder = np.log10(np.abs(rangeMax - rangeMin))
 
         extraDigits = 2 # add some extra digits to make each pan/zoom action show a new value.
-        precision = min(25, max(extraDigits + 1, abs(maxOrder - diffOrder) + extraDigits)) # clip
+        precision = int(np.clip(abs(maxOrder - diffOrder) + extraDigits, extraDigits + 1, 25))
         #logger.debug("maxOrder: {}, diffOrder: {}, precision: {}"
         #             .format(maxOrder, diffOrder, precision))
 
