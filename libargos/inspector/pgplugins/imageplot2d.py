@@ -88,6 +88,7 @@ class PgImagePlot2dCti(PgMainPlotItemCti):
         self.histRangeCti = self.insertChild(PgAxisRangeCti(histViewBox, Y_AXIS,
                                                             nodeName='histogram range'))
 
+        self.probeCti = self.insertChild(BoolCti('show probe', True))
 
 
 class PgImagePlot2d(AbstractInspector):
@@ -104,6 +105,11 @@ class PgImagePlot2d(AbstractInspector):
         # in the collector.
         self.slicedArray = None
 
+        self.graphicsLayoutWidget = pg.GraphicsLayoutWidget()
+        self.contentsLayout.addWidget(self.graphicsLayoutWidget)
+        self.titleLabel = self.graphicsLayoutWidget.addLabel('<Title label>', 0, 0, colspan=2)
+
+        # The image item
         self.viewBox = pg.ViewBox(border=pg.mkPen("#000000", width=1))
         self.plotItem = ArgosPgPlotItem(name='2d_image_plot_#{}'.format(self.windowNumber),
                                         enableMenu=False, viewBox=self.viewBox)
@@ -117,20 +123,30 @@ class PgImagePlot2d(AbstractInspector):
         self.histLutItem.setImageItem(self.imageItem)
         self.histLutItem.vb.setMenuEnabled(False)
 
-        self.graphicsLayoutWidget = pg.GraphicsLayoutWidget()
-        self.titleLabel = self.graphicsLayoutWidget.addLabel('<Title label>', 0, 0, colspan=2)
         self.graphicsLayoutWidget.addItem(self.plotItem, 1, 0)
         self.graphicsLayoutWidget.addItem(self.histLutItem, 1, 1)
+        self.graphicsLayoutWidget.addLabel('', 2, 0, justify='left')
 
-        self.contentsLayout.addWidget(self.graphicsLayoutWidget)
+        # The probe and cross-hair
+        probePen = pg.mkPen("#BFBFBF")
+        self.crossLineHorizontal = pg.InfiniteLine(angle=0, movable=False, pen=probePen)
+        self.crossLineVertical = pg.InfiniteLine(angle=90, movable=False, pen=probePen)
+        self.probeLabel = self.graphicsLayoutWidget.addLabel('', 2, 0, justify='left')
 
+        # Configuration tree
         self._config = PgImagePlot2dCti(pgImagePlot2d=self, nodeName='inspector')
+
+        # Connect signals
+        # Based mouseMoved on crosshair.py from the PyQtGraph examples directory.
+        # I did not use the SignalProxy because I did not see any difference.
+        self.plotItem.scene().sigMouseMoved.connect(self.mouseMoved)
 
         
     def finalize(self):
         """ Is called before destruction. Can be used to clean-up resources.
         """
         logger.debug("Finalizing: {}".format(self))
+        self.plotItem.scene().sigMouseMoved.connect(self.mouseMoved)
         self.plotItem.close()
         self.graphicsLayoutWidget.close()
 
@@ -172,5 +188,45 @@ class PgImagePlot2d(AbstractInspector):
         # doesn't seem to do anything.
         self.imageItem.setImage(self.slicedArray.transpose(), autoLevels=False)
 
+        if self.config.probeCti.configValue:
+            self.probeLabel.setVisible(True)
+            self.plotItem.addItem(self.crossLineVertical, ignoreBounds=True)
+            self.plotItem.addItem(self.crossLineHorizontal, ignoreBounds=True)
+        else:
+            self.probeLabel.setVisible(False)
+
         self.config.updateTarget()
 
+
+    def mouseMoved(self, viewPos):
+        """ Updates the probe text with the values under the cursor.
+            Draws a vertical line and a symbol at the position of the probe.
+        """
+        if (not self.config.probeCti.configValue or
+            not self.viewBox.sceneBoundingRect().contains(viewPos)):
+
+            self.crossLineVertical.setVisible(False)
+            self.crossLineHorizontal.setVisible(False)
+            self.probeLabel.setText("")
+        else:
+            scenePos = self.viewBox.mapSceneToView(viewPos)
+
+            # We use int() to convert to integer, and not round(), because the image pixels
+            # are drawn from (row, col) to (row + 1, col + 1). That is, their center is at
+            # (row + 0.5, col + 0.5)
+            row, col = int(scenePos.y()), int(scenePos.x())
+            nRows, nCols = self.slicedArray.shape
+
+            if (0 <= row < nRows) and (0 <= col < nCols):
+                value = self.slicedArray[row, col]
+                txt = "pos = ({:d}, {:d}), value = {:.3g}".format(row, col, value)
+                self.probeLabel.setText(txt)
+                self.crossLineVertical.setVisible(True)
+                self.crossLineHorizontal.setVisible(True)
+                self.crossLineVertical.setPos(col + 0.5) # Draw the cross-hair at the pixel center
+                self.crossLineHorizontal.setPos(row + 0.5)
+            else:
+                txt = "<span style='color: #808080'>no data at cursor</span>"
+                self.probeLabel.setText(txt)
+                self.crossLineVertical.setVisible(False)
+                self.crossLineHorizontal.setVisible(False)

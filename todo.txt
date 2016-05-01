@@ -1,7 +1,5 @@
 
 TODO version 0.2:
-	PgImage should have axis
-	Spinbox with scientific notation
 
 	Masked arrays and fill values. (/Users/titusjan/Data/argos/OMI-Aura_L3-OMDOAO3e_2010m0602_v003-2011m1109t115919.he5)
 
@@ -14,8 +12,11 @@ TODO version 0.2:
 	Inspector selection dropwindow (use in new window)
 	    Fix 'clone-window' in main menu (is there a need for a separate 'new window'?)
 
-	probe
 	relative imports
+
+	Refactor _drawContents to have a source/cause parameter.
+	Reset range when a variable with a new unit/abcissa is selected.
+
 
 TODO version 0.3:
 	scipy.io.loadmat

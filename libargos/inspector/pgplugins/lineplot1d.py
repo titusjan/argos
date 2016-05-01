@@ -55,8 +55,8 @@ class PgLinePlot1dCti(PgMainPlotItemCti):
 
         check_class(pgLinePlot1d, PgLinePlot1d)
         self.pgLinePlot1d = pgLinePlot1d
-    
-        self.insertChild(ChoiceCti('title', 0, editable=True, 
+
+        self.insertChild(ChoiceCti('title', 0, editable=True,
                                     configValues=["{path} {slices}", "{name} {slices}"]),
                          position=-2)
         self.insertChild(BoolCti("anti-alias", True), position=-2)
@@ -85,24 +85,26 @@ class PgLinePlot1dCti(PgMainPlotItemCti):
         yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS, rangeFunctions))
 
         #### Pen ####
-        penItem = self.insertChild(GroupCti('pen'))
-        penItem.insertChild(ColorCti('color', QtGui.QColor('#FF0066')))
-        lineItem = penItem.insertChild(BoolCti('line', True, expanded=False,
+        penCti = self.insertChild(GroupCti('pen'))
+        penCti.insertChild(ColorCti('color', QtGui.QColor('#FF0066')))
+        lineCti = penCti.insertChild(BoolCti('line', True, expanded=False,
                                                childrenDisabledValue=False))
-        lineItem.insertChild(createPenStyleCti('style'))
-        lineItem.insertChild(createPenWidthCti('width'))
+        lineCti.insertChild(createPenStyleCti('style'))
+        lineCti.insertChild(createPenWidthCti('width'))
         defaultShadowPen = QtGui.QPen(QtGui.QColor('#BFBFBF'))
         defaultShadowPen.setWidth(0)
-        lineItem.insertChild(PenCti("shadow", False, expanded=False,  
-                                    resetTo=QtGui.QPen(defaultShadowPen), 
-                                    includeNoneStyle=True, includeZeroWidth=True))
+        lineCti.insertChild(PenCti("shadow", False, expanded=False,
+                                   resetTo=QtGui.QPen(defaultShadowPen),
+                                   includeNoneStyle=True, includeZeroWidth=True))
 
-        symbolItem = penItem.insertChild(BoolCti("symbol", False, expanded=False,
-                                         childrenDisabledValue=False))
-        symbolItem.insertChild(ChoiceCti("shape", 0, 
-           displayValues=['circle', 'square', 'triangle', 'diamond', 'plus'],  
+        symbolCti = penCti.insertChild(BoolCti("symbol", False, expanded=False,
+                                       childrenDisabledValue=False))
+        symbolCti.insertChild(ChoiceCti("shape", 0,
+           displayValues=['circle', 'square', 'triangle', 'diamond', 'plus'],
            configValues=['o', 's', 't', 'd', '+']))
-        symbolItem.insertChild(IntCti('size', 5, minValue=0, maxValue=100, stepSize=1))
+        symbolCti.insertChild(IntCti('size', 5, minValue=0, maxValue=100, stepSize=1))
+
+        self.probeCti = self.insertChild(BoolCti('show probe', True))
 
 
 
@@ -121,30 +123,43 @@ class PgLinePlot1d(AbstractInspector):
         # in the collector.
         self.slicedArray = None
 
+        self.graphicsLayoutWidget = pg.GraphicsLayoutWidget()
+        self.contentsLayout.addWidget(self.graphicsLayoutWidget)
+        self.titleLabel = self.graphicsLayoutWidget.addLabel('<plot title goes here>', 0, 0)
+
+        # The actual plot item.
         self.viewBox = pg.ViewBox(border=pg.mkPen("#000000", width=1))
         self.viewBox.disableAutoRange(BOTH_AXES)
 
         self.plotItem = ArgosPgPlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
                                         enableMenu=False, viewBox=self.viewBox)
         self.viewBox.setParent(self.plotItem)
-
-        self.graphicsLayoutWidget = pg.GraphicsLayoutWidget()
-        self.titleLabel = self.graphicsLayoutWidget.addLabel('<plot title goes here>', 0, 0)
         self.graphicsLayoutWidget.addItem(self.plotItem, 1, 0)
 
-        self.contentsLayout.addWidget(self.graphicsLayoutWidget)
+        # Probe
+        probePen = pg.mkPen("#BFBFBF")
+        self.crossLineVertical = pg.InfiniteLine(angle=90, movable=False, pen=probePen)
+        self.probeDataItem = pg.PlotDataItem(symbolPen=probePen)
+        self.probeLabel = self.graphicsLayoutWidget.addLabel('', 2, 0, justify='left')
 
+        # Configuration tree
         self._config = PgLinePlot1dCti(pgLinePlot1d=self, nodeName='inspector') # TODO: should be able to change nodeName without --reset
+
+        # Connect signals
+        # Based mouseMoved on crosshair.py from the PyQtGraph examples directory.
+        # I did not use the SignalProxy because I did not see any difference.
+        self.plotItem.scene().sigMouseMoved.connect(self.mouseMoved)
 
         
     def finalize(self):
         """ Is called before destruction. Can be used to clean-up resources
         """
         logger.debug("Finalizing: {}".format(self))
+        self.plotItem.scene().sigMouseMoved.disconnect(self.mouseMoved)
         self.plotItem.close()
         self.graphicsLayoutWidget.close()
 
-        
+
     @classmethod
     def axesNames(cls):
         """ The names of the axes that this inspector visualizes.
@@ -172,7 +187,7 @@ class PgLinePlot1d(AbstractInspector):
         # Valid plot data here
         rtiInfo = self.collector.getRtiInfo()
 
-        self.plotItem.clear() # TODO
+        self.plotItem.clear()
 
         self.titleLabel.setText(self.configValue('title').format(**rtiInfo))
 
@@ -204,6 +219,43 @@ class PgLinePlot1d(AbstractInspector):
 
         self.plotDataItem.setData(self.slicedArray)
 
+        if self.config.probeCti.configValue:
+            self.probeLabel.setVisible(True)
+            self.plotItem.addItem(self.crossLineVertical, ignoreBounds=True)
+            self.plotItem.addItem(self.probeDataItem, ignoreBounds=True)
+            self.probeDataItem.setSymbolBrush(QtGui.QBrush(color))
+            self.probeDataItem.setSymbolSize(10)
+        else:
+            self.probeLabel.setVisible(False)
+
         self.config.updateTarget()
+
+
+    def mouseMoved(self, viewPos):
+        """ Updates the probe text with the values under the cursor.
+            Draws a vertical line and a symbol at the position of the probe.
+        """
+        if (not self.config.probeCti.configValue or
+            not self.viewBox.sceneBoundingRect().contains(viewPos)):
+
+            self.crossLineVertical.setVisible(False)
+            self.probeLabel.setText("")
+            self.probeDataItem.clear()
+        else:
+            scenePos = self.viewBox.mapSceneToView(viewPos)
+            index = round(scenePos.x())
+
+            if 0 <= index < len(self.slicedArray):
+                txt = "pos = {:.0f}, value = {:.3g}".format(index, self.slicedArray[index])
+                self.probeLabel.setText(txt)
+                self.crossLineVertical.setVisible(True)
+                self.crossLineVertical.setPos(index)
+                self.probeDataItem.setData((index,), (self.slicedArray[index],))
+            else:
+                txt = "<span style='color: grey'>no data at cursor</span>"
+                self.probeLabel.setText(txt)
+                self.crossLineVertical.setVisible(False)
+                self.probeDataItem.clear()
+
 
 
