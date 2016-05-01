@@ -418,9 +418,7 @@ class PgHistLutColorRangeCti(AbstractRangeCti):
         self.histLutItem = histLutItem
 
         # Connect signals
-        #  sigLevelChangeFinished is triggered only at the end of a drag
         self.histLutItem.sigLevelsChanged.connect(self._setAutoRangeOff)
-        #self.histLutItem.sigLevelChangeFinished.connect(self._setAutoRangeOff)
 
 
     def _closeResources(self):
@@ -428,7 +426,6 @@ class PgHistLutColorRangeCti(AbstractRangeCti):
             Is called by self.finalize when the cti is deleted.
         """
         self.histLutItem.sigLevelsChanged.connect(self._setAutoRangeOff)
-        #self.histLutItem.sigLevelChangeFinished.disconnect(self._setAutoRangeOff)
 
 
     def getTargetRange(self):
@@ -661,24 +658,34 @@ class PgMainPlotItemCti(MainGroupCti):
             self.yAxisCti = self.insertChild(yAxisCti)
 
         # Connect signals
-        self.plotItem.autoBtn.clicked.connect(self._setAutoRangeOn)
-        #self.plotItem.sigClicked.connect(self._setAutoRangeOn)
+        self.plotItem.axisReset.connect(self._setAutoRangeOn)
 
 
     def _closeResources(self):
         """ Disconnects signals.
             Is called by self.finalize when the cti is deleted.
         """
-        self.plotItem.autoBtn.clicked.disconnect(self._setAutoRangeOn)
-        #self.plotItem.sigClicked.disconnect(self._setAutoRangeOn)
+        self.plotItem.axisReset.disconnect(self._setAutoRangeOn)
 
 
-    def _setAutoRangeOn(self):
-        """ Turns on the auto range checkbox.
-            Calls _updateTargetFromNode to calculate the new range.
+    def _setAutoRangeOn(self, axisNumber=BOTH_AXES):
+        """ Turns on the auto range checkbox for the equivalent axes
+            Emits the itemChanged signal so that the inspector may be updated.
+
+            :param axisNumber: 0 for x-axis, 1 for y-axis, 2 for both axes (default)
         """
-        logger.debug("_setAutoRangeOn")
-        for axisCti in [self.xAxisCti, self.yAxisCti]:
+        logger.debug("_setAutoRangeOn: axis=Number = {}".format(axisNumber))
+
+        if axisNumber == X_AXIS:
+            axes = [self.xAxisCti]
+        elif axisNumber == Y_AXIS:
+            axes = [self.yAxisCti]
+        elif axisNumber == BOTH_AXES:
+            axes = [self.xAxisCti, self.yAxisCti]
+        else:
+            raise ValueError("axisNumber must be 0, 1 or 2. Got: {}".format(axisNumber))
+
+        for axisCti in axes:
             for childCti in axisCti.childItems:
                 if isinstance(childCti, PgAxisRangeCti):
                     childCti.autoRangeCti.data = True

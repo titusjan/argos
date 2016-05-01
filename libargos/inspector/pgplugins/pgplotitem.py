@@ -22,7 +22,7 @@ from __future__ import division, print_function
 import logging
 import pyqtgraph as pg
 
-from libargos.qt import QtCore, QtSignal
+from libargos.qt import Qt, QtCore, QtGui, QtSignal
 
 logger = logging.getLogger(__name__)
 
@@ -36,30 +36,74 @@ else:
     from pyqtgraph.graphicsItems.PlotItem import PlotItem
 
 
+X_AXIS = pg.ViewBox.XAxis
+Y_AXIS = pg.ViewBox.YAxis
+BOTH_AXES = pg.ViewBox.XYAxes
+
 
 class ArgosPgPlotItem(PlotItem):
     """ Wrapper arround pyqtgraph.graphicsItems.PlotItem
         Overrides the autoBtnClicked method.
     """
-    sigClicked = QtSignal()
+    axisReset = QtSignal(int)
+
+    def __init__(self, *args, **kwargs):
+        """ Constructor
+        """
+        super(ArgosPgPlotItem, self).__init__(*args, **kwargs)
+
+        # # Install event filters to catch double clicks
+        # xAxisItem = self.getAxis('bottom')
+        # xAxisItem.installEventFilter(self)
+
+
+    def close(self):
+        """ Is called before destruction. Can be used to clean-up resources
+            Could be called 'finalize' but PlotItem already has a close so we reuse that.
+        """
+        logger.debug("Finalizing: {}".format(self))
+        # xAxisItem = self.getAxis('bottom')
+        # xAxisItem.removeEventFilter(self)
+
+        super(ArgosPgPlotItem, self).close()
+
 
     def autoBtnClicked(self):
         """ Hides the button but does not enable/disable autorange.
             That will be done by PgAxisRangeCti
-        """
+        """ # TODO: use axisReset.
         logger.debug("ArgosPgPlotItem.autoBtnClicked, mode:{}".format(self.autoBtn.mode))
         if self.autoBtn.mode == 'auto':
             self.autoBtn.hide()
 
+        self.axisReset.emit(BOTH_AXES)
+
 
     def mouseClickEvent(self, ev):
+        """ If the middle mouse button is clicked the axis are reset.
         """
-        """
-        logger.debug("mouseReleaseEvent")
         if ev.button() == QtCore.Qt.MiddleButton:
             logger.debug("Clicked middle mouse. Emitting sigClicked")
+            ev.accept()
+            self.axisReset.emit(BOTH_AXES)
 
-            # This gives RuntimeError: wrapped C/C++ object of type PlotCurveItem has been deleted
-            # TODO: fix
-            #self.sigClicked.emit()
+
+    # Does not work (yet). Most likely because the linked viewbox is also included in the
+    # boundingRect, so that clicks in the viewbox also trigger the range reset.
+    # def eventFilter(self, watchedObject, event):
+    #     """ Filters events from the AxisItems so that a middle mouse click reset the range of
+    #         that axis.
+    #     """
+    #     logger.debug("intercepting {}: {} eventType={}".format(watchedObject, type(event), event.type()))
+    #     if type(event) == QtGui.QGraphicsSceneMouseEvent:
+    #
+    #         if event.button() == Qt.MiddleButton:
+    #             #assert False, "stopped here"
+    #             logger.debug("event button={}, emitting axisReset".format(event.button()))
+    #             self.axisReset.emit(X_AXIS)
+    #             return True
+    #
+    #     return super(ArgosPgPlotItem, self).eventFilter(watchedObject, event)
+    #
+
 
