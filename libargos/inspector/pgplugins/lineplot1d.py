@@ -71,7 +71,7 @@ class PgLinePlot1dCti(PgMainPlotItemCti):
         xAxisCti.insertChild(PgAxisLabelCti(plotItem, 'bottom', self.pgLinePlot1d.collector,
             defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{x-dim}"]))
         # No logarithmic X-Axis as long as it only shows the array index and no abcissa.
-        #xAxisCti.insertChild(PgAxisLogModeCti(plotItem, X_AXIS))
+        #xAxisCti.insertChild(PgAxisLogModeCti(imagePlotItem, X_AXIS))
         xAxisCti.insertChild(PgAxisRangeCti(viewBox, X_AXIS))
 
         yAxisCti = self.yAxisCti
@@ -128,12 +128,10 @@ class PgLinePlot1d(AbstractInspector):
         self.titleLabel = self.graphicsLayoutWidget.addLabel('<plot title goes here>', 0, 0)
 
         # The actual plot item.
-        self.viewBox = pg.ViewBox(border=pg.mkPen("#000000", width=1))
-        self.viewBox.disableAutoRange(BOTH_AXES)
 
-        self.plotItem = ArgosPgPlotItem(name='1d_line_plot_#{}'.format(self.windowNumber),
-                                        enableMenu=False, viewBox=self.viewBox)
-        self.viewBox.setParent(self.plotItem)
+        self.plotItem = ArgosPgPlotItem()
+        self.viewBox = self.plotItem.getViewBox()
+        self.viewBox.disableAutoRange(BOTH_AXES)
         self.graphicsLayoutWidget.addItem(self.plotItem, 1, 0)
 
         # Probe
@@ -212,12 +210,11 @@ class PgLinePlot1d(AbstractInspector):
         symbolPen = None # otherwise the symbols will also have dotted/solid line.
         symbolBrush = QtGui.QBrush(color) if drawSymbols else None
 
-        self.plotDataItem = self.plotItem.plot(pen=pen, shadowPen=shadowPen,
+        plotDataItem = self.plotItem.plot(pen=pen, shadowPen=shadowPen,
                                                symbol=symbolShape, symbolSize=symbolSize,
                                                symbolPen=symbolPen, symbolBrush=symbolBrush,
                                                antialias=antiAlias)
-
-        self.plotDataItem.setData(self.slicedArray)
+        plotDataItem.setData(self.slicedArray)
 
         if self.config.probeCti.configValue:
             self.probeLabel.setVisible(True)
@@ -246,7 +243,7 @@ class PgLinePlot1d(AbstractInspector):
             index = round(scenePos.x())
 
             if 0 <= index < len(self.slicedArray):
-                txt = "pos = {:.0f}, value = {:.3g}".format(index, self.slicedArray[index])
+                txt = "pos = {:.0f}, value = {!r}".format(index, self.slicedArray[index])
                 self.probeLabel.setText(txt)
                 self.crossLineVertical.setVisible(True)
                 self.crossLineVertical.setPos(index)

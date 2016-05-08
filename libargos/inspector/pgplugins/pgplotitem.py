@@ -40,21 +40,37 @@ X_AXIS = pg.ViewBox.XAxis
 Y_AXIS = pg.ViewBox.YAxis
 BOTH_AXES = pg.ViewBox.XYAxes
 
+DEFAULT_BORDER_PEN = pg.mkPen("#000000", width=1)
+
 
 class ArgosPgPlotItem(PlotItem):
     """ Wrapper arround pyqtgraph.graphicsItems.PlotItem
         Overrides the autoBtnClicked method.
+        Middle mouse click
+
+        The menu is disabled by default. All settings I want can be set using the config tree;
+        the other settings I don't want to support.
+
+        Addes a black border of width 1.
+        Sets the cursros to a cross inside the viewbox.
     """
     axisReset = QtSignal(int)
 
-    def __init__(self, *args, **kwargs):
-        """ Constructor
+    def __init__(self, enableMenu=False, borderPen=DEFAULT_BORDER_PEN, *args, **kwargs):
+        """ Constructor.
+            :param enableMenu: if True right-click opens a context menu (default=False)
+            :param borderPen: pen for drawing the viewBox border. Default black and width of 1.
         """
-        super(ArgosPgPlotItem, self).__init__(*args, **kwargs)
+        super(ArgosPgPlotItem, self).__init__(enableMenu=enableMenu, *args, **kwargs)
+
+        viewBox = self.getViewBox()
+        viewBox.border = borderPen
+        viewBox.setCursor(Qt.CrossCursor)
 
         # # Install event filters to catch double clicks
         # xAxisItem = self.getAxis('bottom')
         # xAxisItem.installEventFilter(self)
+
 
 
     def close(self):

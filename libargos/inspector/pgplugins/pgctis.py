@@ -550,7 +550,7 @@ class PgAxisShowCti(BoolCti):
     """
     def __init__(self, plotItem, axisPosition, nodeName='show', defaultData=True):
         """ Constructor.
-            The target axis is specified by plotItem and axisPosition.
+            The target axis is specified by imagePlotItem and axisPosition.
             axisPosition must be one of: 'left', 'right', 'bottom', 'top'
 
             NOTE: the PyQtGraph showAxis seems not to work. TODO: investigate.
@@ -575,7 +575,7 @@ class PgAxisLogModeCti(BoolCti):
     """
     def __init__(self, plotItem, axisNumber, nodeName='logarithmic', defaultData=False):
         """ Constructor.
-            The target axis is specified by plotItem and axisNumber (0 for x-axis, 1 for y-axis)
+            The target axis is specified by imagePlotItem and axisNumber (0 for x-axis, 1 for y-axis)
         """
         super(PgAxisLogModeCti, self).__init__(nodeName, defaultData=defaultData)
         self.plotItem = plotItem
@@ -641,7 +641,7 @@ class PgMainPlotItemCti(MainGroupCti):
         """ Constructor
         """
         super(PgMainPlotItemCti, self).__init__(nodeName)
-        assert plotItem, "target plotItem is undefined"
+        assert plotItem, "target imagePlotItem is undefined"
 
         self.plotItem = plotItem
 
