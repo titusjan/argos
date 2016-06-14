@@ -242,7 +242,7 @@ class PgLinePlot1d(AbstractInspector):
             scenePos = self.viewBox.mapSceneToView(viewPos)
             index = round(scenePos.x())
 
-            if 0 <= index < len(self.slicedArray):
+            if self.slicedArray is not None and 0 <= index < len(self.slicedArray):
                 txt = "pos = {:.0f}, value = {!r}".format(index, self.slicedArray[index])
                 self.probeLabel.setText(txt)
                 self.crossLineVertical.setVisible(True)

@@ -280,7 +280,7 @@ class PgImagePlot2d(AbstractInspector):
         self.horPlotDataItem.setData(x=[], y=[])
         self.verPlotDataItem.setData(x=[], y=[])
 
-        if self.viewBox.sceneBoundingRect().contains(viewPos):
+        if self.slicedArray is not None and self.viewBox.sceneBoundingRect().contains(viewPos):
 
             scenePos = self.viewBox.mapSceneToView(viewPos)
 
