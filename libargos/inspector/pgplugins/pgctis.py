@@ -23,6 +23,9 @@ import logging
 import numpy as np
 import pyqtgraph as pg
 
+# Using partial as Python closures are late-binding.
+# http://docs.python-guide.org/en/latest/writing/gotchas/#late-binding-closures
+from functools import partial
 from collections import OrderedDict
 from libargos.config.groupcti import GroupCti, MainGroupCti
 from libargos.config.boolcti import BoolCti, BoolGroupCti
@@ -42,29 +45,6 @@ BOTH_AXES = pg.ViewBox.XYAxes
 VALID_AXIS_POSITIONS =  ('left', 'right', 'bottom', 'top')
 
 
-
-# Python closures are late-binding
-# http://docs.python-guide.org/en/latest/writing/gotchas/#late-binding-closures
-def makePyQtAutoRangeFn(viewBox, axisNumber):
-    """ Generates a function that calculates the range of an axis of a PyQtGraph ViewBox.
-    """
-    assert axisNumber in (X_AXIS, Y_AXIS), "axisNumber must be 0 or 1"
-
-    def calcRange():
-        """ Calculates the range from the sliced array. Discards percentage of the minimum and
-            percentage of the maximum values of the inspector.slicedArray
-        """
-        rect = viewBox.childrenBoundingRect() # taken from viewBox.autoRange()
-        if rect is not None:
-            if axisNumber == X_AXIS:
-                return rect.left(), rect.right()
-            else:
-                return rect.bottom(), rect.top()
-        else:
-            # Does this happen? Probably when the plot is empty.
-            raise AssertionError("No children bbox. Plot range not updated.")
-
-    return calcRange
 
 
 class ViewBoxDebugCti(GroupCti):
@@ -125,26 +105,33 @@ class ViewBoxDebugCti(GroupCti):
                     limitChildItem.data = limitValue
 
 
-# Python closures are late-binding
-# http://docs.python-guide.org/en/latest/writing/gotchas/#late-binding-closures
-def makeInspectorPercentileRangeFn(inspector, percentage):
-    """ Generates a function that calculates the range of the sliced array of the inspector
-        by discarding a percentage of the outliers (at both ends, minimum and maximum)
+def viewBoxAxisRange(viewBox, axisNumber):
+    """ Calculates the range of an axis of a viewBox.
+    """
+    rect = viewBox.childrenBoundingRect() # taken from viewBox.autoRange()
+    if rect is not None:
+        if axisNumber == X_AXIS:
+            return rect.left(), rect.right()
+        elif axisNumber == Y_AXIS:
+            return rect.bottom(), rect.top()
+        else:
+            raise ValueError("axisNumber should be 0 or 1, got: {}".format(axisNumber))
+    else:
+        # Does this happen? Probably when the plot is empty.
+        raise AssertionError("No children bbox. Plot range not updated.")
 
+
+def inspectorDataRange(inspector, percentage):
+    """ Calculates the range from the inspectors' sliced array. Discards percentage of the minimum
+        and percentage of the maximum values of the inspector.slicedArray
+
+        Meant to be used with functools.partial for filling the autorange methods combobox.
         The first parameter is an inspector, it's not an array, because we would then have to
         regenerate the range function every time sliced array of an inspector changes.
     """
-    assert hasattr(inspector, "slicedArray"), "The inspector must have a 'slicedArray' attribute."
-
-    def calcRange():
-        """ Calculates the range from the sliced array. Discards percentage of the minimum and
-            percentage of the maximum values of the inspector.slicedArray
-        """
-        array = inspector.slicedArray
-        logger.debug("Discarding {}% from id: {}".format(percentage, id(array)))
-        return np.nanpercentile(array, (percentage, 100-percentage) )
-
-    return calcRange
+    array = inspector.slicedArray
+    logger.debug("Discarding {}% from id: {}".format(percentage, id(array)))
+    return np.nanpercentile(array, (percentage, 100-percentage) )
 
 
 def defaultAutoRangeMethods(inspector, intialItems=None):
@@ -154,10 +141,10 @@ def defaultAutoRangeMethods(inspector, intialItems=None):
         :param intialItems: will be passed on to the  OrderedDict constructor.
     """
     rangeFunctions = OrderedDict({} if intialItems is None else intialItems)
-    rangeFunctions['use all data'] = makeInspectorPercentileRangeFn(inspector, 0.0)
+    rangeFunctions['use all data'] = partial(inspectorDataRange, inspector, 0.0)
     for percentage in [0.1, 0.2, 0.5, 1, 2, 5, 10, 20]:
         label = "discard {}%".format(percentage)
-        rangeFunctions[label] = makeInspectorPercentileRangeFn(inspector, percentage)
+        rangeFunctions[label] = partial(inspectorDataRange, inspector, percentage)
     return rangeFunctions
 
 
@@ -172,14 +159,11 @@ class AbstractRangeCti(GroupCti):
 
             If given, autoRangeMethods must be a (label to function) dictionary that will be used
             to populate the (auto range) method ChoiceCti.
-            If autoRangeMethods is None, there will be no auto-range child CTI.
-            If autoRangeMethods has one element there will be an auto-range child without a method
+            If autoRangeFunctions is None, there will be no auto-range child CTI.
+            If autoRangeFunctions has one element there will be an auto-range child without a method
             child CTI (the function from the autoRangeMethods dictionary will be the default).
         """
         super(AbstractRangeCti, self).__init__(nodeName, expanded=expanded)
-
-        self.rangeMinCti = self.insertChild(SnFloatCti('min', 0.0))
-        self.rangeMaxCti = self.insertChild(SnFloatCti('max', 1.0))
 
         self._rangeFunctions = {}
         self.autoRangeCti = None
@@ -197,6 +181,9 @@ class AbstractRangeCti(GroupCti):
             self.paddingCti = IntCti("padding", -1, suffix="%", specialValueText="dynamic",
                                      minValue=-1, maxValue=1000, stepSize=1)
             self.autoRangeCti.insertChild(self.paddingCti)
+
+        self.rangeMinCti = self.insertChild(SnFloatCti('min', 0.0))
+        self.rangeMaxCti = self.insertChild(SnFloatCti('max', 1.0))
 
 
     @property
@@ -347,7 +334,7 @@ class PgAxisRangeCti(AbstractRangeCti):
             a method choice and the autorange implemented by PyQtGraph will be used.
         """
         if autoRangeFunctions is None:
-            autoRangeFunctions = {self.PYQT_RANGE: makePyQtAutoRangeFn(viewBox, axisNumber)}
+            autoRangeFunctions = {self.PYQT_RANGE: partial(viewBoxAxisRange, viewBox, axisNumber)}
 
         super(PgAxisRangeCti, self).__init__(autoRangeFunctions=autoRangeFunctions,
                                              nodeName=nodeName, expanded=expanded)
@@ -357,7 +344,8 @@ class PgAxisRangeCti(AbstractRangeCti):
         self.viewBox = viewBox
         self.axisNumber = axisNumber
 
-        # Autorange must be disabled as not to interfere with this class
+        # Autorange must be disabled as not to interfere with this class.
+        # Note that autorange of ArgosPgPlotItem is set to False by default.
         axisAutoRange = self.viewBox.autoRangeEnabled()[axisNumber]
         assert axisAutoRange is False, \
             "Autorange is {!r} for axis {} of {}".format(axisAutoRange, axisNumber, self.nodePath)
@@ -390,8 +378,8 @@ class PgAxisRangeCti(AbstractRangeCti):
         else:
             xRange, yRange = None, targetRange
 
-        # Do not set disableAutoRange to True in setRange; it trigger 'one last' auto range.
-        # This is why the viewBox autorange must be False at construction.
+        # Do not set disableAutoRange to True in setRange; it triggers 'one last' auto range.
+        # This is why the viewBox' autorange must be False at construction.
         self.viewBox.setRange(xRange = xRange, yRange=yRange, padding=padding,
                               update=False, disableAutoRange=False)
 

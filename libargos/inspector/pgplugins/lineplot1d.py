@@ -20,10 +20,9 @@
 from __future__ import division, print_function
 
 import logging
-import numpy as np
 import pyqtgraph as pg
 
-logger = logging.getLogger(__name__)
+from functools import partial
 
 from libargos.qt import QtGui
 from libargos.info import DEBUGGING
@@ -33,13 +32,15 @@ from libargos.config.choicecti import ChoiceCti
 from libargos.config.qtctis import PenCti, ColorCti, createPenStyleCti, createPenWidthCti
 from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector, InvalidDataError
-from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES, makePyQtAutoRangeFn,
+from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES, viewBoxAxisRange,
                                                  defaultAutoRangeMethods, PgGridCti,
                                                  PgMainPlotItemCti, PgAxisLabelCti,
                                                  PgAxisLogModeCti, PgAxisRangeCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.utils.cls import array_has_real_numbers, check_class
 
+
+logger = logging.getLogger(__name__)
 
 class PgLinePlot1dCti(PgMainPlotItemCti):
     """ Configuration tree for a PgLinePlot1d inspector
@@ -70,7 +71,7 @@ class PgLinePlot1dCti(PgMainPlotItemCti):
         xAxisCti = self.xAxisCti
         xAxisCti.insertChild(PgAxisLabelCti(plotItem, 'bottom', self.pgLinePlot1d.collector,
             defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{x-dim}"]))
-        # No logarithmic X-Axis as long as it only shows the array index and no abcissa.
+        # No logarithmic X-Axis as long as abcissa is not yet implemented.
         #xAxisCti.insertChild(PgAxisLogModeCti(imagePlotItem, X_AXIS))
         xAxisCti.insertChild(PgAxisRangeCti(viewBox, X_AXIS))
 
@@ -81,7 +82,7 @@ class PgLinePlot1dCti(PgMainPlotItemCti):
         yAxisCti.insertChild(PgAxisLogModeCti(plotItem, Y_AXIS))
 
         rangeFunctions = defaultAutoRangeMethods(self.pgLinePlot1d,
-            {PgAxisRangeCti.PYQT_RANGE: makePyQtAutoRangeFn(viewBox, Y_AXIS)})
+            {PgAxisRangeCti.PYQT_RANGE: partial(viewBoxAxisRange, viewBox, Y_AXIS)})
         yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS, rangeFunctions))
 
         #### Pen ####
@@ -131,7 +132,6 @@ class PgLinePlot1d(AbstractInspector):
 
         self.plotItem = ArgosPgPlotItem()
         self.viewBox = self.plotItem.getViewBox()
-        self.viewBox.disableAutoRange(BOTH_AXES)
         self.graphicsLayoutWidget.addItem(self.plotItem, 1, 0)
 
         # Probe

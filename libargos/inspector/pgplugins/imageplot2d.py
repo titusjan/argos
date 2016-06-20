@@ -23,6 +23,8 @@ import logging
 import numpy as np
 import pyqtgraph as pg
 
+from functools import partial
+from collections import OrderedDict
 from libargos.info import DEBUGGING
 from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
@@ -45,6 +47,76 @@ ROW_HOR_LINE, COL_HOR_LINE = 1, 1
 ROW_IMAGE,    COL_IMAGE    = 2, 1
 ROW_VER_LINE, COL_VER_LINE = 2, 2
 ROW_PROBE,    COL_PROBE    = 3, 0  # colspan = 2
+
+
+
+def calcPgImagePlot2dDataRange(pgImagePlot2d, percentage, crossPlot):
+    """ Calculates the range from the inspectors' sliced array. Discards percentage of the minimum
+        and percentage of the maximum values of the inspector.slicedArray
+
+        :param pgImagePlot2d: the range methods will work on (the sliced array) of this inspector.
+        :param percentage: percentage that will be discarded.
+        :param crossPlot: if None, the range will be calculated from the entire sliced array,
+            if "horizontal" or "vertical" the range will be calculated from the data under the
+            horizontal or vertical cross hairs.
+            If the cursor is outside the image, there is no valid data under the cross-hair and
+            the range will be determined from the sliced array as a fall back.
+    """
+    if crossPlot is None:
+        logger.debug("Discarding {}% from array".format(percentage))
+        array = pgImagePlot2d.slicedArray
+    elif crossPlot == 'horizontal':
+        logger.debug("Discarding {}% from array[{}, :]".format(percentage, pgImagePlot2d.crossPlotRow))
+        if pgImagePlot2d.crossPlotRow is not None:
+            array = pgImagePlot2d.slicedArray[pgImagePlot2d.crossPlotRow, :]
+        else:
+            array = pgImagePlot2d.slicedArray # fall back on complete sliced array
+
+    elif crossPlot == 'vertical':
+        logger.debug("Discarding {}% from array[:, {}]".format(percentage, pgImagePlot2d.crossPlotCol))
+        if pgImagePlot2d.crossPlotCol is not None:
+            array = pgImagePlot2d.slicedArray[:, pgImagePlot2d.crossPlotCol]
+        else:
+            array = pgImagePlot2d.slicedArray # fall back on complete sliced array
+
+    else:
+        raise ValueError("crossPlot must be: None, 'horizontal' or 'vertical', got: {}"
+                         .format(crossPlot))
+
+    return np.nanpercentile(array, (percentage, 100-percentage) )
+
+
+def crossPlotAutoRangeMethods(pgImagePlot2d, crossPlot, intialItems=None):
+    """ Creates an ordered dict with autorange methods for an PgImagePlot2d inspector.
+
+        :param pgImagePlot2d: the range methods will work on (the sliced array) of this inspector.
+        :param crossPlot: if None, the range will be calculated from the entire sliced array,
+            if "horizontal" or "vertical" the range will be calculated from the data under the
+            horizontal or vertical cross hairs
+        :param intialItems: will be passed on to the  OrderedDict constructor.
+    """
+    rangeFunctions = OrderedDict({} if intialItems is None else intialItems)
+
+    # If crossPlot is "horizontal" or "vertical" make functions that determine the range from the
+    # data at the cross hair.
+    if crossPlot:
+        rangeFunctions['cross all data'] = partial(calcPgImagePlot2dDataRange, pgImagePlot2d,
+                                                   0.0, crossPlot)
+        for percentage in [0.1, 0.2, 0.5, 1, 2, 5, 10, 20]:
+            label = "cross discard {}%".format(percentage)
+            rangeFunctions[label] = partial(calcPgImagePlot2dDataRange, pgImagePlot2d,
+                                            percentage, crossPlot)
+
+    # Always add functions that determine the data from the intire sliced array.
+    for percentage in [0.1, 0.2, 0.5, 1, 2, 5, 10, 20]:
+        rangeFunctions['image all data'] = partial(calcPgImagePlot2dDataRange, pgImagePlot2d,
+                                                   0.0, None)
+
+        label = "image discard {}%".format(percentage)
+        rangeFunctions[label] = partial(calcPgImagePlot2dDataRange, pgImagePlot2d,
+                                        percentage, None)
+    return rangeFunctions
+
 
 
 class PgImagePlot2dCti(PgMainPlotItemCti):
@@ -85,9 +157,8 @@ class PgImagePlot2dCti(PgMainPlotItemCti):
         yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS))
 
         #### Color scale ####
-        self.insertChild(PgGradientEditorItemCti(self.pgImagePlot2d.histLutItem.gradient))
-        rangeFunctions = defaultAutoRangeMethods(self.pgImagePlot2d)
-        self.insertChild(PgHistLutColorRangeCti(pgImagePlot2d.histLutItem, rangeFunctions,
+        colorAutoRangeFunctions = defaultAutoRangeMethods(self.pgImagePlot2d)
+        self.insertChild(PgHistLutColorRangeCti(pgImagePlot2d.histLutItem, colorAutoRangeFunctions,
                                                 nodeName="color range"))
 
         histViewBox = pgImagePlot2d.histLutItem.vb
@@ -95,9 +166,25 @@ class PgImagePlot2dCti(PgMainPlotItemCti):
         self.histRangeCti = self.insertChild(PgAxisRangeCti(histViewBox, Y_AXIS,
                                                             nodeName='histogram range'))
 
+        self.insertChild(PgGradientEditorItemCti(self.pgImagePlot2d.histLutItem.gradient))
+
+        # Probe and cross-hair plots
         self.probeCti = self.insertChild(BoolCti('show probe', True))
-        self.horCrossPlotCti = self.insertChild(BoolCti('horizontal x-plot', True))
-        self.verCrossPlotCti = self.insertChild(BoolCti('vertical x-plot', True))
+
+        self.crossPlotGroupCti = self.insertChild(BoolCti('cross-hair', True)) # TODO: False
+
+
+        self.horCrossPlotCti = self.crossPlotGroupCti.insertChild(BoolCti('horizontal', True))
+        self.horCrossPlotRangeCti = self.horCrossPlotCti.insertChild(PgAxisRangeCti(
+            self.pgImagePlot2d.horCrossPlotItem.getViewBox(), Y_AXIS, nodeName="data range",
+            autoRangeFunctions = crossPlotAutoRangeMethods(self.pgImagePlot2d, "horizontal")))
+
+        self.verCrossPlotCti = self.crossPlotGroupCti.insertChild(BoolCti('vertical', True))
+        self.verCrossPlotRangeCti = self.verCrossPlotCti.insertChild(PgAxisRangeCti(
+            self.pgImagePlot2d.verCrossPlotItem.getViewBox(), X_AXIS, nodeName="data range",
+            autoRangeFunctions = crossPlotAutoRangeMethods(self.pgImagePlot2d, "vertical")))
+
+
 
 
 class PgImagePlot2d(AbstractInspector):
@@ -128,7 +215,9 @@ class PgImagePlot2d(AbstractInspector):
         self.histLutItem.setImageItem(self.imageItem)
         self.histLutItem.vb.setMenuEnabled(False)
 
-        # Cross hair plots and probe
+        # Probe and cross hair plots
+        self.crossPlotRow = None # the row coordinate of the cross hair. None if no cross hair.
+        self.crossPlotCol = None # the col coordinate of the cross hair. None if no cross hair.
         self.horCrossPlotItem = ArgosPgPlotItem()
         self.verCrossPlotItem = ArgosPgPlotItem()
         self.horPlotDataItem = self.horCrossPlotItem.plot()
@@ -287,10 +376,12 @@ class PgImagePlot2d(AbstractInspector):
             # We use int() to convert to integer, and not round(), because the image pixels
             # are drawn from (row, col) to (row + 1, col + 1). That is, their center is at
             # (row + 0.5, col + 0.5)
+            self.crossPlotRow, self.crossPlotCol = None, None
             row, col = int(scenePos.y()), int(scenePos.x())
             nRows, nCols = self.slicedArray.shape
 
             if (0 <= row < nRows) and (0 <= col < nCols):
+                self.crossPlotRow, self.crossPlotCol = row, col
                 value = self.slicedArray[row, col]
                 txt = "pos = ({:d}, {:d}), value = {!r}".format(row, col, value)
                 self.probeLabel.setText(txt)
@@ -300,6 +391,7 @@ class PgImagePlot2d(AbstractInspector):
                     self.crossLineHorizontal.setVisible(True)
                     self.crossLineHorizontal.setPos(row + 0.5) # Adding 0.5 to find the pixel center
                     self.horPlotDataItem.setData(self.slicedArray[row, :])
+                    self.config.horCrossPlotRangeCti.updateTarget() # update auto range
 
                 if self.config.verCrossPlotCti.configValue:
                     self.crossLineVertical.setVisible(True)
@@ -307,7 +399,7 @@ class PgImagePlot2d(AbstractInspector):
                     try:
                         self.verPlotDataItem.setData(self.slicedArray[:, col], np.arange(nRows))
                     except Exception as ex:
-                        # Occorred as a bug that I can't reproduce: the dataType don't match.
+                        # Occurred as a bug that I can't reproduce: the dataTypes don't match.
                         # If it occurs outside debugging we issue a warning.
                         # When a rec-array is plotted.
                         from pyqtgraph.graphicsItems.PlotDataItem import dataType
@@ -318,3 +410,4 @@ class PgImagePlot2d(AbstractInspector):
                         else:
                             logger.error(ex)
 
+                    self.config.verCrossPlotRangeCti.updateTarget() # update auto range
