@@ -63,17 +63,14 @@ def calcPgImagePlot2dDataRange(pgImagePlot2d, percentage, crossPlot):
             the range will be determined from the sliced array as a fall back.
     """
     if crossPlot is None:
-        logger.debug("Discarding {}% from array".format(percentage))
         array = pgImagePlot2d.slicedArray
     elif crossPlot == 'horizontal':
-        logger.debug("Discarding {}% from array[{}, :]".format(percentage, pgImagePlot2d.crossPlotRow))
         if pgImagePlot2d.crossPlotRow is not None:
             array = pgImagePlot2d.slicedArray[pgImagePlot2d.crossPlotRow, :]
         else:
             array = pgImagePlot2d.slicedArray # fall back on complete sliced array
 
     elif crossPlot == 'vertical':
-        logger.debug("Discarding {}% from array[:, {}]".format(percentage, pgImagePlot2d.crossPlotCol))
         if pgImagePlot2d.crossPlotCol is not None:
             array = pgImagePlot2d.slicedArray[:, pgImagePlot2d.crossPlotCol]
         else:
@@ -184,6 +181,43 @@ class PgImagePlot2dCti(PgMainPlotItemCti):
             self.pgImagePlot2d.verCrossPlotItem.getViewBox(), X_AXIS, nodeName="data range",
             autoRangeFunctions = crossPlotAutoRangeMethods(self.pgImagePlot2d, "vertical")))
 
+
+    #     # Connect signals
+    #     self.horCrossPlotRangeCti.axisReset
+    #
+    #     self.plotItem.axisReset.connect(self._setAutoRangeOn)
+    #
+    #
+    # def _closeResources(self):
+    #     """ Disconnects signals.
+    #         Is called by self.finalize when the cti is deleted.
+    #     """
+    #     self.plotItem.axisReset.disconnect(self._setAutoRangeOn)
+    #
+    #
+    # def _setAutoRangeOn(self, axisNumber=BOTH_AXES):
+    #     """ Turns on the auto range checkbox for the equivalent axes
+    #         Emits the itemChanged signal so that the inspector may be updated.
+    #
+    #         :param axisNumber: 0 for x-axis, 1 for y-axis, 2 for both axes (default)
+    #     """
+    #     logger.debug("_setAutoRangeOn: axis=Number = {}".format(axisNumber))
+    #
+    #     if axisNumber == X_AXIS:
+    #         axes = [self.xAxisCti]
+    #     elif axisNumber == Y_AXIS:
+    #         axes = [self.yAxisCti]
+    #     elif axisNumber == BOTH_AXES:
+    #         axes = [self.xAxisCti, self.yAxisCti]
+    #     else:
+    #         raise ValueError("axisNumber must be 0, 1 or 2. Got: {}".format(axisNumber))
+    #
+    #     for axisCti in axes:
+    #         for childCti in axisCti.childItems:
+    #             if isinstance(childCti, PgAxisRangeCti):
+    #                 childCti.autoRangeCti.data = True
+    #     self.model.itemChanged.emit(self)
+    #
 
 
 

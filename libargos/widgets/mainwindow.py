@@ -372,8 +372,8 @@ class MainWindow(QtGui.QMainWindow):
                 try:
                     self._inspector = inspectorRegItem.create(self.collector, tryImport=True)
                 except ImportError as ex:
-                    logger.warn("Clearing inspector. Unable to create {!r} because {}"
-                                .format(inspectorRegItem.identifier, ex))
+                    logger.exception("Clearing inspector. Unable to create {!r} because {}"
+                                     .format(inspectorRegItem.identifier, ex))
                     self._inspector = None
 
             self.setWindowTitle(self.constructWindowTitle())

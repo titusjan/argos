@@ -250,10 +250,23 @@ class AbstractRangeCti(GroupCti):
         self.model.emitDataChanged(self)
 
 
+    # def _setAutoRangeOn(self):
+    #     """ Not implemented for single axis. See PgPlotItemCti._setAutorangeOn
+    #     """
+    #     assert False, "Not implemented for single axis. See PgPlotItemCti._setAutorangeOn"
+
     def _setAutoRangeOn(self):
-        """ Not implemented for single axis. See PgPlotItemCti._setAutorangeOn
+        """ Turns on the auto range checkbox for the equivalent axes
+            Emits the itemChanged signal so that the inspector may be updated.
         """
-        assert False, "Not implemented for single axis. See PgPlotItemCti._setAutorangeOn"
+        if self.getRefreshBlocked():
+            logger.debug("Set autorange on blocked for {}".format(self.nodeName))
+            return
+
+        if self.autoRangeCti:
+            self.autoRangeCti.data = True
+        self.model.itemChanged.emit(self)
+
 
 
     def _setAutoRangeOff(self):
@@ -678,4 +691,15 @@ class PgMainPlotItemCti(MainGroupCti):
                 if isinstance(childCti, PgAxisRangeCti):
                     childCti.autoRangeCti.data = True
         self.model.itemChanged.emit(self)
+
+
+#
+# def resetAxis(rootCti, autoRangeCtis):
+#     """
+#     """
+#     for autoRangeCti in autoRangeCtis:
+#         autoRangeCti.data = True
+#
+#     rootCti.model.itemChanged.emit(rootCti)
+#
 

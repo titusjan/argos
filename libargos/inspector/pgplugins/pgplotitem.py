@@ -22,7 +22,10 @@ from __future__ import division, print_function
 import logging
 import pyqtgraph as pg
 
+from libargos.info import DEBUGGING
 from libargos.qt import Qt, QtCore, QtGui, QtSignal
+from libargos.utils.cls import check_class
+from .pgctis import AbstractRangeCti
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +82,7 @@ class ArgosPgPlotItem(PlotItem):
         # # Install event filters to catch double clicks
         # xAxisItem = self.getAxis('bottom')
         # xAxisItem.installEventFilter(self)
-
+        # self._autoRangeCtis = []
 
 
     def close(self):
@@ -93,6 +96,25 @@ class ArgosPgPlotItem(PlotItem):
         super(ArgosPgPlotItem, self).close()
 
 
+    # def registerButtonRangeCti(self, autoRangeCti):
+    #     """ Adds a rangeCti that will be unchecked when the autoButton is clicked.
+    #
+    #     """
+    #     check_class(autoRangeCti, AbstractRangeCti)
+    #     #self._autoRangeCtis.append(autoRangeCti)
+
+
+    # def _resetAxis(self):
+    #     """
+    #     """
+    #     for autoRangeCti in self._autoRangeCtis:
+    #         autoRangeCti.
+    #     childCti.autoRangeCti.data = True
+    #     self.model.itemChanged.emit(self)
+
+
+
+
     def autoBtnClicked(self):
         """ Hides the button but does not enable/disable autorange.
             That will be done by PgAxisRangeCti
@@ -101,7 +123,14 @@ class ArgosPgPlotItem(PlotItem):
         if self.autoBtn.mode == 'auto':
             self.autoBtn.hide()
 
-        self.axisReset.emit(BOTH_AXES)
+            self.axisReset.emit(BOTH_AXES)
+        else:
+            # Does this occur?
+            msg = "Unexpeded autobutton mode: {}".format(self.autoBtn.mode)
+            if DEBUGGING:
+                raise ValueError(msg)
+            else:
+                logger.warn(msg)
 
 
     def mouseClickEvent(self, ev):

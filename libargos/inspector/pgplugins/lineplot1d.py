@@ -26,14 +26,14 @@ from functools import partial
 
 from libargos.qt import QtGui
 from libargos.info import DEBUGGING
-from libargos.config.groupcti import  GroupCti
+from libargos.config.groupcti import MainGroupCti, GroupCti
 from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.qtctis import PenCti, ColorCti, createPenStyleCti, createPenWidthCti
 from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector, InvalidDataError
 from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES, viewBoxAxisRange,
-                                                 defaultAutoRangeMethods, PgGridCti,
+                                                 defaultAutoRangeMethods, PgGridCti, PgAxisCti,
                                                  PgMainPlotItemCti, PgAxisLabelCti,
                                                  PgAxisLogModeCti, PgAxisRangeCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
@@ -42,7 +42,7 @@ from libargos.utils.cls import array_has_real_numbers, check_class
 
 logger = logging.getLogger(__name__)
 
-class PgLinePlot1dCti(PgMainPlotItemCti):
+class PgLinePlot1dCti(MainGroupCti):
     """ Configuration tree for a PgLinePlot1d inspector
     """
     def __init__(self, pgLinePlot1d, nodeName):
@@ -52,7 +52,7 @@ class PgLinePlot1dCti(PgMainPlotItemCti):
             configuration can be applied to the target by simply calling the apply method.
             Vice versa, it can connect signals to the target.
         """
-        super(PgLinePlot1dCti, self).__init__(pgLinePlot1d.plotItem, nodeName=nodeName)
+        super(PgLinePlot1dCti, self).__init__(nodeName=nodeName)
 
         check_class(pgLinePlot1d, PgLinePlot1d)
         self.pgLinePlot1d = pgLinePlot1d
@@ -68,22 +68,23 @@ class PgLinePlot1dCti(PgMainPlotItemCti):
 
         self.insertChild(PgGridCti(plotItem), position=-2) # before the xAxisCti and yAxisCti
 
-        xAxisCti = self.xAxisCti
-        xAxisCti.insertChild(PgAxisLabelCti(plotItem, 'bottom', self.pgLinePlot1d.collector,
+        self.xAxisCti = self.insertChild(PgAxisCti('x-axis'))
+        self.xAxisCti.insertChild(PgAxisLabelCti(plotItem, 'bottom', self.pgLinePlot1d.collector,
             defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{x-dim}"]))
         # No logarithmic X-Axis as long as abcissa is not yet implemented.
         #xAxisCti.insertChild(PgAxisLogModeCti(imagePlotItem, X_AXIS))
-        xAxisCti.insertChild(PgAxisRangeCti(viewBox, X_AXIS))
+        self.xAxisRangeCti = self.xAxisCti.insertChild(PgAxisRangeCti(viewBox, X_AXIS))
 
-        yAxisCti = self.yAxisCti
-        yAxisCti.insertChild(PgAxisLabelCti(plotItem, 'left', self.pgLinePlot1d.collector,
+        self.yAxisCti = self.insertChild(PgAxisCti('y-axis'))
+        self.yAxisCti.insertChild(PgAxisLabelCti(plotItem, 'left', self.pgLinePlot1d.collector,
             defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{name} {unit}", "{path} {unit}",
                                          "{name}", "{path}", "{raw-unit}"]))
-        yAxisCti.insertChild(PgAxisLogModeCti(plotItem, Y_AXIS))
+        self.yAxisCti.insertChild(PgAxisLogModeCti(plotItem, Y_AXIS))
 
         rangeFunctions = defaultAutoRangeMethods(self.pgLinePlot1d,
             {PgAxisRangeCti.PYQT_RANGE: partial(viewBoxAxisRange, viewBox, Y_AXIS)})
-        yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS, rangeFunctions))
+        self.yAxisRangeCti = self.yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS,
+                                                                      rangeFunctions))
 
         #### Pen ####
         penCti = self.insertChild(GroupCti('pen'))
@@ -106,6 +107,32 @@ class PgLinePlot1dCti(PgMainPlotItemCti):
         symbolCti.insertChild(IntCti('size', 5, minValue=0, maxValue=100, stepSize=1))
 
         self.probeCti = self.insertChild(BoolCti('show probe', True))
+
+
+        # Connect signals
+        self._setAutoRangeOnFn = partial(setXYAxesAutoRangeOn, self,
+                                         self.xAxisRangeCti, self.yAxisRangeCti)
+        self.pgLinePlot1d.plotItem.axisReset.connect(self._setAutoRangeOnFn)
+
+
+    def _closeResources(self):
+       """ Disconnects signals.
+           Is called by self.finalize when the cti is deleted.
+       """
+       self.pgLinePlot1d.plotItem.axisReset.disconnect(self._setAutoRangeOnFn)
+
+
+def setXYAxesAutoRangeOn(commonCti, xAxisRangeCti, yAxisRangeCti):
+    """ Turns on the auto range of an X and Y axis simulatiously.
+        It sets the autoRangeCti.data of the xAxisRangeCti and yAxisRangeCti to True.
+        After that, it emits the itemChanged signal of the commonCti.
+
+        Can be used (with functools.partial) to make a slot for the
+    """
+    xAxisRangeCti.autoRangeCti.data = True
+    yAxisRangeCti.autoRangeCti.data = True
+
+    commonCti.model.itemChanged.emit(commonCti)
 
 
 
