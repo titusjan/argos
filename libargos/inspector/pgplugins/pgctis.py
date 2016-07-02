@@ -148,6 +148,27 @@ def defaultAutoRangeMethods(inspector, intialItems=None):
     return rangeFunctions
 
 
+def setXYAxesAutoRangeOn(commonCti, xAxisRangeCti, yAxisRangeCti, axisNumer):
+    """ Turns on the auto range of an X and Y axis simultaneously.
+        It sets the autoRangeCti.data of the xAxisRangeCti and yAxisRangeCti to True.
+        After that, it emits the sigItemChanged signal of the commonCti.
+
+        Can be used with functools.partial to make a slot that atomically resets the X and Y axis.
+        That is, only one sigItemChanged will be emitted.
+
+        TODO: explain why necessary
+    """
+    logger.debug("^^^^^^^^ setXYAxesAutoRangeOn, axisNumber: {}".format(axisNumer))
+    if axisNumer == X_AXIS or axisNumer == BOTH_AXES:
+        xAxisRangeCti.autoRangeCti.data = True
+
+    if axisNumer == Y_AXIS or axisNumer == BOTH_AXES:
+        yAxisRangeCti.autoRangeCti.data = True
+
+    commonCti.model.sigItemChanged.emit(commonCti)
+
+
+
 class AbstractRangeCti(GroupCti):
     """ Configuration tree item is linked to a target range.
 
@@ -189,7 +210,7 @@ class AbstractRangeCti(GroupCti):
     @property
     def autoRangeMethod(self):
         """ The currently selected auto range method.
-            If there is no method child CTI there will be only one method, which will be returened.
+            If there is no method child CTI, there will be only one method (which will be returned).
         """
         if self.methodCti:
             return self.methodCti.configValue
@@ -200,12 +221,11 @@ class AbstractRangeCti(GroupCti):
 
 
     def _refreshNodeFromTarget(self, *args, **kwargs):
-        """ Refreshes the configuration from the target it monitors (if present).
-            The default implementation does nothing; subclasses can override it.
-            During updateTarget's execution refreshFromTarget is blocked to avoid loops.
+        """ Used to update the axis config tree item when the target axes was changed.
+            It updates the autoRange checkbox (_refreshAutoRange) and calculates new min max config
+            values from range by calling _refreshMinMax.
 
-            The *args and **kwargs arguments are ignored but make it possible to use this as a slot
-            for signals with arguments.
+            The *args and **kwargs arguments are ignored.
         """
         self._refreshAutoRange()
         newRange = self.getTargetRange()
@@ -217,7 +237,7 @@ class AbstractRangeCti(GroupCti):
 
             ranges = [[xmin, xmax], [ymin, ymax]]
         """
-        # Set the precision from by looking how many decimals are neede to show the difference
+        # Set the precision from by looking how many decimals are needed to show the difference
         # between the minimum and maximum, given the maximum. E.g. if min = 0.04 and max = 0.07,
         # we would only need zero decimals behind the point as we can write the range as
         # [4e-2, 7e-2]. However if min = 1.04 and max = 1.07, we need 2 decimals behind the point.
@@ -250,23 +270,18 @@ class AbstractRangeCti(GroupCti):
         self.model.emitDataChanged(self)
 
 
-    # def _setAutoRangeOn(self):
-    #     """ Not implemented for single axis. See PgPlotItemCti._setAutorangeOn
-    #     """
-    #     assert False, "Not implemented for single axis. See PgPlotItemCti._setAutorangeOn"
-
     def _setAutoRangeOn(self):
         """ Turns on the auto range checkbox for the equivalent axes
-            Emits the itemChanged signal so that the inspector may be updated.
+            Emits the sigItemChanged signal so that the inspector may be updated.
         """
+        assert False, "not yet tested"
         if self.getRefreshBlocked():
             logger.debug("Set autorange on blocked for {}".format(self.nodeName))
             return
 
         if self.autoRangeCti:
             self.autoRangeCti.data = True
-        self.model.itemChanged.emit(self)
-
+        self.model.sigItemChanged.emit(self) # this should typically only be called by other classes.
 
 
     def _setAutoRangeOff(self):
@@ -671,7 +686,7 @@ class PgMainPlotItemCti(MainGroupCti):
 
     def _setAutoRangeOn(self, axisNumber=BOTH_AXES):
         """ Turns on the auto range checkbox for the equivalent axes
-            Emits the itemChanged signal so that the inspector may be updated.
+            Emits the sigItemChanged signal so that the inspector may be updated.
 
             :param axisNumber: 0 for x-axis, 1 for y-axis, 2 for both axes (default)
         """
@@ -690,16 +705,4 @@ class PgMainPlotItemCti(MainGroupCti):
             for childCti in axisCti.childItems:
                 if isinstance(childCti, PgAxisRangeCti):
                     childCti.autoRangeCti.data = True
-        self.model.itemChanged.emit(self)
-
-
-#
-# def resetAxis(rootCti, autoRangeCtis):
-#     """
-#     """
-#     for autoRangeCti in autoRangeCtis:
-#         autoRangeCti.data = True
-#
-#     rootCti.model.itemChanged.emit(rootCti)
-#
-
+        self.model.sigItemChanged.emit(self)

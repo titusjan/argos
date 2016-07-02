@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
 # This file is part of Argos.
-# 
+#
 # Argos is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Argos is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
@@ -34,7 +34,7 @@ from libargos.config.intcti import IntCti
 from libargos.inspector.abstract import AbstractInspector, InvalidDataError
 from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES, viewBoxAxisRange,
                                                  defaultAutoRangeMethods, PgGridCti, PgAxisCti,
-                                                 PgMainPlotItemCti, PgAxisLabelCti,
+                                                 setXYAxesAutoRangeOn, PgAxisLabelCti,
                                                  PgAxisLogModeCti, PgAxisRangeCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.utils.cls import array_has_real_numbers, check_class
@@ -108,11 +108,11 @@ class PgLinePlot1dCti(MainGroupCti):
 
         self.probeCti = self.insertChild(BoolCti('show probe', True))
 
-
         # Connect signals
         self._setAutoRangeOnFn = partial(setXYAxesAutoRangeOn, self,
                                          self.xAxisRangeCti, self.yAxisRangeCti)
         self.pgLinePlot1d.plotItem.axisReset.connect(self._setAutoRangeOnFn)
+        self.pgLinePlot1d.plotItem.axisReset.connect(self.testAxisReset) # TODO: remove
 
 
     def _closeResources(self):
@@ -122,25 +122,15 @@ class PgLinePlot1dCti(MainGroupCti):
        self.pgLinePlot1d.plotItem.axisReset.disconnect(self._setAutoRangeOnFn)
 
 
-def setXYAxesAutoRangeOn(commonCti, xAxisRangeCti, yAxisRangeCti):
-    """ Turns on the auto range of an X and Y axis simulatiously.
-        It sets the autoRangeCti.data of the xAxisRangeCti and yAxisRangeCti to True.
-        After that, it emits the itemChanged signal of the commonCti.
-
-        Can be used (with functools.partial) to make a slot for the
-    """
-    xAxisRangeCti.autoRangeCti.data = True
-    yAxisRangeCti.autoRangeCti.data = True
-
-    commonCti.model.itemChanged.emit(commonCti)
-
+    def testAxisReset(self, *args, **kwargs):
+        logger.debug("TEST axis reset: {} {}".format(args, kwargs))
 
 
 
 class PgLinePlot1d(AbstractInspector):
     """ Inspector that contains a PyQtGraph 1-dimensional line plot
     """
-    
+
     def __init__(self, collector, parent=None):
         """ Constructor. See AbstractInspector constructor for parameters.
         """
@@ -175,7 +165,7 @@ class PgLinePlot1d(AbstractInspector):
         # I did not use the SignalProxy because I did not see any difference.
         self.plotItem.scene().sigMouseMoved.connect(self.mouseMoved)
 
-        
+
     def finalize(self):
         """ Is called before destruction. Can be used to clean-up resources
         """
@@ -267,10 +257,10 @@ class PgLinePlot1d(AbstractInspector):
             self.probeDataItem.clear()
         else:
             scenePos = self.viewBox.mapSceneToView(viewPos)
-            index = round(scenePos.x())
+            index = int(scenePos.x())
 
             if self.slicedArray is not None and 0 <= index < len(self.slicedArray):
-                txt = "pos = {:.0f}, value = {!r}".format(index, self.slicedArray[index])
+                txt = "pos = {!r}, value = {!r}".format(index, self.slicedArray[index])
                 self.probeLabel.setText(txt)
                 self.crossLineVertical.setVisible(True)
                 self.crossLineVertical.setPos(index)

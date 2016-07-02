@@ -22,6 +22,7 @@ from __future__ import division, print_function
 import logging
 import pyqtgraph as pg
 
+from functools import partial
 from libargos.info import DEBUGGING
 from libargos.qt import Qt, QtCore, QtGui, QtSignal
 from libargos.utils.cls import check_class
@@ -46,6 +47,15 @@ BOTH_AXES = pg.ViewBox.XYAxes
 DEFAULT_BORDER_PEN = pg.mkPen("#000000", width=1)
 
 
+def axisMouseClickEvent(argosPgPlotItem, axisNumber, mouseClickEvent):
+    """ Emits axisReset when the middle mouse button is clicked on an axis of the the plot item.
+    """
+    if mouseClickEvent.button() == QtCore.Qt.MiddleButton or mouseClickEvent.button() == QtCore.Qt.RightButton: # TODO: test middle click
+        mouseClickEvent.accept()
+        argosPgPlotItem.axisReset.emit(axisNumber)
+
+
+
 class ArgosPgPlotItem(PlotItem):
     """ Wrapper arround pyqtgraph.graphicsItems.PlotItem
         Overrides the autoBtnClicked method.
@@ -55,11 +65,11 @@ class ArgosPgPlotItem(PlotItem):
         the other settings I don't want to support.
 
         Autorange is disabled by default as it is expected that the (viewbox of the) plot item will
-        be connected to a PgAxisRangeCti that controls the (auto)range.
+        be connected to two PgAxisRangeCti objects that control the (auto)range of the X and Y axes.
 
         Adds a black border of width 1.
 
-        Sets the cursros to a cross inside the viewbox.
+        Sets the cursor to a cross if it's inside the viewbox.
     """
     axisReset = QtSignal(int)
 
@@ -79,10 +89,12 @@ class ArgosPgPlotItem(PlotItem):
         viewBox.setCursor(Qt.CrossCursor)
         viewBox.disableAutoRange(BOTH_AXES)
 
-        # # Install event filters to catch double clicks
-        # xAxisItem = self.getAxis('bottom')
-        # xAxisItem.installEventFilter(self)
-        # self._autoRangeCtis = []
+        # Add mouseClickEvent event handlers to the X and Y axis. This allows for resetting
+        # the scale of each axes separately by middle mouse clicking the axis.
+        xAxisItem = self.getAxis('bottom')
+        xAxisItem.mouseClickEvent = partial(axisMouseClickEvent, self, X_AXIS)
+        yAxisItem = self.getAxis('left')
+        yAxisItem.mouseClickEvent = partial(axisMouseClickEvent, self, Y_AXIS)
 
 
     def close(self):
@@ -94,25 +106,6 @@ class ArgosPgPlotItem(PlotItem):
         # xAxisItem.removeEventFilter(self)
 
         super(ArgosPgPlotItem, self).close()
-
-
-    # def registerButtonRangeCti(self, autoRangeCti):
-    #     """ Adds a rangeCti that will be unchecked when the autoButton is clicked.
-    #
-    #     """
-    #     check_class(autoRangeCti, AbstractRangeCti)
-    #     #self._autoRangeCtis.append(autoRangeCti)
-
-
-    # def _resetAxis(self):
-    #     """
-    #     """
-    #     for autoRangeCti in self._autoRangeCtis:
-    #         autoRangeCti.
-    #     childCti.autoRangeCti.data = True
-    #     self.model.itemChanged.emit(self)
-
-
 
 
     def autoBtnClicked(self):
@@ -133,31 +126,43 @@ class ArgosPgPlotItem(PlotItem):
                 logger.warn(msg)
 
 
-    def mouseClickEvent(self, ev):
-        """ If the middle mouse button is clicked the axis are reset.
-        """
-        if ev.button() == QtCore.Qt.MiddleButton:
-            logger.debug("Clicked middle mouse. Emitting sigClicked")
-            ev.accept()
-            self.axisReset.emit(BOTH_AXES)
-
-
     # Does not work (yet). Most likely because the linked viewbox is also included in the
     # boundingRect, so that clicks in the viewbox also trigger the range reset.
     # def eventFilter(self, watchedObject, event):
     #     """ Filters events from the AxisItems so that a middle mouse click reset the range of
     #         that axis.
     #     """
-    #     logger.debug("intercepting {}: {} eventType={}".format(watchedObject, type(event), event.type()))
-    #     if type(event) == QtGui.QGraphicsSceneMouseEvent:
+    #     # logger.debug("intercepting {}: {} eventType={}"
+    #     #              .format(watchedObject, type(event), event.type()))
     #
+    #     if type(event) == QtGui.QGraphicsSceneMouseEvent:
     #         if event.button() == Qt.MiddleButton:
-    #             #assert False, "stopped here"
+    #             assert False, "stopped here"
+    #             logger.debug("---------------------------------")
+    #             logger.debug("intercepting {} eventType={}".format(type(event), event.type()))
+    #
     #             logger.debug("event button={}, emitting axisReset".format(event.button()))
+    #
+    #             assert isinstance(event, QtGui.QGraphicsSceneMouseEvent)
+    #             pos = event.pos()
+    #             scenepos = event.scenePos()
+    #
+    #             logger.debug("watchedObject: {} ({})" .format(watchedObject, type(watchedObject)))
+    #             #logger.debug("boundingRect: {}".format(watchedObject.boundingRect())) # includes grid and linked view
+    #             #logger.debug("geometry: {}".format(watchedObject.geometry()))
+    #             geom = watchedObject.geometry()
+    #             rect = watchedObject.mapRectFromParent(watchedObject.geometry())
+    #
+    #             logger.debug("scenepos ({}, {}) in geometry: {} is {}"
+    #                          .format(scenepos.x(), scenepos.y(), geom, geom.contains(scenepos)))
+    #
+    #             logger.debug("pos ({}, {}) in rect: {} is {}"
+    #                          .format(pos.x(), pos.y(), rect, rect.contains(pos)))
+    #
     #             self.axisReset.emit(X_AXIS)
     #             return True
     #
     #     return super(ArgosPgPlotItem, self).eventFilter(watchedObject, event)
     #
-
-
+    #
+    #

@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
 # This file is part of Argos.
-# 
+#
 # Argos is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Argos is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
@@ -64,6 +64,7 @@ def calcPgImagePlot2dDataRange(pgImagePlot2d, percentage, crossPlot):
     """
     if crossPlot is None:
         array = pgImagePlot2d.slicedArray
+
     elif crossPlot == 'horizontal':
         if pgImagePlot2d.crossPlotRow is not None:
             array = pgImagePlot2d.slicedArray[pgImagePlot2d.crossPlotRow, :]
@@ -75,7 +76,6 @@ def calcPgImagePlot2dDataRange(pgImagePlot2d, percentage, crossPlot):
             array = pgImagePlot2d.slicedArray[:, pgImagePlot2d.crossPlotCol]
         else:
             array = pgImagePlot2d.slicedArray # fall back on complete sliced array
-
     else:
         raise ValueError("crossPlot must be: None, 'horizontal' or 'vertical', got: {}"
                          .format(crossPlot))
@@ -197,7 +197,7 @@ class PgImagePlot2dCti(PgMainPlotItemCti):
     #
     # def _setAutoRangeOn(self, axisNumber=BOTH_AXES):
     #     """ Turns on the auto range checkbox for the equivalent axes
-    #         Emits the itemChanged signal so that the inspector may be updated.
+    #         Emits the sigItemChanged signal so that the inspector may be updated.
     #
     #         :param axisNumber: 0 for x-axis, 1 for y-axis, 2 for both axes (default)
     #     """
@@ -216,7 +216,7 @@ class PgImagePlot2dCti(PgMainPlotItemCti):
     #         for childCti in axisCti.childItems:
     #             if isinstance(childCti, PgAxisRangeCti):
     #                 childCti.autoRangeCti.data = True
-    #     self.model.itemChanged.emit(self)
+    #     self.model.sigItemChanged.emit(self)
     #
 
 
@@ -224,7 +224,7 @@ class PgImagePlot2dCti(PgMainPlotItemCti):
 class PgImagePlot2d(AbstractInspector):
     """ Inspector that contains a PyQtGraph 2-dimensional image plot
     """
-    
+
     def __init__(self, collector, parent=None):
         """ Constructor. See AbstractInspector constructor for parameters.
         """
@@ -304,7 +304,7 @@ class PgImagePlot2d(AbstractInspector):
         # I did not use the SignalProxy because I did not see any difference.
         self.imagePlotItem.scene().sigMouseMoved.connect(self.mouseMoved)
 
-        
+
     def finalize(self):
         """ Is called before destruction. Can be used to clean-up resources.
         """
@@ -313,7 +313,7 @@ class PgImagePlot2d(AbstractInspector):
         self.imagePlotItem.close()
         self.graphicsLayoutWidget.close()
 
-        
+
     @classmethod
     def axesNames(cls):
         """ The names of the axes that this inspector visualizes.
@@ -321,9 +321,9 @@ class PgImagePlot2d(AbstractInspector):
         """
         return tuple(['Y', 'X'])
 
-                
+
     def _clearContents(self):
-        """ Draws the inspector widget when no input is available. 
+        """ Draws the inspector widget when no input is available.
         """
         logger.debug("Clearing inspector contents")
         #self.imageItem.clear() # Don't use clear as it alters the (auto)range.
