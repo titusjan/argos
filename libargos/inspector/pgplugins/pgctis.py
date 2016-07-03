@@ -385,14 +385,14 @@ class PgAxisRangeCti(AbstractRangeCti):
         # self.insertChild(ViewBoxDebugCti('viewbox state', self.viewBox))
 
         # Connect signals
-        self.viewBox.sigRangeChangedManually.connect(self._setAutoRangeOff)
+        self.viewBox.sigRangeChanged.connect(self._setAutoRangeOff)
 
 
     def _closeResources(self):
         """ Disconnects signals.
             Is called by self.finalize when the cti is deleted.
         """
-        self.viewBox.sigRangeChangedManually.disconnect(self._setAutoRangeOff)
+        self.viewBox.sigRangeChanged.disconnect(self._setAutoRangeOff)
 
 
     def getTargetRange(self):
