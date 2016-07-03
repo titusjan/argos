@@ -217,7 +217,7 @@ class AbstractRangeCti(GroupCti):
         else:
             assert len(self._rangeFunctions) == 1, \
                 "Assumed only one _rangeFunctions. Got: {}".format(self._rangeFunctions)
-            return self._rangeFunctions.keys()[0]
+            return list(self._rangeFunctions.keys())[0]
 
 
     def _refreshNodeFromTarget(self, *args, **kwargs):

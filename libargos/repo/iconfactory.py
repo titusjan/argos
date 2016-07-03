@@ -43,7 +43,7 @@ class RtiIconFactory(object):
     """
 
     ICONS_DIRECTORY = os.path.join(program_directory(), 'img/snipicons')
-    ICON_SIZE = 32 # Render in this size
+    #ICON_SIZE = 32 # Render in this size
 
     # File state
     OPEN = "open"
@@ -192,8 +192,8 @@ class RtiIconFactory(object):
 
         # From http://stackoverflow.com/questions/15123544/change-the-color-of-an-svg-in-qt
         svgRenderer = QtSvg.QSvgRenderer(QtCore.QByteArray(svg))
-        #pix = QtGui.QPixmap(svgRenderer.defaultSize())
-        pix = QtGui.QPixmap(QtCore.QSize(self.ICON_SIZE, self.ICON_SIZE))
+        pix = QtGui.QPixmap(svgRenderer.defaultSize())
+        #pix = QtGui.QPixmap(QtCore.QSize(self.ICON_SIZE, self.ICON_SIZE))
         pix.fill(Qt.transparent)
         pixPainter = QtGui.QPainter(pix)
         svgRenderer.render(pixPainter)

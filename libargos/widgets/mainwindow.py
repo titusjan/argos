@@ -593,8 +593,11 @@ class MainWindow(QtGui.QMainWindow):
     def myTest(self):
         """ Function for testing """
         logger.debug("myTest for window: {}".format(self.windowNumber))
-
-        self.collector.tree.resizeColumnsToContents(startCol=1)
+        logger.debug("Repo icon size: {}".format(self.repoTreeView.iconSize()))
+        #self.repoTreeView.setIconSize(QtCore.QSize(32, 32))
+        self.repoTreeView.setIconSize(QtCore.QSize(24, 24))
+        logger.debug("Repo icon size: {}".format(self.repoTreeView.iconSize()))
+        #self.collector.tree.resizeColumnsToContents(startCol=1)
 
 #        from libargos.qt.misc import printChildren
 #        printChildren(self.centralWidget())

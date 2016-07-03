@@ -5,6 +5,7 @@ from libargos.qt.treeitems import BaseTreeItem
 from libargos.info import DEBUGGING
 from libargos.qt import Qt, QtCore, QtSignal
 from libargos.utils.cls import check_is_a_string, check_class
+from libargos.widgets.constants import TREE_CELL_SIZE_HINT
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +48,8 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         # Finally, it is used to store the header data.
         #self._horizontalHeaders = [header for header in headers]
         self._invisibleRootItem = BaseTreeItem(nodeName=INVISIBLE_ROOT_NAME)
+
+        self.cellSizeHint = TREE_CELL_SIZE_HINT # Default cell size, can be overridden by items
 
 
     @property
@@ -110,6 +113,9 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
 
         elif role == Qt.BackgroundRole:
             return item.backgroundBrush
+
+        elif role == Qt.SizeHintRole:
+            return self.cellSizeHint if item.sizeHint is None else item.sizeHint
 
         return None
 

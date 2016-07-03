@@ -7,14 +7,14 @@ logger = logging.getLogger(__name__)
 
 class BaseTreeItem(object):
     """ Base class for storing item data in a tree form. Each tree item represents a row
-        in the BaseTreeModel (QAbstractItemModel). 
-        
+        in the BaseTreeModel (QAbstractItemModel).
+
         The tree items have no notion of which field is stored in which column. This is implemented
         in BaseTreeModel._itemValueForColumn
     """
     def __init__(self, nodeName):
         """ Constructor
-        
+
             :param nodeName: short name describing this node. Is used to construct the nodePath.
                 Currently we don't check for uniqueness in the children but this may change.
                 The nodeName may not contain slashes (/).
@@ -24,9 +24,9 @@ class BaseTreeItem(object):
         assert '/' not in nodeName, "nodeName may not contain slashes"
         self._nodeName = str(nodeName)
         self._parentItem = None
-        self._model = None 
+        self._model = None
         self._childItems = [] # the fetched children
-        self._nodePath = self._constructNodePath()        
+        self._nodePath = self._constructNodePath()
 
     def finalize(self):
         """ Can be used to cleanup resources. Should be called explicitly.
@@ -34,13 +34,13 @@ class BaseTreeItem(object):
         """
         for child in self.childItems:
             child.finalize()
-    
+
     def __str__(self):
         return "<{}: {}>".format(type(self).__name__, self.nodePath)
-        
+
     def __repr__(self):
         return ("<{}: {!r}, children:[{}]>".
-                format(type(self).__name__, self.nodePath, 
+                format(type(self).__name__, self.nodePath,
                        ', '.join([repr(child) for child in self.childItems])))
 
     @property
@@ -51,51 +51,59 @@ class BaseTreeItem(object):
         if self._model is None and self.parentItem is not None:
             self._model = self.parentItem.model
         return self._model
-    
+
     @model.setter
     def model(self, value):
         """ Sets ConfigTreeModel this item belongs to.
         """
         self._model = value
-    
+
 #    @property
 #    def modelIndex(self): # TODO: needed?
 #        """ Returns the index in the ConfigTreeModel that refers to this item.
 #        """
-#        assert self._model, "Model not set for {}".format(self) 
-#        return self._model.indexFromItem(self)    
-    
+#        assert self._model, "Model not set for {}".format(self)
+#        return self._model.indexFromItem(self)
+
     def emitDataChanged(self):
         """ Causes the model associated with this item to emit a dataChanged() signal for this item.
         """
-        assert self._model, "Model not set for {}".format(self) 
+        assert self._model, "Model not set for {}".format(self)
         return self._model.itemChanged(self)
-    
+
     @property
     def decoration(self):
-        """ An optional decoration (e.g. icon). 
+        """ An optional decoration (e.g. icon).
             The default implementation returns None (no decoration).
         """
         return None
-    
+
     @property
     def font(self):
         """ Returns a font for displaying this item's text in the tree.
             The default implementation returns None (i.e. uses default font).
         """
         return None
-        
+
     @property
     def backgroundBrush(self):
         """ Returns a brush for drawing the background role in the tree.
             The default implementation returns None (i.e. uses default brush).
         """
         return None
-        
+
     @property
     def foregroundBrush(self):
         """ Returns a brush for drawing the foreground role in the tree.
             The default implementation returns None (i.e. uses default brush).
+        """
+        return None
+
+    @property
+    def sizeHint(self):
+        """ Returns a size hint for displaying the items in the tree
+            The default implementation returns None (i.e. no hint).
+            Should return a QSize object or None
         """
         return None
 
@@ -117,7 +125,7 @@ class BaseTreeItem(object):
             return '' # invisible root node; is not included in the path
         else:
             return self.parentItem.nodePath + '/' + self.nodeName
-    
+
     @property
     def nodePath(self):
         """ The sequence of nodeNames from the root to this node. Separated by slashes."""
@@ -134,13 +142,13 @@ class BaseTreeItem(object):
     def parentItem(self):
         """ The parent item """
         return self._parentItem
-    
+
     @parentItem.setter
     def parentItem(self, value):
         """ The parent item """
         self._parentItem = value
         self._recursiveSetNodePath(self._constructNodePath())
-    
+
     @property
     def childItems(self):
         """ List of child items """
@@ -148,17 +156,17 @@ class BaseTreeItem(object):
         return self._childItems
 
     def hasChildren(self):
-        """ Returns True if the item has children 
+        """ Returns True if the item has children
         """
         return len(self.childItems) > 0
 
     def nChildren(self): # TODO: numChildren
-        """ Returns the number of children 
+        """ Returns the number of children
         """
         return len(self.childItems)
 
     def child(self, row):
-        """ Gets the child given its row number 
+        """ Gets the child given its row number
         """
         return self.childItems[row]
 
@@ -180,28 +188,28 @@ class BaseTreeItem(object):
         def _auxGetByPath(parts, item):
             "Aux function that does the actual recursive search"
             #logger.debug("_auxGetByPath item={}, parts={}".format(item, parts))
-            
+
             if len(parts) == 0:
                 return item
-        
+
             head, tail = parts[0], parts[1:]
             if head == '':
                 # Two consecutive slashes. Just go one level deeper.
                 return _auxGetByPath(tail, item)
             else:
                 childItem = item.childByNodeName(head)
-                return _auxGetByPath(tail, childItem)        
-                
+                return _auxGetByPath(tail, childItem)
+
         # The actual body of findByNodePath starts here
-        
+
         check_is_a_string(nodePath)
         assert not nodePath.startswith('/'), "nodePath may not start with a slash"
-        
+
         if not nodePath:
             raise IndexError("Item not found: {!r}".format(nodePath))
-        
+
         return _auxGetByPath(nodePath.split('/'), self)
-            
+
 
     def childNumber(self):
         """ Gets the index (nr) of this node in its parent's list of children.
@@ -215,24 +223,24 @@ class BaseTreeItem(object):
     def insertChild(self, childItem, position=None):
         """ Inserts a child item to the current item.
             The childItem must not yet have a parent (it will be set by this function).
-            
-            IMPORTANT: this does not let the model know that items have been added. 
+
+            IMPORTANT: this does not let the model know that items have been added.
             Use BaseTreeModel.insertItem instead.
-            
+
             param childItem: a BaseTreeItem that will be added
             param position: integer position before which the item will be added.
                 If position is None (default) the item will be appended at the end.
-            
+
             Returns childItem so that calls may be chained.
-        """ 
+        """
         if position is None:
             position = self.nChildren()
-            
+
         assert childItem.parentItem is None, "childItem already has a parent: {}".format(childItem)
         assert childItem._model is None, "childItem already has a model: {}".format(childItem)
-            
-        childItem.parentItem = self    
-        childItem._model = self.model    
+
+        childItem.parentItem = self
+        childItem._model = self.model
         self.childItems.insert(position, childItem)
         return childItem
 
@@ -268,7 +276,7 @@ class BaseTreeItem(object):
             childItems.logBranch(indent + 1, level=level)
 
 
-    
+
 class AbstractLazyLoadTreeItem(BaseTreeItem):
     """ Abstract base class for a tree item that can do lazy loading of children.
         Descendants should override the _fetchAllChildren
@@ -278,32 +286,32 @@ class AbstractLazyLoadTreeItem(BaseTreeItem):
         """
         super(AbstractLazyLoadTreeItem, self).__init__(nodeName=nodeName)
         self._childrenFetched = False
-        
+
     def hasChildren(self):
-        """ Returns True if the item has (fetched or unfetched) children 
+        """ Returns True if the item has (fetched or unfetched) children
         """
         return True
-        #return not self._childrenFetched or len(self.childItems) > 0 TODO: use this? 
-        
+        #return not self._childrenFetched or len(self.childItems) > 0 TODO: use this?
+
     def canFetchChildren(self):
         return not self._childrenFetched
-        
+
     def fetchChildren(self):
         assert not self._childrenFetched, "canFetchChildren must be True"
         childItems = self._fetchAllChildren()
         self._childrenFetched = True
         return childItems
-    
+
     def _fetchAllChildren(self):
         """ The function that actually fetches the children.
-        
-            The result must be a list of RepoTreeItems. Their parents must be None, 
+
+            The result must be a list of RepoTreeItems. Their parents must be None,
             as that attribute will be set by BaseTreeitem.insertItem()
-         
+
             :rtype: list of BaseRti objects
-        """ 
+        """
         raise NotImplementedError
-    
+
     def removeAllChildren(self):
         """ Removes all children """
         super(AbstractLazyLoadTreeItem, self).removeAllChildren()
