@@ -347,8 +347,8 @@ class AbstractCti(BaseTreeItem):
 
             :param level: the level of recursion.
         """
-        if level == 0:
-            logger.debug("updateTarget: {}".format(self.nodePath))
+        #if level == 0:
+        #    logger.debug("updateTarget: {}".format(self.nodePath))
 
         self._updateTargetFromNode()
         for child in self.childItems:

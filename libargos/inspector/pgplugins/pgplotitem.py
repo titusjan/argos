@@ -50,7 +50,7 @@ DEFAULT_BORDER_PEN = pg.mkPen("#000000", width=1)
 def axisMouseClickEvent(argosPgPlotItem, axisNumber, mouseClickEvent):
     """ Emits axisReset when the middle mouse button is clicked on an axis of the the plot item.
     """
-    if mouseClickEvent.button() == QtCore.Qt.MiddleButton or mouseClickEvent.button() == QtCore.Qt.RightButton: # TODO: test middle click
+    if mouseClickEvent.button() == QtCore.Qt.MiddleButton:
         mouseClickEvent.accept()
         argosPgPlotItem.axisReset.emit(axisNumber)
 
@@ -96,6 +96,25 @@ class ArgosPgPlotItem(PlotItem):
         yAxisItem = self.getAxis('left')
         yAxisItem.mouseClickEvent = partial(axisMouseClickEvent, self, Y_AXIS)
 
+        self.contextMenu = QtGui.QMenu()
+
+        resetZoomMenu = self.contextMenu.addMenu("Reset Zoom")
+
+        resetZoomActionBoth = QtGui.QAction("Both Axes", self,
+            triggered = lambda: self.axisReset.emit(BOTH_AXES),
+            statusTip = "Resets the zoom factor of the X-axes and Y-axes")
+        resetZoomMenu.addAction(resetZoomActionBoth)
+
+        resetZoomActionX = QtGui.QAction("X-axes", self,
+            triggered = lambda: self.axisReset.emit(X_AXIS),
+            statusTip = "Resets the zoom factor of the X-axes")
+        resetZoomMenu.addAction(resetZoomActionX)
+
+        resetZoomActionY = QtGui.QAction("Y-Axes", self,
+            triggered = lambda: self.axisReset.emit(Y_AXIS),
+            statusTip = "Resets the zoom factor of the Y-axes")
+        resetZoomMenu.addAction(resetZoomActionY)
+
 
     def close(self):
         """ Is called before destruction. Can be used to clean-up resources
@@ -108,10 +127,16 @@ class ArgosPgPlotItem(PlotItem):
         super(ArgosPgPlotItem, self).close()
 
 
+    def contextMenuEvent(self, event):
+        """ Shows the context menu at the cursor position
+        """
+        self.contextMenu.exec_(event.screenPos())
+
+
     def autoBtnClicked(self):
         """ Hides the button but does not enable/disable autorange.
             That will be done by PgAxisRangeCti
-        """ # TODO: use axisReset.
+        """
         logger.debug("ArgosPgPlotItem.autoBtnClicked, mode:{}".format(self.autoBtn.mode))
         if self.autoBtn.mode == 'auto':
             self.autoBtn.hide()

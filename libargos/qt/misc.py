@@ -21,6 +21,7 @@ from __future__ import division, print_function
 import sys, logging, os, traceback
 
 from libargos import info
+from libargos.utils.misc import python2
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 # Abstracts away the differences between PySide and PyQt
+# PySide is not officially supported but I will try to make Argos work for both PySide and PyQt.
 USE_PYQT = True # PySide is used when False
 
 if USE_PYQT:
@@ -50,6 +52,11 @@ if USE_PYQT:
     from PyQt4.QtCore import pyqtSignal as QtSignal
     from PyQt4.QtCore import pyqtSlot as QtSlot
 else:
+    # PySide in combination with Python-3 gives the following error:
+    # TypeError: unhashable type: 'PgImagePlot2dCti'
+    # I don't know a fix and as long as the future of PySide2 is unclear I won't spend time on it.
+    assert python2(), "PySide is currently not supported with Python-3"
+
     from PySide import QtCore, QtGui, QtSvg
     from PySide.QtCore import Qt
     from PySide.QtCore import Signal as QtSignal
