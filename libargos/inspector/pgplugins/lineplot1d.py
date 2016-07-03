@@ -58,15 +58,14 @@ class PgLinePlot1dCti(MainGroupCti):
         self.pgLinePlot1d = pgLinePlot1d
 
         self.insertChild(ChoiceCti('title', 0, editable=True,
-                                    configValues=["{path} {slices}", "{name} {slices}"]),
-                         position=-2)
-        self.insertChild(BoolCti("anti-alias", True), position=-2)
+                                    configValues=["{path} {slices}", "{name} {slices}"]))
+        self.insertChild(BoolCti("anti-alias", True))
 
         #### Axes ####
         plotItem = self.pgLinePlot1d.plotItem
         viewBox = plotItem.getViewBox()
 
-        self.insertChild(PgGridCti(plotItem), position=-2) # before the xAxisCti and yAxisCti
+        self.insertChild(PgGridCti(plotItem))
 
         self.xAxisCti = self.insertChild(PgAxisCti('x-axis'))
         self.xAxisCti.insertChild(PgAxisLabelCti(plotItem, 'bottom', self.pgLinePlot1d.collector,

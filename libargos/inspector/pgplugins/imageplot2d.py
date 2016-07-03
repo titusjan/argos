@@ -33,9 +33,10 @@ from libargos.inspector.abstract import AbstractInspector, InvalidDataError
 from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES,
                                                  defaultAutoRangeMethods, PgAxisLabelCti,
                                                  PgAxisCti, PgAxisFlipCti, PgAspectRatioCti,
-                                                 PgAxisRangeCti, PgHistLutColorRangeCti,
+                                                 PgAxisRangeCti, PgHistLutColorRangeCti, PgGridCti,
                                                  PgGradientEditorItemCti, setXYAxesAutoRangeOn)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
+from libargos.qt import Qt
 from libargos.utils.cls import array_has_real_numbers, check_class
 
 logger = logging.getLogger(__name__)
@@ -168,11 +169,13 @@ class PgImagePlot2dCti(MainGroupCti):
         self.crossPlotGroupCti = self.insertChild(BoolCti('cross-hair', True)) # TODO: False
 
         self.horCrossPlotCti = self.crossPlotGroupCti.insertChild(BoolCti('horizontal', True))
+        self.horCrossPlotCti.insertChild(PgGridCti(pgImagePlot2d.horCrossPlotItem))
         self.horCrossPlotRangeCti = self.horCrossPlotCti.insertChild(PgAxisRangeCti(
             self.pgImagePlot2d.horCrossPlotItem.getViewBox(), Y_AXIS, nodeName="data range",
             autoRangeFunctions = crossPlotAutoRangeMethods(self.pgImagePlot2d, "horizontal")))
 
         self.verCrossPlotCti = self.crossPlotGroupCti.insertChild(BoolCti('vertical', True))
+        self.verCrossPlotCti.insertChild(PgGridCti(pgImagePlot2d.verCrossPlotItem))
         self.verCrossPlotRangeCti = self.verCrossPlotCti.insertChild(PgAxisRangeCti(
             self.pgImagePlot2d.verCrossPlotItem.getViewBox(), X_AXIS, nodeName="data range",
             autoRangeFunctions = crossPlotAutoRangeMethods(self.pgImagePlot2d, "vertical")))
@@ -195,7 +198,7 @@ class PgImagePlot2dCti(MainGroupCti):
         """ Disconnects signals.
             Is called by self.finalize when the cti is deleted.
         """
-        self.pgImagePlot2d.imagePlotItem.sigAxisReset.disconnect(self._imageAutoRangeOnFn)
+        self.pgImagePlot2d.imagePlotItem.sigAxisReset.disconnect(self._imageAutoRangeFn)
         self.pgImagePlot2d.horCrossPlotItem.sigAxisReset.disconnect(self._horCrossPlotAutoRangeFn)
         self.pgImagePlot2d.verCrossPlotItem.sigAxisReset.disconnect(self._verCrossPlotAutoRangeFn)
 
@@ -398,6 +401,7 @@ class PgImagePlot2d(AbstractInspector):
             nRows, nCols = self.slicedArray.shape
 
             if (0 <= row < nRows) and (0 <= col < nCols):
+                self.viewBox.setCursor(Qt.CrossCursor)
                 self.crossPlotRow, self.crossPlotCol = row, col
                 value = self.slicedArray[row, col]
                 txt = "pos = ({:d}, {:d}), value = {!r}".format(row, col, value)
