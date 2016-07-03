@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
 # This file is part of Argos.
-# 
+#
 # Argos is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Argos is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
@@ -225,8 +225,8 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
             return None
 
         # The check above should have returned None if the sliced array is None
-        assert self._slicedArray is not None, "Sanity check failed." 
-               
+        assert self._slicedArray is not None, "Sanity check failed."
+
         if role == Qt.DisplayRole:
 
             nFields = len(self._fieldNames)
@@ -271,7 +271,7 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         else:
             return None
 
-    
+
     def rowCount(self, parent=None):
         """ The number of rows of the sliced array.
             The 'parent' parameter can be a QModelIndex. It is ignored since the number of

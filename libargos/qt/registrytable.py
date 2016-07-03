@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 # This file is part of Argos.
-# 
+#
 # Argos is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Argos is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
@@ -32,18 +32,18 @@ QCOLOR_REGULAR = QtGui.QColor('black')
 QCOLOR_NOT_IMPORTED = QtGui.QColor('brown')
 QCOLOR_ERROR = QtGui.QColor('red')
 
-# The main window inherits from a Qt class, therefore it has many 
+# The main window inherits from a Qt class, therefore it has many
 # ancestors public methods and attributes.
-# pylint: disable=R0901, R0902, R0904, W0201 
+# pylint: disable=R0901, R0902, R0904, W0201
 
 
 class RegistryTableModel(QtCore.QAbstractTableModel):
-    
+
     SORT_ROLE = Qt.UserRole
-    
+
     def __init__(self, registry, attrNames = ('fullName', ), parent=None):
         """ Constructor.
-        
+
             :param registry: Underlying registry. Must descent from ClassRegistry
             :param attrNames: List of attributes that will be displayed (def. only the fullName).
             :param parent: Parent widget
@@ -52,10 +52,10 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
         check_class(registry, ClassRegistry)
         self.registry = registry
         self.attrNames = attrNames
-        
-        self.regularBrush = QtGui.QBrush(QCOLOR_REGULAR)    
-        self.notImportedBrush = QtGui.QBrush(QCOLOR_NOT_IMPORTED)    
-        self.errorBrush = QtGui.QBrush(QCOLOR_ERROR)        
+
+        self.regularBrush = QtGui.QBrush(QCOLOR_REGULAR)
+        self.notImportedBrush = QtGui.QBrush(QCOLOR_NOT_IMPORTED)
+        self.errorBrush = QtGui.QBrush(QCOLOR_ERROR)
 
 
     def rowCount(self, _parent):
@@ -66,39 +66,39 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
     def columnCount(self, _parent):
         """ Returns the number of columns of the registry."""
         return len(self.attrNames)
-    
+
 
     def data(self, index, role=Qt.DisplayRole):
         """ Returns the data stored under the given role for the item referred to by the index.
         """
         if not index.isValid():
             return None
-        
+
         if role not in (Qt.DisplayRole, self.SORT_ROLE,  Qt.ForegroundRole):
             return None
-        
+
         row = index.row()
         col = index.column()
         item = self.registry.items[row]
         attrName = self.attrNames[col]
-        
+
         if role == Qt.DisplayRole:
             return str(getattr(item, attrName))
-        
+
         elif role == self.SORT_ROLE:
             # Use the fullName column as a tie-breaker
             return (getattr(item, attrName), item.fullName)
-        
+
         elif role == Qt.ForegroundRole:
             if item.successfullyImported is None:
                 return self.notImportedBrush
-            elif item.successfullyImported:   
+            elif item.successfullyImported:
                 return self.regularBrush
             else:
                 return self.errorBrush
         else:
-            raise ValueError("Invalid role: {}".format(role))           
-        
+            raise ValueError("Invalid role: {}".format(role))
+
 
     def headerData(self, section, orientation, role):
         """ Returns the header for a section (row or column depending on orientation).
@@ -143,13 +143,13 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
         self.dataChanged.emit(leftIndex, rightIndex)
 
 
-    
+
 class RegistryTableProxyModel(QtGui.QSortFilterProxyModel):
     """ Proxy model that overrides the sorting and can filter out regItems that are not imported.
     """
     def __init__(self, onlyShowImported=False, parent=None):
         """ Constructor.
-            :param onlyShowImported: If true, only regItems that were successfully imported are 
+            :param onlyShowImported: If true, only regItems that were successfully imported are
                 displayed. Default is False.
             :param parent: parent widget
         """
@@ -159,25 +159,25 @@ class RegistryTableProxyModel(QtGui.QSortFilterProxyModel):
         self.setDynamicSortFilter(True)
         self.setSortCaseSensitivity(Qt.CaseInsensitive)
 
-    
+
     def filterAcceptsRow(self, sourceRow, sourceParent):
-        """ If onlyShowImported is True, regItems that were not (successfully) imported are 
+        """ If onlyShowImported is True, regItems that were not (successfully) imported are
             filtered out.
         """
         if not self.onlyShowImported:
             return True
-        
+
         item = self.sourceModel().registry.items[sourceRow]
         return bool(item.successfullyImported)
-    
-    
+
+
     def lessThan(self, leftIndex, rightIndex):
-        """ Returns true if the value of the item referred to by the given index left is less than 
+        """ Returns true if the value of the item referred to by the given index left is less than
             the value of the item referred to by the given index right, otherwise returns false.
         """
         leftData  = self.sourceModel().data(leftIndex,  RegistryTableModel.SORT_ROLE)
         rightData = self.sourceModel().data(rightIndex, RegistryTableModel.SORT_ROLE)
-        
+
         return leftData < rightData
 
 
@@ -207,7 +207,7 @@ class RegistryTableProxyModel(QtGui.QSortFilterProxyModel):
 
 
 class RegistryTableView(ToggleColumnTableView):
-    """ QTableView that shows the contents of a registry. 
+    """ QTableView that shows the contents of a registry.
         Uses QSortFilterProxyModel as a wrapper over the model.
         Will wrap a QSortFilterProxyModel over the RegistryTableModel model to enable sorting.
     """
@@ -216,11 +216,11 @@ class RegistryTableView(ToggleColumnTableView):
 
             :param model: a RegistryTableModel that maps the regItems
             :param onlyShowImported: If True, regItems that are not (successfully) imported are
-                filtered from the table. 
+                filtered from the table.
             :param parent: the parent widget
         """
         super(RegistryTableView, self).__init__(parent)
-        
+
         self._onlyShowImported = onlyShowImported
         if model is not None:
 
@@ -228,15 +228,15 @@ class RegistryTableView(ToggleColumnTableView):
             self.setModel(model)
         else:
             assert False, "not yet implemented"
-            
+
         #self.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         #self.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.verticalHeader().hide()        
+        self.verticalHeader().hide()
         self.setAlternatingRowColors(True)
         self.setShowGrid(False)
         self.setSortingEnabled(True)
         self.setTabKeyNavigation(False)
-        
+
         self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)

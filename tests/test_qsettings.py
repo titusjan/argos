@@ -25,19 +25,19 @@ class TestArgos(unittest.TestCase):
         self.qs = QtCore.QSettings()
         self.qs.remove(self.groupName) # start with clean slate
         self.qs.beginGroup(self.groupName)
-        
+
 
     def test_read_write(self):
-        
+
         self.qs.setValue('int', -6)
         self.assertEqual(-6, self.qs.value('int'))
-        
+
         self.qs.setValue('float', 7.7)
         self.assertEqual(7.7, self.qs.value('float'))
-        
+
         self.qs.setValue('str', 'six')
         self.assertEqual('six', self.qs.value('str'))
-        
+
         large_str = '0123456789' * 10000
         self.qs.setValue('large_str', large_str)
         self.assertEqual(large_str, self.qs.value('large_str'))
@@ -51,8 +51,8 @@ class TestArgos(unittest.TestCase):
             print(repr(arr))
             print(repr(self.qs.value(name)))
             self.assertEqual(arr, arr)
-        
-        
+
+
 
     def tearDown(self):
         self.qs.endGroup()
@@ -62,4 +62,4 @@ class TestArgos(unittest.TestCase):
 if __name__ == '__main__':
     print ('Using: {}'.format('PyQt' if USE_PYQT else 'PySide'))
     unittest.main()
-    
+

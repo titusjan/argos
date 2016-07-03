@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
 # This file is part of Argos.
-# 
+#
 # Argos is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Argos is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
@@ -37,7 +37,7 @@ ICON_COLOR_H5PY = '#00EE88'
 
 def dimNamesFromDataset(h5Dataset):
     """ Constructs the dimension names given a h5py dataset.
-            
+
         First looks in the dataset's dimension scales to see if it refers to another
         dataset. In that case the referred dataset's name is used. If not, the label of the
         dimension scale is used. Finally, if this is empty, the dimension is numbered.
@@ -51,7 +51,7 @@ def dimNamesFromDataset(h5Dataset):
             path = dimScaleDataset.name
             if path:
                 dimNames.append(os.path.basename(path))
-            elif dimScaleLabel: # This could potentially be long so it's our second choice 
+            elif dimScaleLabel: # This could potentially be long so it's our second choice
                 dimNames.append(dimScaleLabel)
             else:
                 dimNames.append('Dim{}'.format(dimNr))
@@ -59,7 +59,7 @@ def dimNamesFromDataset(h5Dataset):
             # TODO: multiple scales for this dimension. What to do?
             logger.warn("More than one dimension scale found: {!r}".format(dimScales))
             dimNames.append('Dim{}'.format(dimNr)) # For now, just number them
-                             
+
     return dimNames
 
 
@@ -148,14 +148,14 @@ class H5pyScalarRti(BaseRti):
 
 
 class H5pyFieldRti(BaseRti):
-    """ Repository Tree Item (RTI) that contains a field in a compound HDF-5 variable. 
-    """ 
+    """ Repository Tree Item (RTI) that contains a field in a compound HDF-5 variable.
+    """
     _defaultIconGlyph = RtiIconFactory.FIELD
     _defaultIconColor = ICON_COLOR_H5PY
-    
+
     def __init__(self, h5Dataset, nodeName, fileName=''):
         """ Constructor.
-            The name of the field must be given to the nodeName parameter. 
+            The name of the field must be given to the nodeName parameter.
         """
         super(H5pyFieldRti, self).__init__(nodeName, fileName=fileName)
         check_class(h5Dataset, h5py.Dataset)
@@ -163,16 +163,16 @@ class H5pyFieldRti(BaseRti):
 
 
     def hasChildren(self):
-        """ Returns False. Field nodes never have children. 
+        """ Returns False. Field nodes never have children.
         """
         return False
 
 
     @property
     def attributes(self):
-        """ The attributes dictionary. 
+        """ The attributes dictionary.
             Returns the attributes of the variable that contains this field.
-        """        
+        """
         return self._h5Dataset.attrs
 
 
@@ -244,16 +244,16 @@ class H5pyFieldRti(BaseRti):
         subArrayDims = ['SubDim{}'.format(dimNr) for dimNr in range(nSubDims)]
         return dimNamesFromDataset(self._h5Dataset) + subArrayDims
 
-        
+
 
 class H5pyDatasetRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a HDF5 dataset.
 
         This includes dimenions scales, which are then displayed with a different icon.
-    """ 
+    """
     #_defaultIconGlyph = RtiIconFactory.ARRAY # the iconGlyph property is overridden below
     _defaultIconColor = ICON_COLOR_H5PY
-    
+
     def __init__(self, h5Dataset, nodeName, fileName=''):
         """ Constructor
         """
@@ -272,7 +272,7 @@ class H5pyDatasetRti(BaseRti):
         else:
             return RtiIconFactory.ARRAY
 
-            
+
     def hasChildren(self):
         """ Returns True if the variable has a compound type, otherwise returns False.
         """
@@ -299,7 +299,7 @@ class H5pyDatasetRti(BaseRti):
         """
         return self._h5Dataset.shape
 
-    
+
     @property
     def elementTypeName(self):
         """ String representation of the element type.
@@ -313,18 +313,18 @@ class H5pyDatasetRti(BaseRti):
         """
         return self._h5Dataset.attrs
 
-               
+
     @property
     def dimensionNames(self):
         """ Returns a list with the dimension names of the underlying HDF-5 dataset.
         """
         return dimNamesFromDataset(self._h5Dataset) # TODO: cache?
-    
-                   
+
+
     def _fetchAllChildren(self):
-        """ Fetches all fields that this variable contains. 
+        """ Fetches all fields that this variable contains.
             Only variables with a compound data type can have fields.
-        """        
+        """
         assert self.canFetchChildren(), "canFetchChildren must be True"
 
         childItems = []
@@ -332,19 +332,19 @@ class H5pyDatasetRti(BaseRti):
         # Add fields
         if self._isCompound:
             for fieldName in self._h5Dataset.dtype.names:
-                childItems.append(H5pyFieldRti(self._h5Dataset, nodeName=fieldName, 
+                childItems.append(H5pyFieldRti(self._h5Dataset, nodeName=fieldName,
                                                fileName=self.fileName))
-                        
+
         self._childrenFetched = True
         return childItems
-    
-    
+
+
 class H5pyGroupRti(BaseRti):
-    """ Repository Tree Item (RTI) that contains a HDF-5 group. 
-    """     
+    """ Repository Tree Item (RTI) that contains a HDF-5 group.
+    """
     _defaultIconGlyph = RtiIconFactory.FOLDER
     _defaultIconColor = ICON_COLOR_H5PY
-    
+
     def __init__(self, h5Group, nodeName, fileName=''):
         """ Constructor
         """
@@ -353,25 +353,25 @@ class H5pyGroupRti(BaseRti):
 
         self._h5Group = h5Group
         self._childrenFetched = False
-        
+
     @property
     def attributes(self):
         """ The attributes dictionary.
         """
         return self._h5Group.attrs if self._h5Group else {}
-        
-               
+
+
     def _fetchAllChildren(self):
         """ Fetches all sub groups and variables that this group contains.
         """
         assert self._h5Group is not None, "dataset undefined (file not opened?)"
         assert self.canFetchChildren(), "canFetchChildren must be True"
-        
+
         childItems = []
 
         for childName, h5Child in self._h5Group.items():
             if isinstance(h5Child, h5py.Group):
-                childItems.append(H5pyGroupRti(h5Child, nodeName=childName, 
+                childItems.append(H5pyGroupRti(h5Child, nodeName=childName,
                                                fileName=self.fileName))
             elif isinstance(h5Child, h5py.Dataset):
                 if len(h5Child.shape) == 0:
@@ -382,10 +382,10 @@ class H5pyGroupRti(BaseRti):
                                                      fileName=self.fileName))
             else:
                 logger.warn("Unexpected HDF-5 type (ignored): {}".format(type(h5Child)))
-                        
+
         self._childrenFetched = True
         return childItems
-    
+
 
 
 class H5pyFileRti(H5pyGroupRti):
@@ -393,20 +393,20 @@ class H5pyFileRti(H5pyGroupRti):
     """
     _defaultIconGlyph = RtiIconFactory.FILE
     _defaultIconColor = ICON_COLOR_H5PY
-        
+
     def __init__(self, nodeName, fileName=''):
         """ Constructor
         """
         super(H5pyFileRti, self).__init__(None, nodeName, fileName=fileName)
         self._checkFileExists()
-    
+
     def _openResources(self):
         """ Opens the root Dataset.
         """
         logger.info("Opening: {}".format(self._fileName))
         self._h5Group = h5py.File(self._fileName, 'r')
 
-    
+
     def _closeResources(self):
         """ Closes the root Dataset.
         """

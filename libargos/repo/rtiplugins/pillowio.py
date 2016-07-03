@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
 # This file is part of Argos.
-# 
+#
 # Argos is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Argos is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
@@ -78,13 +78,13 @@ class PillowFileRti(ArrayRti):
         self._checkFileExists()
         self._image = None
 
-            
+
     def hasChildren(self):
         """ Returns True if the item has (fetched or unfetched) children
         """
         return True
 
-                
+
     def _openResources(self):
         """ Uses  open the underlying file
         """
@@ -99,7 +99,7 @@ class PillowFileRti(ArrayRti):
         self._attributes['Width'] = self._image.width
         self._attributes['Height'] = self._image.height
 
-                
+
     def _closeResources(self):
         """ Closes the underlying resources
         """
@@ -107,8 +107,8 @@ class PillowFileRti(ArrayRti):
         self._attributes = {}
         self._image.close()
         self._image = None
-    
-                        
+
+
     def _fetchAllChildren(self):
         """ Adds the bands as separate fields so they can be inspected easily.
         """

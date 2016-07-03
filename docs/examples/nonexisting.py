@@ -15,17 +15,17 @@ logger = logging.getLogger('libargos')
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
- 
-    
+
+
 def registerRtis():
-        
+
     registry = RtiRegistry()
     if '--reset-registry' in sys.argv:
         registry.deleteSettings()
     registry.loadOrInitSettings()
-    
 
-    registry.registerRti('Python File', 'test_plugin.TestFileRti', extensions=['.py'],  
+
+    registry.registerRti('Python File', 'test_plugin.TestFileRti', extensions=['.py'],
                          pythonPath=SCRIPT_DIR)
     registry.registerRti('SVG File', 'does_not_exist.svg.SvgFile', extensions=['.svg'])
     registry.saveSettings()
@@ -37,7 +37,7 @@ def registerInspectors():
     if '--reset-registry' in sys.argv:
         registry.deleteSettings()
     registry.loadOrInitSettings()
-    
+
     registry.registerInspector('Non Existing', 'does_not_exist.Inspector')
     registry.saveSettings()
 
@@ -46,14 +46,14 @@ def main():
     logger.info("Start...")
     logger.debug("current dir: {}".format(SCRIPT_DIR))
 
-    # Important: instantiate a Qt application first to use the correct settings file/winreg. 
+    # Important: instantiate a Qt application first to use the correct settings file/winreg.
     _app = initQCoreApplication()
-    
+
     registerRtis()
     registerInspectors()
     logger.info("Done...")
 
-    
+
 if __name__ == "__main__":
     libargos.configBasicLogging(level='DEBUG')
     main()

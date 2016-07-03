@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
 # This file is part of Argos.
-# 
+#
 # Argos is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Argos is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
@@ -24,7 +24,7 @@ import numpy as np
 
 from .baserti import BaseRti
 from libargos.repo.iconfactory import RtiIconFactory
-from libargos.utils.cls import (check_is_a_sequence, check_is_a_mapping, check_is_an_array,  
+from libargos.utils.cls import (check_is_a_sequence, check_is_a_mapping, check_is_an_array,
                                 is_a_sequence, is_a_mapping, is_an_array, type_name)
 from libargos.utils.misc import NOT_SPECIFIED
 
@@ -49,8 +49,8 @@ def _createFromObject(obj, *args, **kwargs):
 
 
 class ScalarRti(BaseRti):
-    """ Stores a Python or numpy scalar. 
-        
+    """ Stores a Python or numpy scalar.
+
     """
     _defaultIconGlyph = RtiIconFactory.SCALAR
     _defaultIconColor = RtiIconFactory.COLOR_MEMORY
@@ -107,7 +107,7 @@ class ScalarRti(BaseRti):
         """
         return type_name(self._scalar)
 
-    
+
 
 class FieldRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a field in a compound numpy array.
@@ -135,10 +135,10 @@ class FieldRti(BaseRti):
             per-class.
         """
         return self._attributes
-        
+
 
     def hasChildren(self):
-        """ Returns False. Field nodes never have children. 
+        """ Returns False. Field nodes never have children.
         """
         return False
 
@@ -148,7 +148,7 @@ class FieldRti(BaseRti):
         """ Returns True because the underlying data can be sliced.
         """
         return True
-    
+
 
     def __getitem__(self, index):
         """ Called when using the RTI with an index (e.g. rti[0]).
@@ -217,7 +217,7 @@ class ArrayRti(BaseRti):
 
     def __init__(self, array, nodeName='', fileName='',
                  attributes=None, iconColor=_defaultIconColor):
-        """ Constructor. 
+        """ Constructor.
             :param array: the underlying array. May be undefined (None)
             :type array: numpy.ndarray or None
         """
@@ -242,7 +242,7 @@ class ArrayRti(BaseRti):
         """ Returns True if the variable has a compound type, otherwise returns False.
         """
         return self._array is not None and bool(self._array.dtype.names)
-           
+
 
     def hasChildren(self):
         """ Returns True if the variable has a compound type, otherwise returns False.
@@ -285,16 +285,16 @@ class ArrayRti(BaseRti):
         """ String representation of the element type.
         """
         if self._array is None:
-            return super(ArrayRti, self).elementTypeName 
-        else:        
+            return super(ArrayRti, self).elementTypeName
+        else:
             dtype =  self._array.dtype
             return '<compound>' if dtype.names else str(dtype)
 
 
     def _fetchAllChildren(self):
-        """ Fetches all fields that this variable contains. 
+        """ Fetches all fields that this variable contains.
             Only variables with a compound data type can have fields.
-        """        
+        """
         assert self.canFetchChildren(), "canFetchChildren must be True"
 
         childItems = []
@@ -308,7 +308,7 @@ class ArrayRti(BaseRti):
 
         #self._childrenFetched = True # TODO: necessary? (already done in ancestor?)
         return childItems
-    
+
 
 class SequenceRti(BaseRti):
     """ Represents a sequence (e.g. a list or a tuple).
@@ -317,10 +317,10 @@ class SequenceRti(BaseRti):
     """
     _defaultIconGlyph = RtiIconFactory.SEQUENCE
     _defaultIconColor = RtiIconFactory.COLOR_MEMORY
-    
+
     def __init__(self, sequence, nodeName='', fileName='',
                  attributes=None, iconColor=_defaultIconColor):
-        """ Constructor. 
+        """ Constructor.
             :param sequence: the underlying sequence. May be undefined (None)
             :type array: None or a Python sequence (e.g. list or tuple)
         """
@@ -340,14 +340,14 @@ class SequenceRti(BaseRti):
         """
         return self._attributes
 
-    
+
     @property
     def typeName(self):
         return type_name(self._sequence)
-    
-        
+
+
     def _fetchAllChildren(self):
-        """ Adds a child item for each column 
+        """ Adds a child item for each column
         """
         childItems = []
         for nr, elem in enumerate(self._sequence):
@@ -355,7 +355,7 @@ class SequenceRti(BaseRti):
             childItem._iconColor = self.iconColor
             childItems.append(childItem)
         return childItems
-    
+
 
 
 class MappingRti(BaseRti):
@@ -363,7 +363,7 @@ class MappingRti(BaseRti):
     """
     _defaultIconGlyph = RtiIconFactory.FOLDER
     _defaultIconColor = RtiIconFactory.COLOR_MEMORY
-    
+
     def __init__(self, dictionary, nodeName='', fileName='',
                  attributes=None, iconColor=_defaultIconColor):
         """ Constructor.
@@ -397,8 +397,8 @@ class MappingRti(BaseRti):
 
 
     def _fetchAllChildren(self):
-        """ Adds a child item for each item 
-        """        
+        """ Adds a child item for each item
+        """
         childItems = []
         logger.debug("{!r} _fetchAllChildren {!r}".format(self, self.fileName))
 
@@ -408,5 +408,5 @@ class MappingRti(BaseRti):
                 childItem = _createFromObject(value, str(key), self.fileName)
                 childItem._iconColor = self.iconColor
                 childItems.append(childItem)
-            
+
         return childItems

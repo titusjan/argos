@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 # This file is part of Argos.
-# 
+#
 # Argos is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Argos is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
@@ -25,7 +25,7 @@ from libargos.config.boolcti import BoolCti
 from libargos.repo.registry import globalRtiRegistry
 from libargos.repo.repotreemodel import RepoTreeModel
 from libargos.widgets.argostreeview import ArgosTreeView
-from libargos.widgets.constants import (LEFT_DOCK_WIDTH, COL_NODE_NAME_WIDTH, 
+from libargos.widgets.constants import (LEFT_DOCK_WIDTH, COL_NODE_NAME_WIDTH,
                                         COL_SHAPE_WIDTH, COL_ELEM_TYPE_WIDTH)
 
 logger = logging.getLogger(__name__)
@@ -35,35 +35,35 @@ logger = logging.getLogger(__name__)
 
 class RepoTreeView(ArgosTreeView):
     """ Tree widget for browsing the data repository.
-    
-        Currently it supports only selecting one item. That is, the current item is always the 
-        selected item (see notes in ArgosTreeView documentation for details). 
-        
+
+        Currently it supports only selecting one item. That is, the current item is always the
+        selected item (see notes in ArgosTreeView documentation for details).
+
     """
     def __init__(self, repoTreeModel, collector, parent=None):
         """ Constructor.
-        
+
             Maintains a reference to a collector. The repo tree view updates the collector when
-            the currentIndex changes. 
+            the currentIndex changes.
         """
         super(RepoTreeView, self).__init__(treeModel=repoTreeModel, parent=parent)
- 
+
         self._collector = collector
         self._config = self._createConfig()
 
         treeHeader = self.header()
         treeHeader.resizeSection(RepoTreeModel.COL_NODE_NAME, COL_NODE_NAME_WIDTH)
-        treeHeader.resizeSection(RepoTreeModel.COL_SHAPE, COL_SHAPE_WIDTH)  
-        treeHeader.resizeSection(RepoTreeModel.COL_ELEM_TYPE, COL_ELEM_TYPE_WIDTH)  
+        treeHeader.resizeSection(RepoTreeModel.COL_SHAPE, COL_SHAPE_WIDTH)
+        treeHeader.resizeSection(RepoTreeModel.COL_ELEM_TYPE, COL_ELEM_TYPE_WIDTH)
         treeHeader.setStretchLastSection(True)
 
         headerNames = self.model().horizontalHeaders
         enabled = dict((name, True) for name in headerNames)
         enabled[headerNames[RepoTreeModel.COL_NODE_NAME]] = False # Cannot be unchecked
         checked = dict((name, False) for name in headerNames)
-        checked[headerNames[RepoTreeModel.COL_NODE_NAME]] = True 
-        checked[headerNames[RepoTreeModel.COL_SHAPE]] = False 
-        checked[headerNames[RepoTreeModel.COL_ELEM_TYPE]] = False 
+        checked[headerNames[RepoTreeModel.COL_NODE_NAME]] = True
+        checked[headerNames[RepoTreeModel.COL_SHAPE]] = False
+        checked[headerNames[RepoTreeModel.COL_ELEM_TYPE]] = False
         self.addHeaderContextMenu(checked=checked, enabled=enabled, checkable={})
 
         self.setContextMenuPolicy(Qt.DefaultContextMenu) # will call contextMenuEvent
@@ -73,14 +73,14 @@ class RepoTreeView(ArgosTreeView):
         self.topLevelItemActionGroup.setExclusive(False)
         self.currentItemActionGroup = QtGui.QActionGroup(self)
         self.currentItemActionGroup.setExclusive(False)
-        
+
         removeFileAction = QtGui.QAction("Remove from Tree", self.currentItemActionGroup,
-                                         shortcut=QtGui.QKeySequence.Delete,  
+                                         shortcut=QtGui.QKeySequence.Delete,
                                          triggered=self.removeCurrentItem)
         self.addAction(removeFileAction)
-        
-        reloadFileAction = QtGui.QAction("Reload File", self.currentItemActionGroup, 
-                                         shortcut=QtGui.QKeySequence.Refresh,   #"Ctrl+R",  
+
+        reloadFileAction = QtGui.QAction("Reload File", self.currentItemActionGroup,
+                                         shortcut=QtGui.QKeySequence.Refresh,   #"Ctrl+R",
                                          triggered=self.reloadFileOfCurrentItem)
         self.addAction(reloadFileAction)
 
@@ -93,7 +93,7 @@ class RepoTreeView(ArgosTreeView):
                                         #shortcut="Ctrl+C", # Ctrl+C already taken for Copy
                                         triggered=self.closeCurrentItem)
         self.addAction(self.closeItemAction)
-        
+
         # Connect signals
         selectionModel = self.selectionModel() # need to store to prevent crash in PySide
         selectionModel.currentChanged.connect(self.updateCurrentItemActions)
@@ -145,13 +145,13 @@ class RepoTreeView(ArgosTreeView):
         selectionModel.currentChanged.disconnect(self.updateCollector)
         selectionModel.currentChanged.disconnect(self.updateCurrentItemActions)
 
-        
+
     @property
     def config(self):
-        """ The root config tree item for this widget 
+        """ The root config tree item for this widget
         """
         return self._config
-    
+
 
     def _createConfig(self):
         """ Creates a config tree item (CTI) hierarchy containing default children.
@@ -159,19 +159,19 @@ class RepoTreeView(ArgosTreeView):
         rootItem = MainGroupCti('data repository')
         rootItem.insertChild(BoolCti('my checkbox', False)) # Does nothing yet
         return rootItem
-            
-        
+
+
     @property
     def collector(self): # TODO: move to selector class in the future
         """ The collector that this selector view will update. Read only property.
         """
         return self._collector
-        
+
     def sizeHint(self):
         """ The recommended size for the widget."""
         return QtCore.QSize(LEFT_DOCK_WIDTH, 450)
-    
- 
+
+
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
     def updateCurrentItemActions(self, currentIndex, _previousIndex):
         """ Enables/disables actions when a new item is the current item in the tree view.
@@ -199,14 +199,14 @@ class RepoTreeView(ArgosTreeView):
         _currentIten, currentIndex = self.getCurrentItem()
         if not currentIndex.isValid():
             return
-        
+
         # Expanding the node will visit the children and thus show the 'open' icons
-        self.expand(currentIndex) 
-         
-        
+        self.expand(currentIndex)
+
+
     @QtSlot()
     def closeCurrentItem(self):
-        """ Closes the current item in the repository. 
+        """ Closes the current item in the repository.
             All its children will be unfetched and closed.
         """
         logger.debug("closeCurrentItem")
@@ -221,7 +221,7 @@ class RepoTreeView(ArgosTreeView):
         self.collapse(currentIndex) # otherwise the children will be fetched immediately
                                     # Note that this will happen anyway if the item is e in
                                     # in another view (TODO: what to do about this?)
-        
+
     # @QtSlot()
     # def __not_used__removeCurrentFile(self):
     #     """ Finds the root of of the current item, which represents a file,
@@ -247,7 +247,7 @@ class RepoTreeView(ArgosTreeView):
 
         self.model().deleteItemAtIndex(currentIndex) # this will close the items resources.
 
-    
+
     @QtSlot()
     def reloadFileOfCurrentItem(self, rtiRegItem=None):
         """ Finds the repo tree item that holds the file of the current item and reloads it.
@@ -263,7 +263,7 @@ class RepoTreeView(ArgosTreeView):
         currentIndex = self.getRowCurrentIndex()
         if not currentIndex.isValid():
             return
-        
+
         fileRtiIndex = self.model().findFileRtiIndex(currentIndex)
         isExpanded = self.isExpanded(fileRtiIndex)
 
@@ -277,23 +277,23 @@ class RepoTreeView(ArgosTreeView):
         self.setExpanded(newRtiIndex, isExpanded)
         self.setCurrentIndex(newRtiIndex)
         return newRtiIndex
-    
+
 
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
     def updateCollector(self, currentIndex, _previousIndex):
         """ Updates the collector based on the current selection.
-        
-            A selector always operates on one collector. Each selector implementation will update 
+
+            A selector always operates on one collector. Each selector implementation will update
             the collector in its own way. Therefore the selector maintains a reference to the
             collector.
-            
+
             TODO: make Selector classes. For now it's in the RepoTreeView.
-        """ 
+        """
         # When the model is empty the current index may be invalid.
         hasCurrent = currentIndex.isValid()
         if not hasCurrent:
-            return        
-        
+            return
+
         rti = self.model().getItem(currentIndex, None)
         assert rti is not None, "sanity check failed. No RTI at current item"
 
@@ -301,4 +301,4 @@ class RepoTreeView(ArgosTreeView):
         self.collector.setRti(rti)
         #if rti.asArray is not None: # TODO: maybe later, first test how robust it is now
         #    self.collector.setRti(rti)
-            
+

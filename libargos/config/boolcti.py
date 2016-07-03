@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 
 # This file is part of Argos.
-# 
+#
 # Argos is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Argos is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Contains the Config and GroupCtiEditor classes 
+""" Contains the Config and GroupCtiEditor classes
 """
 import logging
 
@@ -51,23 +51,23 @@ class  BoolCti(AbstractCti):
         return "{} (enabled={}, childDisabledVal={})".format(self.configValue, self.enabled,
                                                              self.childrenDisabledValue)
 
-    
+
     def _enforceDataType(self, data):
         """ Converts to bool so that self.data always is of that type.
         """
         return bool(data)
-        
+
 
     @property
     def data(self):
-        """ Returns the data of this item. 
+        """ Returns the data of this item.
         """
         return self._data
 
 
     @data.setter
     def data(self, data):
-        """ Sets the data of this item. 
+        """ Sets the data of this item.
             Does type conversion to ensure data is always of the correct type.
         """
         # Descendants should convert the data to the desired type here
@@ -78,17 +78,17 @@ class  BoolCti(AbstractCti):
         self.enableBranch(enabled and self.data != self.childrenDisabledValue)
         self.enabled = enabled
 
-        
+
     @property
     def displayValue(self):
-        """ Returns empty string since a checkbox will displayed in the value-column instead.  
+        """ Returns empty string since a checkbox will displayed in the value-column instead.
         """
         return ""
-    
-    
+
+
     def insertChild(self, childItem, position=None):
         """ Inserts a child item to the current item.
-        
+
             Overridden from BaseTreeItem.
         """
         childItem = super(BoolCti, self).insertChild(childItem, position=None)
@@ -97,16 +97,16 @@ class  BoolCti(AbstractCti):
         #logger.debug("BoolCti.insertChild: {} enableChildren={}".format(childItem, enableChildren))
         childItem.enableBranch(enableChildren)
         childItem.enabled = enableChildren
-        return childItem    
-    
-    
+        return childItem
+
+
     @property
     def valueColumnItemFlags(self):
         """ Returns Qt.ItemIsUserCheckable so that a check box will be drawn in the config tree.
             Note that the flags include Qt.ItemIsEditable; this makes the reset button will appear.
         """
         return Qt.ItemIsUserCheckable | Qt.ItemIsEditable
-    
+
 
     @property
     def checkState(self):
@@ -132,7 +132,7 @@ class  BoolCti(AbstractCti):
             self.data = False
         else:
             raise ValueError("Unexpected check state: {!r}".format(checkState))
-            
+
 
     def enableBranch(self, enabled):
         """ Sets the enabled member to True or False for a node and all it's children
@@ -141,14 +141,14 @@ class  BoolCti(AbstractCti):
 
         # Disabled children and further descendants
         enabled = enabled and self.data != self.childrenDisabledValue
-        
-        for child in self.childItems:
-            child.enableBranch(enabled)            
 
-    
+        for child in self.childItems:
+            child.enableBranch(enabled)
+
+
     def createEditor(self, delegate, parent, _option):
         """ Creates a hidden widget so that only the reset button is visible during editing.
-            :type option: QStyleOptionViewItem        
+            :type option: QStyleOptionViewItem
         """
         return GroupCtiEditor(self, delegate, parent=parent)
 
@@ -157,11 +157,11 @@ class  BoolCti(AbstractCti):
 
 class BoolGroupCti(AbstractCti):
     """ Config Tree Item to store a nullable boolean (True, False or None).
-     
+
         It can be edited using a tri-state check box. However, the user can not set the value
         to partially checked directly, it will only be partially checked if some of its children
         are checked and others are not! This is a bug/behavior of Qt that won't be fixed.
-        See: https://bugreports.qt.io/browse/QTBUG-7674 and 
+        See: https://bugreports.qt.io/browse/QTBUG-7674 and
              http://comments.gmane.org/gmane.comp.lib.qt.general/925
     """
     def __init__(self, nodeName, defaultData, expanded=True):
@@ -169,27 +169,27 @@ class BoolGroupCti(AbstractCti):
         """
         super(BoolGroupCti, self).__init__(nodeName, defaultData, expanded=expanded)
 
-    
+
     def _enforceDataType(self, data):
         """ Converts to bool so that self.data always is of that type.
         """
         return None if data is None else bool(data)
-        
-        
+
+
     @property
     def displayValue(self):
-        """ Returns empty string since a checkbox will displayed in the value column instead.  
+        """ Returns empty string since a checkbox will displayed in the value column instead.
         """
         return ""
-    
-    
+
+
     @property
     def valueColumnItemFlags(self):
         """ Returns Qt.ItemIsUserCheckable so that a check box will be drawn in the config tree.
             Note that the flags include Qt.ItemIsEditable; this makes the reset button will appear.
         """
         return Qt.ItemIsTristate | Qt.ItemIsUserCheckable | Qt.ItemIsEditable
-    
+
 
     @property
     def checkState(self):
@@ -198,13 +198,13 @@ class BoolGroupCti(AbstractCti):
         """
         #commonData = self.childItems[0].data if self.childItems else Qt.PartiallyChecked
         commonData = None
-        
+
         for child in self.childItems:
-            if isinstance(child, BoolCti): 
+            if isinstance(child, BoolCti):
                 if commonData is not None and child.data != commonData:
                     return Qt.PartiallyChecked
                 commonData = child.data
-            
+
         if commonData is True:
             return Qt.Checked
         elif commonData is False:
@@ -232,11 +232,11 @@ class BoolGroupCti(AbstractCti):
         for child in self.childItems:
             if isinstance(child, BoolCti):
                 child.data = commonData
-            
-    
+
+
     def createEditor(self, delegate, parent, _option):
         """ Creates a hidden widget so that only the reset button is visible during editing.
-            :type option: QStyleOptionViewItem        
+            :type option: QStyleOptionViewItem
         """
         return GroupCtiEditor(self, delegate, parent=parent)
 

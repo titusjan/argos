@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
 # This file is part of Argos.
-# 
+#
 # Argos is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Argos is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
@@ -35,10 +35,10 @@ class InvalidInputError(Exception):
     """ Exception raised when the input is invalid after editing
     """
     pass
-                
+
 
 #################
-# JSON encoding #    
+# JSON encoding #
 #################
 
 
@@ -61,7 +61,7 @@ class CtiEncoder(JSONEncoder):
             return JSONEncoder.default(self, obj)
 
 
-def jsonAsCti(dct): 
+def jsonAsCti(dct):
     """ Config tree item JSON decoding function. Returns a CTI given a dictionary of attributes.
         The full class name of desired CTI class should be in dct['_class_''].
     """
@@ -72,51 +72,51 @@ def jsonAsCti(dct):
     else:
         return dct
 
-    
+
 class CtiDecoder(JSONDecoder):
     """ Config tree item JSON decoder class. Not strictly necessary (you can use the
-        jsonAsCti function as object_hook directly in loads) but since we also have an 
+        jsonAsCti function as object_hook directly in loads) but since we also have an
         encoder class it feels right to have a decoder as well.
     """
     def __init__(self, *args, **kwargs):
-        # The object_hook must be given to the parent constructor since that makes 
+        # The object_hook must be given to the parent constructor since that makes
         # an internal scanner.
         super(CtiDecoder, self).__init__(*args, object_hook = jsonAsCti, **kwargs)
 
 
 ###########
 # Classes #
-###########        
+###########
 
 class AbstractCti(BaseTreeItem):
     """ TreeItem for use in a ConfigTreeModel. (CTI = Config Tree Item)
-    
+
         Abstract class. You must implement the _enforceDataType method that ensures the the data
-        is stored internally in the correct type. Also, implement the createEditor method if you 
-        want you CTI to be editable (which is usually the case). If your CTI is not editable, make 
-        sure that valueColumnItemFlags does not return Qt.ItemIsEditable to prevent createEditor 
+        is stored internally in the correct type. Also, implement the createEditor method if you
+        want you CTI to be editable (which is usually the case). If your CTI is not editable, make
+        sure that valueColumnItemFlags does not return Qt.ItemIsEditable to prevent createEditor
         from being called by the delegate.
-        
-        Just like the BaseTreeItem every node has a name and a full path that is a slash-separated 
-        string of the full path leading from the root node to the current node. For instance, the 
-        path may be '/scale/x', the nodeName in that case is 'x'. 
-        
+
+        Just like the BaseTreeItem every node has a name and a full path that is a slash-separated
+        string of the full path leading from the root node to the current node. For instance, the
+        path may be '/scale/x', the nodeName in that case is 'x'.
+
         CTIs are used to store a certain configuration value. It can be queried by the value
         property. The type of this value differs between descendants of AbstractCti, but a sub class
         should always return the same type. For example, the ColorCti.value always returns a
         QColor object. The displayValue returns the string representation for use in the tables;
-        by default this returns: str(self.value)   
-        
+        by default this returns: str(self.value)
+
         The underlying data is usually stored in that type as well but this is not necessarily so.
         A ChoiceCti, which represents a combo box, stores a list of choices and an index that is
-        actual choice made by the user. ChoiceCti.data contains the index while 
-        ChoiceCti.configValue returns: choices[index]. Note that the constructor expects the data 
-        as input parameter. The constructor calls the _enforceDataType method to convert the data 
+        actual choice made by the user. ChoiceCti.data contains the index while
+        ChoiceCti.configValue returns: choices[index]. Note that the constructor expects the data
+        as input parameter. The constructor calls the _enforceDataType method to convert the data
         to the correct type.
-        
-        The purpose of the defaultData is to reset a config data to its initial value when the 
-        user clicks on the reset button during editing. The getNonDefaultsDict returns a dictionary 
-        containing only the items that differ from their default values. This is used to store the 
+
+        The purpose of the defaultData is to reset a config data to its initial value when the
+        user clicks on the reset button during editing. The getNonDefaultsDict returns a dictionary
+        containing only the items that differ from their default values. This is used to store the
         persistent settings between runs. When a developer changes the default value in a future
         version, the new value will be updated in the UI unless the user has explicitly changed the
         value himself.
@@ -160,19 +160,19 @@ class AbstractCti(BaseTreeItem):
         """
         pass
 
-    
-    def __eq__(self, other): 
-        """ Returns true if self == other. 
+
+    def __eq__(self, other):
+        """ Returns true if self == other.
         """
-        result = (type(self) == type(other) and 
+        result = (type(self) == type(other) and
                   self.nodeName == other.nodeName and
                   self.data == other.data and
                   self.defaultData == other.defaultData and
                   self.childItems == other.childItems)
         return result
 
-    def __ne__(self, other): 
-        """ Returns true if self != other. 
+    def __ne__(self, other):
+        """ Returns true if self != other.
         """
         return not self.__eq__(other)
 
@@ -181,71 +181,71 @@ class AbstractCti(BaseTreeItem):
         """ Returns the string with debugging information
         """
         return ""
-        
-    
+
+
     def _dataToString(self, data):
         """ Conversion function used to convert the (default)data to the display value.
         """
         return str(data)
-    
+
     @property
     def displayValue(self):
         """ Returns the string representation of data for use in the tree view.
             If a descendant overrides this, it should probably also override displayDefaultValue.
         """
         return self._dataToString(self.data)
-    
+
     @property
     def displayDefaultValue(self):
-        """ Returns the string representation of default data for use in the tree view. 
+        """ Returns the string representation of default data for use in the tree view.
         """
         return self._dataToString(self.defaultData)
-    
+
     @property
     def configValue(self):
-        """ Returns the configuration value of this item. 
-            By default this is the same as the underlying data but it can be overridden, 
+        """ Returns the configuration value of this item.
+            By default this is the same as the underlying data but it can be overridden,
         """
         return self.data
 
     @property
     def data(self):
-        """ Returns the data of this item. 
+        """ Returns the data of this item.
         """
         return self._data
 
     @data.setter
     def data(self, data):
-        """ Sets the data of this item. 
+        """ Sets the data of this item.
             Does type conversion to ensure data is always of the correct type.
         """
         # Descendants should convert the data to the desired type here
         self._data = self._enforceDataType(data)
-            
+
     @property
     def defaultData(self):
-        """ Returns the default data of this item. 
+        """ Returns the default data of this item.
         """
         return self._defaultData
 
     @defaultData.setter
     def defaultData(self, defaultData):
-        """ Sets the data of this item. 
+        """ Sets the data of this item.
             Does type conversion to ensure default data is always of the correct type.
         """
         # Descendants should convert the data to the desired type here
         self._defaultData = self._enforceDataType(defaultData)
-    
+
     def _enforceDataType(self, value):
         """ Converts data to the type of this CTI.
-            Used by the setter to ensure that the data and defaultData have the correct type 
+            Used by the setter to ensure that the data and defaultData have the correct type
         """
         raise NotImplementedError()
-    
+
     @property
     def checkState(self):
-        """ Returns how the checkbox for this cti should look like. Returns None for no checkbox. 
-            :rtype: Qt.CheckState or None 
+        """ Returns how the checkbox for this cti should look like. Returns None for no checkbox.
+            :rtype: Qt.CheckState or None
         """
         return None
 
@@ -269,20 +269,20 @@ class AbstractCti(BaseTreeItem):
         """
         #logger.debug("Setting enabled = {:5} for {}".format(enabled, self))
         self._enabled = enabled
-        
-        
+
+
     @property
     def expanded(self):
-        """ Returns the expanded flag which keeps 
+        """ Returns the expanded flag which keeps
         """
         return self._expanded
 
     @expanded.setter
     def expanded(self, expanded):
-        """ Keeps track if the config item is expanded. 
+        """ Keeps track if the config item is expanded.
             Needed to keep state between changing inspectors.
             Note, this can only be used as an initial expanded value but does not update the tree
-            when it's constructed. Use ConfigTree.expand for that. 
+            when it's constructed. Use ConfigTree.expand for that.
         """
         #logger.debug("Setting expanded = {!r:5} for {}".format(expanded, self))
         self._expanded = expanded
@@ -293,9 +293,9 @@ class AbstractCti(BaseTreeItem):
         """
         self.enabled = enabled
         for child in self.childItems:
-            child.enableBranch(enabled)      
-            
-        
+            child.enableBranch(enabled)
+
+
     def resetToDefault(self, resetChildren=True):
         """ Resets the data to the default data. By default the children will be reset as well
         """
@@ -368,7 +368,7 @@ class AbstractCti(BaseTreeItem):
     # serialization #
     #################
 
-    @classmethod        
+    @classmethod
     def __not_used__createFromJsonDict(cls, dct):
         """ Creates a CTI given a dictionary, which usually comes from a JSON decoder.
         """
@@ -377,23 +377,23 @@ class AbstractCti(BaseTreeItem):
             cti.data = dct['data']
         if 'defaultData' in dct:
             cti.defaultData = dct['defaultData']
-            
+
         for childCti in dct['childItems']:
             cti.insertChild(childCti)
-            
+
         if '_class_' in dct: # sanity check
             assert get_full_class_name(cti) == dct['_class_'], \
-                "_class_ should be: {}, got: {}".format(get_full_class_name(cti), dct['_class_'])             
+                "_class_ should be: {}, got: {}".format(get_full_class_name(cti), dct['_class_'])
         return cti
 
-    
+
     def __not_used__asJsonDict(self):
         """ Returns a dictionary representation to be used in a JSON encoder,
         """
         return {'_class_': get_full_class_name(self),
-                'nodeName': self.nodeName, 
-                'data': self._dataToJson(self.data), 
-                'defaultData': self._dataToJson(self.defaultData), 
+                'nodeName': self.nodeName,
+                'data': self._dataToJson(self.data),
+                'defaultData': self._dataToJson(self.defaultData),
                 'childItems': self.childItems}
 
 
@@ -410,21 +410,21 @@ class AbstractCti(BaseTreeItem):
         if (self.data != self.defaultData and self.enabled and isEditable):
             dct['data'] = self.data
         return dct
-            
+
 
     # TODO: think of smaller format. E.g. {'name1': val, 'n2', v2, _children = {...}}
     # Or just {'node/path/name1': value, ...}
     def getNonDefaultsDict(self):
         """ Recursively retrieves values as a dictionary to be used for persistence.
-            Does not save defaultData and other properties, only stores values if they differ from 
-            the defaultData. If the CTI and none of its children differ from their default, a 
-            completely empty dictionary is returned. This is to achieve a smaller json 
+            Does not save defaultData and other properties, only stores values if they differ from
+            the defaultData. If the CTI and none of its children differ from their default, a
+            completely empty dictionary is returned. This is to achieve a smaller json
             representation.
-            
+
             Typically descendants should override _nodeGetNonDefaultsDict instead of this function.
         """
         dct = self._nodeGetNonDefaultsDict()
-            
+
         childList = []
         for childCti in self.childItems:
             childDct = childCti.getNonDefaultsDict()
@@ -432,15 +432,15 @@ class AbstractCti(BaseTreeItem):
                 childList.append(childDct)
         if childList:
             dct['childItems'] = childList
-        
+
         if dct:
             dct['nodeName'] = self.nodeName
 
         return dct
-                
+
 
     def _nodeSetValuesFromDict(self, dct):
-        """ Sets values from a dictionary in the current node. 
+        """ Sets values from a dictionary in the current node.
             Non-recursive auxiliary function for setValuesFromDict
         """
         if 'data' in dct:
@@ -448,15 +448,15 @@ class AbstractCti(BaseTreeItem):
 
     def setValuesFromDict(self, dct):
         """ Recursively sets values from a dictionary created by getNonDefaultsDict.
-         
+
             Does not raise exceptions (logs warnings instead) so that we can remove/rename node
             names in future Argos versions (or remove them) without breaking the application.
-            
+
             Typically descendants should override _nodeSetValuesFromDict instead of this function.
         """
         if 'nodeName' not in dct:
             return
-        
+
         nodeName = dct['nodeName']
         if nodeName != self.nodeName:
             msg = "nodeName mismatch: expected {!r}, got {!r}".format(self.nodeName, nodeName)
@@ -465,9 +465,9 @@ class AbstractCti(BaseTreeItem):
             else:
                 logger.warn(msg)
                 return
-            
+
         self._nodeSetValuesFromDict(dct)
-        
+
         for childDct in dct.get('childItems', []):
             key = childDct['nodeName']
             try:
@@ -476,30 +476,30 @@ class AbstractCti(BaseTreeItem):
                 logger.warn("Unable to set values for: {}".format(key))
             else:
                 childCti.setValuesFromDict(childDct)
-    
+
     ########################
     # Editor look and feel #
     ########################
-   
+
     @property
     def valueColumnItemFlags(self):
         """ Returns Qt.ItemFlag enum that will be used for the value column in the config tree.
             These flags determine how the user can interact with the value column (e.g. can edit).
-            
-            Note that the ConfigTreeModel may override them: it will add the Qt.ItemIsEnabled and 
-            Qt.ItemIsSelectable to the flags. 
-            
+
+            Note that the ConfigTreeModel may override them: it will add the Qt.ItemIsEnabled and
+            Qt.ItemIsSelectable to the flags.
+
             The base implementation of valueColumnItemFlags returns Qt.ItemIsEditable. Make sure to
             implement the createEditor abstract method if Qt.ItemIsEditable is included in the
             result.
         """
-        return Qt.ItemIsEditable 
+        return Qt.ItemIsEditable
 
-    
+
     def createEditor(self, delegate, parent, option):
-        """ Creates an editor (QWidget) for editing. 
+        """ Creates an editor (QWidget) for editing.
             It's parent will be set by the ConfigItemDelegate class that calls this method.
-            
+
             :param delegate: the delegate that called this function
             :type  delegate: ConfigItemDelegate
             :param parent: The parent widget for the editor
@@ -513,21 +513,21 @@ class AbstractCti(BaseTreeItem):
 
 class AbstractCtiEditor(QtGui.QWidget):
     """ An editor for use in the ConfigTreeView (CTI).
-    
-        It consists of a horizontal collection of child widgets, the last of which is a reset 
+
+        It consists of a horizontal collection of child widgets, the last of which is a reset
         button which will reset the config data to its default when clicked.
-        
-        You must implemented setData and getData, which pass the data from the 
+
+        You must implemented setData and getData, which pass the data from the
         QConfigItemDelegate to the editor and back.
     """
     def __init__(self, cti, delegate, subEditors=None, parent=None):
         """ Wraps the child widgets in a horizontal layout and appends a reset button.
-            
+
             Maintains a reference to the ConfigTreeItem (cti) and to delegate, this last reference
             is so that we can command the delegate to commit and close the editor.
-            
+
             The subEditors must be a list of QWidgets. Note that the sub editors do not yet have
-            to be initialized with editor data since setData will be called by the delegate 
+            to be initialized with editor data since setData will be called by the delegate
             after construction. There it can be taken care of.
         """
         super(AbstractCtiEditor, self).__init__(parent=parent)
@@ -536,12 +536,12 @@ class AbstractCtiEditor(QtGui.QWidget):
         self.delegate = delegate
         self.cti = cti
 
-        # From the QAbstractItemDelegate.createEditor docs: The returned editor widget should have 
-        # Qt.StrongFocus; otherwise, QMouseEvents received by the widget will propagate to the view. 
-        # The view's background will shine through unless the editor paints its own background 
+        # From the QAbstractItemDelegate.createEditor docs: The returned editor widget should have
+        # Qt.StrongFocus; otherwise, QMouseEvents received by the widget will propagate to the view.
+        # The view's background will shine through unless the editor paints its own background
         # (e.g., with setAutoFillBackground()).
         self.setFocusPolicy(Qt.StrongFocus)
-        
+
         self.hBoxLayout = QtGui.QHBoxLayout()
         self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
         self.hBoxLayout.setSpacing(0)
@@ -557,35 +557,35 @@ class AbstractCtiEditor(QtGui.QWidget):
 
         for subEditor in (subEditors if subEditors is not None else []):
             self.addSubEditor(subEditor)
-                
+
 
     def finalize(self):
         """ Called at clean up, when the editor is closed. Can be used to disconnect signals.
-            This is often called after the client (e.g. the inspector) is updated. If you want to 
+            This is often called after the client (e.g. the inspector) is updated. If you want to
             take action before the update, override prepareCommit instead.
-            Be sure to call the finalize of the super class if you override this function. 
+            Be sure to call the finalize of the super class if you override this function.
         """
         for subEditor in self._subEditors:
             self.removeSubEditor(subEditor)
-            
+
         self.resetButton.clicked.disconnect(self.resetEditorValue)
         self.cti = None # just to make sure it's not used again.
         self.delegate = None
 
-    
-    @QtSlot()        
+
+    @QtSlot()
     def prepareCommit(self):
-        """ Called just before the data is committed. 
+        """ Called just before the data is committed.
             Can be used to take action before the client (e.g. the inspector) is updated.
         """
         logger.debug("Committing data from: {}".format(self.cti.nodePath))
-        
-        
+
+
     def addSubEditor(self, subEditor, isFocusProxy=False):
         """ Adds a sub editor to the layout (at the right but before the reset button)
             Will add the necessary event filter to handle tabs and sets the strong focus so
             that events will not propagate to the tree view.
-            
+
             If isFocusProxy is True the sub editor will be the focus proxy of the CTI.
         """
         self.hBoxLayout.insertWidget(len(self._subEditors), subEditor)
@@ -593,7 +593,7 @@ class AbstractCtiEditor(QtGui.QWidget):
 
         subEditor.installEventFilter(self)
         subEditor.setFocusPolicy(Qt.StrongFocus)
-        
+
         if isFocusProxy:
             self.setFocusProxy(subEditor)
 
@@ -605,26 +605,26 @@ class AbstractCtiEditor(QtGui.QWidget):
         """
         if subEditor is self.focusProxy():
             self.setFocusProxy(None)
-                    
+
         subEditor.removeEventFilter(self)
         self._subEditors.remove(subEditor)
         self.hBoxLayout.removeWidget(subEditor)
 
-        
+
     def setData(self, value):
         """ Provides the editor widget with a data to manipulate.
             Value originates from the ConfigTreeModel.data(role=QEditRole).
         """
         raise NotImplementedError()
-        
-        
+
+
     def getData(self):
         """ Gets data from the editor widget.
             Should return a value that can be set into the ConfigTreeModel with the QEditRole.
         """
         raise NotImplementedError()
-            
-        
+
+
     def eventFilter(self, watchedObject, event):
         """ Calls commitAndClose when the tab and back-tab are pressed.
             This is necessary because, normally the event filter of QStyledItemDelegate does this
@@ -638,13 +638,13 @@ class AbstractCtiEditor(QtGui.QWidget):
             else:
                 return False
 
-        return super(AbstractCtiEditor, self).eventFilter(watchedObject, event) 
-        
+        return super(AbstractCtiEditor, self).eventFilter(watchedObject, event)
+
 
     @QtSlot()
     def commitAndClose(self):
         """ Commits the data of the sub editor and instructs the delegate to close this ctiEditor.
-        
+
             The delegate will emit the closeEditor signal which is connected to the closeEditor
             method of the ConfigTreeView class. This, in turn will, call the finalize method of
             this object so that signals can be disconnected and resources can be freed. This is
@@ -653,7 +653,7 @@ class AbstractCtiEditor(QtGui.QWidget):
         self.delegate.commitData.emit(self)
         self.delegate.closeEditor.emit(self, QtGui.QAbstractItemDelegate.NoHint)   # CLOSES SELF!
 
-    
+
     @QtSlot(bool)
     def resetEditorValue(self, checked=False):
         """ Resets the editor to the default value. Also resets the children.
@@ -662,13 +662,13 @@ class AbstractCtiEditor(QtGui.QWidget):
         # No need to restore, the editors will be deleted after the reset.
         for subEditor in self._subEditors:
             subEditor.blockSignals(True)
-            
+
         self.cti.resetToDefault(resetChildren=True)
-        # This will commit the children as well. 
+        # This will commit the children as well.
         self.setData(self.cti.defaultData)
         self.commitAndClose()
-            
-    
+
+
     def paintEvent(self, event):
         """ Reimplementation of paintEvent to allow for style sheets
             See: http://qt-project.org/wiki/How_to_Change_the_Background_Color_of_QWidget
@@ -678,4 +678,4 @@ class AbstractCtiEditor(QtGui.QWidget):
         painter = QtGui.QPainter(self)
         self.style().drawPrimitive(QtGui.QStyle.PE_Widget, opt, painter, self)
         painter.end()
-                
+

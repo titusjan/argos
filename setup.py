@@ -19,7 +19,7 @@ except ImportError:
 from libargos import info
 from libargos.qt import USE_PYQT
 
-assert not info.DEBUGGING, "info.DEBUGGING should be False" 
+assert not info.DEBUGGING, "info.DEBUGGING should be False"
 assert USE_PYQT, "USE_PYQT should be True"
 
 
@@ -46,7 +46,7 @@ setup(
         info.PACKAGE_NAME
     ],
     package_dir={info.PACKAGE_NAME: info.PACKAGE_NAME},
-    scripts = ['argos'], 
+    scripts = ['argos'],
     include_package_data=True,
     install_requires=requirements,
     license="GPLv3",
@@ -55,9 +55,9 @@ setup(
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Environment :: X11 Applications :: Qt',
-        'Intended Audience :: Developers', 
-        'Intended Audience :: End Users/Desktop', 
-        'Intended Audience :: Science/Research', 
+        'Intended Audience :: Developers',
+        'Intended Audience :: End Users/Desktop',
+        'Intended Audience :: Science/Research',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Natural Language :: English',
         'Operating System :: MacOS :: MacOS X',

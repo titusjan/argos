@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
 # This file is part of Argos.
-# 
+#
 # Argos is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Argos is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
@@ -55,24 +55,24 @@ class NumpyTextFileRti(ArrayRti):
                                                iconColor=self._defaultIconColor)
         self._checkFileExists()
 
-            
+
     def hasChildren(self):
-        """ Returns True if the item has (fetched or unfetched) children 
+        """ Returns True if the item has (fetched or unfetched) children
         """
         return True
-                
+
     def _openResources(self):
         """ Uses numpy.loadtxt to open the underlying file
         """
         self._array = np.loadtxt(self._fileName, ndmin=0)
-    
-                
+
+
     def _closeResources(self):
         """ Closes the underlying resources
         """
         self._array = None
-    
-                        
+
+
     def _fetchAllChildren(self):
         """ Adds an ArrayRti per column as children so that they can be inspected easily
         """

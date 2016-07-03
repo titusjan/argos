@@ -21,7 +21,7 @@ class TestUntypedCtis(unittest.TestCase):
 
 
     def test__eq__(self):
-        
+
         ctiIn = UntypedCti('parent', defaultData=7)
         self.assertEqual(ctiIn, ctiIn)
         self.assertEqual(ctiIn, UntypedCti('parent', defaultData=7))
@@ -35,44 +35,44 @@ class TestUntypedCtis(unittest.TestCase):
         ctiOut.insertChild(UntypedCti('kid', defaultData=23))
         self.assertEqual(ctiIn, ctiOut)
 
-        ctiIn.childItems[0].data = 99    
+        ctiIn.childItems[0].data = 99
         self.assertNotEqual(ctiIn, ctiOut)
-        
+
 
     # This functionality is currently not used? Depricated?
     def __not_used__testJson(self):
-        
+
         # encoding
         jstr = ctiDumps(self.invisibleRootItem)
         #print(jstr)
-        
+
         # decoding
         #testItem = json.loads(jstr, object_hook=jsonAsCti)
         testItem = loads(jstr, cls=CtiDecoder)
         #print(mydumps(testItem))
-            
+
         self.assertEqual(testItem, self.invisibleRootItem)
 
 
     def testNonDefaults(self):
-        
-        # A data different than its default should be restored 
+
+        # A data different than its default should be restored
         ctiIn  = UntypedCti('parent', defaultData=7)
         defDict = ctiIn.getNonDefaultsDict()
         #print(defDict)
         ctiOut = UntypedCti('parent', defaultData=7)
         ctiOut.setValuesFromDict(defDict)
         self.assertEqual(ctiIn, ctiOut)
-        
-        # A data is not written if it's the default and 
-        # is read correctly if the default stays the same 
+
+        # A data is not written if it's the default and
+        # is read correctly if the default stays the same
         ctiIn  = UntypedCti('parent', defaultData=7)
         defDict = ctiIn.getNonDefaultsDict()
         #print(defDict)
         ctiOut = UntypedCti('parent', defaultData=7)
         ctiOut.setValuesFromDict(defDict)
         self.assertEqual(ctiIn, ctiOut)
-        
+
         # A default data should have no effect it the default changes in the future.
         ctiIn  = UntypedCti('parent', defaultData=7)
         defDict = ctiIn.getNonDefaultsDict()
@@ -110,7 +110,7 @@ class TestSimpleCtis(unittest.TestCase):
 
 
     def testColorCti(self):
-        
+
         colorStr = '#FF33EE'
         cti = ColorCti('color', defaultData=colorStr)
         self.assertEqual(cti.data, QtGui.QColor(colorStr))
@@ -124,15 +124,15 @@ class TestSimpleCtis(unittest.TestCase):
         nonDefaults = ctiIn.getNonDefaultsDict()
         json = dumps(nonDefaults)
         valuesDict = loads(json)
-        
+
         ctiOut = copy.deepcopy(ctiIn)
         ctiOut._data = None
         ctiOut.setValuesFromDict(valuesDict)
         return ctiOut
-        
-        
+
+
     def testClosedLoop(self):
-        # A data different than its default should be restored 
+        # A data different than its default should be restored
         ctiIn  = ColorCti('parent', defaultData='#ABCDEF')
         ctiIn.data='#DEADBE' # works only if data is set, otherwise ctiOut.data will be None
         ctiOut = self.closedLoop(ctiIn)
@@ -144,5 +144,5 @@ class TestSimpleCtis(unittest.TestCase):
 if __name__ == '__main__':
     configBasicLogging(level='DEBUG')
     unittest.main()
-    
-    
+
+

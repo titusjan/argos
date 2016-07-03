@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 # This file is part of Argos.
-# 
+#
 # Argos is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Argos is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
@@ -40,11 +40,11 @@ class ConfigTreeView(ArgosTreeView):
         """
         super(ConfigTreeView, self).__init__(treeModel=configTreeModel, parent=parent)
 
-        self.expanded.connect(configTreeModel.expand) 
-        self.collapsed.connect(configTreeModel.collapse) 
+        self.expanded.connect(configTreeModel.expand)
+        self.collapsed.connect(configTreeModel.collapse)
         #configTreeModel.update.connect(self.update) # not necessary
         #self.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
-        
+
         treeHeader = self.header()
         treeHeader.resizeSection(ConfigTreeModel.COL_NODE_NAME, RIGHT_DOCK_WIDTH * 0.5)
         treeHeader.resizeSection(ConfigTreeModel.COL_VALUE, RIGHT_DOCK_WIDTH * 0.5)
@@ -58,29 +58,29 @@ class ConfigTreeView(ArgosTreeView):
         checked[headerNames[ConfigTreeModel.COL_VALUE]] = True # Checked by default
         self.addHeaderContextMenu(checked=checked, enabled=enabled, checkable={})
 
-        self.setRootIsDecorated(False) 
+        self.setRootIsDecorated(False)
         self.setUniformRowHeights(True)
         self.setItemDelegate(ConfigItemDelegate())
-        self.setEditTriggers(QtGui.QAbstractItemView.AllEditTriggers) 
-        
+        self.setEditTriggers(QtGui.QAbstractItemView.AllEditTriggers)
+
         #self.setEditTriggers(QtGui.QAbstractItemView.DoubleClicked |
-        #                     QtGui.QAbstractItemView.EditKeyPressed | 
-        #                     QtGui.QAbstractItemView.AnyKeyPressed | 
+        #                     QtGui.QAbstractItemView.EditKeyPressed |
+        #                     QtGui.QAbstractItemView.AnyKeyPressed |
         #                     QtGui.QAbstractItemView.SelectedClicked)
-        
-        
+
+
     def sizeHint(self):
         """ The recommended size for the widget."""
         return QtCore.QSize(RIGHT_DOCK_WIDTH, 500)
-        
-    
+
+
     @QtSlot(QtGui.QWidget, QtGui.QAbstractItemDelegate)
     def closeEditor(self, editor, hint):
-        """ Finalizes, closes and releases the given editor. 
+        """ Finalizes, closes and releases the given editor.
         """
         # It would be nicer if this method was part of ConfigItemDelegate since createEditor also
         # lives there. However, QAbstractItemView.closeEditor is sometimes called directly,
-        # without the QAbstractItemDelegate.closeEditor signal begin emitted, e.g when the 
+        # without the QAbstractItemDelegate.closeEditor signal begin emitted, e.g when the
         # currentItem changes. Therefore we cannot connect to the QAbstractItemDelegate.closeEditor
         # signal to a slot in the ConfigItemDelegate.
 
@@ -89,12 +89,12 @@ class ConfigTreeView(ArgosTreeView):
         super(ConfigTreeView, self).closeEditor(editor, hint)
 
 
-    
+
     def expandBranch(self, index=None, expanded=None):
         """ Expands or collapses the node at the index and all it's descendants.
-            If expanded is True the nodes will be expanded, if False they will be collapsed, and if 
+            If expanded is True the nodes will be expanded, if False they will be collapsed, and if
             expanded is None the expanded attribute of each item is used.
-            If parentIndex is None, the invisible root will be used (i.e. the complete forest will 
+            If parentIndex is None, the invisible root will be used (i.e. the complete forest will
             be expanded).
         """
         configModel = self.model()
@@ -102,16 +102,16 @@ class ConfigTreeView(ArgosTreeView):
             #index = configTreeModel.createIndex()
             index = QtCore.QModelIndex()
 
-        if index.isValid():            
+        if index.isValid():
             if expanded is None:
                 item = configModel.getItem(index)
                 newExpanded = item.expanded
             else:
                 newExpanded = expanded
-                
+
             self.setExpanded(index, newExpanded)
-        
+
         for rowNr in range(configModel.rowCount(index)):
             childIndex = configModel.index(rowNr, configModel.COL_NODE_NAME, parentIndex=index)
             self.expandBranch(index=childIndex, expanded=expanded)
-            
+

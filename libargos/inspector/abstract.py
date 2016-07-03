@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
 # This file is part of Argos.
-# 
+#
 # Argos is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Argos is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
@@ -42,7 +42,7 @@ class AbstractInspector(QtGui.QStackedWidget):
     _fullName = "base" # see the fullName() class method for explanation
     ERROR_PAGE_IDX = 0
     CONTENTS_PAGE_IDX = 1
-    
+
     def __init__(self, collector, parent=None):
         """ Constructor.
 
@@ -54,14 +54,14 @@ class AbstractInspector(QtGui.QStackedWidget):
             :param collector: the data collector from where this inspector gets its data
             :param parent: parent widget.
         """
-        
+
         super(AbstractInspector, self).__init__(parent)
-        
+
         self.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-        
+
         self._config = MainGroupCti(nodeName='inspector') # Is typically redefined.
         self._collector = collector
-        
+
         self.errorWidget = MessageDisplay()
         self.addWidget(self.errorWidget)
 
@@ -70,60 +70,60 @@ class AbstractInspector(QtGui.QStackedWidget):
 
         self.contentsLayout = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom)
         self.contentsLayout.setSpacing(DOCK_SPACING)
-        self.contentsLayout.setContentsMargins(DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN)        
+        self.contentsLayout.setContentsMargins(DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN)
         self.contentsWidget.setLayout(self.contentsLayout)
-        
+
         self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
-        
+
 
     def finalize(self):
         """ Is called before destruction. Can be used to clean-up resources
         """
         logger.debug("Finalizing: {}".format(self))
 
-    
+
     @property
     def config(self):
         """ The root config tree item for this inspector.
         """
         return self._config
-    
+
 
     @property
     def windowNumber(self):
         """ The instance number of the window this inspector belongs to.
         """
-        return self.collector.windowNumber  
-    
-    
+        return self.collector.windowNumber
+
+
     @classmethod
     def descriptionHtml(cls):
         """ A long description that will be displayed as help in the inspector-open dialog box.
         """
-        return ""    
+        return ""
 
 
     @classmethod
     def axesNames(cls):
-        """ The names of the axes that this inspector visualizes.    
-            
+        """ The names of the axes that this inspector visualizes.
+
             This determines the dimensionality of the inspector. For example an inspector that shows
             an image, and has axes names 'X' and 'Y', is 2-dimensional. The axesNames should be
             row-first, so in this example: ['Y', 'X']
-            
+
             The names should not include the string "Axis"; the Collector.fullAxisNames()
             returns that.
         """
         return tuple()
 
-    
+
     @property
     def collector(self):
         """ The data collector from where this inspector gets its data
         """
         return self._collector
-    
-    
+
+
     def configValue(self, nodePath):
         """ Returns the config value data at the node path
         """
@@ -132,7 +132,7 @@ class AbstractInspector(QtGui.QStackedWidget):
 
     @QtSlot()
     def drawContents(self):
-        """ Tries to draw the widget contents with the updated RTI. 
+        """ Tries to draw the widget contents with the updated RTI.
             Shows the error page in case an exception is raised while drawing the contents.
             Descendants should override _drawContents, not drawContents.
 
@@ -171,18 +171,18 @@ class AbstractInspector(QtGui.QStackedWidget):
         else:
             logger.debug("---- drawContents finished successfully")
 
-    
+
     def _drawContents(self):
         """ Is called by drawContents to do the actual drawing.
             Descendants should override _drawContents and not worry about exceptions;
             the drawContents will show the error page if an exception is raised.
         """
         raise NotImplementedError()
-        
+
 
     def _showError(self, msg="", title="Error"):
         """ Shows an error message.
         """
         self.errorWidget.setError(msg=msg, title=title)
-        
-        
+
+

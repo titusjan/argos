@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 # This file is part of Argos.
-# 
+#
 # Argos is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Argos is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" 
+"""
     PluginsDialog window that shows which plugins are registered.
 """
 from __future__ import print_function
@@ -29,20 +29,20 @@ from libargos.utils.cls import check_class
 
 logger = logging.getLogger(__name__)
 
-# The main window inherits from a Qt class, therefore it has many 
+# The main window inherits from a Qt class, therefore it has many
 # ancestors public methods and attributes.
-# pylint: disable=R0901, R0902, R0904, W0201 
+# pylint: disable=R0901, R0902, R0904, W0201
 
 
 class RegistryTab(QtGui.QWidget):
     """ Tab that shows the contents of a single plugin registry.
 
     """
-    def __init__(self, registry, parent=None, 
-                 attrNames=None, headerNames=None, headerSizes=None, 
+    def __init__(self, registry, parent=None,
+                 attrNames=None, headerNames=None, headerSizes=None,
                  onlyShowImported=False, importOnSelect=True):
         """ Constructor.
-        
+
             If onlyShowImported is True, regItems that are not (successfully) imported are
             filtered from the table. By default onlyShowImported is False.
 
@@ -54,10 +54,10 @@ class RegistryTab(QtGui.QWidget):
         self._onlyShowImported = onlyShowImported
         self._registry = registry
 
-        
+
         attrNames = [] if attrNames is None else attrNames
         headerNames = attrNames if headerNames is None else headerNames
-        headerSizes = [] if headerSizes is None else headerSizes 
+        headerSizes = [] if headerSizes is None else headerSizes
         if headerSizes is None:
             headerSizes = []
         else:
@@ -80,7 +80,7 @@ class RegistryTab(QtGui.QWidget):
 
         splitter = QtGui.QSplitter(Qt.Vertical)
         layout.addWidget(splitter)
-        
+
         # Table
         tableModel = RegistryTableModel(self._registry, attrNames=attrNames, parent=self)
         proxyTableModel = RegistryTableProxyModel(parent=self,
@@ -92,13 +92,13 @@ class RegistryTab(QtGui.QWidget):
         for col, headerSize in enumerate(headerSizes):
             if headerSize:
                 tableHeader.resizeSection(col, headerSize)
-                
+
         selectionModel = self.tableView.selectionModel()
         selectionModel.currentRowChanged.connect(self.currentItemChanged)
-                
+
         splitter.addWidget(self.tableView)
         splitter.setCollapsible(0, False)
-        
+
         # Detail info widget
         font = QtGui.QFont()
         font.setFamily('Courier')
@@ -109,7 +109,7 @@ class RegistryTab(QtGui.QWidget):
         self.editor.setReadOnly(True)
         self.editor.setFont(font)
         self.editor.setWordWrapMode(QtGui.QTextOption.NoWrap)
-        self.editor.clear()      
+        self.editor.clear()
         splitter.addWidget(self.editor)
         splitter.setCollapsible(1, False)
         splitter.setSizes([300, 150])
@@ -121,7 +121,7 @@ class RegistryTab(QtGui.QWidget):
     def onlyShowImported(self):
         "If True, regItems that are not (successfully) imported are filtered from in the table"
         return self._onlyShowImported
-            
+
 
     @property
     def registeredItems(self):
@@ -140,10 +140,10 @@ class RegistryTab(QtGui.QWidget):
         self.statusLabel.setText("")
         QtGui.qApp.processEvents()
 
-    
+
     def tryImportAllPlugins(self):
         """ Tries to import all underlying plugin classes
-        """ 
+        """
         for regItem in self.registeredItems:
             if not regItem.triedImport:
                 self.importRegItem(regItem)
@@ -152,19 +152,19 @@ class RegistryTab(QtGui.QWidget):
 
 
     def getCurrentRegItem(self):
-        """ Returns the item that is currently selected in the table. 
+        """ Returns the item that is currently selected in the table.
             Can return None if there is no data in the table
         """
         return self.tableView.getCurrentRegItem()
-    
-    
+
+
     def setCurrentRegItem(self, regItem):
         """ Sets the current item to the regItem
         """
         check_class(regItem, ClassRegItem, allow_none=True)
         self.tableView.setCurrentRegItem(regItem)
-    
-    
+
+
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
     def currentItemChanged(self, _currentIndex=None, _previousIndex=None):
         """ Updates the description text widget when the user clicks on a selector in the table.
@@ -172,7 +172,7 @@ class RegistryTab(QtGui.QWidget):
         """
         self.editor.clear()
         self.editor.setTextColor(QCOLOR_REGULAR)
-        
+
         regItem = self.getCurrentRegItem()
 
         if regItem is None:
@@ -183,24 +183,24 @@ class RegistryTab(QtGui.QWidget):
 
         if regItem.successfullyImported is None:
             self.editor.setTextColor(QCOLOR_NOT_IMPORTED)
-            self.editor.setPlainText('<plugin not yet imported>')     
-        elif regItem.successfullyImported is False:   
+            self.editor.setPlainText('<plugin not yet imported>')
+        elif regItem.successfullyImported is False:
             self.editor.setTextColor(QCOLOR_ERROR)
-            self.editor.setPlainText(str(regItem.exception))     
+            self.editor.setPlainText(str(regItem.exception))
         elif regItem.descriptionHtml:
             self.editor.setHtml(regItem.descriptionHtml)
         else:
             self.editor.setPlainText(regItem.docString)
 
 
-        
-class PluginsDialog(QtGui.QDialog): 
+
+class PluginsDialog(QtGui.QDialog):
     """ Dialog window that shows the installed plugins.
     """
 
-    def __init__(self, 
-                 inspectorRegistry=None, 
-                 rtiRegistry=None, 
+    def __init__(self,
+                 inspectorRegistry=None,
+                 rtiRegistry=None,
                  parent=None):
         """ Constructor
         """
@@ -210,22 +210,22 @@ class PluginsDialog(QtGui.QDialog):
         self.setModal(False)
 
         layout = QtGui.QVBoxLayout(self)
-        
+
         self.tabWidget = QtGui.QTabWidget()
         layout.addWidget(self.tabWidget)
-        
-        attrNames = ['fullName', 'fullClassName', 'pythonPath'] 
+
+        attrNames = ['fullName', 'fullClassName', 'pythonPath']
         headerSizes = [200, 300, None]
-        
+
         if inspectorRegistry:
-            inspectorTab = RegistryTab(inspectorRegistry, 
+            inspectorTab = RegistryTab(inspectorRegistry,
                                        attrNames=attrNames, headerSizes=headerSizes)
-            self.tabWidget.addTab(inspectorTab, "Inspectors")     
-        
+            self.tabWidget.addTab(inspectorTab, "Inspectors")
+
         if rtiRegistry:
-            rtiTab = RegistryTab(rtiRegistry, 
+            rtiTab = RegistryTab(rtiRegistry,
                                  attrNames=attrNames, headerSizes=headerSizes)
-            self.tabWidget.addTab(rtiTab, "File Formats")     
+            self.tabWidget.addTab(rtiTab, "File Formats")
 
         # Sort by fullName by default.
         for tabNr in range(self.tabWidget.count()):
@@ -238,7 +238,7 @@ class PluginsDialog(QtGui.QDialog):
 
         self.resize(QtCore.QSize(1100, 700))
 
-    
+
     def tryImportAllPlugins(self):
         """ Refreshes the tables of all tables by importing the underlying classes
         """
@@ -246,5 +246,5 @@ class PluginsDialog(QtGui.QDialog):
         for tabNr in range(self.tabWidget.count()):
             tab = self.tabWidget.widget(tabNr)
             tab.tryImportAllPlugins()
-            
-            
+
+
