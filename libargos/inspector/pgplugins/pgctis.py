@@ -274,7 +274,7 @@ class AbstractRangeCti(GroupCti):
         self.model.emitDataChanged(self)
 
 
-    def _setAutoRangeOn(self):
+    def setAutoRangeOn(self):
         """ Turns on the auto range checkbox for the equivalent axes
             Emits the sigItemChanged signal so that the inspector may be updated.
         """
@@ -288,7 +288,7 @@ class AbstractRangeCti(GroupCti):
         self.model.sigItemChanged.emit(self) # this should typically only be called by other classes.
 
 
-    def _setAutoRangeOff(self):
+    def setAutoRangeOff(self):
         """ Turns off the auto range checkbox.
             Calls _refreshNodeFromTarget, not _updateTargetFromNode because setting auto range off
             does not require a redraw of the target.
@@ -382,17 +382,15 @@ class PgAxisRangeCti(AbstractRangeCti):
         assert axisAutoRange is False, \
             "Autorange is {!r} for axis {} of {}".format(axisAutoRange, axisNumber, self.nodePath)
 
-        # self.insertChild(ViewBoxDebugCti('viewbox state', self.viewBox))
-
         # Connect signals
-        self.viewBox.sigRangeChanged.connect(self._setAutoRangeOff)
+        self.viewBox.sigRangeChangedManually.connect(self.setAutoRangeOff)
 
 
     def _closeResources(self):
         """ Disconnects signals.
             Is called by self.finalize when the cti is deleted.
         """
-        self.viewBox.sigRangeChanged.disconnect(self._setAutoRangeOff)
+        self.viewBox.sigRangeChangedManually.disconnect(self.setAutoRangeOff)
 
 
     def getTargetRange(self):
@@ -438,14 +436,14 @@ class PgHistLutColorRangeCti(AbstractRangeCti):
         self.histLutItem = histLutItem
 
         # Connect signals
-        self.histLutItem.sigLevelsChanged.connect(self._setAutoRangeOff)
+        self.histLutItem.sigLevelsChanged.connect(self.setAutoRangeOff)
 
 
     def _closeResources(self):
         """ Disconnects signals.
             Is called by self.finalize when the cti is deleted.
         """
-        self.histLutItem.sigLevelsChanged.connect(self._setAutoRangeOff)
+        self.histLutItem.sigLevelsChanged.connect(self.setAutoRangeOff)
 
 
     def getTargetRange(self):

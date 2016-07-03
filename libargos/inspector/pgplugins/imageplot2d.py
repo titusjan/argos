@@ -193,14 +193,25 @@ class PgImagePlot2dCti(MainGroupCti):
                                                 self.verCrossPlotRangeCti, self.yAxisRangeCti)
         self.pgImagePlot2d.verCrossPlotItem.sigAxisReset.connect(self._verCrossPlotAutoRangeFn)
 
+        # Also update axis auto range tree items when linked axes are resized
+        horCrossViewBox = self.pgImagePlot2d.horCrossPlotItem.getViewBox()
+        horCrossViewBox.sigRangeChangedManually.connect(self.xAxisRangeCti.setAutoRangeOff)
+        verCrossViewBox = self.pgImagePlot2d.verCrossPlotItem.getViewBox()
+        verCrossViewBox.sigRangeChangedManually.connect(self.yAxisRangeCti.setAutoRangeOff)
+
 
     def _closeResources(self):
         """ Disconnects signals.
             Is called by self.finalize when the cti is deleted.
         """
-        self.pgImagePlot2d.imagePlotItem.sigAxisReset.disconnect(self._imageAutoRangeFn)
-        self.pgImagePlot2d.horCrossPlotItem.sigAxisReset.disconnect(self._horCrossPlotAutoRangeFn)
+        verCrossViewBox = self.pgImagePlot2d.verCrossPlotItem.getViewBox()
+        verCrossViewBox.sigRangeChangedManually.disconnect(self.yAxisRangeCti.setAutoRangeOff)
+        horCrossViewBox = self.pgImagePlot2d.horCrossPlotItem.getViewBox()
+        horCrossViewBox.sigRangeChangedManually.disconnect(self.xAxisRangeCti.setAutoRangeOff)
+
         self.pgImagePlot2d.verCrossPlotItem.sigAxisReset.disconnect(self._verCrossPlotAutoRangeFn)
+        self.pgImagePlot2d.horCrossPlotItem.sigAxisReset.disconnect(self._horCrossPlotAutoRangeFn)
+        self.pgImagePlot2d.imagePlotItem.sigAxisReset.disconnect(self._imageAutoRangeFn)
 
 
 
@@ -256,7 +267,7 @@ class PgImagePlot2d(AbstractInspector):
 
         # Layout
 
-        # Hidding the horCrossPlotItem and horCrossPlotItem will still leave some space in the
+        # Hiding the horCrossPlotItem and horCrossPlotItem will still leave some space in the
         # grid layout. We therefore remove them from the layout instead. We need to know if they
         # are already added.
         self.horPlotAdded = False
