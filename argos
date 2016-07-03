@@ -80,10 +80,6 @@ def main():
         print(about_str)
         sys.exit(0)
 
-    import os
-    from libargos.utils.misc import log_dictionary
-    log_dictionary(os.environ, "os.environ")
-
     # Browse will create an ArgosApplication with one MainWindow
     browse(fileNames = args.fileNames,
            inspectorFullName=args.inspector,

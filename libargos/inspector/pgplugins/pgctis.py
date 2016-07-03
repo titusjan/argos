@@ -196,7 +196,7 @@ class AbstractRangeCti(GroupCti):
             self._rangeFunctions = autoRangeFunctions
 
             if len(autoRangeFunctions) > 1:
-                self.methodCti = ChoiceCti("method", configValues=autoRangeFunctions.keys())
+                self.methodCti = ChoiceCti("method", configValues=list(autoRangeFunctions.keys()))
                 self.autoRangeCti.insertChild(self.methodCti)
 
             self.paddingCti = IntCti("padding", -1, suffix="%", specialValueText="dynamic",
@@ -469,7 +469,7 @@ class PgGradientEditorItemCti(ChoiceCti):
             chosen, which is they 'grey' color scale.
         """
         super(PgGradientEditorItemCti, self).__init__(nodeName, defaultData=defaultData,
-                                                      configValues=GRADIENTS.keys())
+                                                      configValues=list(GRADIENTS.keys()))
         check_class(gradientEditorItem, pg.GradientEditorItem)
         self.gradientEditorItem = gradientEditorItem
 

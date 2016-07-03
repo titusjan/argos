@@ -80,7 +80,7 @@ def log_dictionary(dictionary, msg='', logger=None, level='debug', item_prefix='
 
     max_key_len = max([len(k) for k in dictionary.keys()])
 
-    for key, value in sorted(dictionary.iteritems()):
+    for key, value in sorted(dictionary.items()):
         logger.log(level_nr, "{0}{1:<{2}s} = {3}".format(item_prefix, key, max_key_len, value))
 
 

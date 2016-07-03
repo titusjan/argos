@@ -23,8 +23,8 @@ from libargos.qt import QtCore
 TREE_CELL_SIZE_HINT = QtCore.QSize(100, 20)
 TREE_ICON_SIZE = QtCore.QSize(16, 16)
 
-COLLECTOR_TREE_CELL_SIZE_HINT = QtCore.QSize(100, 24)
-# COLLECTOR_TREE_ICON_SIZE = QtCore.QSize(20, 20) not used (yet?)
+#COLLECTOR_TREE_CELL_SIZE_HINT = QtCore.QSize(100, 24) not used (yet?)
+COLLECTOR_TREE_ICON_SIZE = QtCore.QSize(20, 20)
 
 # Initial dock widths of the main window
 LEFT_DOCK_WIDTH = 350
