@@ -45,7 +45,7 @@ class Collector(QtGui.QWidget):
         The CollectorTree only stores the VisItems, the intelligence is located in the Collector
         itself.
     """
-    contentsChanged = QtSignal()
+    sigContentsChanged = QtSignal()
 
     def __init__(self, windowNumber):
         """ Constructor
@@ -226,7 +226,7 @@ class Collector(QtGui.QWidget):
 
     def _updateWidgets(self):
         """ Updates the combo and spin boxes given the new rti or axes.
-            Emits the contentsChanged signal.
+            Emits the sigContentsChanged signal.
         """
         row = 0
         model = self.tree.model()
@@ -246,9 +246,9 @@ class Collector(QtGui.QWidget):
 
         self.tree.resizeColumnsToContents(startCol=self.COL_FIRST_COMBO)
 
-        logger.debug("{} contentsChanged signal (_updateWidgets)"
+        logger.debug("{} sigContentsChanged signal (_updateWidgets)"
                       .format("Blocked" if self.signalsBlocked() else "Emitting"))
-        self.contentsChanged.emit()
+        self.sigContentsChanged.emit()
 
 
     def _createComboBoxes(self, row):
@@ -447,9 +447,9 @@ class Collector(QtGui.QWidget):
 
         self.blockChildrenSignals(blocked)
 
-        logger.debug("{} contentsChanged signal (comboBox)"
+        logger.debug("{} sigContentsChanged signal (comboBox)"
                       .format("Blocked" if self.signalsBlocked() else "Emitting"))
-        self.contentsChanged.emit()
+        self.sigContentsChanged.emit()
 
 
     @QtSlot(int)
@@ -463,9 +463,9 @@ class Collector(QtGui.QWidget):
             spinBox = self.sender()
         assert spinBox, "spinBox not defined and not the sender"
 
-        logger.debug("{} contentsChanged signal (spinBox)"
+        logger.debug("{} sigContentsChanged signal (spinBox)"
                       .format("Blocked" if self.signalsBlocked() else "Emitting"))
-        self.contentsChanged.emit()
+        self.sigContentsChanged.emit()
 
 
     def getSlicedArray(self):

@@ -105,6 +105,7 @@ class ViewBoxDebugCti(GroupCti):
                     limitChildItem.data = limitValue
 
 
+
 def viewBoxAxisRange(viewBox, axisNumber):
     """ Calculates the range of an axis of a viewBox.
     """
@@ -156,9 +157,12 @@ def setXYAxesAutoRangeOn(commonCti, xAxisRangeCti, yAxisRangeCti, axisNumer):
         Can be used with functools.partial to make a slot that atomically resets the X and Y axis.
         That is, only one sigItemChanged will be emitted.
 
-        TODO: explain why necessary
+        This function is necessary because, if one would call PgAxisRangeCti.sigItemChanged
+        separately on the X and Y ases the sigItemChanged signal would be emitted twice. This in
+        not only slower, but autoscaling one axis may slightly change the others range, so the
+        second call to sigItemChanged may unset the autorange of the first.
     """
-    logger.debug("^^^^^^^^ setXYAxesAutoRangeOn, axisNumber: {}".format(axisNumer))
+    logger.debug("setXYAxesAutoRangeOn, axisNumber: {}".format(axisNumer))
     if axisNumer == X_AXIS or axisNumer == BOTH_AXES:
         xAxisRangeCti.autoRangeCti.data = True
 
@@ -411,7 +415,7 @@ class PgAxisRangeCti(AbstractRangeCti):
         self.viewBox.setRange(xRange = xRange, yRange=yRange, padding=padding,
                               update=False, disableAutoRange=False)
 
-        # Sanity check (can only work if we calculate padding ourself
+        # Sanity check (can only work if we calculate padding ourselves)
         #if self.viewBox.state['viewRange'][self.axisNumber] != targetRange:
         #    raise AssertionError("ViewRange update failed: {} != {}"
         #        .format(self.viewBox.state['viewRange'][self.axisNumber], targetRange))
@@ -456,6 +460,7 @@ class PgHistLutColorRangeCti(AbstractRangeCti):
         """
         rangeMin, rangeMax = targetRange
         self.histLutItem.setLevels(rangeMin, rangeMax)
+
 
 
 class PgGradientEditorItemCti(ChoiceCti):
@@ -647,62 +652,3 @@ class PgAxisCti(GroupCti):
     """
     pass
 
-
-# Not really happy with this solution.
-class PgMainPlotItemCti(MainGroupCti):
-    """ Config tree item that has a plot item as its main target.
-        Inherits from a MainGroupCti because it usually corresponds to a inspector.
-    """
-    def __init__(self, plotItem, nodeName='axes', xAxisCti=None, yAxisCti=None):
-        """ Constructor
-        """
-        super(PgMainPlotItemCti, self).__init__(nodeName)
-        assert plotItem, "target imagePlotItem is undefined"
-
-        self.plotItem = plotItem
-
-        if xAxisCti is None:
-            self.xAxisCti = self.insertChild(PgAxisCti('x-axis'))
-        else:
-            check_class(xAxisCti, PgAxisCti)
-            self.xAxisCti = self.insertChild(xAxisCti)
-
-        if yAxisCti is None:
-            self.yAxisCti = self.insertChild(PgAxisCti('y-axis'))
-        else:
-            check_class(yAxisCti, PgAxisCti)
-            self.yAxisCti = self.insertChild(yAxisCti)
-
-        # Connect signals
-        self.plotItem.axisReset.connect(self._setAutoRangeOn)
-
-
-    def _closeResources(self):
-        """ Disconnects signals.
-            Is called by self.finalize when the cti is deleted.
-        """
-        self.plotItem.axisReset.disconnect(self._setAutoRangeOn)
-
-
-    def _setAutoRangeOn(self, axisNumber=BOTH_AXES):
-        """ Turns on the auto range checkbox for the equivalent axes
-            Emits the sigItemChanged signal so that the inspector may be updated.
-
-            :param axisNumber: 0 for x-axis, 1 for y-axis, 2 for both axes (default)
-        """
-        logger.debug("_setAutoRangeOn: axis=Number = {}".format(axisNumber))
-
-        if axisNumber == X_AXIS:
-            axes = [self.xAxisCti]
-        elif axisNumber == Y_AXIS:
-            axes = [self.yAxisCti]
-        elif axisNumber == BOTH_AXES:
-            axes = [self.xAxisCti, self.yAxisCti]
-        else:
-            raise ValueError("axisNumber must be 0, 1 or 2. Got: {}".format(axisNumber))
-
-        for axisCti in axes:
-            for childCti in axisCti.childItems:
-                if isinstance(childCti, PgAxisRangeCti):
-                    childCti.autoRangeCti.data = True
-        self.model.sigItemChanged.emit(self)

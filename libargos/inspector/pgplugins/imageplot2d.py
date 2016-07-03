@@ -31,11 +31,10 @@ from libargos.config.choicecti import ChoiceCti
 from libargos.config.groupcti import MainGroupCti
 from libargos.inspector.abstract import AbstractInspector, InvalidDataError
 from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES,
-                                                 defaultAutoRangeMethods,
-                                                 PgMainPlotItemCti, PgAxisLabelCti,
-                                                 PgAxisFlipCti, PgAspectRatioCti,
+                                                 defaultAutoRangeMethods, PgAxisLabelCti,
+                                                 PgAxisCti, PgAxisFlipCti, PgAspectRatioCti,
                                                  PgAxisRangeCti, PgHistLutColorRangeCti,
-                                                 PgGradientEditorItemCti)
+                                                 PgGradientEditorItemCti, setXYAxesAutoRangeOn)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.utils.cls import array_has_real_numbers, check_class
 
@@ -116,7 +115,7 @@ def crossPlotAutoRangeMethods(pgImagePlot2d, crossPlot, intialItems=None):
 
 
 
-class PgImagePlot2dCti(PgMainPlotItemCti):
+class PgImagePlot2dCti(MainGroupCti):
     """ Configuration tree for a PgLinePlot1d inspector
     """
     def __init__(self, pgImagePlot2d, nodeName):
@@ -126,32 +125,30 @@ class PgImagePlot2dCti(PgMainPlotItemCti):
             configuration can be applied to the target by simply calling the apply method.
             Vice versa, it can connect signals to the target.
         """
-        super(PgImagePlot2dCti, self).__init__(pgImagePlot2d.imagePlotItem, nodeName)
+        super(PgImagePlot2dCti, self).__init__(nodeName)
         check_class(pgImagePlot2d, PgImagePlot2d)
         self.pgImagePlot2d = pgImagePlot2d
         imagePlotItem = self.pgImagePlot2d.imagePlotItem
         viewBox = imagePlotItem.getViewBox()
 
         self.insertChild(ChoiceCti('title', 0, editable=True,
-                                   configValues=["{path} {slices}", "{name} {slices}"]),
-                         position=-2) # before the xAxisCti and yAxisCti
-
+                                   configValues=["{path} {slices}", "{name} {slices}"]))
         #### Axes ####
-        self.aspectLockedCti = self.insertChild(PgAspectRatioCti(viewBox), position=-2)
+        self.aspectLockedCti = self.insertChild(PgAspectRatioCti(viewBox))
 
-        xAxisCti = self.xAxisCti
+        self.xAxisCti = self.insertChild(PgAxisCti('x-axis'))
         #xAxisCti.insertChild(PgAxisShowCti(imagePlotItem, 'bottom')) # disabled, seems broken
-        xAxisCti.insertChild(PgAxisLabelCti(imagePlotItem, 'bottom', self.pgImagePlot2d.collector,
+        self.xAxisCti.insertChild(PgAxisLabelCti(imagePlotItem, 'bottom', self.pgImagePlot2d.collector,
             defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{x-dim}"]))
-        self.xFlippedCti = xAxisCti.insertChild(PgAxisFlipCti(viewBox, X_AXIS))
-        xAxisCti.insertChild(PgAxisRangeCti(viewBox, X_AXIS))
+        self.xFlippedCti = self.xAxisCti.insertChild(PgAxisFlipCti(viewBox, X_AXIS))
+        self.xAxisRangeCti = self.xAxisCti.insertChild(PgAxisRangeCti(viewBox, X_AXIS))
 
-        yAxisCti = self.yAxisCti
+        self.yAxisCti = self.insertChild(PgAxisCti('y-axis'))
         #yAxisCti.insertChild(PgAxisShowCti(imagePlotItem, 'left'))  # disabled, seems broken
-        yAxisCti.insertChild(PgAxisLabelCti(imagePlotItem, 'left', self.pgImagePlot2d.collector,
+        self.yAxisCti.insertChild(PgAxisLabelCti(imagePlotItem, 'left', self.pgImagePlot2d.collector,
             defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{y-dim}"]))
-        self.yFlippedCti = yAxisCti.insertChild(PgAxisFlipCti(viewBox, Y_AXIS))
-        yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS))
+        self.yFlippedCti = self.yAxisCti.insertChild(PgAxisFlipCti(viewBox, Y_AXIS))
+        self.yAxisRangeCti = self.yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS))
 
         #### Color scale ####
         colorAutoRangeFunctions = defaultAutoRangeMethods(self.pgImagePlot2d)
@@ -170,7 +167,6 @@ class PgImagePlot2dCti(PgMainPlotItemCti):
 
         self.crossPlotGroupCti = self.insertChild(BoolCti('cross-hair', True)) # TODO: False
 
-
         self.horCrossPlotCti = self.crossPlotGroupCti.insertChild(BoolCti('horizontal', True))
         self.horCrossPlotRangeCti = self.horCrossPlotCti.insertChild(PgAxisRangeCti(
             self.pgImagePlot2d.horCrossPlotItem.getViewBox(), Y_AXIS, nodeName="data range",
@@ -181,43 +177,28 @@ class PgImagePlot2dCti(PgMainPlotItemCti):
             self.pgImagePlot2d.verCrossPlotItem.getViewBox(), X_AXIS, nodeName="data range",
             autoRangeFunctions = crossPlotAutoRangeMethods(self.pgImagePlot2d, "vertical")))
 
+        # Connect signals
+        self._imageAutoRangeFn = partial(setXYAxesAutoRangeOn, self,
+                                         self.xAxisRangeCti, self.yAxisRangeCti)
+        self.pgImagePlot2d.imagePlotItem.sigAxisReset.connect(self._imageAutoRangeFn)
 
-    #     # Connect signals
-    #     self.horCrossPlotRangeCti.axisReset
-    #
-    #     self.plotItem.axisReset.connect(self._setAutoRangeOn)
-    #
-    #
-    # def _closeResources(self):
-    #     """ Disconnects signals.
-    #         Is called by self.finalize when the cti is deleted.
-    #     """
-    #     self.plotItem.axisReset.disconnect(self._setAutoRangeOn)
-    #
-    #
-    # def _setAutoRangeOn(self, axisNumber=BOTH_AXES):
-    #     """ Turns on the auto range checkbox for the equivalent axes
-    #         Emits the sigItemChanged signal so that the inspector may be updated.
-    #
-    #         :param axisNumber: 0 for x-axis, 1 for y-axis, 2 for both axes (default)
-    #     """
-    #     logger.debug("_setAutoRangeOn: axis=Number = {}".format(axisNumber))
-    #
-    #     if axisNumber == X_AXIS:
-    #         axes = [self.xAxisCti]
-    #     elif axisNumber == Y_AXIS:
-    #         axes = [self.yAxisCti]
-    #     elif axisNumber == BOTH_AXES:
-    #         axes = [self.xAxisCti, self.yAxisCti]
-    #     else:
-    #         raise ValueError("axisNumber must be 0, 1 or 2. Got: {}".format(axisNumber))
-    #
-    #     for axisCti in axes:
-    #         for childCti in axisCti.childItems:
-    #             if isinstance(childCti, PgAxisRangeCti):
-    #                 childCti.autoRangeCti.data = True
-    #     self.model.sigItemChanged.emit(self)
-    #
+        self._horCrossPlotAutoRangeFn = partial(setXYAxesAutoRangeOn, self,
+                                                self.xAxisRangeCti, self.horCrossPlotRangeCti)
+        self.pgImagePlot2d.horCrossPlotItem.sigAxisReset.connect(self._horCrossPlotAutoRangeFn)
+
+        self._verCrossPlotAutoRangeFn = partial(setXYAxesAutoRangeOn, self,
+                                                self.verCrossPlotRangeCti, self.yAxisRangeCti)
+        self.pgImagePlot2d.verCrossPlotItem.sigAxisReset.connect(self._verCrossPlotAutoRangeFn)
+
+
+    def _closeResources(self):
+        """ Disconnects signals.
+            Is called by self.finalize when the cti is deleted.
+        """
+        self.pgImagePlot2d.imagePlotItem.sigAxisReset.disconnect(self._imageAutoRangeOnFn)
+        self.pgImagePlot2d.horCrossPlotItem.sigAxisReset.disconnect(self._horCrossPlotAutoRangeFn)
+        self.pgImagePlot2d.verCrossPlotItem.sigAxisReset.disconnect(self._verCrossPlotAutoRangeFn)
+
 
 
 
@@ -332,8 +313,10 @@ class PgImagePlot2d(AbstractInspector):
 
 
     def _drawContents(self):
-        """ Draws the inspector widget when no input is available.
+        """ Draws the inspector widget.
         """
+        self.crossPlotRow = None # reset because the sliced array shape may change
+        self.crossPlotCol = None # idem dito
         self.slicedArray = self.collector.getSlicedArray()
         if self.slicedArray is None or not array_has_real_numbers(self.slicedArray):
             self._clearContents()

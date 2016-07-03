@@ -43,16 +43,17 @@ else:
 X_AXIS = pg.ViewBox.XAxis
 Y_AXIS = pg.ViewBox.YAxis
 BOTH_AXES = pg.ViewBox.XYAxes
+VALID_AXES_NUMBERS = (X_AXIS, Y_AXIS, BOTH_AXES)
 
 DEFAULT_BORDER_PEN = pg.mkPen("#000000", width=1)
 
 
-def axisMouseClickEvent(argosPgPlotItem, axisNumber, mouseClickEvent):
-    """ Emits axisReset when the middle mouse button is clicked on an axis of the the plot item.
+def middleMouseClickEvent(argosPgPlotItem, axisNumber, mouseClickEvent):
+    """ Emits sigAxisReset when the middle mouse button is clicked on an axis of the the plot item.
     """
     if mouseClickEvent.button() == QtCore.Qt.MiddleButton:
         mouseClickEvent.accept()
-        argosPgPlotItem.axisReset.emit(axisNumber)
+        argosPgPlotItem.emitResetAxisSignal(axisNumber)
 
 
 
@@ -71,7 +72,7 @@ class ArgosPgPlotItem(PlotItem):
 
         Sets the cursor to a cross if it's inside the viewbox.
     """
-    axisReset = QtSignal(int)
+    sigAxisReset = QtSignal(int)
 
     def __init__(self,
                  enableMenu=False,
@@ -88,31 +89,36 @@ class ArgosPgPlotItem(PlotItem):
         viewBox.border = borderPen
         viewBox.setCursor(Qt.CrossCursor)
         viewBox.disableAutoRange(BOTH_AXES)
+        viewBox.mouseClickEvent = partial(middleMouseClickEvent, self, BOTH_AXES)
 
         # Add mouseClickEvent event handlers to the X and Y axis. This allows for resetting
         # the scale of each axes separately by middle mouse clicking the axis.
-        xAxisItem = self.getAxis('bottom')
-        xAxisItem.mouseClickEvent = partial(axisMouseClickEvent, self, X_AXIS)
-        yAxisItem = self.getAxis('left')
-        yAxisItem.mouseClickEvent = partial(axisMouseClickEvent, self, Y_AXIS)
+        for xAxisItem in (self.getAxis('bottom'), self.getAxis('top')):
+            xAxisItem.mouseClickEvent = partial(middleMouseClickEvent, self, X_AXIS)
+            xAxisItem.setCursor(Qt.SizeHorCursor)
 
+        for yAxisItem in (self.getAxis('left'), self.getAxis('right')):
+            yAxisItem.mouseClickEvent = partial(middleMouseClickEvent, self, Y_AXIS)
+            yAxisItem.setCursor(Qt.SizeVerCursor)
+
+        # Context menu with Reset Zoom.
         self.contextMenu = QtGui.QMenu()
 
         resetZoomMenu = self.contextMenu.addMenu("Reset Zoom")
 
         resetZoomActionBoth = QtGui.QAction("Both Axes", self,
-            triggered = lambda: self.axisReset.emit(BOTH_AXES),
-            statusTip = "Resets the zoom factor of the X-axes and Y-axes")
+                                            triggered = lambda: self.emitResetAxisSignal(BOTH_AXES),
+                                            statusTip = "Resets the zoom factor of the X-axes and Y-axes")
         resetZoomMenu.addAction(resetZoomActionBoth)
 
         resetZoomActionX = QtGui.QAction("X-axes", self,
-            triggered = lambda: self.axisReset.emit(X_AXIS),
-            statusTip = "Resets the zoom factor of the X-axes")
+                                         triggered = lambda: self.emitResetAxisSignal(X_AXIS),
+                                         statusTip = "Resets the zoom factor of the X-axes")
         resetZoomMenu.addAction(resetZoomActionX)
 
         resetZoomActionY = QtGui.QAction("Y-Axes", self,
-            triggered = lambda: self.axisReset.emit(Y_AXIS),
-            statusTip = "Resets the zoom factor of the Y-axes")
+                                         triggered = lambda: self.emitResetAxisSignal(Y_AXIS),
+                                         statusTip = "Resets the zoom factor of the Y-axes")
         resetZoomMenu.addAction(resetZoomActionY)
 
 
@@ -125,6 +131,17 @@ class ArgosPgPlotItem(PlotItem):
         # xAxisItem.removeEventFilter(self)
 
         super(ArgosPgPlotItem, self).close()
+
+
+    def emitResetAxisSignal(self, axisNumber):
+        """ Emits the sigResetAxis with the axisNumber as parameter
+            axisNumber should be 0 for X, 1 for Y, and 2 for both axes.
+        """
+        assert axisNumber in (VALID_AXES_NUMBERS), \
+            "Axis Nr should be one of {}, got {}".format(VALID_AXES_NUMBERS, axisNumber)
+
+        logger.debug("Emitting sigAxisReset({}) for {!r}".format(axisNumber, self))
+        self.sigAxisReset.emit(axisNumber)
 
 
     def contextMenuEvent(self, event):
@@ -141,10 +158,10 @@ class ArgosPgPlotItem(PlotItem):
         if self.autoBtn.mode == 'auto':
             self.autoBtn.hide()
 
-            self.axisReset.emit(BOTH_AXES)
+            self.emitResetAxisSignal(BOTH_AXES)
         else:
             # Does this occur?
-            msg = "Unexpeded autobutton mode: {}".format(self.autoBtn.mode)
+            msg = "Unexpected autobutton mode: {}".format(self.autoBtn.mode)
             if DEBUGGING:
                 raise ValueError(msg)
             else:
@@ -166,7 +183,7 @@ class ArgosPgPlotItem(PlotItem):
     #             logger.debug("---------------------------------")
     #             logger.debug("intercepting {} eventType={}".format(type(event), event.type()))
     #
-    #             logger.debug("event button={}, emitting axisReset".format(event.button()))
+    #             logger.debug("event button={}, emitting sigAxisReset".format(event.button()))
     #
     #             assert isinstance(event, QtGui.QGraphicsSceneMouseEvent)
     #             pos = event.pos()
@@ -184,7 +201,7 @@ class ArgosPgPlotItem(PlotItem):
     #             logger.debug("pos ({}, {}) in rect: {} is {}"
     #                          .format(pos.x(), pos.y(), rect, rect.contains(pos)))
     #
-    #             self.axisReset.emit(X_AXIS)
+    #             self.emitResetAxisSignal(X_AXIS)
     #             return True
     #
     #     return super(ArgosPgPlotItem, self).eventFilter(watchedObject, event)

@@ -111,19 +111,14 @@ class PgLinePlot1dCti(MainGroupCti):
         # Connect signals
         self._setAutoRangeOnFn = partial(setXYAxesAutoRangeOn, self,
                                          self.xAxisRangeCti, self.yAxisRangeCti)
-        self.pgLinePlot1d.plotItem.axisReset.connect(self._setAutoRangeOnFn)
-        self.pgLinePlot1d.plotItem.axisReset.connect(self.testAxisReset) # TODO: remove
+        self.pgLinePlot1d.plotItem.sigAxisReset.connect(self._setAutoRangeOnFn)
 
 
     def _closeResources(self):
        """ Disconnects signals.
            Is called by self.finalize when the cti is deleted.
        """
-       self.pgLinePlot1d.plotItem.axisReset.disconnect(self._setAutoRangeOnFn)
-
-
-    def testAxisReset(self, *args, **kwargs):
-        logger.debug("TEST axis reset: {} {}".format(args, kwargs))
+       self.pgLinePlot1d.plotItem.sigAxisReset.disconnect(self._setAutoRangeOnFn)
 
 
 

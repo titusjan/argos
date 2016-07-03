@@ -95,7 +95,7 @@ class MainWindow(QtGui.QMainWindow):
         logger.debug("Finalizing: {}".format(self))
 
         # Disconnect signals
-        self.collector.contentsChanged.disconnect(self.collectorContentsChanged)
+        self.collector.sigContentsChanged.disconnect(self.collectorContentsChanged)
         self._configTreeModel.sigItemChanged.disconnect(self.configContentsChanged)
 
 
@@ -163,7 +163,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setCentralWidget(widget)
 
         # Must be after setInspector since that already draws the inspector
-        self.collector.contentsChanged.connect(self.collectorContentsChanged)
+        self.collector.sigContentsChanged.connect(self.collectorContentsChanged)
         self._configTreeModel.sigItemChanged.connect(self.configContentsChanged)
 
 
