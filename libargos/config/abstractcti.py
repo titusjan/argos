@@ -314,7 +314,7 @@ class AbstractCti(BaseTreeItem):
 
 
     def refreshFromTarget(self, level=0):
-        """ Refreshes the configuration frp, the target it monitors (if present).
+        """ Refreshes the configuration tree from the target it monitors (if present).
             Recursively call _refreshNodeFromTarget for itself and all children. Subclasses should
             typically override _refreshNodeFromTarget instead of this function.
             During updateTarget's execution refreshFromTarget is blocked to avoid loops.

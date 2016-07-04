@@ -27,13 +27,13 @@ import pyqtgraph as pg
 # http://docs.python-guide.org/en/latest/writing/gotchas/#late-binding-closures
 from functools import partial
 from collections import OrderedDict
-from libargos.config.groupcti import GroupCti, MainGroupCti
+from libargos.config.groupcti import GroupCti
 from libargos.config.boolcti import BoolCti, BoolGroupCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.intcti import IntCti
 from libargos.config.floatcti import SnFloatCti, FloatCti
 from libargos.config.untypedcti import UntypedCti
-from libargos.info import DEBUGGING
+#from libargos.info import DEBUGGING
 from libargos.utils.cls import check_class
 from pyqtgraph.graphicsItems.GradientEditorItem import Gradients as GRADIENTS
 
@@ -226,20 +226,19 @@ class AbstractRangeCti(GroupCti):
 
     def _refreshNodeFromTarget(self, *args, **kwargs):
         """ Used to update the axis config tree item when the target axes was changed.
-            It updates the autoRange checkbox (_refreshAutoRange) and calculates new min max config
-            values from range by calling _refreshMinMax.
+            It updates the autoRange checkbox (_forceRefreshAutoRange) and calculates new min max config
+            values from range by calling _forceRefreshMinMax.
 
             The *args and **kwargs arguments are ignored.
         """
-        self._refreshAutoRange()
-        newRange = self.getTargetRange()
-        self._refreshMinMax(newRange)
+        # No need to check for self.getRefreshBlocked().
+        # This is already done in the caller (refreshFromTarget)
+        self._forceRefreshAutoRange()
+        self._forceRefreshMinMax()
 
 
-    def _refreshMinMax(self, axisRange):
+    def _forceRefreshMinMax(self):
         """ Refreshes the min max config values from the axes' state.
-
-            ranges = [[xmin, xmax], [ymin, ymax]]
         """
         # Set the precision from by looking how many decimals are needed to show the difference
         # between the minimum and maximum, given the maximum. E.g. if min = 0.04 and max = 0.07,
@@ -247,7 +246,7 @@ class AbstractRangeCti(GroupCti):
         # [4e-2, 7e-2]. However if min = 1.04 and max = 1.07, we need 2 decimals behind the point.
         # So, while the range is the same size we need more decimals because we are not zoomed in
         # around zero.
-        rangeMin, rangeMax = axisRange
+        rangeMin, rangeMax = self.getTargetRange() # [[xmin, xmax], [ymin, ymax]]
         maxOrder = np.log10(np.abs(max(rangeMax, rangeMin)))
         diffOrder = np.log10(np.abs(rangeMax - rangeMin))
 
@@ -265,7 +264,18 @@ class AbstractRangeCti(GroupCti):
         self.model.emitDataChanged(self.rangeMaxCti)
 
 
-    def _refreshAutoRange(self):
+    def refreshMinMax(self):
+        """ Refreshes the min max config values from the axes' state.
+            Does nothing when self.getRefreshBlocked() returns True.
+        """
+        if self.getRefreshBlocked():
+            logger.debug("refreshMinMax blocked for {}".format(self.nodeName))
+            return
+
+        self._forceRefreshMinMax()
+
+
+    def _forceRefreshAutoRange(self):
         """ The min and max config items will be disabled if auto range is on.
         """
         enabled = self.autoRangeCti and self.autoRangeCti.configValue
@@ -274,34 +284,35 @@ class AbstractRangeCti(GroupCti):
         self.model.emitDataChanged(self)
 
 
-    def setAutoRangeOn(self):
-        """ Turns on the auto range checkbox for the equivalent axes
-            Emits the sigItemChanged signal so that the inspector may be updated.
-        """
-        assert False, "not yet tested"
-        if self.getRefreshBlocked():
-            logger.debug("Set autorange on blocked for {}".format(self.nodeName))
-            return
-
-        if self.autoRangeCti:
-            self.autoRangeCti.data = True
-        self.model.sigItemChanged.emit(self) # this should typically only be called by other classes.
-
-
     def setAutoRangeOff(self):
         """ Turns off the auto range checkbox.
-            Calls _refreshNodeFromTarget, not _updateTargetFromNode because setting auto range off
+            Calls _refreshNodeFromTarget, not _updateTargetFromNode, because setting auto range off
             does not require a redraw of the target.
         """
         # TODO: catch exceptions. How?
         # /argos/hdf-eos/DeepBlue-SeaWiFS-1.0_L3_20100101_v002-20110527T191319Z.h5/aerosol_optical_thickness_stddev_ocean
         if self.getRefreshBlocked():
-            logger.debug("Set autorange off blocked for {}".format(self.nodeName))
+            logger.debug("setAutoRangeOff blocked for {}".format(self.nodeName))
             return
 
         if self.autoRangeCti:
             self.autoRangeCti.data = False
-        self.refreshFromTarget()
+
+        self._forceRefreshAutoRange()
+
+
+    # def setAutoRangeOn(self):
+    #     """ Turns on the auto range checkbox for the equivalent axes
+    #         Emits the sigItemChanged signal so that the inspector may be updated.
+    #     """
+    #     assert False, "not yet tested"
+    #     if self.getRefreshBlocked():
+    #         logger.debug("Set autorange on blocked for {}".format(self.nodeName))
+    #         return
+    #
+    #     if self.autoRangeCti:
+    #         self.autoRangeCti.data = True
+    #     self.model.sigItemChanged.emit(self) # this should typically only be called by other classes.
 
 
     def calculateRange(self):
@@ -384,6 +395,7 @@ class PgAxisRangeCti(AbstractRangeCti):
 
         # Connect signals
         self.viewBox.sigRangeChangedManually.connect(self.setAutoRangeOff)
+        self.viewBox.sigRangeChanged.connect(self.refreshMinMax)
 
 
     def _closeResources(self):
@@ -391,6 +403,7 @@ class PgAxisRangeCti(AbstractRangeCti):
             Is called by self.finalize when the cti is deleted.
         """
         self.viewBox.sigRangeChangedManually.disconnect(self.setAutoRangeOff)
+        self.viewBox.sigRangeChanged.disconnect(self.refreshMinMax)
 
 
     def getTargetRange(self):
@@ -419,6 +432,7 @@ class PgAxisRangeCti(AbstractRangeCti):
         #        .format(self.viewBox.state['viewRange'][self.axisNumber], targetRange))
 
 
+
 class PgHistLutColorRangeCti(AbstractRangeCti):
     """ Configuration tree item is linked to the HistogramLUTItem range.
     """
@@ -437,6 +451,7 @@ class PgHistLutColorRangeCti(AbstractRangeCti):
 
         # Connect signals
         self.histLutItem.sigLevelsChanged.connect(self.setAutoRangeOff)
+        self.histLutItem.sigLevelsChanged.connect(self.refreshMinMax)
 
 
     def _closeResources(self):
@@ -444,6 +459,7 @@ class PgHistLutColorRangeCti(AbstractRangeCti):
             Is called by self.finalize when the cti is deleted.
         """
         self.histLutItem.sigLevelsChanged.connect(self.setAutoRangeOff)
+        self.histLutItem.sigLevelsChanged.disconnect(self.refreshMinMax)
 
 
     def getTargetRange(self):
