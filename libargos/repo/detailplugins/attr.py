@@ -21,6 +21,7 @@ import logging
 
 from libargos.qt import QtGui
 from libargos.repo.detailpanes import DetailTablePane
+from libargos.utils.cls import to_string
 from libargos.widgets.constants import COL_ELEM_TYPE_WIDTH
 
 logger = logging.getLogger(__name__)
@@ -69,7 +70,7 @@ class AttributesPane(DetailTablePane):
                     # Seems a bug: https://github.com/numpy/numpy/issues/385
                     attrStr = repr(attrValue)
                 except Exception:
-                    attrStr = unicode(attrValue)
+                    attrStr = to_string(attrValue, bytes_encoding='utf-8')
 
                 try:
                     type_str = type(attrValue).__name__

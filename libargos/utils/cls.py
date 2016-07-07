@@ -42,6 +42,28 @@ def type_name(var):
     return type(var).__name__
 
 
+def _py2_to_string(var, bytes_encoding='utf-8'):
+    """ Converts var to a (unicode) string
+        If var consists of bytes, the bytes_encoding is used to decode the bytes.
+        If bytes_encoding is None or '', etc... no encoding is done.
+    """
+    if bytes_encoding and (type(var) == bytes or type(var) == np.bytes_):
+        return var.decode(bytes_encoding)
+    return unicode(var)
+
+
+def _py3_to_string(var, bytes_encoding='utf-8'):
+    """ Converts var to a (unicode) string
+        If var consists of bytes, the bytes_encoding is used to decode the bytes.
+        If bytes_encoding is None or '', etc... no encoding is done.
+    """
+    if bytes_encoding and (type(var) == bytes or type(var) == np.bytes_):
+        return var.decode(bytes_encoding)
+    return str(var)
+
+to_string = _py2_to_string if python2() else _py3_to_string
+
+
 def is_a_string(var, allow_none=False):
     """ Returns True if var is a string (ascii or unicode)
 
