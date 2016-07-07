@@ -72,6 +72,7 @@ class RtiIconFactory(object):
         self._icons = {}
         self._registry = {}
         self.colorsToBeReplaced = ('#008BFF', '#00AAFF')
+        self.renderSizes = [16, 24, 32, 64]
 
         self.registerIcon(None, None) # no icon
         self.registerIcon("",   None) # no icon
@@ -192,10 +193,15 @@ class RtiIconFactory(object):
 
         # From http://stackoverflow.com/questions/15123544/change-the-color-of-an-svg-in-qt
         svgRenderer = QtSvg.QSvgRenderer(QtCore.QByteArray(svg))
-        pix = QtGui.QPixmap(svgRenderer.defaultSize())
-        #pix = QtGui.QPixmap(QtCore.QSize(self.ICON_SIZE, self.ICON_SIZE))
-        pix.fill(Qt.transparent)
-        pixPainter = QtGui.QPainter(pix)
-        svgRenderer.render(pixPainter)
-        pixPainter.end()
-        return QtGui.QIcon(pix)
+        icon = QtGui.QIcon() # TODO: set Qt::AA_UseHighDpiPixmaps in Qt5?
+        for size in self.renderSizes:
+            pixMap = QtGui.QPixmap(QtCore.QSize(size, size))
+            pixMap.fill(Qt.transparent)
+            pixPainter = QtGui.QPainter(pixMap)
+            pixPainter.setRenderHint(QtGui.QPainter.TextAntialiasing, True)
+            pixPainter.setRenderHint(QtGui.QPainter.Antialiasing, True)
+            svgRenderer.render(pixPainter)
+            pixPainter.end()
+            icon.addPixmap(pixMap)
+
+        return icon
