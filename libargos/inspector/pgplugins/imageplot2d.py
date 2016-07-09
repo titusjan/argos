@@ -34,7 +34,8 @@ from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES,
                                                  defaultAutoRangeMethods, PgAxisLabelCti,
                                                  PgAxisCti, PgAxisFlipCti, PgAspectRatioCti,
                                                  PgAxisRangeCti, PgHistLutColorRangeCti, PgGridCti,
-                                                 PgGradientEditorItemCti, setXYAxesAutoRangeOn)
+                                                 PgGradientEditorItemCti, setXYAxesAutoRangeOn,
+                                                 PgPlotDataItemCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.qt import Qt
 from libargos.utils.cls import array_has_real_numbers, check_class
@@ -168,6 +169,10 @@ class PgImagePlot2dCti(MainGroupCti):
 
         self.crossPlotGroupCti = self.insertChild(BoolCti('cross-hair', True)) # TODO: False
 
+        self.crossPenCti = self.crossPlotGroupCti.insertChild(PgPlotDataItemCti(expanded=False))
+        #self.crossLinesCti = self.crossPlotGroupCti.insertChild(PgPlotDataItemCti('cross pen',
+        #                                                                          expanded=False))
+
         self.horCrossPlotCti = self.crossPlotGroupCti.insertChild(BoolCti('horizontal', True))
         self.horCrossPlotCti.insertChild(PgGridCti(pgImagePlot2d.horCrossPlotItem))
         self.horCrossPlotRangeCti = self.horCrossPlotCti.insertChild(PgAxisRangeCti(
@@ -249,8 +254,6 @@ class PgImagePlot2d(AbstractInspector):
         self.crossPlotCol = None # the col coordinate of the cross hair. None if no cross hair.
         self.horCrossPlotItem = ArgosPgPlotItem()
         self.verCrossPlotItem = ArgosPgPlotItem()
-        self.horPlotDataItem = self.horCrossPlotItem.plot()
-        self.verPlotDataItem = self.verCrossPlotItem.plot()
         self.horCrossPlotItem.setXLink(self.imagePlotItem)
         self.verCrossPlotItem.setYLink(self.imagePlotItem)
         self.horCrossPlotItem.setLabel('left', ' ')
@@ -397,8 +400,15 @@ class PgImagePlot2d(AbstractInspector):
         self.crossLineVertical.setVisible(False)
         self.crossLineHorizontal.setVisible(False)
 
-        self.horPlotDataItem.setData(x=[], y=[])
-        self.verPlotDataItem.setData(x=[], y=[])
+        horPlotDataItem = self.config.crossPenCti.createPlotDataItem()
+        horPlotDataItem.setData(x=[], y=[])
+        self.horCrossPlotItem.clear()
+        self.horCrossPlotItem.addItem(horPlotDataItem)
+
+        verPlotDataItem = self.config.crossPenCti.createPlotDataItem()
+        verPlotDataItem.setData(x=[], y=[])
+        self.verCrossPlotItem.clear()
+        self.verCrossPlotItem.addItem(verPlotDataItem)
 
         if self.slicedArray is not None and self.viewBox.sceneBoundingRect().contains(viewPos):
 
@@ -422,14 +432,14 @@ class PgImagePlot2d(AbstractInspector):
                 if self.config.horCrossPlotCti.configValue:
                     self.crossLineHorizontal.setVisible(True)
                     self.crossLineHorizontal.setPos(row + 0.5) # Adding 0.5 to find the pixel center
-                    self.horPlotDataItem.setData(self.slicedArray[row, :])
+                    horPlotDataItem.setData(self.slicedArray[row, :])
                     self.config.horCrossPlotRangeCti.updateTarget() # update auto range
 
                 if self.config.verCrossPlotCti.configValue:
                     self.crossLineVertical.setVisible(True)
                     self.crossLineVertical.setPos(col + 0.5) # Adding 0.5 to find the pixel center
                     try:
-                        self.verPlotDataItem.setData(self.slicedArray[:, col], np.arange(nRows))
+                        verPlotDataItem.setData(self.slicedArray[:, col], np.arange(nRows))
                     except Exception as ex:
                         # Occurred as a bug that I can't reproduce: the dataTypes don't match.
                         # If it occurs outside debugging we issue a warning.

@@ -56,7 +56,7 @@ def createPenWidthCti(nodeName, defaultData=1.0, zeroValueText=None):
     # A pen line width of zero indicates a cosmetic pen. This means that the pen width is
     # always drawn one pixel wide, independent of the transformation set on the painter.
     # Note that line widths other than 1 may be slow when anti aliasing is on.
-    return FloatCti('width', defaultData=defaultData, specialValueText=zeroValueText,
+    return FloatCti(nodeName, defaultData=defaultData, specialValueText=zeroValueText,
                     minValue=0.1 if zeroValueText is None else 0.0,
                     maxValue=100, stepSize=0.1, decimals=1)
 
@@ -211,12 +211,12 @@ class PenCti(BoolCti):
         # We don't need a similar initFrom parameter.
         qPen = QtGui.QPen(resetTo)
 
-        self.insertChild(ColorCti('color', defaultData=qPen.color()))
+        self.colorCti = self.insertChild(ColorCti('color', defaultData=qPen.color()))
         defaultIndex = PEN_STYLE_CONFIG_VALUES.index(qPen.style()) + int(includeNoneStyle)
-        self.insertChild(createPenStyleCti('style', defaultData=defaultIndex,
-                                           includeNone=includeNoneStyle))
-        self.insertChild(createPenWidthCti('width', defaultData=qPen.widthF(),
-                                           zeroValueText=' ' if includeZeroWidth else None))
+        self.styleCti = self.insertChild(createPenStyleCti('style', defaultData=defaultIndex,
+                                                           includeNone=includeNoneStyle))
+        self.widthCti = self.insertChild(createPenWidthCti('width', defaultData=qPen.widthF(),
+                                                zeroValueText=' ' if includeZeroWidth else None))
 
 
     @property
@@ -228,11 +228,11 @@ class PenCti(BoolCti):
         else:
             pen = QtGui.QPen()
             pen.setCosmetic(True)
-            pen.setColor(self.findByNodePath('color').configValue)
-            style = self.findByNodePath('style').configValue
+            pen.setColor(self.colorCti.configValue)
+            style = self.styleCti.configValue
             if style is not None:
-                pen.setStyle(self.findByNodePath('style').configValue)
-            pen.setWidthF(self.findByNodePath('width').configValue)
+                pen.setStyle(style)
+            pen.setWidthF(self.widthCti.configValue)
             return pen
 
 

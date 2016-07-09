@@ -26,16 +26,15 @@ from functools import partial
 
 from libargos.qt import QtGui
 from libargos.info import DEBUGGING
-from libargos.config.groupcti import MainGroupCti, GroupCti
+from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
-from libargos.config.qtctis import PenCti, ColorCti, createPenStyleCti, createPenWidthCti
-from libargos.config.intcti import IntCti
+
 from libargos.inspector.abstract import AbstractInspector, InvalidDataError
 from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES, viewBoxAxisRange,
                                                  defaultAutoRangeMethods, PgGridCti, PgAxisCti,
                                                  setXYAxesAutoRangeOn, PgAxisLabelCti,
-                                                 PgAxisLogModeCti, PgAxisRangeCti)
+                                                 PgAxisLogModeCti, PgAxisRangeCti, PgPlotDataItemCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.utils.cls import array_has_real_numbers, check_class
 
@@ -59,7 +58,6 @@ class PgLinePlot1dCti(MainGroupCti):
 
         self.insertChild(ChoiceCti('title', 0, editable=True,
                                     configValues=["{path} {slices}", "{name} {slices}"]))
-        self.insertChild(BoolCti("anti-alias", True))
 
         #### Axes ####
         plotItem = self.pgLinePlot1d.plotItem
@@ -86,26 +84,10 @@ class PgLinePlot1dCti(MainGroupCti):
                                                                       rangeFunctions))
 
         #### Pen ####
-        penCti = self.insertChild(GroupCti('pen'))
-        penCti.insertChild(ColorCti('color', QtGui.QColor('#FF0066')))
-        lineCti = penCti.insertChild(BoolCti('line', True, expanded=False,
-                                               childrenDisabledValue=False))
-        lineCti.insertChild(createPenStyleCti('style'))
-        lineCti.insertChild(createPenWidthCti('width'))
-        defaultShadowPen = QtGui.QPen(QtGui.QColor('#BFBFBF'))
-        defaultShadowPen.setWidth(0)
-        lineCti.insertChild(PenCti("shadow", False, expanded=False,
-                                   resetTo=QtGui.QPen(defaultShadowPen),
-                                   includeNoneStyle=True, includeZeroWidth=True))
 
-        symbolCti = penCti.insertChild(BoolCti("symbol", False, expanded=False,
-                                       childrenDisabledValue=False))
-        symbolCti.insertChild(ChoiceCti("shape", 0,
-           displayValues=['circle', 'square', 'triangle', 'diamond', 'plus'],
-           configValues=['o', 's', 't', 'd', '+']))
-        symbolCti.insertChild(IntCti('size', 5, minValue=0, maxValue=100, stepSize=1))
-
+        self.plotDataItemCti = self.insertChild(PgPlotDataItemCti())
         self.probeCti = self.insertChild(BoolCti('show probe', True))
+
 
         # Connect signals
         self._setAutoRangeOnFn = partial(setXYAxesAutoRangeOn, self,
@@ -200,38 +182,15 @@ class PgLinePlot1d(AbstractInspector):
 
         self.titleLabel.setText(self.configValue('title').format(**rtiInfo))
 
-        antiAlias = self.configValue('anti-alias')
-        color = self.configValue('pen/color')
-
-        if self.configValue('pen/line'):
-            pen = QtGui.QPen()
-            pen.setCosmetic(True)
-            pen.setColor(color)
-            pen.setWidthF(self.configValue('pen/line/width'))
-            pen.setStyle(self.configValue('pen/line/style'))
-            shadowCti = self.config.findByNodePath('pen/line/shadow')
-            shadowPen = shadowCti.createPen(altStyle=pen.style(), altWidth=2.0 * pen.widthF())
-        else:
-            pen = None
-            shadowPen = None
-
-        drawSymbols = self.configValue('pen/symbol')
-        symbolShape = self.configValue('pen/symbol/shape') if drawSymbols else None
-        symbolSize  = self.configValue('pen/symbol/size') if drawSymbols else 0.0
-        symbolPen = None # otherwise the symbols will also have dotted/solid line.
-        symbolBrush = QtGui.QBrush(color) if drawSymbols else None
-
-        plotDataItem = self.plotItem.plot(pen=pen, shadowPen=shadowPen,
-                                               symbol=symbolShape, symbolSize=symbolSize,
-                                               symbolPen=symbolPen, symbolBrush=symbolBrush,
-                                               antialias=antiAlias)
+        plotDataItem = self.config.plotDataItemCti.createPlotDataItem()
         plotDataItem.setData(self.slicedArray)
+        self.plotItem.addItem(plotDataItem)
 
         if self.config.probeCti.configValue:
             self.probeLabel.setVisible(True)
             self.plotItem.addItem(self.crossLineVertical, ignoreBounds=True)
             self.plotItem.addItem(self.probeDataItem, ignoreBounds=True)
-            self.probeDataItem.setSymbolBrush(QtGui.QBrush(color))
+            self.probeDataItem.setSymbolBrush(QtGui.QBrush(self.config.plotDataItemCti.penColor))
             self.probeDataItem.setSymbolSize(10)
         else:
             self.probeLabel.setVisible(False)

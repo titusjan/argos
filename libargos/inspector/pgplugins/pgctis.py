@@ -32,8 +32,10 @@ from libargos.config.boolcti import BoolCti, BoolGroupCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.intcti import IntCti
 from libargos.config.floatcti import SnFloatCti, FloatCti
+from libargos.config.qtctis import PenCti, ColorCti, createPenStyleCti, createPenWidthCti
 from libargos.config.untypedcti import UntypedCti
 #from libargos.info import DEBUGGING
+from libargos.qt import QtGui
 from libargos.utils.cls import check_class
 from pyqtgraph.graphicsItems.GradientEditorItem import Gradients as GRADIENTS
 
@@ -665,4 +667,71 @@ class PgAxisCti(GroupCti):
         Currently nothing more than a GroupCti.
     """
     pass
+
+
+
+class PgPlotDataItemCti(GroupCti):
+    """ Configuration tree item for a PyQtGraph plot data item.
+        It allows for configuraing a line style, color and symbols.
+    """
+    def __init__(self, nodeName="pen",  defaultData=None, expanded=True):
+        """ Constructor.
+        """
+        super(PgPlotDataItemCti, self).__init__(nodeName, defaultData=defaultData, expanded=expanded)
+        self.antiAliasCti = self.insertChild(BoolCti("anti-alias", True))
+
+        self.colorCti = self.insertChild(ColorCti('color', QtGui.QColor('#FF0066')))
+        self.lineCti = self.insertChild(BoolCti('line', True, expanded=False,
+                                                childrenDisabledValue=False))
+        self.lineStyleCti = self.lineCti.insertChild(createPenStyleCti('style'))
+        self.lineWidthCti = self.lineCti.insertChild(createPenWidthCti('width'))
+
+        defaultShadowPen = QtGui.QPen(QtGui.QColor('#BFBFBF'))
+        defaultShadowPen.setWidth(0)
+        self.lineCti.insertChild(PenCti("shadow", False, expanded=False,
+                                        resetTo=QtGui.QPen(defaultShadowPen),
+                                        includeNoneStyle=True, includeZeroWidth=True))
+
+        self.symbolCti = self.insertChild(BoolCti("symbol", False, expanded=False,
+                                             childrenDisabledValue=False))
+        self.symbolShapeCti = self.symbolCti.insertChild(ChoiceCti("shape", 0,
+           displayValues=['circle', 'square', 'triangle', 'diamond', 'plus'],
+           configValues=['o', 's', 't', 'd', '+']))
+        self.symbolSizeCti = self.symbolCti.insertChild(IntCti('size', 5, minValue=0,
+                                                               maxValue=100, stepSize=1))
+
+    @property
+    def penColor(self):
+        """ Returns the pen/color value"""
+        return self.colorCti.configValue
+
+
+    def createPlotDataItem(self):
+        """ Creates a PyQtGraph PlotDataItem from the config values
+        """
+        antialias = self.antiAliasCti.configValue
+
+        color = self.penColor
+        if self.lineCti.configValue:
+            pen = QtGui.QPen()
+            pen.setCosmetic(True)
+            pen.setColor(color)
+            pen.setWidthF(self.lineWidthCti.configValue)
+            pen.setStyle(self.lineStyleCti.configValue)
+            shadowCti = self.lineCti.findByNodePath('shadow')
+            shadowPen = shadowCti.createPen(altStyle=pen.style(), altWidth=2.0 * pen.widthF())
+        else:
+            pen = None
+            shadowPen = None
+
+        drawSymbols = self.symbolCti.configValue
+        symbolShape = self.symbolShapeCti.configValue if drawSymbols else None
+        symbolSize  = self.symbolSizeCti.configValue if drawSymbols else 0.0
+        symbolPen = None # otherwise the symbols will also have dotted/solid line.
+        symbolBrush = QtGui.QBrush(color) if drawSymbols else None
+
+        plotDataItem = pg.PlotDataItem(antialias=antialias, pen=pen, shadowPen=shadowPen,
+                                       symbol=symbolShape, symbolSize=symbolSize,
+                                       symbolPen=symbolPen, symbolBrush=symbolBrush)
+        return plotDataItem
 
