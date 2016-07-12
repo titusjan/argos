@@ -19,7 +19,7 @@
 """
 from __future__ import division, print_function
 
-import logging
+import logging, math
 import numpy as np
 import pyqtgraph as pg
 
@@ -37,7 +37,7 @@ from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES,
                                                  PgGradientEditorItemCti, setXYAxesAutoRangeOn,
                                                  PgPlotDataItemCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
-from libargos.qt import Qt
+from libargos.qt import Qt, QtCore, QtGui, QtSlot
 from libargos.utils.cls import array_has_real_numbers, check_class
 
 logger = logging.getLogger(__name__)
@@ -263,9 +263,9 @@ class PgImagePlot2d(AbstractInspector):
         self.verCrossPlotItem.showAxis('right', True)
         self.verCrossPlotItem.showAxis('left', False)
 
-        probePen = pg.mkPen("#BFBFBF")
-        self.crossLineHorizontal = pg.InfiniteLine(angle=0, movable=False, pen=probePen)
-        self.crossLineVertical = pg.InfiniteLine(angle=90, movable=False, pen=probePen)
+        self.crossPen = pg.mkPen("#BFBFBF")
+        self.crossLineHorizontal = pg.InfiniteLine(angle=0, movable=False, pen=self.crossPen)
+        self.crossLineVertical = pg.InfiniteLine(angle=90, movable=False, pen=self.crossPen)
         self.probeLabel = pg.LabelItem('', justify='left')
 
         # Layout
@@ -392,64 +392,82 @@ class PgImagePlot2d(AbstractInspector):
         self.config.updateTarget()
 
 
+    @QtSlot(QtCore.QPointF)
     def mouseMoved(self, viewPos):
         """ Updates the probe text with the values under the cursor.
             Draws a vertical line and a symbol at the position of the probe.
         """
-        self.probeLabel.setText("<span style='color: #808080'>no data at cursor</span>")
-        self.crossLineVertical.setVisible(False)
-        self.crossLineHorizontal.setVisible(False)
-
-        horPlotDataItem = self.config.crossPenCti.createPlotDataItem()
-        horPlotDataItem.setData(x=[], y=[])
-        self.horCrossPlotItem.clear()
-        self.horCrossPlotItem.addItem(horPlotDataItem)
-
-        verPlotDataItem = self.config.crossPenCti.createPlotDataItem()
-        verPlotDataItem.setData(x=[], y=[])
-        self.verCrossPlotItem.clear()
-        self.verCrossPlotItem.addItem(verPlotDataItem)
-
-        if self.slicedArray is not None and self.viewBox.sceneBoundingRect().contains(viewPos):
-
-            scenePos = self.viewBox.mapSceneToView(viewPos)
-
-            # We use int() to convert to integer, and not round(), because the image pixels
-            # are drawn from (row, col) to (row + 1, col + 1). That is, their center is at
-            # (row + 0.5, col + 0.5)
+        try:
             self.crossPlotRow, self.crossPlotCol = None, None
-            row, col = int(scenePos.y()), int(scenePos.x())
-            nRows, nCols = self.slicedArray.shape
 
-            if (0 <= row < nRows) and (0 <= col < nCols):
-                self.viewBox.setCursor(Qt.CrossCursor)
-                self.crossPlotRow, self.crossPlotCol = row, col
-                value = self.slicedArray[row, col]
-                txt = "pos = ({:d}, {:d}), value = {!r}".format(row, col, value)
-                self.probeLabel.setText(txt)
+            self.probeLabel.setText("<span style='color: #808080'>no data at cursor</span>")
+            self.crossLineHorizontal.setVisible(False)
+            self.crossLineVertical.setVisible(False)
 
-                # Show cross section at the cursor pos in the line plots
-                if self.config.horCrossPlotCti.configValue:
-                    self.crossLineHorizontal.setVisible(True)
-                    self.crossLineHorizontal.setPos(row + 0.5) # Adding 0.5 to find the pixel center
-                    horPlotDataItem.setData(self.slicedArray[row, :])
-                    self.config.horCrossPlotRangeCti.updateTarget() # update auto range
+            self.horCrossPlotItem.clear()
+            self.verCrossPlotItem.clear()
 
-                if self.config.verCrossPlotCti.configValue:
-                    self.crossLineVertical.setVisible(True)
-                    self.crossLineVertical.setPos(col + 0.5) # Adding 0.5 to find the pixel center
-                    try:
+            if self.slicedArray is not None and self.viewBox.sceneBoundingRect().contains(viewPos):
+
+                # Calculate the row and column at the cursor. I just math.floor because the pixel
+                # corners of the image lie at integer values (and not the centers of the pixels).
+                # Note that np.floor doesn't convert to int.
+                scenePos = self.viewBox.mapSceneToView(viewPos)
+                row, col = math.floor(scenePos.y()), math.floor(scenePos.x())
+                nRows, nCols = self.slicedArray.shape
+
+                if (0 <= row < nRows) and (0 <= col < nCols):
+                    self.viewBox.setCursor(Qt.CrossCursor)
+                    self.crossPlotRow, self.crossPlotCol = row, col
+                    value = self.slicedArray[row, col]
+                    txt = "pos = ({:d}, {:d}), value = {!r}".format(row, col, value)
+                    self.probeLabel.setText(txt)
+
+                    # Show cross section at the cursor pos in the line plots
+                    if self.config.horCrossPlotCti.configValue:
+                        self.crossLineHorizontal.setVisible(True)
+                        self.crossLineHorizontal.setPos(row)
+                        horPlotDataItem = self.config.crossPenCti.createPlotDataItem()
+                        horPlotDataItem.setData(self.slicedArray[row, :])
+                        self.horCrossPlotItem.addItem(horPlotDataItem)
+
+                        crossLine90 = pg.InfiniteLine(angle=90, movable=False, pen=self.crossPen)
+                        crossLine90.setPos(col)
+                        self.horCrossPlotItem.addItem(crossLine90, ignoreBounds=True)
+
+                        crossPoint90 = pg.PlotDataItem(symbolPen=self.crossPen)
+                        crossPoint90.setSymbolBrush(QtGui.QBrush(self.config.crossPenCti.penColor))
+                        crossPoint90.setSymbolSize(10)
+                        crossPoint90.setData((col,), (self.slicedArray[row, col],))
+                        self.horCrossPlotItem.addItem(crossPoint90, ignoreBounds=True)
+
+                        self.config.horCrossPlotRangeCti.updateTarget() # update auto range
+
+                    if self.config.verCrossPlotCti.configValue:
+                        self.crossLineVertical.setVisible(True)
+                        self.crossLineVertical.setPos(col)
+                        verPlotDataItem = self.config.crossPenCti.createPlotDataItem()
                         verPlotDataItem.setData(self.slicedArray[:, col], np.arange(nRows))
-                    except Exception as ex:
-                        # Occurred as a bug that I can't reproduce: the dataTypes don't match.
-                        # If it occurs outside debugging we issue a warning.
-                        # When a rec-array is plotted.
-                        from pyqtgraph.graphicsItems.PlotDataItem import dataType
-                        logger.warn("{} ?= {}".format(dataType(self.slicedArray[:, col]),
-                                                      dataType(np.arange(nRows))))
-                        if DEBUGGING:
-                            raise
-                        else:
-                            logger.error(ex)
+                        self.verCrossPlotItem.addItem(verPlotDataItem)
 
-                    self.config.verCrossPlotRangeCti.updateTarget() # update auto range
+                        crossLine0 = pg.InfiniteLine(angle=0, movable=False, pen=self.crossPen)
+                        crossLine0.setPos(row)
+                        self.verCrossPlotItem.addItem(crossLine0, ignoreBounds=True)
+
+                        crossPoint0 = pg.PlotDataItem(symbolPen=self.crossPen)
+                        crossPoint0.setSymbolBrush(QtGui.QBrush(self.config.crossPenCti.penColor))
+                        crossPoint0.setSymbolSize(10)
+                        crossPoint0.setData((self.slicedArray[row, col],), (row,))
+                        self.verCrossPlotItem.addItem(crossPoint0, ignoreBounds=True)
+
+                        self.config.verCrossPlotRangeCti.updateTarget() # update auto range
+
+        except Exception as ex:
+            # In contrast to _drawContents, this function is a slot and thus must not throw
+            # exceptions. The exception is logged. Perhaps we should clear the cross plots, but
+            # this could, in turn, raise exceptions.
+            if DEBUGGING:
+                raise
+            else:
+                logger.exception(ex)
+
