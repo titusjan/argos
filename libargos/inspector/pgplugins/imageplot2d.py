@@ -264,6 +264,9 @@ class PgImagePlot2d(AbstractInspector):
         self.verCrossPlotItem.showAxis('left', False)
 
         self.crossPen = pg.mkPen("#BFBFBF")
+        self.crossShadowPen = pg.mkPen([0, 0, 0, 100], width=3)
+        self.crossLineHorShadow = pg.InfiniteLine(angle=0, movable=False, pen=self.crossShadowPen)
+        self.crossLineVerShadow = pg.InfiniteLine(angle=90, movable=False, pen=self.crossShadowPen)
         self.crossLineHorizontal = pg.InfiniteLine(angle=0, movable=False, pen=self.crossPen)
         self.crossLineVertical = pg.InfiniteLine(angle=90, movable=False, pen=self.crossPen)
         self.probeLabel = pg.LabelItem('', justify='left')
@@ -384,6 +387,8 @@ class PgImagePlot2d(AbstractInspector):
 
         if self.config.probeCti.configValue:
             self.probeLabel.setVisible(True)
+            self.imagePlotItem.addItem(self.crossLineVerShadow, ignoreBounds=True)
+            self.imagePlotItem.addItem(self.crossLineHorShadow, ignoreBounds=True)
             self.imagePlotItem.addItem(self.crossLineVertical, ignoreBounds=True)
             self.imagePlotItem.addItem(self.crossLineHorizontal, ignoreBounds=True)
         else:
@@ -398,11 +403,14 @@ class PgImagePlot2d(AbstractInspector):
             Draws a vertical line and a symbol at the position of the probe.
         """
         try:
+            show_data_point = False # shows the data point as a circle in the cross hair plots
             self.crossPlotRow, self.crossPlotCol = None, None
 
             self.probeLabel.setText("<span style='color: #808080'>no data at cursor</span>")
             self.crossLineHorizontal.setVisible(False)
             self.crossLineVertical.setVisible(False)
+            self.crossLineHorShadow.setVisible(False)
+            self.crossLineVerShadow.setVisible(False)
 
             self.horCrossPlotItem.clear()
             self.verCrossPlotItem.clear()
@@ -425,40 +433,56 @@ class PgImagePlot2d(AbstractInspector):
 
                     # Show cross section at the cursor pos in the line plots
                     if self.config.horCrossPlotCti.configValue:
+                        self.crossLineHorShadow.setVisible(True)
                         self.crossLineHorizontal.setVisible(True)
+                        self.crossLineHorShadow.setPos(row)
                         self.crossLineHorizontal.setPos(row)
                         horPlotDataItem = self.config.crossPenCti.createPlotDataItem()
                         horPlotDataItem.setData(self.slicedArray[row, :])
                         self.horCrossPlotItem.addItem(horPlotDataItem)
 
+                        # Vertical line in hor-cross plot
+                        crossLineShadow90 = pg.InfiniteLine(angle=90, movable=False,
+                                                            pen=self.crossShadowPen)
+                        crossLineShadow90.setPos(col)
+                        self.horCrossPlotItem.addItem(crossLineShadow90, ignoreBounds=True)
                         crossLine90 = pg.InfiniteLine(angle=90, movable=False, pen=self.crossPen)
                         crossLine90.setPos(col)
                         self.horCrossPlotItem.addItem(crossLine90, ignoreBounds=True)
 
-                        crossPoint90 = pg.PlotDataItem(symbolPen=self.crossPen)
-                        crossPoint90.setSymbolBrush(QtGui.QBrush(self.config.crossPenCti.penColor))
-                        crossPoint90.setSymbolSize(10)
-                        crossPoint90.setData((col,), (self.slicedArray[row, col],))
-                        self.horCrossPlotItem.addItem(crossPoint90, ignoreBounds=True)
+                        if show_data_point:
+                            crossPoint90 = pg.PlotDataItem(symbolPen=self.crossPen)
+                            crossPoint90.setSymbolBrush(QtGui.QBrush(self.config.crossPenCti.penColor))
+                            crossPoint90.setSymbolSize(10)
+                            crossPoint90.setData((col,), (self.slicedArray[row, col],))
+                            self.horCrossPlotItem.addItem(crossPoint90, ignoreBounds=True)
 
                         self.config.horCrossPlotRangeCti.updateTarget() # update auto range
 
                     if self.config.verCrossPlotCti.configValue:
+                        self.crossLineVerShadow.setVisible(True)
                         self.crossLineVertical.setVisible(True)
+                        self.crossLineVerShadow.setPos(col)
                         self.crossLineVertical.setPos(col)
                         verPlotDataItem = self.config.crossPenCti.createPlotDataItem()
                         verPlotDataItem.setData(self.slicedArray[:, col], np.arange(nRows))
                         self.verCrossPlotItem.addItem(verPlotDataItem)
 
+                        # Horizontal line in ver-cross plot
+                        crossLineShadow0 = pg.InfiniteLine(angle=0, movable=False,
+                                                           pen=self.crossShadowPen)
+                        crossLineShadow0.setPos(row)
+                        self.verCrossPlotItem.addItem(crossLineShadow0, ignoreBounds=True)
                         crossLine0 = pg.InfiniteLine(angle=0, movable=False, pen=self.crossPen)
                         crossLine0.setPos(row)
                         self.verCrossPlotItem.addItem(crossLine0, ignoreBounds=True)
 
-                        crossPoint0 = pg.PlotDataItem(symbolPen=self.crossPen)
-                        crossPoint0.setSymbolBrush(QtGui.QBrush(self.config.crossPenCti.penColor))
-                        crossPoint0.setSymbolSize(10)
-                        crossPoint0.setData((self.slicedArray[row, col],), (row,))
-                        self.verCrossPlotItem.addItem(crossPoint0, ignoreBounds=True)
+                        if show_data_point:
+                            crossPoint0 = pg.PlotDataItem(symbolPen=self.crossPen)
+                            crossPoint0.setSymbolBrush(QtGui.QBrush(self.config.crossPenCti.penColor))
+                            crossPoint0.setSymbolSize(10)
+                            crossPoint0.setData((self.slicedArray[row, col],), (row,))
+                            self.verCrossPlotItem.addItem(crossPoint0, ignoreBounds=True)
 
                         self.config.verCrossPlotRangeCti.updateTarget() # update auto range
 

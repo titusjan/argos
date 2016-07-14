@@ -129,6 +129,8 @@ class PgLinePlot1d(AbstractInspector):
 
         # Probe
         probePen = pg.mkPen("#BFBFBF")
+        probeShadowPen = pg.mkPen("#00000064", width=3)
+        self.crossLineVerShadow = pg.InfiniteLine(angle=90, movable=False, pen=probeShadowPen)
         self.crossLineVertical = pg.InfiniteLine(angle=90, movable=False, pen=probePen)
         self.probeDataItem = pg.PlotDataItem(symbolPen=probePen)
         self.probeLabel = self.graphicsLayoutWidget.addLabel('', 2, 0, justify='left')
@@ -188,6 +190,7 @@ class PgLinePlot1d(AbstractInspector):
 
         if self.config.probeCti.configValue:
             self.probeLabel.setVisible(True)
+            self.plotItem.addItem(self.crossLineVerShadow, ignoreBounds=True)
             self.plotItem.addItem(self.crossLineVertical, ignoreBounds=True)
             self.plotItem.addItem(self.probeDataItem, ignoreBounds=True)
             self.probeDataItem.setSymbolBrush(QtGui.QBrush(self.config.plotDataItemCti.penColor))
@@ -205,6 +208,7 @@ class PgLinePlot1d(AbstractInspector):
         if (not self.config.probeCti.configValue or
             not self.viewBox.sceneBoundingRect().contains(viewPos)):
 
+            self.crossLineVerShadow.setVisible(False)
             self.crossLineVertical.setVisible(False)
             self.probeLabel.setText("")
             self.probeDataItem.clear()
@@ -215,12 +219,15 @@ class PgLinePlot1d(AbstractInspector):
             if self.slicedArray is not None and 0 <= index < len(self.slicedArray):
                 txt = "pos = {!r}, value = {!r}".format(index, self.slicedArray[index])
                 self.probeLabel.setText(txt)
+                self.crossLineVerShadow.setVisible(True)
+                self.crossLineVerShadow.setPos(index)
                 self.crossLineVertical.setVisible(True)
                 self.crossLineVertical.setPos(index)
                 self.probeDataItem.setData((index,), (self.slicedArray[index],))
             else:
                 txt = "<span style='color: grey'>no data at cursor</span>"
                 self.probeLabel.setText(txt)
+                self.crossLineVerShadow.setVisible(False)
                 self.crossLineVertical.setVisible(False)
                 self.probeDataItem.clear()
 
