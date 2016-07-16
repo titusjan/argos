@@ -198,6 +198,8 @@ class PgLinePlot1d(AbstractInspector):
         else:
             self.probeLabel.setVisible(False)
 
+        # Update the config tree from the (possibly) new state of the PgLinePlot1d inspector,
+        # e.g. the axis range may have changed while drawing.
         self.config.updateTarget()
 
 

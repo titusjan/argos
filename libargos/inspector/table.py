@@ -168,10 +168,7 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         self._rtiInfo = {}
 
         self._separateFields = True  # User config option
-        self._separateFieldOrientation = None # To store which axis is curenlty separated
-
-        # Don't put numbers in the header if the record is of compound type, a fields are
-        # placed in separate cells and the fake dimension is selected (combo index 0)
+        self._separateFieldOrientation = None # To store which axis is currently separated
         self._numbersInHeader = True
 
 
@@ -197,6 +194,8 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
             self._rtiInfo = rtiInfo
             self._separateFields = separateFields
 
+            # Don't put numbers in the header if the record is of compound type, fields are
+            # placed in separate cells and the fake dimension is selected (combo index 0)
             if self._separateFields and self._fieldNames:
 
                 if self._rtiInfo['x-dim'] == FAKE_DIM_NAME:
@@ -236,9 +235,6 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
                 cellValue = self._slicedArray[row // nFields, col][self._fieldNames[row % nFields]]
             else:
                 cellValue = self._slicedArray[row, col]
-
-            if row == 0:
-                logger.debug("cellValue: {} ({})".format(cellValue, type(cellValue)))
 
             # Numpy strings must be converted to regular strings,
             # otherwise they don't show up.

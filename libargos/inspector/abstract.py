@@ -137,9 +137,9 @@ class AbstractInspector(QtGui.QStackedWidget):
             Descendants should override _drawContents, not drawContents.
 
             During the call of _drawContents, the updating of the configuration tree is blocked to
-            avoid circular effects loops. After that a call to self.config.refreshFromTarget() is
-            made to refresh the configuration tree with possible new values from the inspector (the
-            inspector is the configuration's target).
+            avoid circular effects. After that, a call to self.config.refreshFromTarget() is
+            made to refresh the configuration tree with possible new values from the inspector
+            (the inspector is the configuration's target, hence the name).
         """
         logger.debug("---- inspector drawContents(): {}".format(self))
         try:

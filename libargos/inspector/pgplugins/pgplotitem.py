@@ -25,8 +25,6 @@ import pyqtgraph as pg
 from functools import partial
 from libargos.info import DEBUGGING
 from libargos.qt import Qt, QtCore, QtGui, QtSignal
-from libargos.utils.cls import check_class
-from .pgctis import AbstractRangeCti
 
 logger = logging.getLogger(__name__)
 
@@ -127,9 +125,6 @@ class ArgosPgPlotItem(PlotItem):
             Could be called 'finalize' but PlotItem already has a close so we reuse that.
         """
         logger.debug("Finalizing: {}".format(self))
-        # xAxisItem = self.getAxis('bottom')
-        # xAxisItem.removeEventFilter(self)
-
         super(ArgosPgPlotItem, self).close()
 
 
@@ -166,45 +161,3 @@ class ArgosPgPlotItem(PlotItem):
                 raise ValueError(msg)
             else:
                 logger.warn(msg)
-
-
-    # Does not work (yet). Most likely because the linked viewbox is also included in the
-    # boundingRect, so that clicks in the viewbox also trigger the range reset.
-    # def eventFilter(self, watchedObject, event):
-    #     """ Filters events from the AxisItems so that a middle mouse click reset the range of
-    #         that axis.
-    #     """
-    #     # logger.debug("intercepting {}: {} eventType={}"
-    #     #              .format(watchedObject, type(event), event.type()))
-    #
-    #     if type(event) == QtGui.QGraphicsSceneMouseEvent:
-    #         if event.button() == Qt.MiddleButton:
-    #             assert False, "stopped here"
-    #             logger.debug("---------------------------------")
-    #             logger.debug("intercepting {} eventType={}".format(type(event), event.type()))
-    #
-    #             logger.debug("event button={}, emitting sigAxisReset".format(event.button()))
-    #
-    #             assert isinstance(event, QtGui.QGraphicsSceneMouseEvent)
-    #             pos = event.pos()
-    #             scenepos = event.scenePos()
-    #
-    #             logger.debug("watchedObject: {} ({})" .format(watchedObject, type(watchedObject)))
-    #             #logger.debug("boundingRect: {}".format(watchedObject.boundingRect())) # includes grid and linked view
-    #             #logger.debug("geometry: {}".format(watchedObject.geometry()))
-    #             geom = watchedObject.geometry()
-    #             rect = watchedObject.mapRectFromParent(watchedObject.geometry())
-    #
-    #             logger.debug("scenepos ({}, {}) in geometry: {} is {}"
-    #                          .format(scenepos.x(), scenepos.y(), geom, geom.contains(scenepos)))
-    #
-    #             logger.debug("pos ({}, {}) in rect: {} is {}"
-    #                          .format(pos.x(), pos.y(), rect, rect.contains(pos)))
-    #
-    #             self.emitResetAxisSignal(X_AXIS)
-    #             return True
-    #
-    #     return super(ArgosPgPlotItem, self).eventFilter(watchedObject, event)
-    #
-    #
-    #

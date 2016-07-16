@@ -329,8 +329,7 @@ class PgImagePlot2d(AbstractInspector):
         """ Draws the inspector widget when no input is available.
         """
         logger.debug("Clearing inspector contents")
-        #self.imageItem.clear() # Don't use clear as it alters the (auto)range.
-        self.imageItem.setImage(None) # TODO: this also alters the auto(range). Use clear again?
+        self.imageItem.clear()
         self.titleLabel.setText('')
 
 
@@ -347,7 +346,6 @@ class PgImagePlot2d(AbstractInspector):
         #self.imageItem.clear() # Don't use clear as it resets the autoscale enabled?
 
         # Valid plot data here
-
         rtiInfo = self.collector.getRtiInfo()
         self.titleLabel.setText(self.configValue('title').format(**rtiInfo))
 
@@ -396,6 +394,8 @@ class PgImagePlot2d(AbstractInspector):
         else:
             self.probeLabel.setVisible(False)
 
+        # Update the config tree from the (possibly) new state of the PgImagePlot2d inspector,
+        # e.g. the axis range or color range may have changed while drawing.
         self.config.updateTarget()
 
 
