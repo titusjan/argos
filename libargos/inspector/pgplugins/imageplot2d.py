@@ -26,7 +26,7 @@ import pyqtgraph as pg
 from functools import partial
 from collections import OrderedDict
 from libargos.info import DEBUGGING
-from libargos.config.boolcti import BoolCti
+from libargos.config.boolcti import BoolCti, BoolGroupCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.groupcti import MainGroupCti
 from libargos.inspector.abstract import AbstractInspector, InvalidDataError
@@ -167,19 +167,21 @@ class PgImagePlot2dCti(MainGroupCti):
         # Probe and cross-hair plots
         self.probeCti = self.insertChild(BoolCti('show probe', True))
 
-        self.crossPlotGroupCti = self.insertChild(BoolCti('cross-hair', True)) # TODO: False
+        self.crossPlotGroupCti = self.insertChild(BoolGroupCti('cross-hair',  expanded=False))
 
         self.crossPenCti = self.crossPlotGroupCti.insertChild(PgPlotDataItemCti(expanded=False))
         #self.crossLinesCti = self.crossPlotGroupCti.insertChild(PgPlotDataItemCti('cross pen',
         #                                                                          expanded=False))
 
-        self.horCrossPlotCti = self.crossPlotGroupCti.insertChild(BoolCti('horizontal', True))
+        self.horCrossPlotCti = self.crossPlotGroupCti.insertChild(BoolCti('horizontal', False,
+                                                                          expanded=False))
         self.horCrossPlotCti.insertChild(PgGridCti(pgImagePlot2d.horCrossPlotItem))
         self.horCrossPlotRangeCti = self.horCrossPlotCti.insertChild(PgAxisRangeCti(
             self.pgImagePlot2d.horCrossPlotItem.getViewBox(), Y_AXIS, nodeName="data range",
             autoRangeFunctions = crossPlotAutoRangeMethods(self.pgImagePlot2d, "horizontal")))
 
-        self.verCrossPlotCti = self.crossPlotGroupCti.insertChild(BoolCti('vertical', True))
+        self.verCrossPlotCti = self.crossPlotGroupCti.insertChild(BoolCti('vertical', False,
+                                                                          expanded=False))
         self.verCrossPlotCti.insertChild(PgGridCti(pgImagePlot2d.verCrossPlotItem))
         self.verCrossPlotRangeCti = self.verCrossPlotCti.insertChild(PgAxisRangeCti(
             self.pgImagePlot2d.verCrossPlotItem.getViewBox(), X_AXIS, nodeName="data range",
