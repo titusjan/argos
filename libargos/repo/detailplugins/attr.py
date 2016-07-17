@@ -51,7 +51,7 @@ class AttributesPane(DetailTablePane):
     def _drawContents(self, currentRti=None):
         """ Draws the attributes of the currentRTI
         """
-        #logger.debug("drawContents: {}".format(currentRti))
+        #logger.debug("_drawContents: {}".format(currentRti))
         table = self.table
         table.setUpdatesEnabled(False)
         try:

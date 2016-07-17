@@ -27,6 +27,7 @@ from libargos.config.abstractcti import AbstractCti
 from libargos.config.configtreemodel import ConfigTreeModel
 from libargos.config.configtreeview import ConfigTreeView
 from libargos.info import DEBUGGING, PROJECT_NAME
+from libargos.inspector.abstract import UpdateReason
 from libargos.inspector.dialog import OpenInspectorDialog
 from libargos.inspector.registry import InspectorRegItem
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
@@ -410,7 +411,7 @@ class MainWindow(QtGui.QMainWindow):
             inspectorRegItem = dialog.getCurrentInspectorRegItem()
             if inspectorRegItem is not None:
                 self.setInspectorFromRegItem(inspectorRegItem)
-                self.drawInspectorContents()
+                self.drawInspectorContents(reason=UpdateReason.INSPECTOR_CHANGED)
 
     @QtSlot()
     def openPluginsDialog(self):
@@ -427,7 +428,7 @@ class MainWindow(QtGui.QMainWindow):
         """ Slot that updates the UI whenever the contents of the collector has changed.
         """
         logger.debug("collectorContentsChanged()")
-        self.drawInspectorContents()
+        self.drawInspectorContents(reason=UpdateReason.COLLECTOR_CHANGED)
 
 
     @QtSlot(AbstractCti)
@@ -436,16 +437,17 @@ class MainWindow(QtGui.QMainWindow):
             Will draw the window contents.
         """
         logger.debug("configContentsChanged: {}".format(configTreeItem))
-        self.drawInspectorContents()
+        self.drawInspectorContents(reason=UpdateReason.CONFIG_CHANGED,
+                                   origin=configTreeItem)
 
 
-    def drawInspectorContents(self):
+    def drawInspectorContents(self, reason=None, origin=None):
         """ Draws all contents of this window's inspector.
         """
         logger.debug("")
         logger.debug("-------- Drawing inspector of window: {} --------".format(self.windowTitle()))
         if self.inspector:
-            self.inspector.drawContents()
+            self.inspector.updateContents(reason=reason, initiator=origin)
         else:
             logger.debug("No inspector selected")
 

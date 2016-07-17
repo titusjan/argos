@@ -110,8 +110,10 @@ class TableInspector(AbstractInspector):
         """
         return tuple(['Y', 'X'])
 
-    def _drawContents(self):
+    def _drawContents(self, reason=None, initiator=None):
         """ Draws the table contents from the sliced array of the collected repo tree item.
+
+            See AbstractInspector.updateContents for the reason and initiator description.
         """
         logger.debug("TableInspector._drawContents: {}".format(self))
 

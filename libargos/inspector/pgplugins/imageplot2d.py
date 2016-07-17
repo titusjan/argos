@@ -338,8 +338,11 @@ class PgImagePlot2d(AbstractInspector):
 
 
 
-    def _drawContents(self):
+    def _drawContents(self, reason=None, initiator=None):
         """ Draws the plot contents from the sliced array of the collected repo tree item.
+
+            The reason and initiator parameters are ignored.
+            See AbstractInspector.updateContents for their description.
         """
         self.crossPlotRow = None # reset because the sliced array shape may change
         self.crossPlotCol = None # idem dito

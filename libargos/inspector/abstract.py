@@ -35,6 +35,13 @@ class InvalidDataError(TypeError):
     pass
 
 
+class UpdateReason(object):
+    """ Enumeration class that gives the reason for updating the inspector contents. """
+    INSPECTOR_CHANGED = "inspector changed"
+    COLLECTOR_CHANGED = "collector changed"
+    CONFIG_CHANGED = "config changed"
+
+
 class AbstractInspector(QtGui.QStackedWidget):
     """ Abstract base class for inspectors.
         An inspector is a stacked widget; it has a contents page and and error page.
@@ -47,7 +54,7 @@ class AbstractInspector(QtGui.QStackedWidget):
         """ Constructor.
 
             When subclassing the AbstractInspector try to minimize the work done in the constructor.
-            Place all functionality that may raise an exception in drawContents or clearContents,
+            Place all functionality that may raise an exception in updateContents or clearContents,
             these functions will show an error page and prevent the application from aborting. If
             an exception occurs in the constructor it is not caught!
 
@@ -130,24 +137,33 @@ class AbstractInspector(QtGui.QStackedWidget):
         return self.config.findByNodePath(nodePath).configValue
 
 
-    @QtSlot()
-    def drawContents(self):
+    def updateContents(self, reason=None, initiator=None):
         """ Tries to draw the widget contents with the updated RTI.
             Shows the error page in case an exception is raised while drawing the contents.
-            Descendants should override _drawContents, not drawContents.
+            Descendants should override _drawContents, not updateContents.
 
             During the call of _drawContents, the updating of the configuration tree is blocked to
             avoid circular effects. After that, a call to self.config.refreshFromTarget() is
             made to refresh the configuration tree with possible new values from the inspector
             (the inspector is the configuration's target, hence the name).
+
+            The reason parameter is a string (one of the UpdateReason values) that indicates why
+            the inspector contents whas updated. This can, for instance, be used to optimize
+            drawing the inspector contents. Note that the reason may be undefined (None).
+
+            The initiator may contain the object that initiated the updated. The type depends on the
+            reason. At the moment the initiator is only implemented for the "config changed" reason. In
+            this case the initiator will be the Config Tree Item (CTI that has changed).
         """
-        logger.debug("---- inspector drawContents(): {}".format(self))
+        logger.debug("---- Inspector updateContents, reason: {}, initiator: {}"
+                     .format(reason, initiator))
+        logger.debug("Inspector: {}".format(self))
         try:
             self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
 
             wasBlocked = self.config.model.setRefreshBlocked(True)
             try:
-                self._drawContents()
+                self._drawContents(reason=reason, initiator=initiator)
                 logger.debug("_drawContents finished successfully")
             finally:
                 self.config.model.setRefreshBlocked(wasBlocked)
@@ -169,13 +185,15 @@ class AbstractInspector(QtGui.QStackedWidget):
             self.setCurrentIndex(self.ERROR_PAGE_IDX)
             self._showError(msg=str(ex), title=type_name(ex))
         else:
-            logger.debug("---- drawContents finished successfully")
+            logger.debug("---- updateContents finished successfully")
 
 
-    def _drawContents(self):
-        """ Is called by drawContents to do the actual drawing.
+    def _drawContents(self, reason=None, initiator=None):
+        """ Is called by updateContents to do the actual drawing.
             Descendants should override _drawContents and not worry about exceptions;
-            the drawContents will show the error page if an exception is raised.
+            the updateContents will show the error page if an exception is raised.
+
+            See updateContents for the reason and initiator parameters.
         """
         raise NotImplementedError()
 

@@ -93,8 +93,11 @@ class EmptyInspector(AbstractInspector):
         return rootItem
 
 
-    def _drawContents(self):
-        """ Draws the inspector widget when an RTI is updated.
+    def _drawContents(self, reason=None, initiator=None):
+        """ Draws the table contents from the sliced array of the collected repo tree item.
+
+            The reason and initiator parameters are ignored.
+            See AbstractInspector.updateContents for their description.
         """
         logger.debug("EmptyInspector._drawContents: {}".format(self))
 
