@@ -162,14 +162,17 @@ class PgLinePlot1d(AbstractInspector):
 
 
     def _clearContents(self):
-        """ Draws the inspector widget when no input is available.
+        """ Clears the  the inspector widget when no valid input is available.
         """
-        self.plotItem.clear()
         self.titleLabel.setText('')
+        self.plotItem.clear()
+        self.plotItem.setLabel('left', '')
+        self.plotItem.setLabel('bottom', '')
+
 
 
     def _drawContents(self):
-        """ Draws the RTI
+        """ Draws the plot contents from the sliced array of the collected repo tree item.
         """
         self.slicedArray = self.collector.getSlicedArray()
 

@@ -326,33 +326,23 @@ class PgImagePlot2d(AbstractInspector):
 
 
     def _clearContents(self):
-        """ Draws the inspector widget when no input is available.
+        """ Clears the contents when no valid data is available
         """
         logger.debug("Clearing inspector contents")
-        self.imageItem.clear()
         self.titleLabel.setText('')
+
+        # Don't clear the imagePlotItem, the imageItem is only added in the constructor.
+        self.imageItem.clear()
+        self.imagePlotItem.setLabel('left', '')
+        self.imagePlotItem.setLabel('bottom', '')
+
 
 
     def _drawContents(self):
-        """ Draws the inspector widget.
+        """ Draws the plot contents from the sliced array of the collected repo tree item.
         """
         self.crossPlotRow = None # reset because the sliced array shape may change
         self.crossPlotCol = None # idem dito
-        self.slicedArray = self.collector.getSlicedArray()
-        if self.slicedArray is None or not array_has_real_numbers(self.slicedArray):
-            self._clearContents()
-            raise InvalidDataError("No data available or it does not contain real numbers")
-
-        #self.imageItem.clear() # Don't use clear as it resets the autoscale enabled?
-
-        # Valid plot data here
-        rtiInfo = self.collector.getRtiInfo()
-        self.titleLabel.setText(self.configValue('title').format(**rtiInfo))
-
-        # PyQtGraph uses the following dimension order: T, X, Y, Color.
-        # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0}
-        # doesn't seem to do anything.
-        self.imageItem.setImage(self.slicedArray.transpose(), autoLevels=False)
 
         gridLayout = self.graphicsLayoutWidget.ci.layout # A QGraphicsGridLayout
 
@@ -381,6 +371,21 @@ class PgImagePlot2d(AbstractInspector):
                 self.graphicsLayoutWidget.removeItem(self.verCrossPlotItem)
                 self.verPlotAdded = False
                 gridLayout.activate()
+
+        self.slicedArray = self.collector.getSlicedArray()
+        if self.slicedArray is None or not array_has_real_numbers(self.slicedArray):
+            self._clearContents()
+            raise InvalidDataError("No data available or it does not contain real numbers")
+
+        # Valid plot data from here on
+        rtiInfo = self.collector.getRtiInfo()
+        self.titleLabel.setText(self.configValue('title').format(**rtiInfo))
+
+        # PyQtGraph uses the following dimension order: T, X, Y, Color.
+        # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0}
+        # doesn't seem to do anything.
+        self.imageItem.setImage(self.slicedArray.transpose(), autoLevels=False)
+
 
         self.horCrossPlotItem.invertX(self.config.xFlippedCti.configValue)
         self.verCrossPlotItem.invertY(self.config.yFlippedCti.configValue)

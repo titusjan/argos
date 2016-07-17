@@ -62,7 +62,7 @@ class TableInspectorCti(MainGroupCti):
         self.defaultColumnWidth = self.cell_auto_resize.insertChild(
                 IntCti("column width", -1, minValue=20, maxValue=500, stepSize=5))
 
-
+        # Per pixel scrolling works better for large cells (e.g. containing XML strings).
         self.insertChild(ChoiceCti("scroll", displayValues=["per cell", "per pixel"],
                                    configValues=[QtGui.QAbstractItemView.ScrollPerItem,
                                                  QtGui.QAbstractItemView.ScrollPerPixel]))
@@ -111,8 +111,7 @@ class TableInspector(AbstractInspector):
         return tuple(['Y', 'X'])
 
     def _drawContents(self):
-        """ Draws the inspector widget when no input is available.
-            The default implementation shows an error message. Descendants should override this.
+        """ Draws the table contents from the sliced array of the collected repo tree item.
         """
         logger.debug("TableInspector._drawContents: {}".format(self))
 
@@ -120,7 +119,6 @@ class TableInspector(AbstractInspector):
                                self.collector.getRtiInfo(),
                                self.configValue('separate fields'))
 
-        # Per pixel scrolling works better for large cells (e.g. containing XML strings).
         scrollMode = self.configValue("scroll")
         self.tableView.setHorizontalScrollMode(scrollMode)
         self.tableView.setVerticalScrollMode(scrollMode)
