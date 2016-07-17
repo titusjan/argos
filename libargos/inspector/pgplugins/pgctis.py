@@ -253,7 +253,8 @@ class AbstractRangeCti(GroupCti):
         diffOrder = np.log10(np.abs(rangeMax - rangeMin))
 
         extraDigits = 2 # add some extra digits to make each pan/zoom action show a new value.
-        precision = int(np.clip(abs(maxOrder - diffOrder) + extraDigits, extraDigits + 1, 25))
+        precisionF = np.clip(abs(maxOrder - diffOrder) + extraDigits, extraDigits + 1, 25)
+        precision = int(precisionF) if np.isfinite(precisionF) else extraDigits + 1
         #logger.debug("maxOrder: {}, diffOrder: {}, precision: {}"
         #             .format(maxOrder, diffOrder, precision))
 
@@ -557,7 +558,7 @@ class PgAxisLabelCti(ChoiceCti):
         """ Constructor
             :param plotItem:
             :param axisPosition: 'left', 'right', 'bottom', 'top'
-            :param collector: needed to get the collector.getRtiInfo
+            :param collector: needed to get the collector.rtiInfo
             :param nodeName: the nod name of this config tree item (default = label
             :param defaultData:
             :param configValues:
@@ -576,7 +577,7 @@ class PgAxisLabelCti(ChoiceCti):
             The axis label will be set to the configValue. If the configValue equals
              PgAxisLabelCti.NO_LABEL, the label will be hidden.
         """
-        rtiInfo = self.collector.getRtiInfo()
+        rtiInfo = self.collector.rtiInfo
         self.plotItem.setLabel(self.axisPosition, self.configValue.format(**rtiInfo))
         self.plotItem.showLabel(self.axisPosition, self.configValue != self.NO_LABEL)
 

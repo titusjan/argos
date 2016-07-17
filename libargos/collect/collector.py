@@ -18,7 +18,7 @@
 """
 from __future__ import print_function
 
-import logging
+import logging, os
 import numpy as np
 
 from libargos.collect.collectortree import CollectorTree, CollectorSpinBox
@@ -54,6 +54,7 @@ class Collector(QtGui.QWidget):
 
         self._windowNumber = windowNumber
         self._rti = None
+        self._rtiInfo = None
 
         self._signalsBlocked = False
         self.COL_FIRST_COMBO = 1     # Column that contains the first (left most) combobox
@@ -82,6 +83,8 @@ class Collector(QtGui.QWidget):
         # self.buttonLayout.addWidget(self.removeVisItemButton, stretch=0)
         # self.buttonLayout.addStretch(stretch=1)
         # self.layout.addLayout(self.buttonLayout, stretch=0)
+
+        self._updateRtiInfo()
 
 
     def sizeHint(self):
@@ -182,6 +185,7 @@ class Collector(QtGui.QWidget):
         self._setAxesNames(axesNames)
         self._createComboBoxes(row)
         self._updateWidgets()
+        self._updateRtiInfo()
 
 
     def _setAxesNames(self, axisNames):
@@ -222,6 +226,7 @@ class Collector(QtGui.QWidget):
 
         self._rti = rti
         self._updateWidgets()
+        self._updateRtiInfo()
 
 
     def _updateWidgets(self):
@@ -444,6 +449,7 @@ class Collector(QtGui.QWidget):
         row = 0
         self._deleteSpinBoxes(row)
         self._createSpinBoxes(row)
+        self._updateRtiInfo()
 
         self.blockChildrenSignals(blocked)
 
@@ -560,8 +566,8 @@ class Collector(QtGui.QWidget):
     #     return self.rti.nodeName if self.rti else ''
 
 
-
-    def getRtiInfo(self):
+    @property
+    def rtiInfo(self):
         """ Returns a dictionary with information on the selected RTI (repo tree item).
             This can be used in string formatting of config options. For instance: the plot title
             can be specified as: '{path} {slices}', which will be expanded with the actual nodePath
@@ -578,7 +584,12 @@ class Collector(QtGui.QWidget):
                 n-dim       : dimension selected in the combobox for axis n. The axis name will be
                               in lower case (so e.g. x-dim, y-dim, etc)
         """
+        return self._rtiInfo
 
+
+    def _updateRtiInfo(self):
+        """ Updates the _rtiInfo property when a new RTI is set or the comboboxes value change.
+        """
         # Info about the dependent dimension
         rti = self.rti
         if rti is None:
@@ -586,13 +597,18 @@ class Collector(QtGui.QWidget):
                     'name': '',
                     'path': '',
                     'file-name': '',
+                    'dir-name': '',
+                    'base-name': '',
                     'unit': '',
                     'raw-unit': ''}
         else:
+            dirName, baseName = os.path.split(rti.fileName)
             info = {'slices': self.getSlicesString(),
                     'name': rti.nodeName,
                     'path': rti.nodePath,
                     'file-name': rti.fileName,
+                    'dir-name': dirName,
+                    'base-name': baseName,
                     'unit': '({})'.format(rti.unit) if rti.unit else '',
                     'raw-unit': rti.unit}
 
@@ -602,7 +618,5 @@ class Collector(QtGui.QWidget):
             key = '{}-dim'.format(axisName.lower())
             info[key] = dimName
 
-        return info
-
-
+        self._rtiInfo = info
 

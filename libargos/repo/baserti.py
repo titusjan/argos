@@ -22,7 +22,6 @@ import logging
 import os
 
 from libargos.info import program_directory, DEBUGGING
-from libargos.qt import QtGui
 from libargos.qt.treeitems import AbstractLazyLoadTreeItem
 from libargos.repo.iconfactory import RtiIconFactory
 from libargos.utils.cls import StringType, check_class, is_a_sequence
@@ -338,9 +337,9 @@ class BaseRti(AbstractLazyLoadTreeItem):
 
     @property
     def unit(self):
-        """ Returns the units of the RTI.
+        """ Returns the unit of the RTI. The base implementation returns ''
 
-            The base implementation looks for one of the follown keys in the RTI attributes:
+            The base implementation looks for one of the following keys in the RTI attributes:
             'unit', 'units', 'Unit', 'Units', 'UNIT', 'UNITS'. If these are not found, the empty
             string is returned. Descendants can of course override this behavior.
         """

@@ -11,7 +11,6 @@ TODO version 0.2:
 
 	relative imports
 
-	Refactor _drawContents to have a source/cause parameter.
 	Reset range when a variable with a new unit/abcissa is selected.
 
 

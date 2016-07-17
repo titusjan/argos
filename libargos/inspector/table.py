@@ -112,7 +112,7 @@ class TableInspector(AbstractInspector):
         logger.debug("TableInspector._drawContents: {}".format(self))
 
         self.model.updateState(self.collector.getSlicedArray(),
-                               self.collector.getRtiInfo(),
+                               self.collector.rtiInfo,
                                self.configValue('separate fields'))
 
         scrollMode = self.configValue("scroll")

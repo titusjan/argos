@@ -57,7 +57,8 @@ class PgLinePlot1dCti(MainGroupCti):
         self.pgLinePlot1d = pgLinePlot1d
 
         self.insertChild(ChoiceCti('title', 0, editable=True,
-                                    configValues=["{path} {slices}", "{name} {slices}"]))
+                                    configValues=["{base-name} -- {name} {slices}",
+                                                  "{name} {slices}", "{path} {slices}"]))
 
         #### Axes ####
         plotItem = self.pgLinePlot1d.plotItem
@@ -184,11 +185,9 @@ class PgLinePlot1d(AbstractInspector):
             raise InvalidDataError("No data available or it does not contain real numbers")
 
         # Valid plot data here
-        rtiInfo = self.collector.getRtiInfo()
-
         self.plotItem.clear()
 
-        self.titleLabel.setText(self.configValue('title').format(**rtiInfo))
+        self.titleLabel.setText(self.configValue('title').format(**self.collector.rtiInfo))
 
         plotDataItem = self.config.plotDataItemCti.createPlotDataItem()
         plotDataItem.setData(self.slicedArray)

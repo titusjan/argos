@@ -134,7 +134,8 @@ class PgImagePlot2dCti(MainGroupCti):
         viewBox = imagePlotItem.getViewBox()
 
         self.insertChild(ChoiceCti('title', 0, editable=True,
-                                   configValues=["{path} {slices}", "{name} {slices}"]))
+                                   configValues=["{base-name} -- {name} {slices}",
+                                                 "{name} {slices}", "{path} {slices}"]))
         #### Axes ####
         self.aspectLockedCti = self.insertChild(PgAspectRatioCti(viewBox))
 
@@ -381,8 +382,7 @@ class PgImagePlot2d(AbstractInspector):
             raise InvalidDataError("No data available or it does not contain real numbers")
 
         # Valid plot data from here on
-        rtiInfo = self.collector.getRtiInfo()
-        self.titleLabel.setText(self.configValue('title').format(**rtiInfo))
+        self.titleLabel.setText(self.configValue('title').format(**self.collector.rtiInfo))
 
         # PyQtGraph uses the following dimension order: T, X, Y, Color.
         # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0}
