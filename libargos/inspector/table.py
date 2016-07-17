@@ -24,7 +24,7 @@ from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.intcti import IntCti
-from libargos.inspector.abstract import AbstractInspector
+from libargos.inspector.abstract import AbstractInspector, UpdateReason
 
 from libargos.qt import Qt, QtCore, QtGui
 from libargos.utils.cls import to_string
@@ -53,13 +53,13 @@ class TableInspectorCti(MainGroupCti):
         self.insertChild(BoolCti("word wrap", True))
         self.insertChild(BoolCti("separate fields", True))
 
-        self.cell_auto_resize = self.insertChild(BoolCti("resize cells to contents", False,
-                                                         childrenDisabledValue=True))
+        self.autoResizeCellCti = self.insertChild(BoolCti("resize cells to contents", False,
+                                                          childrenDisabledValue=True))
 
         # The initial values will be set in the constructor to the Qt defaults.
-        self.defaultRowHeight = self.cell_auto_resize.insertChild(
+        self.defaultRowHeightCti = self.autoResizeCellCti.insertChild(
                 IntCti("row height", -1, minValue=20, maxValue=500, stepSize=5))
-        self.defaultColumnWidth = self.cell_auto_resize.insertChild(
+        self.defaultColumnWidthCti = self.autoResizeCellCti.insertChild(
                 IntCti("column width", -1, minValue=20, maxValue=500, stepSize=5))
 
         # Per pixel scrolling works better for large cells (e.g. containing XML strings).
@@ -86,21 +86,15 @@ class TableInspector(AbstractInspector):
         horHeader.setCascadingSectionResizes(False)
         verHeader.setCascadingSectionResizes(False)
 
-        # Some fields to keep track of old value to detect changes.
-        # TODO: refactor when _drawContents has 'cause' parameter
-        self._resizeToContents = None
-        self._defaultRowHeight = None
-        self._defaultColumnWidth = None
-
         self._config = TableInspectorCti('inspector')
 
-        if self.config.defaultRowHeight.configValue < 0: # If not yet initialized
-            self.config.defaultRowHeight.data = verHeader.defaultSectionSize()
-            self.config.defaultRowHeight.defaultData = verHeader.defaultSectionSize()
+        if self.config.defaultRowHeightCti.configValue < 0: # If not yet initialized
+            self.config.defaultRowHeightCti.data = verHeader.defaultSectionSize()
+            self.config.defaultRowHeightCti.defaultData = verHeader.defaultSectionSize()
 
-        if self.config.defaultColumnWidth.configValue < 0: # If not yet initialized
-            self.config.defaultColumnWidth.data = horHeader.defaultSectionSize()
-            self.config.defaultColumnWidth.defaultData = horHeader.defaultSectionSize()
+        if self.config.defaultColumnWidthCti.configValue < 0: # If not yet initialized
+            self.config.defaultColumnWidthCti.data = horHeader.defaultSectionSize()
+            self.config.defaultColumnWidthCti.defaultData = horHeader.defaultSectionSize()
 
 
     @classmethod
@@ -126,26 +120,28 @@ class TableInspector(AbstractInspector):
         self.tableView.setVerticalScrollMode(scrollMode)
         self.tableView.setWordWrap(self.configValue('word wrap'))
 
-        if (self.config.cell_auto_resize.configValue != self._resizeToContents or
-            self.config.defaultColumnWidth.configValue != self._defaultColumnWidth or
-            self.config.defaultRowHeight.configValue != self._defaultRowHeight):
-
-            self._resizeToContents = self.config.cell_auto_resize.configValue
-            self._defaultRowHeight = self.config.defaultRowHeight.configValue
-            self._defaultColumnWidth = self.config.defaultColumnWidth.configValue
+        # Only update the cell size when one of the relevant config values has changed because
+        # resize to contents may be slow for large tables. Note that resetting the complete config
+        # tree (by clicking the reset button of the inspector config tree item) might also change
+        # the relevant config values. This is why we check with 'starts' with if a parent CTI
+        # was clicked.
+        if reason == UpdateReason.CONFIG_CHANGED and \
+            (self.config.autoResizeCellCti.nodePath.startswith(initiator.nodePath) or
+             self.config.defaultRowHeightCti.nodePath.startswith(initiator.nodePath) or
+             self.config.defaultColumnWidthCti.nodePath.startswith(initiator.nodePath)):
 
             horHeader = self.tableView.horizontalHeader()
             verHeader = self.tableView.verticalHeader()
 
-            if self._resizeToContents:
+            if self.config.autoResizeCellCti.configValue:
                 horHeader.setResizeMode(horHeader.ResizeToContents)
                 verHeader.setResizeMode(horHeader.ResizeToContents)
             else:
                 # First disable resize to contents, then resize the sections.
                 horHeader.setResizeMode(horHeader.Interactive)
                 verHeader.setResizeMode(horHeader.Interactive)
-                resizeAllSections(horHeader, self.config.defaultColumnWidth.configValue)
-                resizeAllSections(verHeader, self.config.defaultRowHeight.configValue)
+                resizeAllSections(horHeader, self.config.defaultColumnWidthCti.configValue)
+                resizeAllSections(verHeader, self.config.defaultRowHeightCti.configValue)
 
 
 
