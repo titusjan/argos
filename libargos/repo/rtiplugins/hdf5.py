@@ -85,6 +85,26 @@ def dataSetElementType(h5Dataset):
     return str(dtype)
 
 
+def dataSetUnit(h5Dataset):
+    """ Returns the unit of the h5Dataset by looking in the attributes.
+
+        It searches in the attributes for one of the following keys:
+        'unit', 'units', 'Unit', 'Units', 'UNIT', 'UNITS'. If these are not found, the empty
+        string is returned.
+    """
+    attributes = h5Dataset.attrs
+    if not attributes:
+        return '' # a premature optimization :-)
+
+    for key in ('unit', 'units', 'Unit', 'Units', 'UNIT', 'UNITS'):
+        if key in attributes:
+            # In Python3 the attribures are byte strings so we must decode them
+            # This a bug in h5py, see https://github.com/h5py/h5py/issues/379
+            return attributes[key].decode('utf-8')
+    else:
+        return ''
+
+
 
 
 class H5pyScalarRti(BaseRti):
@@ -144,6 +164,12 @@ class H5pyScalarRti(BaseRti):
         """
         return self._h5Dataset.attrs
 
+
+    @property
+    def unit(self):
+        """ Returns the unit of the RTI by calling dataSetUnit on the underlying dataset
+        """
+        return dataSetUnit(self._h5Dataset)
 
 
 
@@ -245,6 +271,13 @@ class H5pyFieldRti(BaseRti):
         return dimNamesFromDataset(self._h5Dataset) + subArrayDims
 
 
+    @property
+    def unit(self):
+        """ Returns the unit of the RTI by calling dataSetUnit on the underlying dataset
+        """
+        return dataSetUnit(self._h5Dataset)
+
+
 
 class H5pyDatasetRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a HDF5 dataset.
@@ -319,6 +352,13 @@ class H5pyDatasetRti(BaseRti):
         """ Returns a list with the dimension names of the underlying HDF-5 dataset.
         """
         return dimNamesFromDataset(self._h5Dataset) # TODO: cache?
+
+
+    @property
+    def unit(self):
+        """ Returns the unit of the RTI by calling dataSetUnit on the underlying dataset
+        """
+        return dataSetUnit(self._h5Dataset)
 
 
     def _fetchAllChildren(self):

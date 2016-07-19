@@ -337,21 +337,9 @@ class BaseRti(AbstractLazyLoadTreeItem):
 
     @property
     def unit(self):
-        """ Returns the unit of the RTI. The base implementation returns ''
-
-            The base implementation looks for one of the following keys in the RTI attributes:
-            'unit', 'units', 'Unit', 'Units', 'UNIT', 'UNITS'. If these are not found, the empty
-            string is returned. Descendants can of course override this behavior.
+        """ Returns the unit of the RTI. The base implementation returns ''.
         """
-        attributes = self.attributes
-        if not attributes:
-            return '' # a premature optimization :-)
-
-        for key in ('unit', 'units', 'Unit', 'Units', 'UNIT', 'UNITS'):
-            if key in attributes:
-                return attributes[key]
-        else:
-            return ''
+        return ""
 
 #    @property
 #    def dimensionInfo(self):

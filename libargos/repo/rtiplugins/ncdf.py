@@ -33,6 +33,39 @@ logger = logging.getLogger(__name__)
 ICON_COLOR_NCDF4 = '#0088FF'
 
 
+def ncVarAttributes(ncVar):
+    """ Returns the attributes of ncdf variable
+    """
+    try:
+        return ncVar.__dict__
+    except Exception as ex:
+        # Due to some internal error netCDF4 may raise an AttributeError or KeyError,
+        # depending on its version.
+        logger.warn("Unable to read the attributes from {}. Reason: {}"
+                    .format(self.nodeName, ex))
+        return {}
+
+
+def ncVarUnit(ncVar):
+    """ Returns the unit of the ncVar by looking in the attributes.
+
+        It searches in the attributes for one of the following keys:
+        'unit', 'units', 'Unit', 'Units', 'UNIT', 'UNITS'. If these are not found, the empty
+        string is returned.
+    """
+    attributes = ncVarAttributes(ncVar)
+    if not attributes:
+        return '' # a premature optimization :-)
+
+    for key in ('unit', 'units', 'Unit', 'Units', 'UNIT', 'UNITS'):
+        if key in attributes:
+            # In Python3 the attribures are byte strings so we must decode them
+            # This a bug in h5py, see https://github.com/h5py/h5py/issues/379
+            return attributes[key]
+    else:
+        return ''
+
+
 
 class NcdfDimensionRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a NCDF group.
@@ -60,7 +93,6 @@ class NcdfDimensionRti(BaseRti):
         return {'unlimited': str(self._ncDim.isunlimited())}
         #size = self._ncDim.size
         #return {'size': 'unlimited' if size is None else str(size)}
-
 
 
 
@@ -150,15 +182,14 @@ class NcdfFieldRti(BaseRti):
         """ The attributes dictionary.
             Returns the attributes of the variable that contains this field.
         """
-        ncVar = self._ncVar
-        try:
-            return ncVar.__dict__
-        except Exception as ex:
-            # Due to some internal error netCDF4 may raise an AttributeError or KeyError,
-            # depending on its version.
-            logger.warn("Unable to read the attributes from {}. Reason: {}"
-                        .format(self.nodeName, ex))
-            return {}
+        return ncVarAttributes(self._ncVar)
+
+
+    @property
+    def unit(self):
+        """ Returns the unit of the RTI by calling dataSetUnit on the underlying ncdf variable
+        """
+        return ncVarUnit(self._ncVar)
 
 
     @property
@@ -230,15 +261,14 @@ class NcdfVariableRti(BaseRti):
         """ The attributes dictionary.
             Returns the attributes of the variable that contains this field.
         """
-        ncVar = self._ncVar
-        try:
-            return ncVar.__dict__
-        except Exception as ex:
-            # Due to some internal error netCDF4 may raise an AttributeError or KeyError,
-            # depending on its version.
-            logger.warn("Unable to read the attributes from {}. Reason: {}"
-                        .format(self.nodeName, ex))
-            return {}
+        return ncVarAttributes(self._ncVar)
+
+
+    @property
+    def unit(self):
+        """ Returns the unit of the RTI by calling dataSetUnit on the underlying ncdf variable
+        """
+        return ncVarUnit(self._ncVar)
 
 
     @property
@@ -246,7 +276,7 @@ class NcdfVariableRti(BaseRti):
         """ String representation of the element type.
         """
         dtype =  self._ncVar.dtype
-        if type(dtype) == types.TypeType:
+        if type(dtype) == type:
             # Handle the unexpected case that dtype is a regular Python type
             # (happens e.g. in the /PROCESSOR/processing_configuration of the Trop LX files)
             return dtype.__name__

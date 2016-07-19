@@ -185,7 +185,6 @@ class Collector(QtGui.QWidget):
         self._setAxesNames(axesNames)
         self._createComboBoxes(row)
         self._updateWidgets()
-        self._updateRtiInfo()
 
 
     def _setAxesNames(self, axisNames):
@@ -248,6 +247,7 @@ class Collector(QtGui.QWidget):
         self._deleteSpinBoxes(row)
         self._populateComboBoxes(row)
         self._createSpinBoxes(row)
+        self._updateRtiInfo()
 
         self.tree.resizeColumnsToContents(startCol=self.COL_FIRST_COMBO)
 
@@ -590,6 +590,7 @@ class Collector(QtGui.QWidget):
     def _updateRtiInfo(self):
         """ Updates the _rtiInfo property when a new RTI is set or the comboboxes value change.
         """
+        logger.debug("Updating self._rtiInfo")
         # Info about the dependent dimension
         rti = self.rti
         if rti is None:
