@@ -98,9 +98,13 @@ def dataSetUnit(h5Dataset):
 
     for key in ('unit', 'units', 'Unit', 'Units', 'UNIT', 'UNITS'):
         if key in attributes:
-            # In Python3 the attribures are byte strings so we must decode them
+            # In Python3 the attributes are byte strings so we must decode them
             # This a bug in h5py, see https://github.com/h5py/h5py/issues/379
-            return attributes[key].decode('utf-8')
+            unit = attributes[key]
+            if type(unit) == np.bytes_ or type(unit) == bytes:
+                return unit.decode('utf-8')
+            else:
+                return str(unit)
     else:
         return ''
 
