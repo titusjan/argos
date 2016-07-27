@@ -21,6 +21,8 @@
 """
 
 from __future__ import absolute_import, division, print_function
+from functools import partial
+
 from libargos.collect.collector import Collector
 from libargos.config.abstractcti import ctiDumps, ctiLoads
 from libargos.config.abstractcti import AbstractCti
@@ -184,9 +186,6 @@ class MainWindow(QtGui.QMainWindow):
 
         fileMenu = menuBar.addMenu("&File")
 
-        action = fileMenu.addAction("&Set Inspector...", self.openInspector)
-        action.setShortcut(QtGui.QKeySequence("Ctrl+i"))
-
         action = fileMenu.addAction("&New Window...", self.argosApplication.addNewMainWindow)
         action.setShortcut(QtGui.QKeySequence("Ctrl+N")) # TODO. Should open inspector selection window
 
@@ -233,13 +232,18 @@ class MainWindow(QtGui.QMainWindow):
             fileMenu.addAction("&Test-{}".format(self.windowNumber), self.myTest, "Ctrl+T")
 
         ### View Menu ###
-
         self.viewMenu = menuBar.addMenu("&View")
 
         action = self.viewMenu.addAction("Installed &Plugins...", self.openPluginsDialog)
         action.setShortcut(QtGui.QKeySequence("Ctrl+P"))
 
         self.viewMenu.addSeparator()
+
+        ### Inspector Menu ###
+        # inspectorMenu = menuBar.addMenu("&Inspector")
+        # inspectorMenu.addMenu(self._createInspectorsSubMenu("Set Inspector"))
+        self.inspectorMenu = menuBar.addMenu(self._createInspectorsSubMenu("Inspector"))
+
         ### Help Menu ###
 
         menuBar.addSeparator()
@@ -250,12 +254,19 @@ class MainWindow(QtGui.QMainWindow):
     def __setupDockWidgets(self):
         """ Sets up the dock widgets. Must be called after the menu is setup.
         """
+        self.inspectorChoice = QtGui.QLabel("Pick your inspector...")
+
         # TODO: if the title == "Settings" it won't be added to the view menu.
+        self.dockWidget(self.inspectorChoice, "Select Inspector", Qt.LeftDockWidgetArea)
         self.dockWidget(self.repoTreeView, "Data Repository", Qt.LeftDockWidgetArea)
         self.dockWidget(self.collector, "Data Collector", Qt.TopDockWidgetArea)
         self.dockWidget(self.configTreeView, "Application Settings", Qt.RightDockWidgetArea)
 
         self.viewMenu.addSeparator()
+
+        # choicePane = PropertiesPane(self.inspectorChoice)
+        # dockWidget = self.dockWidget(detailPane, title, area)
+        # self.dockDetailPane(choicePane, area=Qt.LeftDockWidgetArea)
 
         propertiesPane = PropertiesPane(self.repoTreeView)
         self.dockDetailPane(propertiesPane, area=Qt.LeftDockWidgetArea)
@@ -265,6 +276,26 @@ class MainWindow(QtGui.QMainWindow):
 
         dimensionsPane = DimensionsPane(self.repoTreeView)
         self.dockDetailPane(dimensionsPane, area=Qt.LeftDockWidgetArea)
+
+
+    def _createInspectorsSubMenu(self, menuTitle):
+        """ Creates a QMenu that can be added as a submenu
+        """
+        inspectorMenu = QtGui.QMenu(menuTitle, parent=self)
+
+        action = inspectorMenu.addAction("&Browse inspectors...", self.openInspector)
+        action.setShortcut(QtGui.QKeySequence("Ctrl+i"))
+        inspectorMenu.addSeparator()
+
+        for nr, item in enumerate(self.argosApplication.inspectorRegistry.items):
+            logger.debug("item: {}".format(item.identifier))
+            action = QtGui.QAction(item.name, self, #enabled=True,
+                                   triggered=partial(self.setInspectorById, item.identifier))
+            if nr <= 9: # TODO: make configurable by the user
+                action.setShortcut(QtGui.QKeySequence("Ctrl+{}".format(nr)))
+            inspectorMenu.addAction(action)
+
+        return inspectorMenu
 
 
     # -- End of setup_methods --
@@ -285,7 +316,7 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def dockDetailPane(self, detailPane, title=None, area=None):
-        """ Calls addDockedWidget to add a repo detail pane with a default title.
+        """ Creates a dockWidget and add the detailPane with a default title.
             By default the detail widget is added to the Qt.LeftDockWidgetArea.
         """
         title = detailPane.classLabel() if title is None else title
@@ -595,26 +626,27 @@ class MainWindow(QtGui.QMainWindow):
     def myTest(self):
         """ Function for testing """
         logger.debug("myTest for window: {}".format(self.windowNumber))
-        logger.debug("Repo icon size: {}".format(self.repoTreeView.iconSize()))
-        #self.repoTreeView.setIconSize(QtCore.QSize(32, 32))
-        self.repoTreeView.setIconSize(QtCore.QSize(24, 24))
-        logger.debug("Repo icon size: {}".format(self.repoTreeView.iconSize()))
-        #self.collector.tree.resizeColumnsToContents(startCol=1)
+        # logger.debug("Repo icon size: {}".format(self.repoTreeView.iconSize()))
+        # #self.repoTreeView.setIconSize(QtCore.QSize(32, 32))
+        # self.repoTreeView.setIconSize(QtCore.QSize(24, 24))
+        # logger.debug("Repo icon size: {}".format(self.repoTreeView.iconSize()))
+        # #self.collector.tree.resizeColumnsToContents(startCol=1)
 
-#        from libargos.qt.misc import printChildren
-#        printChildren(self.centralWidget())
-#        print()
-#        print()
+        # from libargos.qt.misc import printChildren
+        # printChildren(self.centralWidget())
+        # print()
+        # print()
+        #
+        #
+        # self.argosApplication.raiseAllWindows()
+        # import gc
+        # from libargos.qt import printAllWidgets
+        # printAllWidgets(self._argosApplication._qApplication, ofType=MainWindow)
+        # print("forcing garbage collection")
+        # gc.collect()
+        # printAllWidgets(self._argosApplication._qApplication, ofType=MainWindow)
 
-
-#        self.argosApplication.raiseAllWindows()
-#        import gc
-#        from libargos.qt import printAllWidgets
-#        printAllWidgets(self._argosApplication._qApplication, ofType=MainWindow)
-#        print("forcing garbage collection")
-#        gc.collect()
-#        printAllWidgets(self._argosApplication._qApplication, ofType=MainWindow)
-
-
+        for item in self.argosApplication.inspectorRegistry.items:
+            logger.debug("item: {}".format(item))
 
 
