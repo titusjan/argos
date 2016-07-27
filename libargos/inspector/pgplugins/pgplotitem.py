@@ -60,11 +60,13 @@ class ArgosPgPlotItem(PlotItem):
         Overrides the autoBtnClicked method.
         Middle mouse click
 
-        The menu is disabled by default. All settings I want can be set using the config tree;
-        the other settings I don't want to support.
+        The original PyQtGraph menu is disabled. All settings I want can be set using the config
+        tree; the other settings I don't want to support. Furthermore a context menu is created
+        that allows the user to rescale the axes. An existing context menu can be given in the
+        contextMenu. In that case the reset axes menu items are added to the existing context menu.
 
-        Autorange is disabled by default as it is expected that the (viewbox of the) plot item will
-        be connected to two PgAxisRangeCti objects that control the (auto)range of the X and Y axes.
+        Autorange is disabled as it is expected that the (viewbox of the) plot item will be
+        connected to two PgAxisRangeCti objects that control the (auto)range of the X and Y axes.
 
         Adds a black border of width 1.
 
@@ -73,15 +75,14 @@ class ArgosPgPlotItem(PlotItem):
     sigAxisReset = QtSignal(int)
 
     def __init__(self,
-                 enableMenu=False,
-                 enableAutoRange=False,
                  borderPen=DEFAULT_BORDER_PEN,
+                 contextMenu=None,
                  *args, **kwargs):
         """ Constructor.
             :param enableMenu: if True right-click opens a context menu (default=False)
             :param borderPen: pen for drawing the viewBox border. Default black and width of 1.
         """
-        super(ArgosPgPlotItem, self).__init__(enableMenu=enableMenu, *args, **kwargs)
+        super(ArgosPgPlotItem, self).__init__(*args, **kwargs)
 
         viewBox = self.getViewBox()
         viewBox.border = borderPen
@@ -100,7 +101,7 @@ class ArgosPgPlotItem(PlotItem):
             yAxisItem.setCursor(Qt.SizeVerCursor)
 
         # Context menu with Reset Zoom.
-        self.contextMenu = QtGui.QMenu()
+        self.contextMenu = QtGui.QMenu() if contextMenu is None else contextMenu
 
         resetZoomMenu = self.contextMenu.addMenu("Reset Zoom")
 

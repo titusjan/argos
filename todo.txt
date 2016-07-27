@@ -13,6 +13,7 @@ TODO version 0.2:
 
 	Reset range when a variable with a new unit/abcissa is selected.
 
+    TextView inspector
 
 TODO version 0.3:
 	scipy.io.loadmat

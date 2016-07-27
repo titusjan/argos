@@ -36,6 +36,7 @@ def nameToIdentifier(fullName):
     """
     return string_to_identifier(fullName, white_space_becomes='')
 
+# TODO: why is this in the Qt package? Only be because we use QtCore settings. Refactor?
 class ClassRegItem(object):
     """ Represents an class that is registered in the registry.
 

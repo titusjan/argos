@@ -21,6 +21,8 @@
 """
 
 from __future__ import absolute_import, division, print_function
+
+import sys
 from functools import partial
 
 from libargos.collect.collector import Collector
@@ -241,8 +243,9 @@ class MainWindow(QtGui.QMainWindow):
 
         ### Inspector Menu ###
         # inspectorMenu = menuBar.addMenu("&Inspector")
-        # inspectorMenu.addMenu(self._createInspectorsSubMenu("Set Inspector"))
-        self.inspectorMenu = menuBar.addMenu(self._createInspectorsSubMenu("Inspector"))
+        # inspectorMenu.addMenu(self._createInspectorSubMenu("Set Inspector"))
+        self.inspectorMenu = menuBar.addMenu(self._createInspectorSubMenu("Inspector",
+                                                                          parent=self))
 
         ### Help Menu ###
 
@@ -277,11 +280,15 @@ class MainWindow(QtGui.QMainWindow):
         dimensionsPane = DimensionsPane(self.repoTreeView)
         self.dockDetailPane(dimensionsPane, area=Qt.LeftDockWidgetArea)
 
+        # Add am extra separator on mac because OS-X adds an 'Enter Full Screen' item
+        if sys.platform.startswith('darwin'):
+            self.viewMenu.addSeparator()
 
-    def _createInspectorsSubMenu(self, menuTitle):
+
+    def _createInspectorSubMenu(self, menuTitle, parent):
         """ Creates a QMenu that can be added as a submenu
         """
-        inspectorMenu = QtGui.QMenu(menuTitle, parent=self)
+        inspectorMenu = QtGui.QMenu(menuTitle, parent=parent)
 
         action = inspectorMenu.addAction("&Browse inspectors...", self.openInspector)
         action.setShortcut(QtGui.QKeySequence("Ctrl+i"))
@@ -289,8 +296,9 @@ class MainWindow(QtGui.QMainWindow):
 
         for nr, item in enumerate(self.argosApplication.inspectorRegistry.items):
             logger.debug("item: {}".format(item.identifier))
-            action = QtGui.QAction(item.name, self, #enabled=True,
-                                   triggered=partial(self.setInspectorById, item.identifier))
+            setAndDrawFn = triggered=partial(self.setAndDrawInspectorById, item.identifier)
+            action = QtGui.QAction(item.name, self, triggered=setAndDrawFn)
+
             if nr <= 9: # TODO: make configurable by the user
                 action.setShortcut(QtGui.QKeySequence("Ctrl+{}".format(nr)))
             inspectorMenu.addAction(action)
@@ -352,6 +360,18 @@ class MainWindow(QtGui.QMainWindow):
             logger.debug("_updateNonDefaultsForCurrentInspector: NO CURRENT INSPECTOR")
 
 
+    def setAndDrawInspectorById(self, identifier):
+        """ Sets the inspector and draw the contents.
+        """
+        self.setInspectorById(identifier)
+        if self.inspector is None:
+            msg = "Unable to import inspector"
+            logger.warn(msg)
+            QtGui.QMessageBox.warning(self, "Warning", msg)
+
+        self.drawInspectorContents(reason=UpdateReason.INSPECTOR_CHANGED)
+
+
     def setInspectorById(self, identifier):
         """ Sets the central inspector widget given a inspector ID.
             Will raise a KeyError if the ID is not found in the registry.
@@ -371,7 +391,6 @@ class MainWindow(QtGui.QMainWindow):
 
             If inspectorRegItem is None, the inspector will be unset. Also, if the underlying class
             cannot be imported a warning is logged and the inspector is unset.
-
         """
         check_class(inspectorRegItem, InspectorRegItem, allow_none=True)
 
@@ -416,6 +435,12 @@ class MainWindow(QtGui.QMainWindow):
                 if self.inspector is None:
                     self.collector.clearAndSetComboBoxes([])
                 else:
+                    # Add context menu for selectting new inspector.
+                    subMenu = self._createInspectorSubMenu("Inspector", parent=self.inspector)
+                    self.inspector.contextMenu.addSeparator()
+                    self.inspector.contextMenu.addMenu(subMenu)
+
+                    # Add and apply config values to the inspector
                     key = self.inspectorRegItem.identifier
                     nonDefaults = self._inspectorsNonDefaults.get(key, {})
                     logger.debug("setting non defaults: {}".format(nonDefaults))
