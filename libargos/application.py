@@ -27,7 +27,7 @@ from libargos.qt.registry import GRP_REGISTRY, nameToIdentifier
 from libargos.repo.repotreemodel import RepoTreeModel
 from libargos.repo.registry import globalRtiRegistry
 from libargos.utils.misc import string_to_identifier
-from libargos.widgets.mainwindow import MainWindow
+from libargos.widgets.mainwindow import MainWindow, UpdateReason
 
 logger = logging.getLogger(__name__)
 
@@ -370,7 +370,7 @@ class ArgosApplication(object):
             mainWindow.setInspectorById(inspectorId)
 
         self.mainWindows.append(mainWindow)
-        mainWindow.drawInspectorContents()
+        mainWindow.drawInspectorContents(reason=UpdateReason.NEW_MAIN_WINDOW)
         mainWindow.show()
 
         if sys.platform.startswith('darwin'):

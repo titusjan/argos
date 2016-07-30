@@ -37,6 +37,7 @@ class InvalidDataError(TypeError):
 
 class UpdateReason(object):
     """ Enumeration class that gives the reason for updating the inspector contents. """
+    NEW_MAIN_WINDOW = "new main window"
     INSPECTOR_CHANGED = "inspector changed"
     COLLECTOR_CHANGED = "collector changed"
     CONFIG_CHANGED = "config changed"
@@ -140,7 +141,7 @@ class AbstractInspector(QtGui.QStackedWidget):
         return self.config.findByNodePath(nodePath).configValue
 
 
-    def updateContents(self, reason=None, initiator=None):
+    def updateContents(self, reason=None, initiator=None): # TODO: reason mandatory?
         """ Tries to draw the widget contents with the updated RTI.
             Shows the error page in case an exception is raised while drawing the contents.
             Descendants should override _drawContents, not updateContents.
@@ -161,6 +162,7 @@ class AbstractInspector(QtGui.QStackedWidget):
         logger.debug("---- Inspector updateContents, reason: {}, initiator: {}"
                      .format(reason, initiator))
         logger.debug("Inspector: {}".format(self))
+        logger.debug("RTI: {}".format(self.collector.rti))
         try:
             self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
 

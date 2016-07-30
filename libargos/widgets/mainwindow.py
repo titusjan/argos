@@ -31,7 +31,7 @@ from libargos.config.abstractcti import AbstractCti
 from libargos.config.configtreemodel import ConfigTreeModel
 from libargos.config.configtreeview import ConfigTreeView
 from libargos.info import DEBUGGING, PROJECT_NAME
-from libargos.inspector.abstract import UpdateReason
+from libargos.inspector.abstract import AbstractInspector, UpdateReason
 from libargos.inspector.dialog import OpenInspectorDialog
 from libargos.inspector.registry import InspectorRegItem
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
@@ -360,41 +360,53 @@ class MainWindow(QtGui.QMainWindow):
             logger.debug("_updateNonDefaultsForCurrentInspector: NO CURRENT INSPECTOR")
 
 
-    def setAndDrawInspectorById(self, identifier):
-        """ Sets the inspector and draw the contents.
-        """
-        self.setInspectorById(identifier)
-        if self.inspector is None:
-            msg = "Unable to import inspector"
-            logger.warn(msg)
-            QtGui.QMessageBox.warning(self, "Warning", msg)
-
-        self.drawInspectorContents(reason=UpdateReason.INSPECTOR_CHANGED)
-
-
     def setInspectorById(self, identifier):
         """ Sets the central inspector widget given a inspector ID.
-            Will raise a KeyError if the ID is not found in the registry.
+
+            If identifier is None, the inspector will be unset. Otherwise it will lookup the
+            inspector class in the registry. It will raise a KeyError if the ID is not found there.
+
+            It will do an import of the inspector code if it's loaded for the first time. If the
+            the inspector class cannot be imported a warning is logged and the inspector is unset.
 
             NOTE: does not draw the new inspector, this is the responsibility of the caller.
         """
-        inspectorRegistry = self.argosApplication.inspectorRegistry
-        inspectorRegItem = inspectorRegistry.getItemById(identifier)
-        self.setInspectorFromRegItem(inspectorRegItem)
+        logger.info("Setting inspector: {}".format(identifier))
+        if not identifier:
+            inspector = None
+            self._inspectorRegItem = None
+        else:
+            inspectorRegistry = self.argosApplication.inspectorRegistry
+            inspectorRegItem = inspectorRegistry.getItemById(identifier)
+
+            self._inspectorRegItem = inspectorRegItem
+            if inspectorRegItem is None:
+                inspector = None
+            else:
+                try:
+                    inspector = inspectorRegItem.create(self.collector, tryImport=True)
+                except ImportError as ex:
+                    logger.exception("Clearing inspector. Unable to create {!r} because {}"
+                                     .format(inspectorRegItem.identifier, ex))
+                    inspector = None
+
+        self.__setInspector(inspector)
+        return inspector
 
 
-    def setInspectorFromRegItem(self, inspectorRegItem):
-        """ Sets the central inspector widget given a inspectorRegItem.
+    def __setInspector(self, inspector):
+        """ Sets the central inspector widget.
+
+            Is a private method because it doesn't set the inspectorRegItem.
 
             Does NOT draw the new inspector, this is the responsibility of the caller.
             It does however update the inspector node in the config tree.
 
-            If inspectorRegItem is None, the inspector will be unset. Also, if the underlying class
-            cannot be imported a warning is logged and the inspector is unset.
+            If inspector is None, the inspector will be unset.
         """
-        check_class(inspectorRegItem, InspectorRegItem, allow_none=True)
+        check_class(inspector, AbstractInspector, allow_none=True)
 
-        logger.debug("setInspectorFromRegItem: {}. Disabling updates.".format(inspectorRegItem))
+        logger.debug("__setInspector: {}. Disabling updates.".format(inspector))
         self.setUpdatesEnabled(False)
         try:
             centralLayout = self.centralWidget().layout()
@@ -416,16 +428,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.inspector.deleteLater()
 
             # Set new inspector
-            self._inspectorRegItem = inspectorRegItem
-            if inspectorRegItem is None:
-                self._inspector = None
-            else:
-                try:
-                    self._inspector = inspectorRegItem.create(self.collector, tryImport=True)
-                except ImportError as ex:
-                    logger.exception("Clearing inspector. Unable to create {!r} because {}"
-                                     .format(inspectorRegItem.identifier, ex))
-                    self._inspector = None
+            self._inspector = inspector
 
             self.setWindowTitle(self.constructWindowTitle())
 
@@ -452,8 +455,20 @@ class MainWindow(QtGui.QMainWindow):
             finally:
                 self.collector.blockSignals(oldBlockState)
         finally:
-            logger.debug("setInspectorFromRegItem: {}. Enabling updates.".format(inspectorRegItem))
+            logger.debug("setInspectorFromRegItem: {}. Enabling updates.".format(inspector))
             self.setUpdatesEnabled(True)
+
+
+    def setAndDrawInspectorById(self, identifier):
+        """ Sets the inspector and draw the contents.
+        """
+        self.setInspectorById(identifier)
+        if self.inspector is None:
+            msg = "Unable to import inspector"
+            logger.warn(msg)
+            QtGui.QMessageBox.warning(self, "Warning", msg)
+
+        self.drawInspectorContents(reason=UpdateReason.INSPECTOR_CHANGED)
 
 
     @QtSlot()
@@ -466,8 +481,8 @@ class MainWindow(QtGui.QMainWindow):
         if dialog.result():
             inspectorRegItem = dialog.getCurrentInspectorRegItem()
             if inspectorRegItem is not None:
-                self.setInspectorFromRegItem(inspectorRegItem)
-                self.drawInspectorContents(reason=UpdateReason.INSPECTOR_CHANGED)
+                self.setAndDrawInspectorById(inspectorRegItem.identifier)
+
 
     @QtSlot()
     def openPluginsDialog(self):
@@ -497,8 +512,14 @@ class MainWindow(QtGui.QMainWindow):
                                    origin=configTreeItem)
 
 
-    def drawInspectorContents(self, reason=None, origin=None):
+    def drawInspectorContents(self, reason, origin=None):
         """ Draws all contents of this window's inspector.
+            The reason and origin parameters are passed on to the inspector's updateContents method.
+
+            :param reason: string describing the reason for the redraw.
+                Should preferably be one of the UpdateReason enumeration class, but new values may
+                be used (which are then ignored by existing inspectors).
+            :param origin: object with extra infor on the reason
         """
         logger.debug("")
         logger.debug("-------- Drawing inspector of window: {} --------".format(self.windowTitle()))
@@ -506,6 +527,7 @@ class MainWindow(QtGui.QMainWindow):
             self.inspector.updateContents(reason=reason, initiator=origin)
         else:
             logger.debug("No inspector selected")
+        logger.debug("Finished draw inspector.\n")
 
 
     # TODO: to repotreemodel? Note that the functionality will be common to selectors.
