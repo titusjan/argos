@@ -83,9 +83,6 @@ class AbstractInspector(QtGui.QStackedWidget):
 
         self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
 
-        # Context menu with inspector choice submenu
-        self.contextMenu = QtGui.QMenu()
-
 
     def finalize(self):
         """ Is called before destruction. Can be used to clean-up resources
@@ -208,7 +205,3 @@ class AbstractInspector(QtGui.QStackedWidget):
         """
         self.errorWidget.setError(msg=msg, title=title)
 
-
-    def contextMenuEvent(self, ev):
-        """ Shows the context menu on right click. """
-        self.contextMenu.popup(ev.globalPos())

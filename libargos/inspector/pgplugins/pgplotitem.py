@@ -100,25 +100,23 @@ class ArgosPgPlotItem(PlotItem):
             yAxisItem.mouseClickEvent = partial(middleMouseClickEvent, self, Y_AXIS)
             yAxisItem.setCursor(Qt.SizeVerCursor)
 
-        # Context menu with Reset Zoom.
-        self.contextMenu = QtGui.QMenu() if contextMenu is None else contextMenu
+        # Context menu with actions to reset the zoom.
+        #self.setContextMenuPolicy(Qt.ActionsContextMenu)
 
-        resetZoomMenu = self.contextMenu.addMenu("Reset Zoom")
+        self.resetAxesAction = QtGui.QAction("Reset Axes", self,
+                                 triggered = lambda: self.emitResetAxisSignal(BOTH_AXES),
+                                 statusTip = "Resets the zoom factor of the X-axis and Y-axis")
+        self.addAction(self.resetAxesAction)
 
-        resetZoomActionBoth = QtGui.QAction("Both Axes", self,
-                                            triggered = lambda: self.emitResetAxisSignal(BOTH_AXES),
-                                            statusTip = "Resets the zoom factor of the X-axes and Y-axes")
-        resetZoomMenu.addAction(resetZoomActionBoth)
+        self.resetXAxisAction = QtGui.QAction("Reset X-axis", self,
+                                 triggered = lambda: self.emitResetAxisSignal(X_AXIS),
+                                 statusTip = "Resets the zoom factor of the X-axis")
+        self.addAction(self.resetXAxisAction)
 
-        resetZoomActionX = QtGui.QAction("X-axes", self,
-                                         triggered = lambda: self.emitResetAxisSignal(X_AXIS),
-                                         statusTip = "Resets the zoom factor of the X-axes")
-        resetZoomMenu.addAction(resetZoomActionX)
-
-        resetZoomActionY = QtGui.QAction("Y-Axes", self,
-                                         triggered = lambda: self.emitResetAxisSignal(Y_AXIS),
-                                         statusTip = "Resets the zoom factor of the Y-axes")
-        resetZoomMenu.addAction(resetZoomActionY)
+        self.resetYAxisAction = QtGui.QAction("Reset Y-axis", self,
+                                 triggered = lambda: self.emitResetAxisSignal(Y_AXIS),
+                                 statusTip = "Resets the zoom factor of the Y-axis")
+        self.addAction(self.resetYAxisAction)
 
 
     def close(self):
@@ -129,6 +127,26 @@ class ArgosPgPlotItem(PlotItem):
         super(ArgosPgPlotItem, self).close()
 
 
+    def contextMenuEvent(self, event):
+        """ Shows the context menu at the cursor position
+
+            We need to take the event-based approach because ArgosPgPlotItem does derives from
+            QGraphicsWidget, and not from QWidget, and therefore doesn't have the
+            customContextMenuRequested signal.
+        """
+        contextMenu = QtGui.QMenu()
+        for action in self.actions():
+            contextMenu.addAction(action)
+        contextMenu.exec_(event.screenPos())
+
+
+    def autoBtnClicked(self):
+        """ Hides the button but does not enable/disable autorange.
+            That will be done by PgAxisRangeCti
+        """
+        self.resetAxesAction.trigger()
+
+
     def emitResetAxisSignal(self, axisNumber):
         """ Emits the sigResetAxis with the axisNumber as parameter
             axisNumber should be 0 for X, 1 for Y, and 2 for both axes.
@@ -136,25 +154,10 @@ class ArgosPgPlotItem(PlotItem):
         assert axisNumber in (VALID_AXES_NUMBERS), \
             "Axis Nr should be one of {}, got {}".format(VALID_AXES_NUMBERS, axisNumber)
 
-        logger.debug("Emitting sigAxisReset({}) for {!r}".format(axisNumber, self))
-        self.sigAxisReset.emit(axisNumber)
-
-
-    def contextMenuEvent(self, event):
-        """ Shows the context menu at the cursor position
-        """
-        self.contextMenu.exec_(event.screenPos())
-
-
-    def autoBtnClicked(self):
-        """ Hides the button but does not enable/disable autorange.
-            That will be done by PgAxisRangeCti
-        """
+        # Hide 'auto-scale (A)' button
         logger.debug("ArgosPgPlotItem.autoBtnClicked, mode:{}".format(self.autoBtn.mode))
         if self.autoBtn.mode == 'auto':
             self.autoBtn.hide()
-
-            self.emitResetAxisSignal(BOTH_AXES)
         else:
             # Does this occur?
             msg = "Unexpected autobutton mode: {}".format(self.autoBtn.mode)
@@ -162,3 +165,7 @@ class ArgosPgPlotItem(PlotItem):
                 raise ValueError(msg)
             else:
                 logger.warn(msg)
+
+        logger.debug("Emitting sigAxisReset({}) for {!r}".format(axisNumber, self))
+        self.sigAxisReset.emit(axisNumber)
+

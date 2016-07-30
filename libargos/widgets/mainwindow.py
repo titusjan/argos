@@ -89,7 +89,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setWindowTitle(self.constructWindowTitle())
 
         self.__setupViews()
-        self.__setupMenu()
+        self.__setupMenus()
         self.__setupDockWidgets()
 
 
@@ -102,6 +102,7 @@ class MainWindow(QtGui.QMainWindow):
         # Disconnect signals
         self.collector.sigContentsChanged.disconnect(self.collectorContentsChanged)
         self._configTreeModel.sigItemChanged.disconnect(self.configContentsChanged)
+        self.customContextMenuRequested.disconnect(self.showContextMenu)
 
 
     @property
@@ -172,7 +173,7 @@ class MainWindow(QtGui.QMainWindow):
         self._configTreeModel.sigItemChanged.connect(self.configContentsChanged)
 
 
-    def __setupMenu(self):
+    def __setupMenus(self):
         """ Sets up the main menu.
         """
         if True:
@@ -235,23 +236,67 @@ class MainWindow(QtGui.QMainWindow):
 
         ### View Menu ###
         self.viewMenu = menuBar.addMenu("&View")
-
         action = self.viewMenu.addAction("Installed &Plugins...", self.openPluginsDialog)
         action.setShortcut(QtGui.QKeySequence("Ctrl+P"))
-
         self.viewMenu.addSeparator()
 
         ### Inspector Menu ###
-        # inspectorMenu = menuBar.addMenu("&Inspector")
-        # inspectorMenu.addMenu(self._createInspectorSubMenu("Set Inspector"))
-        self.inspectorMenu = menuBar.addMenu(self._createInspectorSubMenu("Inspector",
-                                                                          parent=self))
-
+        self.inspectorActionGroup = self.__createInspectorActionGroup(self)
+        self.inspectorMenu = menuBar.addMenu(self.__createInspectorSubMenu("Inspector",
+                                                                           parent=self))
         ### Help Menu ###
-
         menuBar.addSeparator()
         helpMenu = menuBar.addMenu("&Help")
         helpMenu.addAction('&About', self.about)
+
+        ### Context menu ###
+
+        # Note that the dock-widgets have a Qt.PreventContextMenu context menu policy.
+        # Therefor the context menu is only shown in the center widget.
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.showContextMenu)
+
+
+    def __createInspectorSubMenu(self, menuTitle, parent):
+        """ Creates a QMenu that can be added as a submenu
+        """
+        inspectorMenu = QtGui.QMenu(menuTitle, parent=parent)
+
+        action = inspectorMenu.addAction("&Browse inspectors...", self.openInspector)
+        action.setShortcut(QtGui.QKeySequence("Ctrl+i"))
+        inspectorMenu.addSeparator()
+
+        for action in self.inspectorActionGroup.actions():
+            inspectorMenu.addAction(action)
+
+        return inspectorMenu
+
+
+    def __createInspectorActionGroup(self, parent):
+        """ Creates a QMenu that can be added as a submenu
+        """
+        actionGroup = QtGui.QActionGroup(parent)
+        actionGroup.setExclusive(True)
+
+        for nr, item in enumerate(self.argosApplication.inspectorRegistry.items):
+            logger.debug("item: {}".format(item.identifier))
+            setAndDrawFn = partial(self.setAndDrawInspectorById, item.identifier)
+            action = QtGui.QAction(item.name, self, triggered=setAndDrawFn, checkable=True)
+            action.setObjectName("set_inspect_action_" + item.identifier)
+            if nr <= 9: # TODO: make configurable by the user
+                action.setShortcut(QtGui.QKeySequence("Ctrl+{}".format(nr)))
+
+            actionGroup.addAction(action)
+
+        return actionGroup
+
+
+    def showContextMenu(self, pos):
+        """ Shows the context menu at position pos.
+        """
+        contextMenu = QtGui.QMenu()
+        contextMenu.addMenu(self.__createInspectorSubMenu("Set Inspector", contextMenu))
+        contextMenu.exec_(self.mapToGlobal(pos))
 
 
     def __setupDockWidgets(self):
@@ -285,26 +330,6 @@ class MainWindow(QtGui.QMainWindow):
             self.viewMenu.addSeparator()
 
 
-    def _createInspectorSubMenu(self, menuTitle, parent):
-        """ Creates a QMenu that can be added as a submenu
-        """
-        inspectorMenu = QtGui.QMenu(menuTitle, parent=parent)
-
-        action = inspectorMenu.addAction("&Browse inspectors...", self.openInspector)
-        action.setShortcut(QtGui.QKeySequence("Ctrl+i"))
-        inspectorMenu.addSeparator()
-
-        for nr, item in enumerate(self.argosApplication.inspectorRegistry.items):
-            logger.debug("item: {}".format(item.identifier))
-            setAndDrawFn = triggered=partial(self.setAndDrawInspectorById, item.identifier)
-            action = QtGui.QAction(item.name, self, triggered=setAndDrawFn)
-
-            if nr <= 9: # TODO: make configurable by the user
-                action.setShortcut(QtGui.QKeySequence("Ctrl+{}".format(nr)))
-            inspectorMenu.addAction(action)
-
-        return inspectorMenu
-
 
     # -- End of setup_methods --
 
@@ -317,6 +342,9 @@ class MainWindow(QtGui.QMainWindow):
         dockWidget = QtGui.QDockWidget(title, parent=self)
         dockWidget.setObjectName("dock_" + string_to_identifier(title))
         dockWidget.setWidget(widget)
+
+        # Prevent parent context menu (with e.g. 'set inspector" option) to be displayed.
+        dockWidget.setContextMenuPolicy(Qt.PreventContextMenu)
 
         self.addDockWidget(area, dockWidget)
         self.viewMenu.addAction(dockWidget.toggleViewAction())
@@ -406,7 +434,7 @@ class MainWindow(QtGui.QMainWindow):
         """
         check_class(inspector, AbstractInspector, allow_none=True)
 
-        logger.debug("__setInspector: {}. Disabling updates.".format(inspector))
+        logger.debug("Disabling updates.")
         self.setUpdatesEnabled(False)
         try:
             centralLayout = self.centralWidget().layout()
@@ -438,11 +466,6 @@ class MainWindow(QtGui.QMainWindow):
                 if self.inspector is None:
                     self.collector.clearAndSetComboBoxes([])
                 else:
-                    # Add context menu for selectting new inspector.
-                    subMenu = self._createInspectorSubMenu("Inspector", parent=self.inspector)
-                    self.inspector.contextMenu.addSeparator()
-                    self.inspector.contextMenu.addMenu(subMenu)
-
                     # Add and apply config values to the inspector
                     key = self.inspectorRegItem.identifier
                     nonDefaults = self._inspectorsNonDefaults.get(key, {})
@@ -455,7 +478,7 @@ class MainWindow(QtGui.QMainWindow):
             finally:
                 self.collector.blockSignals(oldBlockState)
         finally:
-            logger.debug("setInspectorFromRegItem: {}. Enabling updates.".format(inspector))
+            logger.debug("Enabling updates.")
             self.setUpdatesEnabled(True)
 
 

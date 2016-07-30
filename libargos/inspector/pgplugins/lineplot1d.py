@@ -124,7 +124,7 @@ class PgLinePlot1d(AbstractInspector):
 
         # The actual plot item.
 
-        self.plotItem = ArgosPgPlotItem(contextMenu=self.contextMenu)
+        self.plotItem = ArgosPgPlotItem()
         self.viewBox = self.plotItem.getViewBox()
         self.graphicsLayoutWidget.addItem(self.plotItem, 1, 0)
 
