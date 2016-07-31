@@ -104,6 +104,12 @@ class ClassRegItem(object):
         """
         return os.path.dirname(self._fullName)
 
+    def splitName(self):
+        """ Returns (self.library, self.name) tuple but is more efficient than calling both
+            properties separately.
+        """
+        return os.path.split(self._fullName)
+
     @property
     def fullClassName(self):
         """ full name of the underlying class.

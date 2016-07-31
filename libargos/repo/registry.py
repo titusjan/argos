@@ -38,7 +38,7 @@ class RtiRegItem(ClassRegItem):
 
     @property
     def extensions(self):
-        """ Extensions that will automatically open as this RTI.
+        """ Filename extensions that will automatically open as this RTI.
         """
         return self._extensions
 

@@ -34,7 +34,8 @@ from libargos.info import DEBUGGING, PROJECT_NAME
 from libargos.inspector.abstract import AbstractInspector, UpdateReason
 from libargos.inspector.dialog import OpenInspectorDialog
 from libargos.inspector.registry import InspectorRegItem
-from libargos.qt import Qt, QtCore, QtGui, QtSlot
+from libargos.inspector.selectionpane import InspectorSelectionPane, addInspectorActionsToMenu
+from libargos.qt import Qt, QtCore, QtGui, QtSignal, QtSlot
 
 from libargos.repo.detailplugins.attr import AttributesPane
 from libargos.repo.detailplugins.dim import DimensionsPane
@@ -59,6 +60,9 @@ class MainWindow(QtGui.QMainWindow):
     """ Main application window.
     """
     __numInstances = 0
+
+    # Emitted when the inspector has changed.
+    sigInspectorChanged = QtSignal(InspectorRegItem)
 
     def __init__(self, argosApplication):
         """ Constructor
@@ -102,6 +106,7 @@ class MainWindow(QtGui.QMainWindow):
         # Disconnect signals
         self.collector.sigContentsChanged.disconnect(self.collectorContentsChanged)
         self._configTreeModel.sigItemChanged.disconnect(self.configContentsChanged)
+        self.sigInspectorChanged.disconnect(self.inspectorSelectionPane.updateFromInspectorRegItem)
         self.customContextMenuRequested.disconnect(self.showContextMenu)
 
 
@@ -243,14 +248,22 @@ class MainWindow(QtGui.QMainWindow):
 
         ### View Menu ###
         self.viewMenu = menuBar.addMenu("&View")
-        action = self.viewMenu.addAction("Installed &Plugins...", self.openPluginsDialog)
+        action = self.viewMenu.addAction("Installed &Plugins...", self.execPluginsDialog)
         action.setShortcut(QtGui.QKeySequence("Ctrl+P"))
         self.viewMenu.addSeparator()
 
         ### Inspector Menu ###
+        self.execInspectorDialogAction = QtGui.QAction("&Browse Inspectors...", self,
+                                                       triggered=self.execInspectorDialog)
+        self.execInspectorDialogAction.setShortcut(QtGui.QKeySequence("Ctrl+i"))
+
         self.inspectorActionGroup = self.__createInspectorActionGroup(self)
-        self.inspectorMenu = menuBar.addMenu(self.__createInspectorSubMenu("Inspector",
-                                                                           parent=self))
+        self.inspectorMenu = QtGui.QMenu("Inspector", parent=self)
+        addInspectorActionsToMenu(self.inspectorMenu, self.execInspectorDialogAction,
+                                  self.inspectorActionGroup)
+        menuBar.addMenu(self.inspectorMenu)
+
+
         ### Help Menu ###
         menuBar.addSeparator()
         helpMenu = menuBar.addMenu("&Help")
@@ -264,28 +277,15 @@ class MainWindow(QtGui.QMainWindow):
         self.customContextMenuRequested.connect(self.showContextMenu)
 
 
-    def __createInspectorSubMenu(self, menuTitle, parent):
-        """ Creates a QMenu that can be added as a submenu
-        """
-        inspectorMenu = QtGui.QMenu(menuTitle, parent=parent)
-
-        action = inspectorMenu.addAction("&Browse inspectors...", self.openInspectorDialog)
-        action.setShortcut(QtGui.QKeySequence("Ctrl+i"))
-        inspectorMenu.addSeparator()
-
-        for action in self.inspectorActionGroup.actions():
-            inspectorMenu.addAction(action)
-
-        return inspectorMenu
-
-
     def __createInspectorActionGroup(self, parent):
         """ Creates an action group with 'set inspector' actions for all installed inspector.
         """
         actionGroup = QtGui.QActionGroup(parent)
         actionGroup.setExclusive(True)
 
-        for nr, item in enumerate(self.argosApplication.inspectorRegistry.items):
+        sortedItems = sorted(self.argosApplication.inspectorRegistry.items,
+                             key=lambda item: item.identifier)
+        for nr, item in enumerate(sortedItems):
             logger.debug("item: {}".format(item.identifier))
             setAndDrawFn = partial(self.setAndDrawInspectorById, item.identifier)
             action = QtGui.QAction(item.name, self, triggered=setAndDrawFn, checkable=True)
@@ -301,10 +301,17 @@ class MainWindow(QtGui.QMainWindow):
     def __setupDockWidgets(self):
         """ Sets up the dock widgets. Must be called after the menu is setup.
         """
-        # TODO: if the title == "Settings" it won't be added to the view menu.
         #self.dockWidget(self.currentInspectorPane, "Current Inspector", Qt.LeftDockWidgetArea)
+
+        self.inspectorSelectionPane = InspectorSelectionPane(self.execInspectorDialogAction,
+                                                             self.inspectorActionGroup)
+        self.sigInspectorChanged.connect(self.inspectorSelectionPane.updateFromInspectorRegItem)
+        self.dockWidget(self.inspectorSelectionPane, "Current Inspector",
+                        area=Qt.LeftDockWidgetArea)
+
         self.dockWidget(self.repoTreeView, "Data Repository", Qt.LeftDockWidgetArea)
         self.dockWidget(self.collector, "Data Collector", Qt.TopDockWidgetArea)
+        # TODO: if the title == "Settings" it won't be added to the view menu.
         self.dockWidget(self.configTreeView, "Application Settings", Qt.RightDockWidgetArea)
 
         self.viewMenu.addSeparator()
@@ -329,7 +336,8 @@ class MainWindow(QtGui.QMainWindow):
         """ Shows the context menu at position pos.
         """
         contextMenu = QtGui.QMenu()
-        contextMenu.addMenu(self.__createInspectorSubMenu("Set Inspector", contextMenu))
+        addInspectorActionsToMenu(contextMenu, self.execInspectorDialogAction,
+                                  self.inspectorActionGroup)
         contextMenu.exec_(self.mapToGlobal(pos))
 
 
@@ -373,7 +381,7 @@ class MainWindow(QtGui.QMainWindow):
                                        PROJECT_NAME, self.argosApplication.profile)
 
     @QtSlot()
-    def openInspectorDialog(self):
+    def execInspectorDialog(self):
         """ Opens the inspector dialog box to let the user change the current inspector.
         """
         dialog = OpenInspectorDialog(self.argosApplication.inspectorRegistry, parent=self)
@@ -423,6 +431,8 @@ class MainWindow(QtGui.QMainWindow):
 
             NOTE: does not draw the new inspector, this is the responsibility of the caller.
             Also, the corresponding action is not triggered.
+
+            Emits the sigInspectorChanged(self.re
         """
         logger.info("Setting inspector: {}".format(identifier))
         if not identifier:
@@ -447,7 +457,9 @@ class MainWindow(QtGui.QMainWindow):
                     self.getInspectorActionById(identifier).setEnabled(False)
 
         self.__setInspector(inspector)
-        return inspector
+
+        logger.debug("Emitting sigInspectorChanged({})".format(self.inspectorRegItem))
+        self.sigInspectorChanged.emit(self.inspectorRegItem)
 
 
     def __setInspector(self, inspector):
@@ -527,7 +539,7 @@ class MainWindow(QtGui.QMainWindow):
 
 
     @QtSlot()
-    def openPluginsDialog(self):
+    def execPluginsDialog(self):
         """ Shows the plugins dialog with the registered plugins
         """
         pluginsDialog = PluginsDialog(parent=self,
