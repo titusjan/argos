@@ -119,6 +119,13 @@ class MainWindow(QtGui.QMainWindow):
         return self._inspectorRegItem
 
     @property
+    def inspectorId(self):
+        """ The ID of the inspector registry item that has been selected.
+            E.g. ''. Can be None (e.g. at start-up).
+        """
+        return self._inspectorRegItem.identifier if self._inspectorRegItem else None
+
+    @property
     def inspectorName(self):
         """ The name of the inspector registry item that has been selected.
             E.g. 'Table'. Can be None (e.g. at start-up).
@@ -262,7 +269,7 @@ class MainWindow(QtGui.QMainWindow):
         """
         inspectorMenu = QtGui.QMenu(menuTitle, parent=parent)
 
-        action = inspectorMenu.addAction("&Browse inspectors...", self.openInspector)
+        action = inspectorMenu.addAction("&Browse inspectors...", self.openInspectorDialog)
         action.setShortcut(QtGui.QKeySequence("Ctrl+i"))
         inspectorMenu.addSeparator()
 
@@ -273,7 +280,7 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def __createInspectorActionGroup(self, parent):
-        """ Creates a QMenu that can be added as a submenu
+        """ Creates an action group with 'set inspector' actions for all installed inspector.
         """
         actionGroup = QtGui.QActionGroup(parent)
         actionGroup.setExclusive(True)
@@ -282,7 +289,7 @@ class MainWindow(QtGui.QMainWindow):
             logger.debug("item: {}".format(item.identifier))
             setAndDrawFn = partial(self.setAndDrawInspectorById, item.identifier)
             action = QtGui.QAction(item.name, self, triggered=setAndDrawFn, checkable=True)
-            action.setObjectName("set_inspect_action_" + item.identifier)
+            action.setData(item.identifier)
             if nr <= 9: # TODO: make configurable by the user
                 action.setShortcut(QtGui.QKeySequence("Ctrl+{}".format(nr)))
 
@@ -291,30 +298,16 @@ class MainWindow(QtGui.QMainWindow):
         return actionGroup
 
 
-    def showContextMenu(self, pos):
-        """ Shows the context menu at position pos.
-        """
-        contextMenu = QtGui.QMenu()
-        contextMenu.addMenu(self.__createInspectorSubMenu("Set Inspector", contextMenu))
-        contextMenu.exec_(self.mapToGlobal(pos))
-
-
     def __setupDockWidgets(self):
         """ Sets up the dock widgets. Must be called after the menu is setup.
         """
-        self.inspectorChoice = QtGui.QLabel("Pick your inspector...")
-
         # TODO: if the title == "Settings" it won't be added to the view menu.
-        self.dockWidget(self.inspectorChoice, "Select Inspector", Qt.LeftDockWidgetArea)
+        #self.dockWidget(self.currentInspectorPane, "Current Inspector", Qt.LeftDockWidgetArea)
         self.dockWidget(self.repoTreeView, "Data Repository", Qt.LeftDockWidgetArea)
         self.dockWidget(self.collector, "Data Collector", Qt.TopDockWidgetArea)
         self.dockWidget(self.configTreeView, "Application Settings", Qt.RightDockWidgetArea)
 
         self.viewMenu.addSeparator()
-
-        # choicePane = PropertiesPane(self.inspectorChoice)
-        # dockWidget = self.dockWidget(detailPane, title, area)
-        # self.dockDetailPane(choicePane, area=Qt.LeftDockWidgetArea)
 
         propertiesPane = PropertiesPane(self.repoTreeView)
         self.dockDetailPane(propertiesPane, area=Qt.LeftDockWidgetArea)
@@ -330,8 +323,15 @@ class MainWindow(QtGui.QMainWindow):
             self.viewMenu.addSeparator()
 
 
-
     # -- End of setup_methods --
+
+    def showContextMenu(self, pos):
+        """ Shows the context menu at position pos.
+        """
+        contextMenu = QtGui.QMenu()
+        contextMenu.addMenu(self.__createInspectorSubMenu("Set Inspector", contextMenu))
+        contextMenu.exec_(self.mapToGlobal(pos))
+
 
     def dockWidget(self, widget, title, area):
         """ Adds a widget as a docked widget.
@@ -372,20 +372,44 @@ class MainWindow(QtGui.QMainWindow):
         return "{} #{} | {}-{}".format(self.inspectorName, self.windowNumber,
                                        PROJECT_NAME, self.argosApplication.profile)
 
-
-    def _updateNonDefaultsForCurrentInspector(self):
-        """ Store the (non-default) config values for the current inspector in a local dictionary.
-            This dictionary is later used to store value for persistence.
-
-            This function nust be called after the inspector was drawn because that may update
-            some derived config values (e.g. ranges)
+    @QtSlot()
+    def openInspectorDialog(self):
+        """ Opens the inspector dialog box to let the user change the current inspector.
         """
-        if self.inspectorRegItem and self.inspector:
-            key = self.inspectorRegItem.identifier
-            logger.debug("_updateNonDefaultsForCurrentInspector: {}".format(key))
-            self._inspectorsNonDefaults[key] = self.inspector.config.getNonDefaultsDict()
-        else:
-            logger.debug("_updateNonDefaultsForCurrentInspector: NO CURRENT INSPECTOR")
+        dialog = OpenInspectorDialog(self.argosApplication.inspectorRegistry, parent=self)
+        dialog.setCurrentInspectorRegItem(self.inspectorRegItem)
+        dialog.exec_()
+        if dialog.result():
+            inspectorRegItem = dialog.getCurrentInspectorRegItem()
+            if inspectorRegItem is not None:
+                self.getInspectorActionById(inspectorRegItem.identifier).trigger()
+
+
+    def getInspectorActionById(self, identifier):
+        """ Sets the inspector and draw the contents
+            Triggers the corresponding action so that it is checked in the menus.
+        """
+        for action in self.inspectorActionGroup.actions():
+            if action.data() == identifier:
+                return action
+        raise KeyError("No action found with ID: {}".format(identifier))
+
+
+    def setAndDrawInspectorById(self, identifier):
+        """ Sets the inspector and draw the contents.
+            Does NOT trigger any actions, the user must updated the actions by hand (or call
+            getInspectorActionById(identifier).trigger() instead).
+        """
+        self.setInspectorById(identifier)
+
+        # Show dialog box if import was unsuccesful.
+        regItem = self.inspectorRegItem
+        if regItem and not regItem.successfullyImported:
+            msg = "Unable to import {} inspector.\n{}".format(regItem.identifier, regItem.exception)
+            QtGui.QMessageBox.warning(self, "Warning", msg)
+            logger.warn(msg)
+
+        self.drawInspectorContents(reason=UpdateReason.INSPECTOR_CHANGED)
 
 
     def setInspectorById(self, identifier):
@@ -398,6 +422,7 @@ class MainWindow(QtGui.QMainWindow):
             the inspector class cannot be imported a warning is logged and the inspector is unset.
 
             NOTE: does not draw the new inspector, this is the responsibility of the caller.
+            Also, the corresponding action is not triggered.
         """
         logger.info("Setting inspector: {}".format(identifier))
         if not identifier:
@@ -414,9 +439,12 @@ class MainWindow(QtGui.QMainWindow):
                 try:
                     inspector = inspectorRegItem.create(self.collector, tryImport=True)
                 except ImportError as ex:
+                    # Only log the error. No dialog box or user interaction here because this
+                    # function may be called at startup.
                     logger.exception("Clearing inspector. Unable to create {!r} because {}"
                                      .format(inspectorRegItem.identifier, ex))
                     inspector = None
+                    self.getInspectorActionById(identifier).setEnabled(False)
 
         self.__setInspector(inspector)
         return inspector
@@ -425,7 +453,8 @@ class MainWindow(QtGui.QMainWindow):
     def __setInspector(self, inspector):
         """ Sets the central inspector widget.
 
-            Is a private method because it doesn't set the inspectorRegItem.
+            This is a private method because it doesn't set the inspectorRegItem.
+            Therefore, do not call it directly, use setInpectorById instead!
 
             Does NOT draw the new inspector, this is the responsibility of the caller.
             It does however update the inspector node in the config tree.
@@ -458,8 +487,6 @@ class MainWindow(QtGui.QMainWindow):
             # Set new inspector
             self._inspector = inspector
 
-            self.setWindowTitle(self.constructWindowTitle())
-
             # Update collector widgets and the config tree
             oldBlockState = self.collector.blockSignals(True)
             try:
@@ -481,30 +508,22 @@ class MainWindow(QtGui.QMainWindow):
             logger.debug("Enabling updates.")
             self.setUpdatesEnabled(True)
 
+            self.setWindowTitle(self.constructWindowTitle())
 
-    def setAndDrawInspectorById(self, identifier):
-        """ Sets the inspector and draw the contents.
+
+    def _updateNonDefaultsForCurrentInspector(self):
+        """ Store the (non-default) config values for the current inspector in a local dictionary.
+            This dictionary is later used to store value for persistence.
+
+            This function nust be called after the inspector was drawn because that may update
+            some derived config values (e.g. ranges)
         """
-        self.setInspectorById(identifier)
-        if self.inspector is None:
-            msg = "Unable to import inspector"
-            logger.warn(msg)
-            QtGui.QMessageBox.warning(self, "Warning", msg)
-
-        self.drawInspectorContents(reason=UpdateReason.INSPECTOR_CHANGED)
-
-
-    @QtSlot()
-    def openInspector(self):
-        """ Opens the inspector dialog box to let the user change the current inspector.
-        """
-        dialog = OpenInspectorDialog(self.argosApplication.inspectorRegistry, parent=self)
-        dialog.setCurrentInspectorRegItem(self.inspectorRegItem)
-        dialog.exec_()
-        if dialog.result():
-            inspectorRegItem = dialog.getCurrentInspectorRegItem()
-            if inspectorRegItem is not None:
-                self.setAndDrawInspectorById(inspectorRegItem.identifier)
+        if self.inspectorRegItem and self.inspector:
+            key = self.inspectorRegItem.identifier
+            logger.debug("_updateNonDefaultsForCurrentInspector: {}".format(key))
+            self._inspectorsNonDefaults[key] = self.inspector.config.getNonDefaultsDict()
+        else:
+            logger.debug("_updateNonDefaultsForCurrentInspector: NO CURRENT INSPECTOR")
 
 
     @QtSlot()

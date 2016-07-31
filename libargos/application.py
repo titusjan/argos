@@ -361,6 +361,7 @@ class ArgosApplication(object):
             If the inspector identifier is not found in the registry, a KeyError is raised.
         """
         mainWindow = MainWindow(self)
+        self.mainWindows.append(mainWindow)
 
         if settings:
             mainWindow.readViewSettings(settings)
@@ -369,9 +370,10 @@ class ArgosApplication(object):
             inspectorId = nameToIdentifier(inspectorFullName)
             mainWindow.setInspectorById(inspectorId)
 
-        self.mainWindows.append(mainWindow)
+        mainWindow.getInspectorActionById(mainWindow.inspectorId).setChecked(True)
         mainWindow.drawInspectorContents(reason=UpdateReason.NEW_MAIN_WINDOW)
         mainWindow.show()
+
 
         if sys.platform.startswith('darwin'):
             # Calling raise before the QApplication.exec_ only shows the last window

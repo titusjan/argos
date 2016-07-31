@@ -2,7 +2,7 @@
 """
 import sys
 
-# Uncomment the next line to run the example from within the distribution
+# Uncomment the next line to run the example from within the distribution.
 # sys.path.append("../../")
 
 import os, logging
