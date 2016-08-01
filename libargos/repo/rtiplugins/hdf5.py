@@ -25,7 +25,6 @@ import logging, os
 import h5py
 import numpy as np
 
-from libargos.qt import QtGui
 from libargos.utils.cls import check_class
 from libargos.repo.iconfactory import RtiIconFactory
 from libargos.repo.baserti import BaseRti
@@ -73,14 +72,7 @@ def dataSetElementType(h5Dataset):
     else:
         if dtype.metadata and 'vlen' in dtype.metadata:
             vlen_type = dtype.metadata['vlen']
-
-            if vlen_type == str:
-                return "<vlen ascii>"
-            elif vlen_type == unicode:
-                return "<vlen unicode>"
-            else:
-                logger.warn("Unexpected vlen type: {!r}".format(vlen_type))
-                return "<vlen string>"
+            return "<vlen {}>".format(vlen_type.__name__)
 
     return str(dtype)
 
