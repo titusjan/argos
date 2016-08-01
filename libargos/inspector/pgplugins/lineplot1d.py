@@ -162,6 +162,12 @@ class PgLinePlot1d(AbstractInspector):
         return tuple(['X'])
 
 
+    def _hasValidData(self):
+        """ Returns True if the inspector has data that can be plotted.
+        """
+        return self.slicedArray is not None and array_has_real_numbers(self.slicedArray)
+
+
     def _clearContents(self):
         """ Clears the  the inspector widget when no valid input is available.
         """
@@ -169,7 +175,6 @@ class PgLinePlot1d(AbstractInspector):
         self.plotItem.clear()
         self.plotItem.setLabel('left', '')
         self.plotItem.setLabel('bottom', '')
-
 
 
     def _drawContents(self, reason=None, initiator=None):
@@ -180,7 +185,7 @@ class PgLinePlot1d(AbstractInspector):
         """
         self.slicedArray = self.collector.getSlicedArray()
 
-        if self.slicedArray is None or not array_has_real_numbers(self.slicedArray):
+        if not self._hasValidData():
             self._clearContents()
             raise InvalidDataError("No data available or it does not contain real numbers")
 
@@ -212,31 +217,39 @@ class PgLinePlot1d(AbstractInspector):
         """ Updates the probe text with the values under the cursor.
             Draws a vertical line and a symbol at the position of the probe.
         """
-        if (not self.config.probeCti.configValue or
-            not self.viewBox.sceneBoundingRect().contains(viewPos)):
+        try:
+            if (not self._hasValidData() or not self.config.probeCti.configValue or
+                not self.viewBox.sceneBoundingRect().contains(viewPos)):
 
-            self.crossLineVerShadow.setVisible(False)
-            self.crossLineVertical.setVisible(False)
-            self.probeLabel.setText("")
-            self.probeDataItem.clear()
-        else:
-            scenePos = self.viewBox.mapSceneToView(viewPos)
-            index = int(scenePos.x())
-
-            if self.slicedArray is not None and 0 <= index < len(self.slicedArray):
-                txt = "pos = {!r}, value = {!r}".format(index, self.slicedArray[index])
-                self.probeLabel.setText(txt)
-                self.crossLineVerShadow.setVisible(True)
-                self.crossLineVerShadow.setPos(index)
-                self.crossLineVertical.setVisible(True)
-                self.crossLineVertical.setPos(index)
-                self.probeDataItem.setData((index,), (self.slicedArray[index],))
-            else:
-                txt = "<span style='color: grey'>no data at cursor</span>"
-                self.probeLabel.setText(txt)
                 self.crossLineVerShadow.setVisible(False)
                 self.crossLineVertical.setVisible(False)
+                self.probeLabel.setText("")
                 self.probeDataItem.clear()
+            else:
+                scenePos = self.viewBox.mapSceneToView(viewPos)
+                index = int(scenePos.x())
 
+                if self.slicedArray is not None and 0 <= index < len(self.slicedArray):
+                    txt = "pos = {!r}, value = {!r}".format(index, self.slicedArray[index])
+                    self.probeLabel.setText(txt)
+                    self.crossLineVerShadow.setVisible(True)
+                    self.crossLineVerShadow.setPos(index)
+                    self.crossLineVertical.setVisible(True)
+                    self.crossLineVertical.setPos(index)
+                    self.probeDataItem.setData((index,), (self.slicedArray[index],))
+                else:
+                    txt = "<span style='color: grey'>no data at cursor</span>"
+                    self.probeLabel.setText(txt)
+                    self.crossLineVerShadow.setVisible(False)
+                    self.crossLineVertical.setVisible(False)
+                    self.probeDataItem.clear()
 
+        except Exception as ex:
+            # In contrast to _drawContents, this function is a slot and thus must not throw
+            # exceptions. The exception is logged. Perhaps we should clear the cross plots, but
+            # this could, in turn, raise exceptions.
+            if DEBUGGING:
+                raise
+            else:
+                logger.exception(ex)
 

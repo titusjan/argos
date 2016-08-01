@@ -326,6 +326,12 @@ class PgImagePlot2d(AbstractInspector):
         return tuple(['Y', 'X'])
 
 
+    def _hasValidData(self):
+        """ Returns True if the inspector has data that can be plotted.
+        """
+        return self.slicedArray is not None and array_has_real_numbers(self.slicedArray)
+
+
     def _clearContents(self):
         """ Clears the contents when no valid data is available
         """
@@ -336,7 +342,6 @@ class PgImagePlot2d(AbstractInspector):
         self.imageItem.clear()
         self.imagePlotItem.setLabel('left', '')
         self.imagePlotItem.setLabel('bottom', '')
-
 
 
     def _drawContents(self, reason=None, initiator=None):
@@ -377,7 +382,7 @@ class PgImagePlot2d(AbstractInspector):
                 gridLayout.activate()
 
         self.slicedArray = self.collector.getSlicedArray()
-        if self.slicedArray is None or not array_has_real_numbers(self.slicedArray):
+        if not self._hasValidData():
             self._clearContents()
             raise InvalidDataError("No data available or it does not contain real numbers")
 
@@ -425,7 +430,8 @@ class PgImagePlot2d(AbstractInspector):
             self.horCrossPlotItem.clear()
             self.verCrossPlotItem.clear()
 
-            if self.slicedArray is not None and self.viewBox.sceneBoundingRect().contains(viewPos):
+            if (self._hasValidData() and self.slicedArray is not None
+                and self.viewBox.sceneBoundingRect().contains(viewPos)):
 
                 # Calculate the row and column at the cursor. I just math.floor because the pixel
                 # corners of the image lie at integer values (and not the centers of the pixels).
