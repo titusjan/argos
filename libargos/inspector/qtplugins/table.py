@@ -44,7 +44,7 @@ def resizeAllSections(header, sectionSize):
 
 
 class TableInspectorCti(MainGroupCti):
-    """ Configuration tree for a PgLinePlot1d inspector
+    """ Configuration tree for a TableInspector
     """
     def __init__(self, nodeName, defaultData=None):
 

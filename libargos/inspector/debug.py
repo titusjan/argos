@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Empty inspector.
+""" Debug inspector.
 """
 import logging
 
@@ -27,12 +27,12 @@ from libargos.qt import Qt, QtGui
 logger = logging.getLogger(__name__)
 
 
-class EmptyInspector(AbstractInspector):
+class DebugInspector(AbstractInspector):
     """ Empty inspector, mainly for debugging purposes.
     """
     def __init__(self, collector, parent=None):
 
-        super(EmptyInspector, self).__init__(collector, parent=parent)
+        super(DebugInspector, self).__init__(collector, parent=parent)
 
         self.label = QtGui.QLabel()
         self.contentsLayout.addWidget(self.label)
@@ -99,7 +99,7 @@ class EmptyInspector(AbstractInspector):
             The reason and initiator parameters are ignored.
             See AbstractInspector.updateContents for their description.
         """
-        logger.debug("EmptyInspector._drawContents: {}".format(self))
+        logger.debug("DebugInspector._drawContents: {}".format(self))
 
         slicedArray = self.collector.getSlicedArray()
         if slicedArray is None:

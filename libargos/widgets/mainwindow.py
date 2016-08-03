@@ -285,7 +285,8 @@ class MainWindow(QtGui.QMainWindow):
 
         sortedItems = sorted(self.argosApplication.inspectorRegistry.items,
                              key=lambda item: item.identifier)
-        for nr, item in enumerate(sortedItems):
+        start = 0 if DEBUGGING else 1 # During debugging, the DebugInspector has the #0 shortcut
+        for nr, item in enumerate(sortedItems, start):
             logger.debug("item: {}".format(item.identifier))
             setAndDrawFn = partial(self.setAndDrawInspectorById, item.identifier)
             action = QtGui.QAction(item.name, self, triggered=setAndDrawFn, checkable=True)

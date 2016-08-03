@@ -478,7 +478,9 @@ class Collector(QtGui.QWidget):
         """ Slice the rti using a tuple of slices made from the values of the combo and spin boxes
 
             :returns: Numpy array with the same number of dimension as the number of
-                comboboxes; returns None if no slice can be made.
+                comboboxes (this can be zero!).
+
+                Returns None if no slice can be made (i.e. the RTI is not sliceable).
         """
         #logger.debug("getSlicedArray() called")
 
@@ -498,15 +500,29 @@ class Collector(QtGui.QWidget):
         # interpreted as an index. With a tuple, array[(exp1, exp2, ..., expN)] is equivalent to
         # array[exp1, exp2, ..., expN].
         # See: http://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
-        #logger.debug("Array slice: {}".format(str(sliceList)))
+        logger.debug("Array slice list: {}".format(str(sliceList)))
         slicedArray = self.rti[tuple(sliceList)]
+
+        logger.debug("SlicedArray type before: {}".format(type(slicedArray)))
+
+        # If there are no comboboxes the sliceList will contain no Slices objects, only ints. Then
+        # the resulting slicedArray will be a usually a scalar (only compound fields may yield an
+        # array). We convert this scalar to a zero-dimensional Numpy array so that inspectors
+        # always get an array (having the same number of dimensions as the dimensionality of the
+        # inspector, i.e. the number of comboboxes).
+        if self.maxCombos == 0:
+            slicedArray = np.array(slicedArray)
+
+        # Post-condition type check
+        assert isinstance(slicedArray, np.ndarray), \
+            "Numpy array expected. Got: {}".format(type(slicedArray))
 
         # Add fake dimensions of length 1 so that result.ndim will equal the number of combo boxes
         for dimNr in range(slicedArray.ndim, self.maxCombos):
             #logger.debug("Adding fake dimension: {}".format(dimNr))
             slicedArray = np.expand_dims(slicedArray, dimNr)
 
-        # Post-condition check
+        # Post-condition dimension check
         assert slicedArray.ndim == self.maxCombos, \
             "Bug: getSlicedArray should return a {:d}D array, got: {}D" \
             .format(self.maxCombos, slicedArray.ndim)

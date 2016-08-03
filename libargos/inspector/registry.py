@@ -19,11 +19,12 @@
 
 import logging
 
+from libargos.info import DEBUGGING
 from libargos.qt.registry import ClassRegItem, ClassRegistry, GRP_REGISTRY
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_INSPECTOR = 'Empty Inspector'
+DEFAULT_INSPECTOR = 'Qt/Table'
 
 GRP_REGISTRY_INSPECTORS = GRP_REGISTRY + '/inspectors'
 
@@ -83,11 +84,17 @@ class InspectorRegistry(ClassRegistry):
     def getDefaultItems(self):
         """ Returns a list with the default plugins in the inspector registry.
         """
-        return [
-            InspectorRegItem(DEFAULT_INSPECTOR, 'libargos.inspector.empty.EmptyInspector'),
-            InspectorRegItem('Qt/Table', 'libargos.inspector.table.TableInspector'),
+        plugins = [
+            InspectorRegItem(DEFAULT_INSPECTOR,
+                             'libargos.inspector.qtplugins.table.TableInspector'),
+            InspectorRegItem('Qt/Text',
+                             'libargos.inspector.qtplugins.text.TextInspector'),
             InspectorRegItem('PyQtGraph/1D Line Plot',
                              'libargos.inspector.pgplugins.lineplot1d.PgLinePlot1d'),
             InspectorRegItem('PyQtGraph/2D Image Plot',
                              'libargos.inspector.pgplugins.imageplot2d.PgImagePlot2d'),
             ]
+        if DEBUGGING:
+            plugins.append(InspectorRegItem('Debug Inspector',
+                                            'libargos.inspector.debug.DebugInspector'))
+        return plugins
