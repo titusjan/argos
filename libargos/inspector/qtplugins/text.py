@@ -24,6 +24,7 @@ from libargos.config.groupcti import MainGroupCti, GroupCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.inspector.abstract import AbstractInspector
 from libargos.qt import Qt, QtGui
+from libargos.utils.cls import to_string
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +80,7 @@ class TextInspector(AbstractInspector):
     def _createConfig(self):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
-        return TextInspectorCti('Inspector')
+        return TextInspectorCti('inspector')
 
 
     def _drawContents(self, reason=None, initiator=None):
@@ -96,11 +97,13 @@ class TextInspector(AbstractInspector):
         if slicedArray is None:
             return
 
-        # Sanity check
+        # Sanity check, the slicedArray should be zero-dimensional. It can be used as a scalar.
+        # In fact, using an index (e.g. slicedArray[0]) will raise an exception.
         assert slicedArray.ndim == 0, \
             "Expected zero-dimensional array. Got: {}".format(slicedArray.ndim)
 
         # Valid data from here...
+        slicedScalar = slicedArray[()] # Convert to Numpy scalar
 
         font = QtGui.QFont()
         font.setFamily('Courier')
@@ -112,5 +115,5 @@ class TextInspector(AbstractInspector):
         #self.editor.setWordWrapMode(wrapMode)
         self.editor.setWordWrapMode(self.config.wordWrapCti.configValue)
 
-        text = str(slicedArray)
+        text = to_string(slicedScalar, bytes_encoding='utf-8')
         self.editor.setPlainText(text)

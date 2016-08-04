@@ -116,8 +116,12 @@ class AbstractInspector(QtGui.QStackedWidget):
         """ The names of the axes that this inspector visualizes.
 
             This determines the dimensionality of the inspector. For example an inspector that shows
-            an image, and has axes names 'X' and 'Y', is 2-dimensional. The axesNames should be
-            row-first, so in this example: ['Y', 'X']
+            an image, and has axes names 'X' and 'Y', is 2-dimensional. Also the slicedArray that
+            will be returned by the collector will then be 2-dimensional. This invariant also holds
+            when the axesNames is an empty tuple. The slicedArray will then be zero-dimensional.
+            For a 0-D example, see qtplugins.text.TextInspector.
+
+            The axesNames should be row-first, so in this example: ['Y', 'X']
 
             The names should not include the string "Axis"; the Collector.fullAxisNames()
             returns that.

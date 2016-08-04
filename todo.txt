@@ -4,8 +4,6 @@ TODO version 0.2:
 	Masked arrays and fill values. (/Users/titusjan/Data/argos/OMI-Aura_L3-OMDOAO3e_2010m0602_v003-2011m1109t115919.he5)
 
 
-	Button to select inspectors.
-
 	Inspector selection dropwindow (use in new window)
 	    Fix 'clone-window' in main menu (is there a need for a separate 'new window'?)
 
@@ -14,6 +12,8 @@ TODO version 0.2:
 	Reset range when a variable with a new unit/abcissa is selected.
 
     TextView inspector
+
+    Test by opening all test data.
 
 TODO version 0.3:
 	scipy.io.loadmat
@@ -124,6 +124,9 @@ BUGS:
 	/argos/hdf-eos/OMI-Aura_L2-OMNO2_2008m0720t2016-o21357_v003-2008m0721t101450.he5/HDFEOS/SWATHS/ColumnAmountNO2/Data Fields/CloudRadianceFraction
 	  File "/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/numpy/lib/function_base.py", line 257, in histogram
         'bins must increase monotonically.')
+
+    # Exit code 139 segfault
+    /argos/icm/S5P_ICM_CA_UVN_20120919T051721_20120919T065655_01890_01_001000_20151002T140000.h5/BAND1_ANALYSIS/GAINS_CCD/gains_ccd_B_group_keys
 
     Exit context menu in PyQtGraphs with a left click gives an error.
 

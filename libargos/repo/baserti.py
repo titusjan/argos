@@ -24,8 +24,8 @@ import os
 from libargos.info import program_directory, DEBUGGING
 from libargos.qt.treeitems import AbstractLazyLoadTreeItem
 from libargos.repo.iconfactory import RtiIconFactory
-from libargos.utils.cls import StringType, check_class, is_a_sequence
-
+from libargos.utils import six
+from libargos.utils.cls import check_class, is_a_sequence
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
         self._isOpen = False
         self._exception = None # Any exception that may occur when opening this item.
 
-        check_class(fileName, StringType, allow_none=True)
+        check_class(fileName, six.string_types, allow_none=True)
         if fileName:
             fileName = os.path.abspath(fileName)
         self._fileName = fileName

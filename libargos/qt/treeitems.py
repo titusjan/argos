@@ -1,7 +1,8 @@
 
 import logging
 
-from libargos.utils.cls import StringType, check_class, check_is_a_string
+from libargos.utils import six
+from libargos.utils.cls import check_class, check_is_a_string
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ class BaseTreeItem(object):
                 Currently we don't check for uniqueness in the children but this may change.
                 The nodeName may not contain slashes (/).
         """
-        check_class(nodeName, StringType, allow_none=False)
+        check_class(nodeName, six.string_types, allow_none=False)
         assert nodeName, "nodeName may not be empty"
         assert '/' not in nodeName, "nodeName may not contain slashes"
         self._nodeName = str(nodeName)

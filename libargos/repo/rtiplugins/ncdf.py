@@ -42,7 +42,7 @@ def ncVarAttributes(ncVar):
         # Due to some internal error netCDF4 may raise an AttributeError or KeyError,
         # depending on its version.
         logger.warn("Unable to read the attributes from {}. Reason: {}"
-                    .format(self.nodeName, ex))
+                    .format(ncVar.name, ex))
         return {}
 
 

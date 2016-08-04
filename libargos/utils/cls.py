@@ -19,21 +19,16 @@
 
 """
 
-import logging
+import logging, numbers
 import numpy as np
 
+from libargos.info import DEBUGGING
+from libargos.utils import six
 from .misc import python2
+
 
 logger = logging.getLogger(__name__)
 
-# This is actually a type definition, not a constant.
-# basestring is valid in Python 2
-#pylint: disable=C0103,E0602
-
-if python2():
-    StringType = basestring
-else:
-    StringType = str
 
 #pylint: enable=C0103
 
@@ -42,66 +37,112 @@ def type_name(var):
     return type(var).__name__
 
 
-def _py2_to_string(var, bytes_encoding='utf-8'):
+def to_string(var, bytes_encoding='utf-8'):
     """ Converts var to a (unicode) string
         If var consists of bytes, the bytes_encoding is used to decode the bytes.
         If bytes_encoding is None or '', etc... no encoding is done.
     """
-    if bytes_encoding and (type(var) == bytes or type(var) == np.bytes_):
-        return var.decode(bytes_encoding)
-    return unicode(var)
+    #logger.debug("to_string: {!r} ({})".format(var, type(var)))
+    if is_binary(var):
+        result = var.decode(bytes_encoding)
+    elif is_text(var):
+        result = six.text_type(var)
+    elif is_a_string(var):
+        result = str(var)
+    elif isinstance(var, numbers.Real):
+        result = repr(var)
+    elif isinstance(var, numbers.Integral):
+        result = repr(var)
+    else:
+        result = repr(var)
 
-
-def _py3_to_string(var, bytes_encoding='utf-8'):
-    """ Converts var to a (unicode) string
-        If var consists of bytes, the bytes_encoding is used to decode the bytes.
-        If bytes_encoding is None or '', etc... no encoding is done.
-    """
-    if bytes_encoding and (type(var) == bytes or type(var) == np.bytes_):
-        return var.decode(bytes_encoding)
-    return str(var)
-
-to_string = _py2_to_string if python2() else _py3_to_string
+    #logger.debug("to_string: {!r} ({}) -> result = {!r}".format(var, type(var), result))
+    return result
 
 
 def is_a_string(var, allow_none=False):
     """ Returns True if var is a string (ascii or unicode)
 
+        Result             py-2  py-3
+        -----------------  ----- -----
+        b'bytes literal'   True  False
+         'string literal'  True  True
+        u'unicode literal' True  True
+
         Also returns True if the var is a numpy string (numpy.string_, numpy.unicode_).
-        Use is_a_numpy_string to test only for numpy strings.
-
-        :param var: variable of which we want to know if it is a string
-        :type var: any type
-        :returns: True if var is of type string
-        :rtype: Boolean
     """
-    return isinstance(var, StringType) or (var is None and allow_none)
+    return isinstance(var, six.string_types) or (var is None and allow_none)
 
 
-
-def is_a_numpy_string(var, allow_none=False):
-    """ Returns True if var is of type: numpy.string_, numpy.unicode_
-
-        :param var: variable of which we want to know if it is a string
-        :type var: any type
-        :returns: True if var is of type string
-        :rtype: Boolean
+def check_is_a_string(var, allow_none=False):
+    """ Calls is_a_string and raises a type error if the check fails.
     """
-    return isinstance(var, (np.string_, np.unicode_)) or (var is None and allow_none)
+    if not is_a_string(var, allow_none=allow_none):
+        raise TypeError("var must be a string, however type(var) is {}"
+                        .format(type(var)))
+
+
+def is_text(var, allow_none=False):
+    """ Returns True if var is a unicode text
+
+        Result             py-2  py-3
+        -----------------  ----- -----
+        b'bytes literal'   False False
+         'string literal'  False True
+        u'unicode literal' True  True
+
+        Also works with the corresponding numpy types.
+    """
+    return isinstance(var, six.text_type) or (var is None and allow_none)
+
+# Not used yet
+# def check_is_text(var, allow_none=False):
+#     """ Calls is_text and raises a type error if the check fails.
+#     """
+#     if not is_text(var, allow_none=allow_none):
+#         raise TypeError("var must be a text (unicode str), however type(var) is {}"
+#                         .format(type(var)))
+
+
+def is_binary(var, allow_none=False):
+    """ Returns True if var is a binary (bytes) objects
+
+        Result             py-2  py-3
+        -----------------  ----- -----
+        b'bytes literal'   True  True
+         'string literal'  True  False
+        u'unicode literal' False False
+
+        Also works with the corresponding numpy types.
+    """
+    return isinstance(var, six.binary_type) or (var is None and allow_none)
+
+
+# Not used yet
+# def check_is_text(var, allow_none=False):
+#     """ Calls is_binary and raises a type error if the check fails.
+#     """
+#     if not is_binary(var, allow_none=allow_none):
+#         raise TypeError("var must be a binary (bytes), however type(var) is {}"
+#                         .format(type(var)))
+
+
+# Not used. Remove?
+# def is_a_numpy_string(var, allow_none=False):
+#     """ Returns True if var is of type: numpy.string_, numpy.unicode_
+#
+#         :param var: variable of which we want to know if it is a string
+#         :type var: any type
+#         :returns: True if var is of type string
+#         :rtype: Boolean
+#     """
+#     return isinstance(var, (np.string_, np.unicode_)) or (var is None and allow_none)
 
 
 def is_a_sequence(var, allow_none=False):
     """ Returns True if var is a list or a tuple (but not a string!)
     """
     return (type(var) == list or type(var) == tuple or (var is None and allow_none))
-
-
-def check_is_a_string(var, allow_none=False):
-    """ Calls is_a_sequence and raises a type error if the check fails.
-    """
-    if not is_a_string(var, allow_none=allow_none):
-        raise TypeError("var must be a string, however type(var) is {}"
-                        .format(type(var)))
 
 
 def check_is_a_sequence(var, allow_none=False):
