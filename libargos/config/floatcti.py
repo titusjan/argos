@@ -152,7 +152,7 @@ class FloatCtiEditor(AbstractCtiEditor):
 
 
 class SnFloatCti(AbstractCti):
-    """ Config Tree Item to store a floating point number. It can be edited using a QDoubleSpinBox.
+    """ Config Tree Item to store a floating point number in Scientific Notation, e.g. 3.14e01
     """
     def __init__(self, nodeName, defaultData=0,
                  minValue = None, maxValue = None, precision = 2,
@@ -233,7 +233,7 @@ class SnFloatCti(AbstractCti):
 
 
 class SnFloatCtiEditor(AbstractCtiEditor):
-    """ A CtiEditor which contains a ScientificDoubleSpinBox for editing FloatCti objects.
+    """ A CtiEditor which contains a ScientificDoubleSpinBox for editing SnFloatCti objects.
     """
     def __init__(self, cti, delegate, precision, parent=None):
         """ See the AbstractCtiEditor for more info on the parameters

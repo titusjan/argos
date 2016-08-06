@@ -85,6 +85,20 @@ class ChoiceCti(AbstractCti):
         return self._configValues[self.data]
 
 
+    @property
+    def iterConfigValues(self):
+        """ Returns a generator expression to iterate over al config values
+        """
+        return (value for value in self._configValues)
+
+
+    @property
+    def iterDisplayValues(self):
+        """ Returns a generator expression to iterate over al display values
+        """
+        return (value for value in self._displayValues)
+
+
     def _dataToString(self, data):
         """ Conversion function used to convert the (default)data to the display value.
         """

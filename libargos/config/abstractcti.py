@@ -532,6 +532,9 @@ class AbstractCtiEditor(QtGui.QWidget):
         """
         super(AbstractCtiEditor, self).__init__(parent=parent)
 
+        # Prevent underlying table cell from being visible if the editor doesn't fill the cell
+        self.setAutoFillBackground(True)
+
         self._subEditors = []
         self.delegate = delegate
         self.cti = cti

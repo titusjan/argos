@@ -285,14 +285,15 @@ class MainWindow(QtGui.QMainWindow):
 
         sortedItems = sorted(self.argosApplication.inspectorRegistry.items,
                              key=lambda item: item.identifier)
-        start = 0 if DEBUGGING else 1 # During debugging, the DebugInspector has the #0 shortcut
-        for nr, item in enumerate(sortedItems, start):
+        shortCutNr = 1
+        for item in sortedItems:
             logger.debug("item: {}".format(item.identifier))
             setAndDrawFn = partial(self.setAndDrawInspectorById, item.identifier)
             action = QtGui.QAction(item.name, self, triggered=setAndDrawFn, checkable=True)
             action.setData(item.identifier)
-            if nr <= 9: # TODO: make configurable by the user
-                action.setShortcut(QtGui.QKeySequence("Ctrl+{}".format(nr)))
+            if shortCutNr <= 9 and "debug" not in item.identifier: # TODO: make configurable by the user
+                action.setShortcut(QtGui.QKeySequence("Ctrl+{}".format(shortCutNr)))
+                shortCutNr += 1
 
             actionGroup.addAction(action)
 

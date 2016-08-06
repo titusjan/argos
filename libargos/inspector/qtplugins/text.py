@@ -20,8 +20,8 @@
 import logging
 
 from libargos.config.groupcti import MainGroupCti, GroupCti
-#from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
+from libargos.config.qtctis import FontCti
 from libargos.inspector.abstract import AbstractInspector
 from libargos.qt import Qt, QtGui
 from libargos.utils.cls import to_string
@@ -33,10 +33,16 @@ logger = logging.getLogger(__name__)
 class TextInspectorCti(MainGroupCti):
     """ Configuration tree for a PgLinePlot1d inspector
     """
-    def __init__(self, nodeName):
+    def __init__(self, textInspector, nodeName):
+        """ Constructor
+
+            :param textInspector: the TextInspector widget that is being configured
+            :param nodeName: node name
+        """
 
         super(TextInspectorCti, self).__init__(nodeName)
 
+        self.textInspector = textInspector
         #self.wordWrapCti = self.insertChild(BoolCti("word wrap", True))
 
         Opt = QtGui.QTextOption
@@ -51,6 +57,13 @@ class TextInspectorCti(MainGroupCti):
             ChoiceCti('encoding', editable=True,
                       configValues=['utf-8', 'ascii', 'latin-1', 'windows-1252']))
 
+        font = QtGui.QFont()
+        #font.setFamily('Courier')
+        #font.setFixedPitch(True)
+        font.setPointSize(70)
+        self.fontCti = self.insertChild(FontCti(self.textInspector.editor, "font",
+                                                #defaultData=font))
+                                                defaultData=QtGui.QFont('Courier', 13)))
 
 
 class TextInspector(AbstractInspector):
@@ -81,11 +94,10 @@ class TextInspector(AbstractInspector):
         return tuple()
 
 
-
     def _createConfig(self):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
-        return TextInspectorCti('inspector')
+        return TextInspectorCti(textInspector=self, nodeName='inspector')
 
 
     def _drawContents(self, reason=None, initiator=None):
@@ -110,15 +122,10 @@ class TextInspector(AbstractInspector):
         # Valid data from here...
         slicedScalar = slicedArray[()] # Convert to Numpy scalar
 
-        font = QtGui.QFont()
-        font.setFamily('Courier')
-        font.setFixedPitch(True)
-        font.setPointSize(13)
-
-        self.editor.setFont(font)
-        #wrapMode = QtGui.QTextOption.WordWrap if self.config.wordWrapCti.configValue else
-        #self.editor.setWordWrapMode(wrapMode)
         self.editor.setWordWrapMode(self.config.wordWrapCti.configValue)
 
         text = to_string(slicedScalar, decode_bytes=self.config.encodingCti.configValue)
         self.editor.setPlainText(text)
+
+        # Update the editor font from the font config item (will call self.editor.setFont)
+        self.config.updateTarget()

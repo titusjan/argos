@@ -23,7 +23,7 @@ from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor, InvalidI
 from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.floatcti import FloatCti
-
+from libargos.info import DEBUGGING
 from libargos.qt import Qt, QtCore, QtGui
 
 logger = logging.getLogger(__name__)
@@ -134,7 +134,6 @@ class ColorCtiEditor(AbstractCtiEditor):
         pickButton = QtGui.QToolButton()
         pickButton.setText("...")
         pickButton.setToolTip("Open color dialog.")
-        #pickButton.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'err.warning.svg')))
         pickButton.setFocusPolicy(Qt.NoFocus)
         pickButton.clicked.connect(self.openColorDialog)
 
@@ -183,6 +182,212 @@ class ColorCtiEditor(AbstractCtiEditor):
                 raise InvalidInputError("Invalid input: {!r}".format(text))
 
         return  QtGui.QColor(text)
+
+
+
+class FontCti(AbstractCti):
+    """ Config Tree Item that configures a QFont
+
+        The target font will be be updated by calling updateTarget (of the root CTI)
+    """
+    def __init__(self, targetWidget, nodeName='font', defaultData=None):
+        """ Constructor.
+
+            :param targetWidget: a QWidget that must have a setFont() method
+            For the (other) parameters see the AbstractCti constructor documentation.
+        """
+        super(FontCti, self).__init__(nodeName,
+                                defaultData=QtGui.QFont() if defaultData is None else defaultData)
+
+        self._targetWidget = targetWidget
+
+        configValues = [''] + QtGui.QFontDatabase().families()
+        self.familyCti = self.insertChild(ChoiceCti("family", configValues=configValues))
+
+
+    @property
+    def data(self):
+        """ Returns the font of this item.
+        """
+        return self._data
+
+
+    @data.setter
+    def data(self, data):
+        """ Sets the font data of this item.
+            Does type conversion to ensure data is always of the correct type.
+
+            Also updates the children (which is the reason for this property to be overloaded.
+        """
+        self._data = self._enforceDataType(data) # Enforce self._data to be a QFont
+        configValues = list(self.familyCti.iterConfigValues)
+        family = self.data.family()
+        try:
+            idx = configValues.index(family)
+        except ValueError as ex:
+            logger.warn("{} not found in config values. Using emtpy choice.".format(family))
+            idx = configValues.index('')
+
+        self.familyCti.data = idx
+
+
+    @property
+    def defaultData(self):
+        """ Returns the default font of this item.
+        """
+        return self._defaultData
+
+
+    @defaultData.setter
+    def defaultData(self, defaultData):
+        """ Sets the data of this item.
+            Does type conversion to ensure default data is always of the correct type.
+        """
+        self._defaultData = self._enforceDataType(defaultData) # Enforce to be a QFont
+        configValues = list(self.familyCti.iterConfigValues)
+        family = self.defaultData.family()
+        try:
+            idx = configValues.index(family)
+        except ValueError as ex:
+            logger.warn("{} not found in config values. Using emtpy choice.".format(family))
+            idx = configValues.index('')
+
+        self.familyCti.defaultData = idx
+
+
+
+    def _enforceDataType(self, data):
+        """ Converts to str so that this CTI always stores that type.
+        """
+        result = QtGui.QFont(data)
+        logger.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+        logger.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@______enforceDataType: family = {}, size = {}".format(result.family(), result.pointSizeF()))
+        return result
+
+
+    @property
+    def displayValue(self):
+        """ Returns the string representation of data for use in the tree view.
+            Returns the empty string.
+        """
+        return ''
+
+
+    @property
+    def debugInfo(self):
+        """ Returns the string representation of data for use in the tree view.
+            Returns the empty string. If info.DEBUGGING is True, QFont.toString is used.
+        """
+        return self._dataToString(self.data)
+
+
+    def _dataToString(self, data):
+        """ Conversion function used to convert the (default)data to the display value.
+        """
+        return data.toString() # data is a QFont
+
+
+    def _updateTargetFromNode(self):
+        """ Applies the font config settings to the target widget's font.
+
+            That is the targetWidget.setFont() is called with a font create from the config values.
+        """
+        font = self.data
+        if self.familyCti.configValue:
+            font.setFamily(self.familyCti.configValue)
+        else:
+            font.setFamily(QtGui.QFont().family()) # default family
+        self._targetWidget.setFont(font)
+
+
+    def _nodeGetNonDefaultsDict(self):
+        """ Retrieves this nodes` values as a dictionary to be used for persistence.
+            Non-recursive auxiliary function for getNonDefaultsDict
+        """
+        dct = {}
+        if self.data != self.defaultData:
+            dct['data'] = self.data.toString() # calls QFont.toString()
+        return dct
+
+
+    def _nodeSetValuesFromDict(self, dct):
+        """ Sets values from a dictionary in the current node.
+            Non-recursive auxiliary function for setValuesFromDict
+        """
+        if 'data' in dct:
+            qFont = QtGui.QFont()
+            success = qFont.fromString(dct['data'])
+            if not success:
+                msg = "Unable to create QFont from string {!r}".format(dct['data'])
+                logger.warn(msg)
+                if DEBUGGING:
+                    raise ValueError(msg)
+            self.data = qFont
+
+
+    def createEditor(self, delegate, parent, option):
+        """ Creates a FontCtiEditor.
+            For the parameters see the AbstractCti documentation.
+        """
+        return FontCtiEditor(self, delegate, parent=parent)
+
+
+
+
+class FontCtiEditor(AbstractCtiEditor):
+    """ A CtiEditor which contains a label and a button for opening the Qt font dialog
+    """
+    def __init__(self, cti, delegate, parent=None):
+        """ See the AbstractCtiEditor for more info on the parameters
+        """
+        super(FontCtiEditor, self).__init__(cti, delegate, parent=parent)
+
+        pickButton = QtGui.QToolButton()
+        pickButton.setText("...")
+        pickButton.setToolTip("Open font dialog.")
+        pickButton.setFocusPolicy(Qt.NoFocus)
+        pickButton.clicked.connect(self.execFontDialog)
+
+        self.pickButton = self.addSubEditor(pickButton)
+
+        if False and DEBUGGING:
+            self.label =  self.addSubEditor(QtGui.QLabel(self.cti.displayValue))
+            labelSizePolicy = self.label.sizePolicy()
+            self.label.setSizePolicy(QtGui.QSizePolicy.MinimumExpanding,
+                                     labelSizePolicy.verticalPolicy())
+
+
+    def finalize(self):
+        """ Is called when the editor is closed. Disconnect signals.
+        """
+        self.pickButton.clicked.disconnect(self.execFontDialog)
+        super(FontCtiEditor, self).finalize()
+
+
+    def execFontDialog(self):
+        """ Opens a QColorDialog for the user
+        """
+        currentFont = self.getData()
+        newFont, ok = QtGui.QFontDialog.getFont(currentFont, self)
+        if ok:
+            self.setData(newFont)
+        else:
+            self.setData(currentFont)
+        self.commitAndClose()
+
+
+    def setData(self, data):
+        """ Provides the main editor widget with a data to manipulate.
+        """
+        # Set the data in the 'editor_data' property of the pickButton to that getData
+        # can pass the same value back into the CTI. # TODO: use a member?
+        self.pickButton.setProperty("editor_data", data)
+
+
+    def getData(self):
+        """ Gets data from the editor widget.
+        """
+        return self.pickButton.property("editor_data")
 
 
 

@@ -67,6 +67,7 @@ class RepoTreeView(ArgosTreeView):
         self.addHeaderContextMenu(checked=checked, enabled=enabled, checkable={})
 
         self.setContextMenuPolicy(Qt.DefaultContextMenu) # will call contextMenuEvent
+        self.setUniformRowHeights(True)
 
         # Add actions
         self.topLevelItemActionGroup = QtGui.QActionGroup(self) # TODO: not used anymore?
