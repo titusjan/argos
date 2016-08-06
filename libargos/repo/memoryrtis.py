@@ -42,6 +42,8 @@ def _createFromObject(obj, *args, **kwargs):
         return MappingRti(obj, *args, **kwargs)
     elif is_an_array(obj):
         return ArrayRti(obj, *args, **kwargs)
+    elif isinstance(obj, bytearray):
+        return ArrayRti(np.array(obj), *args, **kwargs)
     else:
         return ScalarRti(obj, *args, **kwargs)
 

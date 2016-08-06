@@ -70,7 +70,7 @@ class AttributesPane(DetailTablePane):
                     # Seems a bug: https://github.com/numpy/numpy/issues/385
                     attrStr = repr(attrValue)
                 except Exception:
-                    attrStr = to_string(attrValue, bytes_encoding='utf-8')
+                    attrStr = to_string(attrValue, decode_bytes='utf-8')
 
                 try:
                     type_str = type(attrValue).__name__

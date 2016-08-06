@@ -234,7 +234,7 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
 
             # Numpy strings must be converted to regular strings,
             # otherwise they don't show up.
-            return to_string(cellValue, bytes_encoding='utf-8')
+            return to_string(cellValue, decode_bytes='utf-8')
         else:
             return None
 

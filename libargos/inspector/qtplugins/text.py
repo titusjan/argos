@@ -26,6 +26,7 @@ from libargos.inspector.abstract import AbstractInspector
 from libargos.qt import Qt, QtGui
 from libargos.utils.cls import to_string
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -45,6 +46,10 @@ class TextInspectorCti(MainGroupCti):
                                      'Boundaries or anywhere'],
                       configValues=[Opt.NoWrap, Opt.WordWrap, Opt.WrapAnywhere,
                                     Opt.WrapAtWordBoundaryOrAnywhere]))
+
+        self.encodingCti = self.insertChild(
+            ChoiceCti('encoding', editable=True,
+                      configValues=['utf-8', 'ascii', 'latin-1', 'windows-1252']))
 
 
 
@@ -115,5 +120,5 @@ class TextInspector(AbstractInspector):
         #self.editor.setWordWrapMode(wrapMode)
         self.editor.setWordWrapMode(self.config.wordWrapCti.configValue)
 
-        text = to_string(slicedScalar, bytes_encoding='utf-8')
+        text = to_string(slicedScalar, decode_bytes=self.config.encodingCti.configValue)
         self.editor.setPlainText(text)

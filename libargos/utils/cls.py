@@ -29,6 +29,12 @@ from .misc import python2
 
 logger = logging.getLogger(__name__)
 
+# For al list of encodings the the standard library see.
+if six.PY2:
+    URL_PYTHON_ENCODINGS_DOC = "https://docs.python.org/2/library/codecs.html#standard-encodings"
+else:
+    URL_PYTHON_ENCODINGS_DOC = "https://docs.python.org/3/library/codecs.html#standard-encodings"
+
 
 #pylint: enable=C0103
 
@@ -37,18 +43,22 @@ def type_name(var):
     return type(var).__name__
 
 
-def to_string(var, bytes_encoding='utf-8'):
-    """ Converts var to a (unicode) string
-        If var consists of bytes, the bytes_encoding is used to decode the bytes.
-        If bytes_encoding is None or '', etc... no encoding is done.
+def to_string(var, decode_bytes='utf-8'):
+    """ Converts var to a python string or uncode string so Qt widgets can display them.
+        If var consists of bytes, the decode_bytes is used to decode the bytes.
+
     """
     #logger.debug("to_string: {!r} ({})".format(var, type(var)))
     if is_binary(var):
-        result = var.decode(bytes_encoding)
+        try:
+            result = var.decode(decode_bytes, 'replace')
+        except LookupError as ex:
+            raise LookupError("{}\n\nFor a list of encodings in Python see: {}"
+                              .format(ex, URL_PYTHON_ENCODINGS_DOC))
     elif is_text(var):
-        result = six.text_type(var)
+        result = six.text_type(var) # convert possible numpy.unicode_ to regular unicode
     elif is_a_string(var):
-        result = str(var)
+        result = str(var)           # convert possible numpy.str_ to regular string
     elif isinstance(var, numbers.Real):
         result = repr(var)
     elif isinstance(var, numbers.Integral):
@@ -168,13 +178,13 @@ def check_is_a_mapping(var, allow_none=False):
 
 
 def is_an_array(var, allow_none=False):
-    """ Returns True if var is a dictionary # TODO: ordered dict
+    """ Returns True if var is a numpy array.
     """
     return isinstance(var, np.ndarray) or (var is None and allow_none)
 
 
 def check_is_an_array(var, allow_none=False):
-    """ Calls is_a_mapping and raises a type error if the check fails.
+    """ Calls is_an_array and raises a type error if the check fails.
     """
     if not is_an_array(var, allow_none=allow_none):
         raise TypeError("var must be a NumPy array, however type(var) is {}"
