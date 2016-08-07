@@ -22,6 +22,7 @@ import logging
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor, InvalidInputError
 from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
+from libargos.config.intcti import IntCti
 from libargos.config.floatcti import FloatCti
 from libargos.info import DEBUGGING
 from libargos.qt import Qt, QtCore, QtGui
@@ -59,6 +60,36 @@ def createPenWidthCti(nodeName, defaultData=1.0, zeroValueText=None):
     return FloatCti(nodeName, defaultData=defaultData, specialValueText=zeroValueText,
                     minValue=0.1 if zeroValueText is None else 0.0,
                     maxValue=100, stepSize=0.1, decimals=1)
+
+
+def fontFamilyIndex(qFont, families):
+    """ Searches the index of qFont.family in the families list.
+        If qFont.family() is not in the list, the index of qFont.defaultFamily() is returned.
+        If that is also not present an error is raised.
+    """
+    try:
+        return families.index(qFont.family())
+    except ValueError:
+        if False and DEBUGGING:
+            raise
+        else:
+            logger.warn("{} not found in font families, using default.".format(qFont.family()))
+            return families.index(qFont.defaultFamily())
+
+
+def fontWeightIndex(qFont, weights):
+    """ Searches the index of qFont.family in the weight list.
+        If qFont.weight() is not in the list, the index of QFont.Normal is returned.
+        If that is also not present an error is raised.
+    """
+    try:
+        return weights.index(qFont.weight())
+    except ValueError:
+        if False and DEBUGGING:
+            raise
+        else:
+            logger.warn("{} not found in font weights, using normal.".format(qFont.weight()))
+            return weights.index(QtGui.QFont.Normal)
 
 
 class ColorCti(AbstractCti):
@@ -184,7 +215,6 @@ class ColorCtiEditor(AbstractCtiEditor):
         return  QtGui.QColor(text)
 
 
-
 class FontCti(AbstractCti):
     """ Config Tree Item that configures a QFont
 
@@ -201,8 +231,33 @@ class FontCti(AbstractCti):
 
         self._targetWidget = targetWidget
 
-        configValues = [''] + QtGui.QFontDatabase().families()
-        self.familyCti = self.insertChild(ChoiceCti("family", configValues=configValues))
+        families = QtGui.QFontDatabase().families()
+        defaultFamilyIdx = fontFamilyIndex(self.defaultData, families)
+
+        self.familyCti = self.insertChild(
+            ChoiceCti("family", configValues=families, defaultData=defaultFamilyIdx))
+
+        self.pointSizeCti = self.insertChild(
+            IntCti("size", self.defaultData.pointSize(),
+                   minValue=1, maxValue=500, stepSize=1, suffix=' pt'))
+
+        QtF = QtGui.QFont
+        weights = [QtF.Light, QtF.Normal, QtF.DemiBold, QtF.Bold, QtF.Black]
+        self.weightCti = self.insertChild(
+            ChoiceCti("weight", defaultData=fontWeightIndex(self.defaultData, weights),
+                      displayValues=['Light', 'Normal', 'DemiBold', 'Bold', 'Black'],
+                      configValues=weights))
+
+        self.italicCti = self.insertChild(BoolCti("italic", self.defaultData.italic()))
+
+
+    def _enforceDataType(self, data):
+        """ Converts to str so that this CTI always stores that type.
+        """
+        result = QtGui.QFont(data)
+        logger.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+        logger.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@______enforceDataType: family = {}, size = {}".format(result.family(), result.pointSizeF()))
+        return result
 
 
     @property
@@ -220,15 +275,10 @@ class FontCti(AbstractCti):
             Also updates the children (which is the reason for this property to be overloaded.
         """
         self._data = self._enforceDataType(data) # Enforce self._data to be a QFont
-        configValues = list(self.familyCti.iterConfigValues)
-        family = self.data.family()
-        try:
-            idx = configValues.index(family)
-        except ValueError as ex:
-            logger.warn("{} not found in config values. Using emtpy choice.".format(family))
-            idx = configValues.index('')
-
-        self.familyCti.data = idx
+        self.familyCti.data = fontFamilyIndex(self.data, list(self.familyCti.iterConfigValues))
+        self.pointSizeCti.data = self.data.pointSize()
+        self.weightCti.data = fontWeightIndex(self.data, list(self.weightCti.iterConfigValues))
+        self.italicCti.data = self.data.italic()
 
 
     @property
@@ -244,25 +294,11 @@ class FontCti(AbstractCti):
             Does type conversion to ensure default data is always of the correct type.
         """
         self._defaultData = self._enforceDataType(defaultData) # Enforce to be a QFont
-        configValues = list(self.familyCti.iterConfigValues)
-        family = self.defaultData.family()
-        try:
-            idx = configValues.index(family)
-        except ValueError as ex:
-            logger.warn("{} not found in config values. Using emtpy choice.".format(family))
-            idx = configValues.index('')
-
-        self.familyCti.defaultData = idx
-
-
-
-    def _enforceDataType(self, data):
-        """ Converts to str so that this CTI always stores that type.
-        """
-        result = QtGui.QFont(data)
-        logger.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        logger.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@______enforceDataType: family = {}, size = {}".format(result.family(), result.pointSizeF()))
-        return result
+        self.familyCti.defaultData = fontFamilyIndex(self.defaultData,
+                                                     list(self.familyCti.iterConfigValues))
+        self.pointSizeCti.defaultData = self.defaultData.pointSize()
+        self.weightCti.defaultData = self.defaultData.weight()
+        self.italicCti.defaultData = self.defaultData.italic()
 
 
     @property
@@ -297,6 +333,9 @@ class FontCti(AbstractCti):
             font.setFamily(self.familyCti.configValue)
         else:
             font.setFamily(QtGui.QFont().family()) # default family
+        font.setPointSize(self.pointSizeCti.configValue)
+        font.setWeight(self.weightCti.configValue)
+        font.setItalic(self.italicCti.configValue)
         self._targetWidget.setFont(font)
 
 
@@ -333,7 +372,6 @@ class FontCti(AbstractCti):
 
 
 
-
 class FontCtiEditor(AbstractCtiEditor):
     """ A CtiEditor which contains a label and a button for opening the Qt font dialog
     """
@@ -350,8 +388,8 @@ class FontCtiEditor(AbstractCtiEditor):
 
         self.pickButton = self.addSubEditor(pickButton)
 
-        if False and DEBUGGING:
-            self.label =  self.addSubEditor(QtGui.QLabel(self.cti.displayValue))
+        if DEBUGGING:
+            self.label = self.addSubEditor(QtGui.QLabel(self.cti.displayValue))
             labelSizePolicy = self.label.sizePolicy()
             self.label.setSizePolicy(QtGui.QSizePolicy.MinimumExpanding,
                                      labelSizePolicy.verticalPolicy())

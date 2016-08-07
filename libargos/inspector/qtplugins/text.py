@@ -57,13 +57,8 @@ class TextInspectorCti(MainGroupCti):
             ChoiceCti('encoding', editable=True,
                       configValues=['utf-8', 'ascii', 'latin-1', 'windows-1252']))
 
-        font = QtGui.QFont()
-        #font.setFamily('Courier')
-        #font.setFixedPitch(True)
-        font.setPointSize(70)
         self.fontCti = self.insertChild(FontCti(self.textInspector.editor, "font",
-                                                #defaultData=font))
-                                                defaultData=QtGui.QFont('Courier', 13)))
+                                                defaultData=QtGui.QFont('Courier', 14)))
 
 
 class TextInspector(AbstractInspector):
