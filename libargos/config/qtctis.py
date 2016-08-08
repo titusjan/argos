@@ -25,7 +25,10 @@ from libargos.config.choicecti import ChoiceCti
 from libargos.config.intcti import IntCti
 from libargos.config.floatcti import FloatCti
 from libargos.info import DEBUGGING
-from libargos.qt import Qt, QtCore, QtGui
+from libargos.qt import Qt, QtCore, QtGui, QtSlot
+from libargos.utils.cls import check_is_a_string
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -235,7 +238,8 @@ class FontCti(AbstractCti):
         defaultFamilyIdx = fontFamilyIndex(self.defaultData, families)
 
         self.familyCti = self.insertChild(
-            ChoiceCti("family", configValues=families, defaultData=defaultFamilyIdx))
+            #ChoiceCti("family", configValues=families, defaultData=defaultFamilyIdx))
+            FontChoiceCti("family", defaultFamily=self.defaultData.family()))
 
         self.pointSizeCti = self.insertChild(
             IntCti("size", self.defaultData.pointSize(),
@@ -426,6 +430,102 @@ class FontCtiEditor(AbstractCtiEditor):
         """ Gets data from the editor widget.
         """
         return self.pickButton.property("editor_data")
+
+
+
+
+class FontChoiceCti(ChoiceCti):
+    """ A ChoiceCti that allows selecting one of the installed fonts families with a QFontCombobox
+
+        The configValues are determined automatically, they cannot be set in the constructor.
+
+        The QFontCombobox is not editable. I could get it to work well with the FontCti and
+        automatic determination of the configValue. It doesn't add much anyway IHMO.
+    """
+    def __init__(self, nodeName, defaultFamily='Helvetica'):
+        """ Constructor.
+
+            :param defaultFamily: A string representing the defaultValue.
+            :editable: True if the underlying QFontComboBox is editable. The default is False as
+                it does not work well with the FontCti.
+
+            For the (other) parameters see the AbstractCti constructor documentation.
+        """
+        check_is_a_string(defaultFamily)
+
+        # Get a list of of configValues by reading them from a temporary QFontComboBox.
+        tempFontComboBox = QtGui.QFontComboBox()
+        configValues = []
+        defaultData = 0
+        for idx in range(tempFontComboBox.count()):
+            fontFamily = tempFontComboBox.itemText(idx)
+            configValues.append(fontFamily)
+            if fontFamily.lower() == defaultFamily.lower():
+                defaultData = idx
+
+        # Set after self._displayValues are defined. The parent constructor calls _enforceDataType
+        super(FontChoiceCti, self).__init__(nodeName, defaultData, configValues=configValues)
+
+
+    def createEditor(self, delegate, parent, option):
+        """ Creates a ChoiceCtiEditor.
+            For the parameters see the AbstractCti constructor documentation.
+        """
+        return FontChoiceCtiEditor(self, delegate, parent=parent)
+
+
+
+class FontChoiceCtiEditor(AbstractCtiEditor):
+    """ A CtiEditor which contains a QCombobox for editing ChoiceCti objects.
+    """
+    def __init__(self, cti, delegate, parent=None):
+        """ See the AbstractCtiEditor for more info on the parameters
+        """
+        super(FontChoiceCtiEditor, self).__init__(cti, delegate, parent=parent)
+
+        comboBox = QtGui.QFontComboBox()
+        # The QFontCombobox is not editable. because an non-existing value resulted in a QFont()
+        # without parameter whose font family was probably some style sheet value. This didn't
+        # work well with the extra options of the automatic configValue generation and with the
+        # a possible parent FontCti: a non-exisiting family yields a QFont() with a non-existing
+        # family, proably a style-sheet name, which I don't know how to handle.
+        comboBox.setEditable(False)
+
+        # The current font family is not properly selected when the combobox is created (at least
+        # on OS-X). Setting the setMaxVisibleItems didn't help.
+        # http://stackoverflow.com/questions/11252299/pyqt-qcombobox-setting-number-of-visible-items-in-dropdown
+        # comboBox.setMaxVisibleItems(15)
+        # comboBox.setStyleSheet("QComboBox { combobox-popup: 0; }");
+
+        comboBox.activated.connect(self.comboBoxActivated)
+        self.comboBox = self.addSubEditor(comboBox, isFocusProxy=True)
+
+
+    def finalize(self):
+        """ Is called when the editor is closed. Disconnect signals.
+        """
+        self.comboBox.activated.disconnect(self.comboBoxActivated)
+        super(FontChoiceCtiEditor, self).finalize()
+
+
+    def setData(self, data):
+        """ Provides the main editor widget with a data to manipulate.
+        """
+        self.comboBox.setCurrentIndex(data)
+
+
+    def getData(self):
+        """ Gets data from the editor widget.
+        """
+        return self.comboBox.currentIndex()
+
+
+    @QtSlot(int)
+    def comboBoxActivated(self, index):
+        """ Is called when the user chooses an item in the combo box. The item's index is passed.
+            Note that this signal is sent even when the choice is not changed.
+        """
+        self.delegate.commitData.emit(self)
 
 
 
