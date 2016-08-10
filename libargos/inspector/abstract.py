@@ -171,6 +171,10 @@ class AbstractInspector(QtGui.QStackedWidget):
             try:
                 self._drawContents(reason=reason, initiator=initiator)
                 logger.debug("_drawContents finished successfully")
+
+                # Update the config tree from the (possibly) new state of the PgLinePlot1d inspector,
+                # e.g. the axis range may have changed while drawing.
+                # self.config.updateTarget() # TODO: enable this here (instead of doing it in the inspector._drawContents when needed)?
             finally:
                 self.config.model.setRefreshBlocked(wasBlocked)
 

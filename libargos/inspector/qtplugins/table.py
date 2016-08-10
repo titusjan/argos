@@ -68,7 +68,6 @@ class TableInspectorCti(MainGroupCti):
                                                  QtGui.QAbstractItemView.ScrollPerPixel]))
 
 
-
 class TableInspector(AbstractInspector):
     """ Shows the sliced array in a table.
     """

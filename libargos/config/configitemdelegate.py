@@ -43,13 +43,6 @@ class ConfigItemDelegate(QtGui.QStyledItemDelegate):
         self.commitData.connect(self._prepareCommit)
 
 
-    # def sizeHint(self, option, index):
-    #     """ Returns the size hint of the rows
-    #     """
-    #     logger.debug("ConfigItemDelegate, option = {}".format(option))
-    #     return TREE_CELL_SIZE_HINT
-
-
     def createEditor(self, parent, option, index):
         """ Returns the widget used to change data from the model and can be reimplemented to
             customize editing behavior.

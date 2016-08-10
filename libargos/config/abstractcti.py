@@ -653,8 +653,15 @@ class AbstractCtiEditor(QtGui.QWidget):
             this object so that signals can be disconnected and resources can be freed. This is
             complicated but I don't see a simpler solution.
         """
-        self.delegate.commitData.emit(self)
-        self.delegate.closeEditor.emit(self, QtGui.QAbstractItemDelegate.NoHint)   # CLOSES SELF!
+        if self.delegate:
+            self.delegate.commitData.emit(self)
+            self.delegate.closeEditor.emit(self, QtGui.QAbstractItemDelegate.NoHint) # CLOSES SELF!
+        else:
+            # QAbstractItemView.closeEditor is sometimes called directly, without the
+            # QAbstractItemDelegate.closeEditor signal begin emitted, e.g when the currentItem
+            # changes. Therefore the commitAndClose method can be called twice, if we call it
+            # explicitly as well (e.g. in FontCtiEditor.execFontDialog(). We guard againts this.
+            logger.debug("AbstractCtiEditor.commitAndClose: editor already closed (ignored).")
 
 
     @QtSlot(bool)

@@ -74,20 +74,19 @@ class ConfigTreeView(ArgosTreeView):
         return QtCore.QSize(RIGHT_DOCK_WIDTH, 500)
 
 
-    @QtSlot(QtGui.QWidget, QtGui.QAbstractItemDelegate)
+    @QtSlot(QtGui.QWidget, QtGui.QAbstractItemDelegate.EndEditHint)
     def closeEditor(self, editor, hint):
         """ Finalizes, closes and releases the given editor.
         """
         # It would be nicer if this method was part of ConfigItemDelegate since createEditor also
         # lives there. However, QAbstractItemView.closeEditor is sometimes called directly,
         # without the QAbstractItemDelegate.closeEditor signal begin emitted, e.g when the
-        # currentItem changes. Therefore we cannot connect to the QAbstractItemDelegate.closeEditor
+        # currentItem changes. Therefore we cannot connect the QAbstractItemDelegate.closeEditor
         # signal to a slot in the ConfigItemDelegate.
-
         configItemDelegate = self.itemDelegate()
         configItemDelegate.finalizeEditor(editor)
-        super(ConfigTreeView, self).closeEditor(editor, hint)
 
+        super(ConfigTreeView, self).closeEditor(editor, hint)
 
 
     def expandBranch(self, index=None, expanded=None):
