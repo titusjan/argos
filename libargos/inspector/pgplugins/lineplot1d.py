@@ -42,7 +42,7 @@ from libargos.utils.cls import array_has_real_numbers, check_class
 logger = logging.getLogger(__name__)
 
 class PgLinePlot1dCti(MainGroupCti):
-    """ Configuration tree for a PgLinePlot1d inspector
+    """ Configuration tree item for a PgLinePlot1d inspector
     """
     def __init__(self, pgLinePlot1d, nodeName):
         """ Constructor

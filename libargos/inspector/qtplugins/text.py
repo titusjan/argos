@@ -23,15 +23,14 @@ from libargos.config.groupcti import MainGroupCti, GroupCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.qtctis import FontCti
 from libargos.inspector.abstract import AbstractInspector
-from libargos.qt import Qt, QtGui
-from libargos.utils.cls import to_string
-
+from libargos.qt import QtGui
+from libargos.utils.cls import to_string, check_class
 
 logger = logging.getLogger(__name__)
 
 
 class TextInspectorCti(MainGroupCti):
-    """ Configuration tree for a PgLinePlot1d inspector
+    """ Configuration tree item for a TextInspectorCti inspector
     """
     def __init__(self, textInspector, nodeName):
         """ Constructor
@@ -39,11 +38,10 @@ class TextInspectorCti(MainGroupCti):
             :param textInspector: the TextInspector widget that is being configured
             :param nodeName: node name
         """
-
         super(TextInspectorCti, self).__init__(nodeName)
 
+        check_class(textInspector, TextInspector)
         self.textInspector = textInspector
-        #self.wordWrapCti = self.insertChild(BoolCti("word wrap", True))
 
         Opt = QtGui.QTextOption
         self.wordWrapCti = self.insertChild(

@@ -118,7 +118,7 @@ def crossPlotAutoRangeMethods(pgImagePlot2d, crossPlot, intialItems=None):
 
 
 class PgImagePlot2dCti(MainGroupCti):
-    """ Configuration tree for a PgLinePlot1d inspector
+    """ Configuration tree item for a PgImagePlot2dCti inspector
     """
     def __init__(self, pgImagePlot2d, nodeName):
         """ Constructor

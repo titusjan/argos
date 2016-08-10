@@ -24,7 +24,9 @@ from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.intcti import IntCti
+from libargos.config.qtctis import FontCti
 from libargos.inspector.abstract import AbstractInspector, UpdateReason
+from libargos.utils.cls import check_class
 
 from libargos.qt import Qt, QtCore, QtGui
 from libargos.utils.cls import to_string
@@ -44,11 +46,14 @@ def resizeAllSections(header, sectionSize):
 
 
 class TableInspectorCti(MainGroupCti):
-    """ Configuration tree for a TableInspector
+    """ Configuration tree item for a TableInspector
     """
-    def __init__(self, nodeName, defaultData=None):
+    def __init__(self, tableInspector, nodeName):
 
-        super(TableInspectorCti, self).__init__(nodeName, defaultData=defaultData)
+        super(TableInspectorCti, self).__init__(nodeName)
+
+        check_class(tableInspector, TableInspector)
+        self.tableInspector = tableInspector
 
         self.insertChild(BoolCti("word wrap", True))
         self.insertChild(BoolCti("separate fields", True))
@@ -66,6 +71,13 @@ class TableInspectorCti(MainGroupCti):
         self.insertChild(ChoiceCti("scroll", displayValues=["per cell", "per pixel"],
                                    configValues=[QtGui.QAbstractItemView.ScrollPerItem,
                                                  QtGui.QAbstractItemView.ScrollPerPixel]))
+
+        self.encodingCti = self.insertChild(
+            ChoiceCti('encoding', editable=True,
+                      configValues=['utf-8', 'ascii', 'latin-1', 'windows-1252']))
+
+        self.fontCti = self.insertChild(FontCti(self.tableInspector, "font",
+                                                defaultData=QtGui.QFont('Courier', 14)))
 
 
 class TableInspector(AbstractInspector):
@@ -85,7 +97,7 @@ class TableInspector(AbstractInspector):
         horHeader.setCascadingSectionResizes(False)
         verHeader.setCascadingSectionResizes(False)
 
-        self._config = TableInspectorCti('inspector')
+        self._config = TableInspectorCti(tableInspector=self, nodeName='inspector')
 
         if self.config.defaultRowHeightCti.configValue < 0: # If not yet initialized
             self.config.defaultRowHeightCti.data = verHeader.defaultSectionSize()
@@ -103,6 +115,19 @@ class TableInspector(AbstractInspector):
         """
         return tuple(['Y', 'X'])
 
+
+    def getFont(self):
+        """ Returns the font of the table model. Can be a QFont or None if no font is set.
+        """
+        return self.model.getFont()
+
+
+    def setFont(self, font):
+        """ Sets the font of the table model. Can be a QFont or None if no font is set.
+        """
+        return self.model.setFont(font)
+
+
     def _drawContents(self, reason=None, initiator=None):
         """ Draws the table contents from the sliced array of the collected repo tree item.
 
@@ -113,11 +138,15 @@ class TableInspector(AbstractInspector):
         self.model.updateState(self.collector.getSlicedArray(),
                                self.collector.rtiInfo,
                                self.configValue('separate fields'))
+        self.model.encoding = self.config.encodingCti.configValue
 
         scrollMode = self.configValue("scroll")
         self.tableView.setHorizontalScrollMode(scrollMode)
         self.tableView.setVerticalScrollMode(scrollMode)
         self.tableView.setWordWrap(self.configValue('word wrap'))
+
+        # Update the model font from the font config item (will call self.setFont)
+        self.config.updateTarget()
 
         # Only update the cell size when one of the relevant config values has changed because
         # resize to contents may be slow for large tables. Note that resetting the complete config
@@ -127,18 +156,33 @@ class TableInspector(AbstractInspector):
         if reason == UpdateReason.CONFIG_CHANGED and \
             (self.config.autoResizeCellCti.nodePath.startswith(initiator.nodePath) or
              self.config.defaultRowHeightCti.nodePath.startswith(initiator.nodePath) or
-             self.config.defaultColumnWidthCti.nodePath.startswith(initiator.nodePath)):
+             self.config.defaultColumnWidthCti.nodePath.startswith(initiator.nodePath) or
+             self.config.fontCti.nodePath.startswith(initiator.nodePath) or
+             self.config.encodingCti.nodePath.startswith(initiator.nodePath)):
 
             horHeader = self.tableView.horizontalHeader()
             verHeader = self.tableView.verticalHeader()
 
             if self.config.autoResizeCellCti.configValue:
-                horHeader.setResizeMode(horHeader.ResizeToContents)
-                verHeader.setResizeMode(horHeader.ResizeToContents)
+                numCells = self.model.rowCount() * self.model.columnCount()
+                if numCells <= 1000:
+                    horHeader.setResizeMode(QtGui.QHeaderView.ResizeToContents)
+                    verHeader.setResizeMode(QtGui.QHeaderView.ResizeToContents)
+                else:
+                    # ResizeToContents can be very slow because it gets all rows.
+                    # Work around: resize only first row and columns and apply this to all rows/cols
+
+                    logger.warning("Performance work around: for tables with more than 1000 cells the only the first row and columns are resized")
+                    horHeader.setResizeMode(QtGui.QHeaderView.Interactive)
+                    verHeader.setResizeMode(QtGui.QHeaderView.Interactive)
+                    self.tableView.resizeColumnToContents(0)
+                    resizeAllSections(horHeader, self.tableView.columnWidth(0))
+                    self.tableView.resizeRowToContents(0)
+                    resizeAllSections(verHeader, self.tableView.rowHeight(0))
             else:
                 # First disable resize to contents, then resize the sections.
-                horHeader.setResizeMode(horHeader.Interactive)
-                verHeader.setResizeMode(horHeader.Interactive)
+                horHeader.setResizeMode(QtGui.QHeaderView.Interactive)
+                verHeader.setResizeMode(QtGui.QHeaderView.Interactive)
                 resizeAllSections(horHeader, self.config.defaultColumnWidthCti.configValue)
                 resizeAllSections(verHeader, self.config.defaultRowHeightCti.configValue)
 
@@ -165,6 +209,9 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         self._separateFields = True  # User config option
         self._separateFieldOrientation = None # To store which axis is currently separated
         self._numbersInHeader = True
+        self._font = None # Default font
+
+        self.encoding = 'utf-8' # can be a simple attibute
 
 
     def updateState(self, slicedArray, rtiInfo, separateFields):
@@ -231,9 +278,13 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
             else:
                 cellValue = self._slicedArray[row, col]
 
-            # Numpy strings must be converted to regular strings,
-            # otherwise they don't show up.
-            return to_string(cellValue, decode_bytes='utf-8')
+            # Numpy strings must be converted to regular strings, otherwise they don't show up.
+            return to_string(cellValue, decode_bytes=self.encoding)
+
+        elif role == Qt.FontRole:
+            assert self._font
+            return self._font
+
         else:
             return None
 
@@ -285,3 +336,16 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
             return self._nCols
 
 
+    def getFont(self):
+        """ Returns the font that will be returned when data() is called with the Qt.FontRole.
+            Can be a QFont or None if no font is set.
+        """
+        return self._font
+
+
+    def setFont(self, font):
+        """ Sets the font that will be returned when data() is called with the Qt.FontRole.
+            Can be a QFont or None if no font is set.
+        """
+        check_class(font, QtGui.QFont, allow_none=True)
+        self._font = font
