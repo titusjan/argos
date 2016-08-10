@@ -20,15 +20,19 @@
 import logging, os
 import numpy as np
 
+from numpy.lib.npyio import NpzFile
+
 from libargos.qt import QtGui
 from libargos.repo.iconfactory import RtiIconFactory
-from libargos.repo.memoryrtis import ArrayRti
+from libargos.repo.memoryrtis import ArrayRti, MappingRti
+from libargos.utils.cls import check_is_an_array, check_class
 
 logger = logging.getLogger(__name__)
 
 ICON_COLOR_NUMPY = '#987456'
 
-
+# Do not allow pickle in numpy.load(), at least for now. This can be a security risk
+ALLOW_PICKLE = False
 
 class NumpyTextColumnRti(ArrayRti):
     """ A column in a numpy text file. Will typically be a child of a NumpyTextFileRti
@@ -43,7 +47,7 @@ class NumpyTextColumnRti(ArrayRti):
 
 
 class NumpyTextFileRti(ArrayRti):
-    """ Represents a 2D array from a simple text file, imported with numpy.loadtxt.
+    """ Reads a 2D array from a simple text file using with numpy.loadtxt().
     """
     _defaultIconGlyph = RtiIconFactory.FILE
     _defaultIconColor = ICON_COLOR_NUMPY
@@ -60,6 +64,7 @@ class NumpyTextFileRti(ArrayRti):
         """ Returns True if the item has (fetched or unfetched) children
         """
         return True
+
 
     def _openResources(self):
         """ Uses numpy.loadtxt to open the underlying file
@@ -83,3 +88,88 @@ class NumpyTextFileRti(ArrayRti):
                                          fileName=self.fileName, iconColor=self.iconColor)
             childItems.append(colItem)
         return childItems
+
+
+
+
+class NumpyBinaryFileRti(ArrayRti):
+    """ Reads a Numpy array from a binary file (.npy) using with numpy.load().
+
+        The file must have been saved with numpy.save() and therefore contain a single arrays.
+        A TypeError is raised if this is not the case.
+
+        The allow_pickle is set to False, no object arrays can be read.
+    """
+    _defaultIconGlyph = RtiIconFactory.FILE
+    _defaultIconColor = ICON_COLOR_NUMPY
+
+    def __init__(self, nodeName='', fileName=''):
+        """ Constructor. Initializes as an ArrayRTI with None as underlying array.
+        """
+        super(NumpyBinaryFileRti, self).__init__(None, nodeName=nodeName, fileName=fileName,
+                                                 iconColor=self._defaultIconColor)
+        self._checkFileExists()
+
+
+    def hasChildren(self):
+        """ Returns True if the item has (fetched or unfetched) children
+
+            Returns True so that the file can be opened, even though the array has no children.
+        """
+        return True
+
+
+    def _openResources(self):
+        """ Uses numpy.load to open the underlying file
+        """
+        arr = np.load(self._fileName, allow_pickle=ALLOW_PICKLE)
+        check_is_an_array(arr)
+        self._array = arr
+
+
+    def _closeResources(self):
+        """ Closes the underlying resources
+        """
+        self._array = None
+
+
+
+class NumpyCompressedFileRti(MappingRti):
+    """ Reads arrays from a Numpy zip file (.npz) using with numpy.load().
+
+        The file must have been saved with numpy.savez() and therefore contain multiple arrays.
+        A TypeError is raised if this is not the case.
+
+        The allow_pickle is set to False, no object arrays can be read.
+    """
+    _defaultIconGlyph = RtiIconFactory.FILE
+    _defaultIconColor = ICON_COLOR_NUMPY
+
+    def __init__(self, nodeName='', fileName=''):
+        """ Constructor. Initializes as an MappingRti with None as underlying dictionary.
+        """
+        super(NumpyCompressedFileRti, self).__init__(None,
+                                                     nodeName=nodeName, fileName=fileName,
+                                                     iconColor=self._defaultIconColor)
+        self._checkFileExists()
+
+
+    def hasChildren(self):
+        """ Returns True if the item has (fetched or unfetched) children
+        """
+        return True
+
+
+    def _openResources(self):
+        """ Uses numpy.load to open the underlying file
+        """
+        dct = np.load(self._fileName, allow_pickle=ALLOW_PICKLE)
+        check_class(dct, NpzFile)
+        self._dictionary = dct
+
+
+    def _closeResources(self):
+        """ Closes the underlying resources
+        """
+        self._dictionary = None
+

@@ -18,7 +18,7 @@ TODO version 0.2:
     Look at QSizePolicy::setControlType
 
 TODO version 0.3:
-	scipy.io.loadmat
+
 	Interaction in IPython
 	QSettings should not use titusjan by default
 	(auto)refresh
@@ -131,6 +131,8 @@ BUGS:
     /argos/icm/S5P_ICM_CA_UVN_20120919T051721_20120919T065655_01890_01_001000_20151002T140000.h5/BAND1_ANALYSIS/GAINS_CCD/gains_ccd_B_group_keys
 
     Exit context menu in PyQtGraphs with a left click gives an error.
+
+    Cross hair choice is always False after changing inspector
 
 DATA & LIBS:
     http://pandas-datareader.readthedocs.org/en/latest/remote_data.html#google-finance

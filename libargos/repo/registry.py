@@ -144,9 +144,21 @@ class RtiRegistry(ClassRegistry):
                        'libargos.repo.rtiplugins.hdf5.H5pyFileRti',
                        extensions=['hdf5', 'h5', 'h5e', 'he5']), # hdf extension is for HDF-4
 
+            RtiRegItem('MATLAB file',
+                       'libargos.repo.rtiplugins.scipyio.MatlabFileRti',
+                       extensions=['mat']),
+
             RtiRegItem('NCDF file',
                        'libargos.repo.rtiplugins.ncdf.NcdfFileRti',
                        extensions=['nc', 'nc3', 'nc4']),
+
+            RtiRegItem('NumPy binary file',
+                       'libargos.repo.rtiplugins.numpyio.NumpyBinaryFileRti',
+                       extensions=['npy']),
+
+            RtiRegItem('NumPy compressed file',
+                       'libargos.repo.rtiplugins.numpyio.NumpyCompressedFileRti',
+                       extensions=['npz']),
 
             RtiRegItem('NumPy text file',
                        'libargos.repo.rtiplugins.numpyio.NumpyTextFileRti',
