@@ -73,8 +73,8 @@ class IntCti(AbstractCti):
     def debugInfo(self):
         """ Returns the string with debugging information
         """
-        return ("min = {}, max = {}, step = {}, specVal = {}"
-                .format(self.minValue, self.maxValue, self.stepSize, self.specialValueText))
+        return ("enabled = {}, min = {}, max = {}, step = {}, specVal = {}"
+                .format(self.enabled, self.minValue, self.maxValue, self.stepSize, self.specialValueText))
 
 
     def createEditor(self, delegate, parent, option):

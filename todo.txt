@@ -136,6 +136,9 @@ BUGS:
 
     Line plot auto range yaxis weird with /argos/sidney/Knock.wav
 
+    Close children editors when BoolCti is disabled.
+
+
 DATA & LIBS:
     http://pandas-datareader.readthedocs.org/en/latest/remote_data.html#google-finance
 
