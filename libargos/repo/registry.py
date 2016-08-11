@@ -171,7 +171,11 @@ class RtiRegistry(ClassRegistry):
             RtiRegItem('Pillow image',
                        'libargos.repo.rtiplugins.pillowio.PillowFileRti',
                         extensions=['bmp', 'eps', 'im', 'gif', 'jpg', 'jpeg', 'msp', 'pcx',
-                                    'png', 'ppm', 'spi', 'tif', 'tiff', 'xbm', 'xv'])]
+                                    'png', 'ppm', 'spi', 'tif', 'tiff', 'xbm', 'xv']),
+
+            RtiRegItem('Wav file',
+                       'libargos.repo.rtiplugins.scipyio.WavFileRti',
+                       extensions=['wav'])]
 
 
 # The RTI registry is implemented as a singleton. This is necessary because

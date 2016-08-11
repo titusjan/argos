@@ -21,9 +21,9 @@
 import logging, os
 import scipy
 import scipy.io
+import scipy.io.wavfile
 
-from libargos.qt import QtGui
-from libargos.repo.memoryrtis import MappingRti
+from libargos.repo.memoryrtis import ArrayRti, MappingRti
 from libargos.repo.iconfactory import RtiIconFactory
 
 logger = logging.getLogger(__name__)
@@ -71,7 +71,6 @@ class MatlabFileRti(MappingRti):
 
 
 
-
 class IdlSaveFileRti(MappingRti):
     """ Can read data from an IDL 'save file'.
 
@@ -107,4 +106,73 @@ class IdlSaveFileRti(MappingRti):
         """
         self._dictionary = None
 
+
+
+class WavFileChannelRti(ArrayRti):
+    """ A channel in a wav file. Will typically be a child of a WavFileRti
+
+        Inherits from ArrayRti but shows a 'field' glyph as icon to indicate that the underlying
+        data is the same as its parent.
+
+        No dedicated constructor defined (reuses the ArrayRti constructor)
+    """
+    _defaultIconGlyph = RtiIconFactory.FIELD
+    _defaultIconColor = ICON_COLOR_SCIPY
+
+
+class WavFileRti(ArrayRti):
+    """ Can read data from an WAV file.
+
+        Uses scipy.io.wavfile.read to read the file. Tries first to read with memory mapping, if
+        that fails the file is tried to be read without memory mapping(
+    """
+    _defaultIconGlyph = RtiIconFactory.FILE
+    _defaultIconColor = ICON_COLOR_SCIPY
+
+    def __init__(self, nodeName='', fileName=''):
+        """ Constructor. Initializes as an ArrayRTI with None as underlying array.
+        """
+        super(WavFileRti, self).__init__(None, nodeName=nodeName, fileName=fileName,
+                                         iconColor=self._defaultIconColor)
+        self._checkFileExists()
+
+
+    def hasChildren(self):
+        """ Returns True if the item has (fetched or unfetched) children
+        """
+        return True
+
+
+    def _openResources(self):
+        """ Uses numpy.loadtxt to open the underlying file.
+        """
+        try:
+            rate, data = scipy.io.wavfile.read(self._fileName, mmap=True)
+        except Exception as ex:
+            logger.warning(ex)
+            logger.warning("Unable to read wav with memmory mapping. Trying without now.")
+            rate, data = scipy.io.wavfile.read(self._fileName, mmap=False)
+
+        self._array = data
+        self.attributes['rate'] = rate
+
+
+    def _closeResources(self):
+        """ Closes the underlying resources
+        """
+        self._array = None
+        self.attributes = {}
+
+
+    def _fetchAllChildren(self):
+        """ Adds an ArrayRti per column as children so that they can be inspected easily
+        """
+        childItems = []
+        if self._array.ndim == 2:
+            _nRows, nCols = self._array.shape if self._array is not None else (0, 0)
+            for col in range(nCols):
+                colItem = WavFileChannelRti(self._array[:, col], nodeName="channel-{}".format(col),
+                                            fileName=self.fileName, iconColor=self.iconColor)
+                childItems.append(colItem)
+        return childItems
 
