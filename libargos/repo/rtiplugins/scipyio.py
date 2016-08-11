@@ -23,7 +23,7 @@ import scipy
 import scipy.io
 import scipy.io.wavfile
 
-from libargos.repo.memoryrtis import ArrayRti, MappingRti
+from libargos.repo.memoryrtis import ArrayRti, SliceRti, MappingRti
 from libargos.repo.iconfactory import RtiIconFactory
 
 logger = logging.getLogger(__name__)
@@ -108,18 +108,6 @@ class IdlSaveFileRti(MappingRti):
 
 
 
-class WavFileChannelRti(ArrayRti):
-    """ A channel in a wav file. Will typically be a child of a WavFileRti
-
-        Inherits from ArrayRti but shows a 'field' glyph as icon to indicate that the underlying
-        data is the same as its parent.
-
-        No dedicated constructor defined (reuses the ArrayRti constructor)
-    """
-    _defaultIconGlyph = RtiIconFactory.FIELD
-    _defaultIconColor = ICON_COLOR_SCIPY
-
-
 class WavFileRti(ArrayRti):
     """ Can read data from an WAV file.
 
@@ -171,8 +159,9 @@ class WavFileRti(ArrayRti):
         if self._array.ndim == 2:
             _nRows, nCols = self._array.shape if self._array is not None else (0, 0)
             for col in range(nCols):
-                colItem = WavFileChannelRti(self._array[:, col], nodeName="channel-{}".format(col),
-                                            fileName=self.fileName, iconColor=self.iconColor)
+                colItem = SliceRti(self._array[:, col], nodeName="channel-{}".format(col),
+                                   fileName=self.fileName, iconColor=self.iconColor,
+                                   attributes=self.attributes)
                 childItems.append(colItem)
         return childItems
 

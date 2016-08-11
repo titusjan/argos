@@ -147,9 +147,9 @@ class FieldRti(BaseRti):
 
     @property
     def isSliceable(self):
-        """ Returns True because the underlying data can be sliced.
+        """ Returns True if the underlying array is not None.
         """
-        return True
+        return self._array is not None
 
 
     def __getitem__(self, index):
@@ -207,7 +207,6 @@ class FieldRti(BaseRti):
         nSubDims = len(self._subArrayShape)
         subArrayDims = ['SubDim{}'.format(dimNr) for dimNr in range(nSubDims)]
         return mainArrayDims + subArrayDims
-
 
 
 
@@ -310,6 +309,18 @@ class ArrayRti(BaseRti):
 
         #self._childrenFetched = True # TODO: necessary? (already done in ancestor?)
         return childItems
+
+
+
+class SliceRti(ArrayRti):
+    """ Represents a slice of a numpy array (even before it's further sliced in the collecot)
+
+        Inherits from ArrayRti and changes little. It overrides only the icon to indicate that the
+        underlying data is the same as it's parent.
+    """
+    _defaultIconGlyph = RtiIconFactory.FIELD
+    _defaultIconColor = RtiIconFactory.COLOR_MEMORY
+
 
 
 class SequenceRti(BaseRti):

@@ -24,24 +24,18 @@ from PIL import Image
 
 from libargos.info import DEBUGGING
 from libargos.repo.iconfactory import RtiIconFactory
-from libargos.repo.memoryrtis import ArrayRti
+from libargos.repo.memoryrtis import ArrayRti, SliceRti
 
 logger = logging.getLogger(__name__)
 
 ICON_COLOR_PILLOW = '#880088'
 
 
-class PillowBandRti(ArrayRti):
+class PillowBandRti(SliceRti):
     """ Image band repo tree item. Will typically be a child of a PillowFileRti
-
-        Inherits from ArrayRti but shows a 'field' glyph as icon to indicate that the underlying
-        data is the same as it's parent.
 
         No dedicated constructor defined (reuses the ArrayRti constructor)
     """
-    _defaultIconGlyph = RtiIconFactory.FIELD
-    _defaultIconColor = ICON_COLOR_PILLOW
-
 
     @property
     def dimensionNames(self):
@@ -54,7 +48,7 @@ class PillowBandRti(ArrayRti):
 
         if self._array.ndim != 2:
             # Defensive programming: fall back on default names
-            msg = "Expected 3D image. Got: {}".format(self._array.ndim)
+            msg = "Expected 2D image. Got: {}".format(self._array.ndim)
             if DEBUGGING:
                 raise ValueError(msg)
             logger.warn(msg)

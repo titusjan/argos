@@ -24,7 +24,7 @@ from numpy.lib.npyio import NpzFile
 
 from libargos.qt import QtGui
 from libargos.repo.iconfactory import RtiIconFactory
-from libargos.repo.memoryrtis import ArrayRti, MappingRti
+from libargos.repo.memoryrtis import ArrayRti, SliceRti, MappingRti
 from libargos.utils.cls import check_is_an_array, check_class
 
 logger = logging.getLogger(__name__)
@@ -34,16 +34,6 @@ ICON_COLOR_NUMPY = '#987456'
 # Do not allow pickle in numpy.load(), at least for now. This can be a security risk
 ALLOW_PICKLE = False
 
-class NumpyTextColumnRti(ArrayRti):
-    """ A column in a numpy text file. Will typically be a child of a NumpyTextFileRti
-
-        Inherits from ArrayRti but shows a 'field' glyph as icon to indicate that the underlying
-        data is the same as its parent.
-
-        No dedicated constructor defined (reuses the ArrayRti constructor)
-    """
-    _defaultIconGlyph = RtiIconFactory.FIELD
-    _defaultIconColor = ICON_COLOR_NUMPY
 
 
 class NumpyTextFileRti(ArrayRti):
@@ -84,8 +74,9 @@ class NumpyTextFileRti(ArrayRti):
         childItems = []
         _nRows, nCols = self._array.shape if self._array is not None else (0, 0)
         for col in range(nCols):
-            colItem = NumpyTextColumnRti(self._array[:, col], nodeName="column-{}".format(col),
-                                         fileName=self.fileName, iconColor=self.iconColor)
+            colItem = SliceRti(self._array[:, col], nodeName="column-{}".format(col),
+                               fileName=self.fileName, iconColor=self.iconColor,
+                               attributes=self.attributes)
             childItems.append(colItem)
         return childItems
 
