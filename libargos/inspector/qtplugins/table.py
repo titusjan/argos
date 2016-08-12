@@ -33,7 +33,10 @@ from libargos.utils.cls import to_string
 
 logger = logging.getLogger(__name__)
 
-FIXED_HEADERS_AT_SIZE = 10000 # If header has more elements, the headers size CTIs are disabled.
+RESET_HEADERS_AT_SIZE = 10000   # If header has more elements, the headers size CTIs are disabled.
+OPTIMIZE_RESIZE_AT_SIZE = 1000  # If the table has more elements, only the current column/row are
+                                # resized and the others take the same size
+
 
 
 def resizeAllSections(header, sectionSize):
@@ -88,21 +91,25 @@ class TableInspectorCti(MainGroupCti):
     def _refreshNodeFromTarget(self):
         """ Refreshes the TableInspectorCti from the TableInspector target it monitors.
 
-            Disables the row heights and column width items if the headers are too large. Otherwise
-            the resizeing may take to long and the program will hang.
+            Disables auto-sizing of the header sizes for very large headers (> 10000 elements).
+            Otherwise the resizing may take to long and the program will hang.
         """
-        # Disable row height and column with settings for large headers (too slow otherwise)
         tableModel = self.tableInspector.model
-        self.autoRowHeightCti.enableBranch(tableModel.rowCount() < FIXED_HEADERS_AT_SIZE)
-        self.autoColWidthCti.enableBranch(tableModel.columnCount() < FIXED_HEADERS_AT_SIZE)
 
-        self.model.emitDataChanged(self.autoRowHeightCti)
-        self.model.emitDataChanged(self.autoColWidthCti)
+        # Disable row height and column with settings for large headers (too slow otherwise)
+        if tableModel.rowCount() >= RESET_HEADERS_AT_SIZE:
+            self.autoRowHeightCti.data = False
+            self.model.emitDataChanged(self.autoRowHeightCti)
+            self.autoRowHeightCti.enable = False
+        else:
+            self.autoRowHeightCti.enable = True
 
-        logger.debug("ROW COUNT: {} -> enabled {}".format(tableModel.rowCount(), self.autoRowHeightCti.enabled))
-        logger.debug("COL COUNT: {} -> enabled {}".format(tableModel.columnCount(), self.autoColWidthCti.enabled))
-
-
+        if tableModel.columnCount() >= RESET_HEADERS_AT_SIZE:
+            self.autoColWidthCti.data  = False
+            self.model.emitDataChanged(self.autoColWidthCti)
+            self.autoColWidthCti.enable = False
+        else:
+            self.autoColWidthCti.enable = True
 
 
 
@@ -117,6 +124,7 @@ class TableInspector(AbstractInspector):
         self.tableView = QtGui.QTableView()
         self.contentsLayout.addWidget(self.tableView)
         self.tableView.setModel(self.model)
+        self.tableView.setSelectionMode(QtGui.QTableView.ContiguousSelection)
 
         horHeader = self.tableView.horizontalHeader()
         verHeader = self.tableView.verticalHeader()
@@ -161,6 +169,16 @@ class TableInspector(AbstractInspector):
         """
         logger.debug("TableInspector._drawContents: {}".format(self))
 
+        oldTableIndex = self.tableView.currentIndex()
+        if oldTableIndex.isValid():
+            selectionWasValid = True # Defensive programming, keep old value just in case
+            oldRow = oldTableIndex.row()
+            oldCol = oldTableIndex.column()
+        else:
+            selectionWasValid = False
+            oldRow = 0
+            oldCol = 0
+
         self.model.updateState(self.collector.getSlicedArray(),
                                self.collector.rtiInfo,
                                self.configValue('separate fields'))
@@ -175,118 +193,58 @@ class TableInspector(AbstractInspector):
         # Update the model font from the font config item (will call self.setFont)
         self.config.updateTarget()
 
-
-        # Only update the cell size when one of the relevant config values has changed because
-        # resize to contents may be slow for large tables. Note that resetting the complete config
-        # tree (by clicking the reset button of the inspector config tree item) might also change
-        # the relevant config values. This is why we check with 'starts' with if a parent CTI
-        # was clicked.
-
         verHeader = self.tableView.verticalHeader()
+        if (self.config.autoRowHeightCti.configValue
+            and self.model.rowCount() < RESET_HEADERS_AT_SIZE):
 
-        logger.info("ADAPTING VERTICAL HEADER")
-        if self.config.autoRowHeightCti.configValue:
             numCells = self.model.rowCount() * self.model.columnCount()
-            if numCells <= 1000:
-                logger.debug("setting vertical resize mode to ResizeToContents")
+            if numCells <= OPTIMIZE_RESIZE_AT_SIZE:
+                logger.debug("Setting vertical resize mode to ResizeToContents")
                 verHeader.setResizeMode(QtGui.QHeaderView.ResizeToContents)
             else:
-                if self.model.rowCount() < FIXED_HEADERS_AT_SIZE:
-                    # ResizeToContents can be very slow because it gets all rows.
-                    # Work around: resize only first row and columns and apply this to all rows/cols
-                    logger.warning("Performance work around: for tables with more than 1000 cells the only the first row and columns are resized")
-                    verHeader.setResizeMode(QtGui.QHeaderView.Interactive)
-                    self.tableView.resizeRowToContents(0)
-                    resizeAllSections(verHeader, self.tableView.rowHeight(0))
-                else:
-                    logger.debug("Row resizing will be disabled. Don't resize here")
-
+                # ResizeToContents can be very slow because it gets all rows.
+                # Work around: resize only first row and columns and apply this to all rows/cols
+                logger.warning("Performance work around: for tables with more than 1000 cells " +
+                               "only the current row is resized and the others use that size.")
+                verHeader.setResizeMode(QtGui.QHeaderView.Interactive)
+                self.tableView.resizeRowToContents(oldRow)
+                resizeAllSections(verHeader, self.tableView.rowHeight(oldRow))
         else:
-            # First disable resize to contents, then resize the sections.
+            logger.debug("Setting vertical resize mode to Interactive and reset header")
             verHeader.setResizeMode(QtGui.QHeaderView.Interactive)
-            if reason == UpdateReason.CONFIG_CHANGED and \
-                (self.config.autoRowHeightCti.nodePath.startswith(initiator.nodePath) or
-                 self.config.defaultRowHeightCti.nodePath.startswith(initiator.nodePath)):
-
-                logger.debug("setting all vertical sections to: {}".format(self.config.defaultRowHeightCti.configValue))
-                resizeAllSections(verHeader, self.config.defaultRowHeightCti.configValue)
-            else:
-                logger.debug("Nothing needed")
-
+            verHeader.setDefaultSectionSize(self.config.defaultRowHeightCti.configValue)
+            verHeader.reset()
 
         horHeader = self.tableView.horizontalHeader()
+        if (self.config.autoColWidthCti.configValue
+            and self.model.columnCount() < RESET_HEADERS_AT_SIZE):
 
-        logger.info("ADAPTING HORIZONTAL HEADER")
-        if self.config.autoColWidthCti.configValue:
             numCells = self.model.rowCount() * self.model.columnCount()
-            if numCells <= 1000:
+            if numCells <= OPTIMIZE_RESIZE_AT_SIZE:
                 logger.debug("setting horizontal resize mode to ResizeToContents")
                 horHeader.setResizeMode(QtGui.QHeaderView.ResizeToContents)
             else:
-                if self.model.columnCount() < FIXED_HEADERS_AT_SIZE:
-                    # ResizeToContents can be very slow because it gets all rows.
-                    # Work around: resize only first row and columns and apply this to all rows/cols
-                    logger.warning("Performance work around: for tables with more than 1000 cells the only the first row and columns are resized")
-                    horHeader.setResizeMode(QtGui.QHeaderView.Interactive)
-                    self.tableView.resizeColumnToContents(0)
-                    resizeAllSections(horHeader, self.tableView.columnWidth(0))
-                else:
-                    logger.debug("Column resizing will be disabled. Don't resize here")
+                # ResizeToContents can be very slow because it gets all rows.
+                # Work around: resize only first row and columns and apply this to all rows/cols
+                logger.warning("Performance work around: for tables with more than 1000 cells " +
+                               "only the current column is resized and the others use that size.")
+                horHeader.setResizeMode(QtGui.QHeaderView.Interactive)
+                self.tableView.resizeColumnToContents(oldCol)
+                resizeAllSections(horHeader, self.tableView.columnWidth(oldCol))
         else:
-            # First disable resize to contents, then resize the sections.
+            logger.debug("Setting horizontal resize mode to Interactive and reset header")
             horHeader.setResizeMode(QtGui.QHeaderView.Interactive)
+            resizeAllSections(horHeader, self.config.defaultColWidthCti.configValue)
+            horHeader.reset()
 
-            if reason == UpdateReason.CONFIG_CHANGED and \
-                (self.config.autoColWidthCti.nodePath.startswith(initiator.nodePath) or
-                 self.config.defaultColWidthCti.nodePath.startswith(initiator.nodePath)):
-
-                logger.debug("setting all horizontal sections to: {}".format(self.config.defaultColWidthCti.configValue))
-                resizeAllSections(horHeader, self.config.defaultColWidthCti.configValue)
+        # Restore selection after select
+        if selectionWasValid:
+            newIndex = self.model.index(oldRow, oldCol)
+            if newIndex.isValid():
+                logger.debug("Restoring selection: row={}, col={}".format(oldRow, oldCol))
+                self.tableView.setCurrentIndex(newIndex)
             else:
-                logger.debug("Nothing needed")
-
-
-
-
-
-
-        # # Only update the cell size when one of the relevant config values has changed because
-        # # resize to contents may be slow for large tables. Note that resetting the complete config
-        # # tree (by clicking the reset button of the inspector config tree item) might also change
-        # # the relevant config values. This is why we check with 'starts' with if a parent CTI
-        # # was clicked.
-        # if reason == UpdateReason.CONFIG_CHANGED and \
-        #     (self.config.autoResizeCellCti.nodePath.startswith(initiator.nodePath) or
-        #      self.config.defaultRowHeightCti.nodePath.startswith(initiator.nodePath) or
-        #      self.config.defaultColumnWidthCti.nodePath.startswith(initiator.nodePath) or
-        #      self.config.fontCti.nodePath.startswith(initiator.nodePath) or
-        #      self.config.encodingCti.nodePath.startswith(initiator.nodePath)):
-        #
-        #     horHeader = self.tableView.horizontalHeader()
-        #     verHeader = self.tableView.verticalHeader()
-        #
-        #     if self.config.autoResizeCellCti.configValue:
-        #         numCells = self.model.rowCount() * self.model.columnCount()
-        #         if numCells <= 1000:
-        #             horHeader.setResizeMode(QtGui.QHeaderView.ResizeToContents)
-        #             verHeader.setResizeMode(QtGui.QHeaderView.ResizeToContents)
-        #         else:
-        #             # ResizeToContents can be very slow because it gets all rows.
-        #             # Work around: resize only first row and columns and apply this to all rows/cols
-        #
-        #             logger.warning("Performance work around: for tables with more than 1000 cells the only the first row and columns are resized")
-        #             horHeader.setResizeMode(QtGui.QHeaderView.Interactive)
-        #             verHeader.setResizeMode(QtGui.QHeaderView.Interactive)
-        #             self.tableView.resizeColumnToContents(0)
-        #             resizeAllSections(horHeader, self.tableView.columnWidth(0))
-        #             self.tableView.resizeRowToContents(0)
-        #             resizeAllSections(verHeader, self.tableView.rowHeight(0))
-        #     else:
-        #         # First disable resize to contents, then resize the sections.
-        #         horHeader.setResizeMode(QtGui.QHeaderView.Interactive)
-        #         verHeader.setResizeMode(QtGui.QHeaderView.Interactive)
-        #         resizeAllSections(horHeader, self.config.defaultColumnWidthCti.configValue)
-        #         resizeAllSections(verHeader, self.config.defaultRowHeightCti.configValue)
+                logger.debug("Can't restore selection")
 
 
 
