@@ -200,10 +200,16 @@ class ChoiceCtiEditor(AbstractCtiEditor):
         comboBox.model().rowsInserted.connect(self.comboBoxRowsInserted)
         self.comboBox = self.addSubEditor(comboBox, isFocusProxy=True)
 
+        # Install an eventFilter on the QListView that pops-up and contains all the items.
+        # This allows the user to remove items by pressing the delete key in the list.
+        self._comboboxListView = comboBox.view()
+        self._comboboxListView.installEventFilter(self)
+
 
     def finalize(self):
         """ Is called when the editor is closed. Disconnect signals.
         """
+        self._comboboxListView.removeEventFilter(self)
         self.comboBox.model().rowsInserted.disconnect(self.comboBoxRowsInserted)
         self.comboBox.activated.disconnect(self.comboBoxActivated)
         super(ChoiceCtiEditor, self).finalize()
@@ -240,4 +246,26 @@ class ChoiceCtiEditor(AbstractCtiEditor):
                      .format(configValue, start, self.cti.nodePath))
         self.cti.insertValue(start, configValue)
 
+
+    def eventFilter(self, watchedObject, event):
+        """ Deletes an item from an editable combobox when the delete or backspace key is pressed
+            in the list of items, or when ctrl-delete or ctrl-back space is pressed in the
+            line-edit.
+
+            When the combobox is not editable the filter does nothing.
+        """
+        if self.comboBox.isEditable() and event.type() == QtCore.QEvent.KeyPress:
+            key = event.key()
+            if key in (Qt.Key_Delete, Qt.Key_Backspace):
+                if (watchedObject == self._comboboxListView
+                    or (watchedObject == self.comboBox
+                        and event.modifiers() == Qt.ControlModifier)):
+
+                    logger.info("Removing item from combobox: {}"
+                                .format(self.comboBox.currentText()))
+                    self.comboBox.removeItem(self.comboBox.currentIndex())
+                    return True
+
+        # Calling parent event filter, which may filter out other events.
+        return super(ChoiceCtiEditor, self).eventFilter(watchedObject, event)
 
