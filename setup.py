@@ -39,7 +39,7 @@ setup(
     version=info.VERSION,
     description=info.SHORT_DESCRIPTION,
     long_description=readme + '\n\n' + history,
-    author=info.AUTOR,
+    author=info.AUTHOR,
     author_email=info.EMAIL,
     url=info.PROJECT_URL,
     packages=[

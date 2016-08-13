@@ -7,17 +7,17 @@ TODO version 0.2:
 	Inspector selection dropwindow (use in new window)
 	    Fix 'clone-window' in main menu (is there a need for a separate 'new window'?)
 
-	relative imports
 
-	Reset range when a variable with a new unit/abcissa is selected.
 
     TextView inspector
+        XML pretty print.
 
     Test by opening all test data.
 
-    Look at QSizePolicy::setControlType
 
 TODO version 0.3:
+
+    Look at QSizePolicy::setControlType
 
 	Interaction in IPython
 	QSettings should not use titusjan by default
@@ -71,6 +71,12 @@ TODO Long term or nice to have:
 	http://pythonhosted.org/setuptools/setuptools.html#dynamic-discovery-of-services-and-plugins
 
 THINK:
+	relative imports? What's the use except for easy relocation of packeges?
+	    A google search seems to indicate that it doesn't always work ok (although these days most
+	    issues are ironed out). Futhermore using if __name__ == "__main__" is then problematic.
+
+	Reset range when a variable with a new unit/abcissa is selected?
+
     _drawContents raises an InvalidDataError exception when no valid data is available.
     If we would check for invalid data in AbstractInspector.drawContents, we must call
     collected.getSlicedArray. This may be slow, so to avoid calling it twice the sliced array should

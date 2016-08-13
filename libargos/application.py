@@ -87,11 +87,14 @@ def __addTestData(argosApp):
     """ Temporary function to add test data
     """
     import numpy as np
+    from decimal import Decimal
     from libargos.repo.memoryrtis import MappingRti
     myDict = {}
     myDict['name'] = 'Pac Man'
     myDict['age'] = 34
     myDict['ghosts'] = ['Inky', 'Blinky', 'Pinky', 'Clyde']
+    myDict['numbers'] = {'int': 5, 'float': -6.6, 'large float': 7e77,
+                         '-inf': np.NINF, 'nan': np.nan, 'complex': 8-9j, 'decimal': Decimal(4.444)}
     myDict['array'] = np.arange(24).reshape(3, 8)
     myDict['structured_arr1'] = np.array([(1,2.,'Hello'), (2,3.,"World")],
                                           dtype=[('foo', 'i4'),('bar', 'f4'), ('baz', 'S10')])

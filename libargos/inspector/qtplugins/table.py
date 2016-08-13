@@ -17,16 +17,18 @@
 
 """ Contains TableInspector and TableInspectorModel
 """
-import logging
+import logging, numbers
 
 from libargos.collect.collector import FAKE_DIM_NAME
-from libargos.config.groupcti import MainGroupCti
+from libargos.config.groupcti import GroupCti, MainGroupCti
 from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.intcti import IntCti
 from libargos.config.qtctis import FontCti
-from libargos.inspector.abstract import AbstractInspector, UpdateReason
-from libargos.utils.cls import check_class
+from libargos.info import DEBUGGING
+from libargos.inspector.abstract import AbstractInspector
+from libargos.utils.cls import check_class, check_is_a_string
+from libargos.utils import six
 
 from libargos.qt import Qt, QtCore, QtGui
 from libargos.utils.cls import to_string
@@ -37,7 +39,7 @@ RESET_HEADERS_AT_SIZE = 10000   # If header has more elements, the headers size 
 OPTIMIZE_RESIZE_AT_SIZE = 1000  # If the table has more elements, only the current column/row are
                                 # resized and the others take the same size
 
-
+ALIGN_SMART = -1  # Use right alignment for numbers and left alignment for everything else.
 
 def resizeAllSections(header, sectionSize):
     """ Sets all sections (columns or rows) of a header to the same section size.
@@ -47,6 +49,43 @@ def resizeAllSections(header, sectionSize):
     """
     for idx in range(header.length()):
         header.resizeSection(idx, sectionSize)
+
+
+def makeReplacementField(formatSpec, altFormatSpec='', testValue=None):
+    """ Prepends a colon and wraps the formatSpec in curly braces to yield a replacement field.
+
+        If the formatSpec code is empty or None, the altFormatSpec is wrapped in braces.
+
+        The format specification is part of a replacement field, which can be used in new-style
+        string formatting. See:
+            https://docs.python.org/3/library/string.html#format-string-syntax
+            https://docs.python.org/3/library/string.html#format-specification-mini-language
+
+        :param formatSpec: e.g. '5.2f' will return '{:5.2f}'
+        :param altFormatSpec: alternative that will be used if the formatSpec evaluates to False
+        :param testValue: if not None, result.format(testValue) will be evaluated as a test.
+        :return: string
+    """
+    check_is_a_string(formatSpec)
+    check_is_a_string(altFormatSpec)
+    fmt = altFormatSpec if not formatSpec else formatSpec
+    if '{' not in fmt and '}' not in fmt:
+        if ':' not in fmt and '!' not in fmt:
+            fmt = ':' + fmt
+        fmt = '{' + fmt + '}'
+
+    # Test resulting replacement field
+    if testValue is not None:
+        try:
+            _dummy = fmt.format(testValue)
+        except Exception:
+            msg = ("Format specifier failed: replacement-field={!r}, test-value={!r}"
+                   .format(fmt, testValue))
+            logger.error(msg)
+            raise ValueError(msg)
+
+    logger.debug("Resulting replacement field: {!r}".format(fmt))
+    return fmt
 
 
 
@@ -60,11 +99,8 @@ class TableInspectorCti(MainGroupCti):
         check_class(tableInspector, TableInspector)
         self.tableInspector = tableInspector
 
-        self.insertChild(BoolCti("word wrap", True))
-        self.insertChild(BoolCti("separate fields", True))
-
         # The defaultRowHeightCti and defaultColWidthCti are initialized with -1; they will get
-        # the actual values in the TableInspector contructor.
+        # the actual values in the TableInspector constructor.
         self.autoRowHeightCti = self.insertChild(BoolCti("auto row heights", False,
                                                         childrenDisabledValue=True))
         self.defaultRowHeightCti = self.autoRowHeightCti.insertChild(
@@ -75,17 +111,57 @@ class TableInspectorCti(MainGroupCti):
         self.defaultColWidthCti = self.autoColWidthCti.insertChild(
             IntCti("column width", -1, minValue=20, maxValue=500, stepSize=5))
 
-        # Per pixel scrolling works better for large cells (e.g. containing XML strings).
-        self.insertChild(ChoiceCti("scroll", displayValues=["per cell", "per pixel"],
-                                   configValues=[QtGui.QAbstractItemView.ScrollPerItem,
-                                                 QtGui.QAbstractItemView.ScrollPerPixel]))
+        self.insertChild(BoolCti("separate fields", True))
+        self.insertChild(BoolCti("word wrap", False))
 
         self.encodingCti = self.insertChild(
             ChoiceCti('encoding', editable=True,
                       configValues=['utf-8', 'ascii', 'latin-1', 'windows-1252']))
 
+        fmtCti = self.insertChild(GroupCti("format specifiers"))
+
+        # Use '!r' as default for Python 2. This will convert the floats with repr(), which is
+        # necessary because str() or an empty format string will only print 2 decimals behind the
+        # point. In Python 3 this is not necessary: all relevant decimals are printed.
+        numDefaultValue = 6 if six.PY2 else 0
+
+        self.strFormatCti = fmtCti.insertChild(
+            ChoiceCti("strings", 0, editable=True, completer=None,
+                      configValues=['', 's', '!r', '!a',
+                                    '10.10s', '_<15s', '_>15s', 'str: {}']))
+
+        self.intFormatCti = fmtCti.insertChild(
+            ChoiceCti("integers", 0, editable=True, completer=None,
+                      configValues=['', 'd', 'n', 'c', '#b', '#o', '#x', '!r',
+                                    '8d', '#8.2g', '_<10', '_>10', 'int: {}']))
+
+        self.numFormatCti = fmtCti.insertChild(
+            ChoiceCti("other numbers", numDefaultValue, editable=True, completer=None,
+                      configValues=['', 'f', 'g', 'n', '%', '!r',
+                                    '8.2e', '#8.2g', '_<15', '_>15', 'num: {}']))
+
+        self.otherFormatCti = fmtCti.insertChild(
+            ChoiceCti("other types", 0, editable=True, completer=None,
+                      configValues=['', '!s', '!r', 'other: {}']))
+
         self.fontCti = self.insertChild(FontCti(self.tableInspector, "font",
                                                 defaultData=QtGui.QFont('Courier', 14)))
+
+        self.horAlignCti = self.insertChild(
+            ChoiceCti('horizontal alignment',
+                      configValues=[ALIGN_SMART, Qt.AlignLeft, Qt.AlignHCenter, Qt.AlignRight],
+                      displayValues=['Type-dependent', 'Left', 'Center', 'Right']))
+                      # Qt.AlignJustify not included, it doesn't seem to do anything,
+
+        self.verAlignCti = self.insertChild(
+            ChoiceCti('vertical alignment', defaultData=1,
+                      configValues=[Qt.AlignTop, Qt.AlignVCenter, Qt.AlignBottom],
+                      displayValues=['Top', 'Center', 'Bottom']))
+
+        # Per pixel scrolling works better for large cells (e.g. containing XML strings).
+        self.insertChild(ChoiceCti("scroll", displayValues=["Per cell", "Per pixel"],
+                                   configValues=[QtGui.QAbstractItemView.ScrollPerItem,
+                                                 QtGui.QAbstractItemView.ScrollPerPixel]))
 
 
     def _refreshNodeFromTarget(self):
@@ -184,6 +260,17 @@ class TableInspector(AbstractInspector):
                                self.configValue('separate fields'))
 
         self.model.encoding = self.config.encodingCti.configValue
+        self.model.horAlignment = self.config.horAlignCti.configValue
+        self.model.verAlignment = self.config.verAlignCti.configValue
+
+        self.model.strFormat   = makeReplacementField(self.config.strFormatCti.configValue,
+                                                      testValue='my_string')
+        self.model.intFormat   = makeReplacementField(self.config.intFormatCti.configValue,
+                                                      testValue=0)
+        self.model.numFormat   = makeReplacementField(self.config.numFormatCti.configValue,
+                                                      testValue=0.0)
+        self.model.otherFormat = makeReplacementField(self.config.otherFormatCti.configValue,
+                                                      testValue=None)
 
         scrollMode = self.configValue("scroll")
         self.tableView.setHorizontalScrollMode(scrollMode)
@@ -204,6 +291,7 @@ class TableInspector(AbstractInspector):
             else:
                 # ResizeToContents can be very slow because it gets all rows.
                 # Work around: resize only first row and columns and apply this to all rows/cols
+                # TODO: perhaps use SizeHintRole?
                 logger.warning("Performance work around: for tables with more than 1000 cells " +
                                "only the current row is resized and the others use that size.")
                 verHeader.setResizeMode(QtGui.QHeaderView.Interactive)
@@ -226,6 +314,7 @@ class TableInspector(AbstractInspector):
             else:
                 # ResizeToContents can be very slow because it gets all rows.
                 # Work around: resize only first row and columns and apply this to all rows/cols
+                # TODO: perhaps use SizeHintRole?
                 logger.warning("Performance work around: for tables with more than 1000 cells " +
                                "only the current column is resized and the others use that size.")
                 horHeader.setResizeMode(QtGui.QHeaderView.Interactive)
@@ -271,7 +360,14 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         self._numbersInHeader = True
         self._font = None # Default font
 
-        self.encoding = 'utf-8' # can be a simple attibute
+        # The following members are simple attributes, they can be changed independently
+        self.encoding = 'utf-8'
+        self.strFormat = None
+        self.numFormat = None
+        self.intFormat = None
+        self.otherFormat = None
+        self.textAlignment = None
+        self.verAlignment = None
 
 
     def updateState(self, slicedArray, rtiInfo, separateFields):
@@ -317,8 +413,8 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
             self.endResetModel()
 
 
-    def data(self, index, role = Qt.DisplayRole):
-        """ Returns the data at an index for a certain role
+    def _cellValue(self, index):
+        """ Returns the value at the index (without any string conversion)
         """
         row = index.row()
         col = index.column()
@@ -328,25 +424,45 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         # The check above should have returned None if the sliced array is None
         assert self._slicedArray is not None, "Sanity check failed."
 
-        if role == Qt.DisplayRole:
-
-            nFields = len(self._fieldNames)
-            if self._separateFieldOrientation == Qt.Horizontal:
-                cellValue = self._slicedArray[row, col // nFields][self._fieldNames[col % nFields]]
-            elif self._separateFieldOrientation == Qt.Vertical:
-                cellValue = self._slicedArray[row // nFields, col][self._fieldNames[row % nFields]]
-            else:
-                cellValue = self._slicedArray[row, col]
-
-            # Numpy strings must be converted to regular strings, otherwise they don't show up.
-            return to_string(cellValue, decode_bytes=self.encoding)
-
-        elif role == Qt.FontRole:
-            assert self._font
-            return self._font
-
+        nFields = len(self._fieldNames)
+        if self._separateFieldOrientation == Qt.Horizontal:
+            cellValue = self._slicedArray[row, col // nFields][self._fieldNames[col % nFields]]
+        elif self._separateFieldOrientation == Qt.Vertical:
+            cellValue = self._slicedArray[row // nFields, col][self._fieldNames[row % nFields]]
         else:
-            return None
+            cellValue = self._slicedArray[row, col]
+
+        return cellValue
+
+
+    def data(self, index, role = Qt.DisplayRole):
+        """ Returns the data at an index for a certain role
+        """
+        try:
+            if role == Qt.DisplayRole:
+                return to_string(self._cellValue(index), decode_bytes=self.encoding,
+                                 strFormat=self.strFormat, intFormat=self.intFormat,
+                                 numFormat=self.numFormat, otherFormat=self.otherFormat)
+
+            elif role == Qt.FontRole:
+                #assert self._font, "Font undefined"
+                return self._font
+
+            elif role == Qt.TextAlignmentRole:
+                if self.horAlignment == ALIGN_SMART:
+                    cellContainsNumber = isinstance(self._cellValue(index), numbers.Number)
+                    horAlign = Qt.AlignRight if cellContainsNumber else Qt.AlignLeft
+                    return horAlign | self.verAlignment
+                else:
+                    return self.horAlignment | self.verAlignment
+
+            else:
+                return None
+        except Exception as ex:
+            logger.error("Slot is not exception-safe.")
+            logger.exception(ex)
+            if DEBUGGING:
+                raise
 
 
     def flags(self, index):

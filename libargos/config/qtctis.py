@@ -234,11 +234,7 @@ class FontCti(AbstractCti):
 
         self._targetWidget = targetWidget
 
-        families = QtGui.QFontDatabase().families()
-        defaultFamilyIdx = fontFamilyIndex(self.defaultData, families)
-
         self.familyCti = self.insertChild(
-            #ChoiceCti("family", configValues=families, defaultData=defaultFamilyIdx))
             FontChoiceCti("family", defaultFamily=self.defaultData.family()))
 
         self.pointSizeCti = self.insertChild(
@@ -259,8 +255,6 @@ class FontCti(AbstractCti):
         """ Converts to str so that this CTI always stores that type.
         """
         result = QtGui.QFont(data)
-        logger.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        logger.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@______enforceDataType: family = {}, size = {}".format(result.family(), result.pointSizeF()))
         return result
 
 

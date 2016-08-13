@@ -43,28 +43,52 @@ def type_name(var):
     return type(var).__name__
 
 
-def to_string(var, decode_bytes='utf-8'):
+def to_string(var, decode_bytes='utf-8',
+              strFormat="{}", intFormat="{}", numFormat="{}", otherFormat="{}"):
     """ Converts var to a python string or uncode string so Qt widgets can display them.
+
         If var consists of bytes, the decode_bytes is used to decode the bytes.
 
+        If var consists of a numpy.str_, the result will be converted to a regular Python string.
+        This is necessary to display the string in Qt widgets.
+
+        :param decode_bytes': string containing the expected encoding when var is of type bytes
+        :param strFormat': new style format string used to format strings
+        :param intFormat': new style format string used to format integers
+        :param numFormat': new style format string used to format all numbers except integers.
+        :param otherFormat': new style format string used to format all other types
     """
     #logger.debug("to_string: {!r} ({})".format(var, type(var)))
+
+    # Decode and select correct format specifier.
     if is_binary(var):
+        fmt = strFormat
         try:
-            result = var.decode(decode_bytes, 'replace')
+            decodedVar = var.decode(decode_bytes, 'replace')
         except LookupError as ex:
+            # Add URL to exception message.
             raise LookupError("{}\n\nFor a list of encodings in Python see: {}"
                               .format(ex, URL_PYTHON_ENCODINGS_DOC))
     elif is_text(var):
-        result = six.text_type(var) # convert possible numpy.unicode_ to regular unicode
+        fmt = strFormat
+        decodedVar = six.text_type(var)
     elif is_a_string(var):
-        result = str(var)           # convert possible numpy.str_ to regular string
-    elif isinstance(var, numbers.Real):
-        result = repr(var)
+        fmt = strFormat
+        decodedVar = str(var)
     elif isinstance(var, numbers.Integral):
-        result = repr(var)
+        fmt = intFormat
+        decodedVar = var
+    elif isinstance(var, numbers.Number):
+        fmt = numFormat
+        decodedVar = var
     else:
-        result = repr(var)
+        fmt = otherFormat
+        decodedVar = var
+
+    try:
+        result = fmt.format(decodedVar)
+    except Exception:
+        result = "Invalid format {!r} for: {!r}".format(fmt, decodedVar)
 
     #logger.debug("to_string: {!r} ({}) -> result = {!r}".format(var, type(var), result))
     return result

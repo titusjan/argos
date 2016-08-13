@@ -21,6 +21,8 @@ import logging, copy
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
 from libargos.qt import  Qt, QtCore, QtGui, QtSlot
+from libargos.utils.cls import check_class
+from libargos.utils.misc import NOT_SPECIFIED
 
 
 logger = logging.getLogger(__name__)
@@ -31,23 +33,45 @@ logger = logging.getLogger(__name__)
 
 class ChoiceCti(AbstractCti):
     """ Config Tree Item to store a choice between strings.
+
+        A QCombobox will pop-up if the user clicks on the cell to edit it.
     """
-    def __init__(self, nodeName, defaultData=0, editable=False,
-                 configValues=None, displayValues=None):
+    def __init__(self, nodeName, defaultData=0, configValues=None, displayValues=None,
+                 editable=False, insertPolicy=QtGui.QComboBox.InsertAtBottom,
+                 completer=NOT_SPECIFIED):
         """ Constructor.
 
-            The data and defaultData are integers that are used to store the currentIndex.
+            The defaultData is an integers that is used to store the currentIndex.
             The displayValues parameter must be a list of strings, which will be displayed in the
-            combo box. The _configValues should be a list of the same size with the _configValues
+            combo box. The configValues should be a list of the same size with the configValues
             that each 'choice' represents, e.g. choice 'dashed' maps to configValue Qt.DashLine.
             If displayValues is None, the configValues are used as displayValues.
 
-            For the (other) parameters see the AbstractCti constructor documentation.
-
             The defaultData can be set to a negative value, e.g. use -1 to select the last item
             by default. However, it will be converted to a positive value in the constructor.
+
+            :param defaultData: the default index in the combobox that is used for editing
+            :param configValues: list of configValue items to populate the combobox with
+            :param displayValues: list of possible displayValue items.
+                If None the config values are used as display values as well.
+            :param editable: if True the combobox will be editable
+            :param insertPolicy: determines where user-inserted items should appear in the combobox
+                must be of type QtGui.QComboBox.InsertPolicy
+            :param completer: a QCompleter that will be used by the combobox for auto-completion.
+                If NotSpecified a default completer is used, i.e. case-insensitive auto-completion.
+                Use None, 0 or False to disable auto-completion.
+
+            For the  parameters see the AbstractCti constructor documentation.
+
         """
+        check_class(insertPolicy, QtGui.QComboBox.InsertPolicy)
+        if completer: # completer may be False
+            check_class(completer, QtGui.QCompleter)
+
         self.editable = editable
+        self.insertPolicy = insertPolicy
+        self.completer = completer
+
         self._configValues = [] if configValues is None else configValues
         if displayValues is None:
             self._displayValues = copy.copy(self._configValues)
@@ -162,6 +186,10 @@ class ChoiceCtiEditor(AbstractCtiEditor):
 
         comboBox = QtGui.QComboBox()
         comboBox.setEditable(cti.editable)
+        comboBox.setInsertPolicy(cti.insertPolicy)
+        if cti.completer is not NOT_SPECIFIED:
+            comboBox.setCompleter(cti.completer if cti.completer else None)
+
         comboBox.addItems(cti._displayValues)
 
         # Store the configValue in the combo box, although it's not currently used.
