@@ -196,7 +196,7 @@ class PgLinePlot1d(AbstractInspector):
         self.titleLabel.setText(self.configValue('title').format(**self.collector.rtiInfo))
 
         plotDataItem = self.config.plotDataItemCti.createPlotDataItem()
-        plotDataItem.setData(self.slicedArray)
+        plotDataItem.setData(self.slicedArray, connect="finite")
         self.plotItem.addItem(plotDataItem)
 
         if self.config.probeCti.configValue:
