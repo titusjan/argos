@@ -352,7 +352,7 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         self._nRows = 0
         self._nCols = 0
         self._fieldNames = []
-        self._slicedArray = None
+        self._slicedArray = None # can be a masked array or a regular numpy array
         self._rtiInfo = {}
 
         self._separateFields = True  # User config option
@@ -377,6 +377,8 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         """
         self.beginResetModel()
         try:
+            # The sliced array can be a masked array or a (regular) numpy array.
+            # The table works fine with masked arrays, no need to replace the masked values.
             self._slicedArray = slicedArray
             if slicedArray is None:
                 self._nRows = 0

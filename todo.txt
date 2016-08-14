@@ -14,6 +14,8 @@ TODO version 0.2:
 
     Test by opening all test data.
 
+    Inspector source in menu as separate. Also in inspector button.
+
 
 TODO version 0.3:
 
@@ -29,6 +31,7 @@ TODO version 0.3:
     Matplotlib inspector
 
     Better PyQtGraph histogram/color bar.
+        Submit bug reports on
 
    	Combine property attribute windows in a tree.
    	    Config values.

@@ -21,6 +21,7 @@
 
 import logging, numbers
 import numpy as np
+import numpy.ma as ma
 
 from libargos.info import DEBUGGING
 from libargos.utils import six
@@ -38,9 +39,29 @@ else:
 
 #pylint: enable=C0103
 
-def type_name(var):
-    """ Returns the name of the type of var"""
-    return type(var).__name__
+
+
+###################
+# Type conversion #
+###################
+
+def masked_to_regular_array(masked_array, fill_value=np.nan):
+    """ Returns a copy of the masked array where masked values have been replaced with fill values.
+
+        If masked_array is a regular numpy.ndarry, the function works, meaning a copy of the array
+        is returned. (TODO test)
+
+        :param masked_array: numpy masked
+        :param fill_value: replacement value (default=np.nan).
+            If None the masked_array.fill_value is used.
+        :return: numpy.ndarray with masked arrays replaced by the fill_vluae
+    """
+    return ma.filled(masked_array, fill_value=fill_value)
+
+
+#################
+# Type checking #
+#################
 
 
 def to_string(var, decode_bytes='utf-8',
@@ -259,6 +280,17 @@ def check_class(obj, target_class, allow_none = False):
                             .format(target_class, type(obj)))
 
 
+#############
+# Type info #
+#############
+
+# TODO: get_class_name and type_name the same?
+
+def type_name(var):
+    """ Returns the name of the type of var"""
+    return type(var).__name__
+
+
 def get_class_name(obj):
     """ Returns the class name of an object.
     """
@@ -272,6 +304,9 @@ def get_full_class_name(obj):
     """
     return "{}.{}".format(obj.__class__.__module__, obj.__class__.__name__)
 
+#############
+# Importing #
+#############
 
 def import_symbol(full_symbol_name):
     """ Imports a symbol (e.g. class, variable, etc) from a dot separated name.
@@ -300,4 +335,3 @@ def import_symbol(full_symbol_name):
         raise ImportError("full_symbol_name should contain a module")
     else:
         assert False, "Bug: parts should have 1 or elements: {}".format(parts)
-

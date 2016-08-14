@@ -38,7 +38,7 @@ from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES,
                                                  PgPlotDataItemCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
-from libargos.utils.cls import array_has_real_numbers, check_class
+from libargos.utils.cls import array_has_real_numbers, check_class, masked_to_regular_array
 
 logger = logging.getLogger(__name__)
 
@@ -251,6 +251,7 @@ class PgImagePlot2d(AbstractInspector):
         self.histLutItem = pg.HistogramLUTItem() # what about GradientLegend?
         self.histLutItem.setImageItem(self.imageItem)
         self.histLutItem.vb.setMenuEnabled(False)
+        self.histLutItem.setHistogramRange(0, 100) # Disables autoscaling
 
         # Probe and cross hair plots
         self.crossPlotRow = None # the row coordinate of the cross hair. None if no cross hair.
@@ -381,7 +382,10 @@ class PgImagePlot2d(AbstractInspector):
                 self.verPlotAdded = False
                 gridLayout.activate()
 
-        self.slicedArray = self.collector.getSlicedArray()
+        # The sliced array can be a masked array or a (regular) numpy array. PyQtGraph doesn't
+        # handle masked array so we convert the masked values to Nans.
+        self.slicedArray = masked_to_regular_array(self.collector.getSlicedArray())
+
         if not self._hasValidData():
             self._clearContents()
             raise InvalidDataError("No data available or it does not contain real numbers")

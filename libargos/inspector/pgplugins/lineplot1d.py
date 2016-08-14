@@ -36,7 +36,7 @@ from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES, view
                                                  setXYAxesAutoRangeOn, PgAxisLabelCti,
                                                  PgAxisLogModeCti, PgAxisRangeCti, PgPlotDataItemCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
-from libargos.utils.cls import array_has_real_numbers, check_class
+from libargos.utils.cls import array_has_real_numbers, check_class, masked_to_regular_array
 
 
 logger = logging.getLogger(__name__)
@@ -107,7 +107,6 @@ class PgLinePlot1dCti(MainGroupCti):
 class PgLinePlot1d(AbstractInspector):
     """ Inspector that contains a PyQtGraph 1-dimensional line plot
     """
-
     def __init__(self, collector, parent=None):
         """ Constructor. See AbstractInspector constructor for parameters.
         """
@@ -183,7 +182,9 @@ class PgLinePlot1d(AbstractInspector):
             The reason and initiator parameters are ignored.
             See AbstractInspector.updateContents for their description.
         """
-        self.slicedArray = self.collector.getSlicedArray()
+        # The sliced array can be a masked array or a (regular) numpy array. PyQtGraph doesn't
+        # handle masked array so we convert the masked values to Nans.
+        self.slicedArray = masked_to_regular_array(self.collector.getSlicedArray())
 
         if not self._hasValidData():
             self._clearContents()

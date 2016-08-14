@@ -87,6 +87,7 @@ def __addTestData(argosApp):
     """ Temporary function to add test data
     """
     import numpy as np
+    import numpy.ma as ma
     from decimal import Decimal
     from libargos.repo.memoryrtis import MappingRti
     myDict = {}
@@ -95,7 +96,23 @@ def __addTestData(argosApp):
     myDict['ghosts'] = ['Inky', 'Blinky', 'Pinky', 'Clyde']
     myDict['numbers'] = {'int': 5, 'float': -6.6, 'large float': 7e77,
                          '-inf': np.NINF, 'nan': np.nan, 'complex': 8-9j, 'decimal': Decimal(4.444)}
-    myDict['array'] = np.arange(24).reshape(3, 8)
+    myDict['array'] = np.arange(240).reshape(8, 30).transpose()
+
+    masked_array = ma.arange(2400, dtype=np.float16).reshape(60, 40)
+    masked_array[:, 0:7] = ma.masked
+    masked_array[15:45, 10:17] = ma.masked
+    myDict['array_masked'] = masked_array
+
+    nan_array = np.arange(2400, dtype=np.float16).reshape(60, 40)
+    nan_array[:, 0:7] = np.nan
+    nan_array[15:45, 10:17] = np.nan
+    myDict['array_with_nans'] = nan_array
+
+    inf_array = np.arange(2400, dtype=np.float16).reshape(60, 40)
+    inf_array[:, 0:7] = np.inf
+    inf_array[15:45, 10:17] = np.NINF
+    myDict['array_with_infs'] = inf_array
+
     myDict['structured_arr1'] = np.array([(1,2.,'Hello'), (2,3.,"World")],
                                           dtype=[('foo', 'i4'),('bar', 'f4'), ('baz', 'S10')])
 

@@ -461,7 +461,7 @@ class PgHistLutColorRangeCti(AbstractRangeCti):
         """ Disconnects signals.
             Is called by self.finalize when the cti is deleted.
         """
-        self.histLutItem.sigLevelsChanged.connect(self.setAutoRangeOff)
+        self.histLutItem.sigLevelsChanged.disconnect(self.setAutoRangeOff)
         self.histLutItem.sigLevelsChanged.disconnect(self.refreshMinMax)
 
 

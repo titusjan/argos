@@ -102,6 +102,8 @@ class TextInspector(AbstractInspector):
         logger.debug("TextInspector._drawContents: {}".format(self))
         self.editor.clear()
 
+        # The sliced array can be a masked array or a (regular) numpy array.
+        # The table works fine with masked arrays, no need to replace the masked values.
         slicedArray = self.collector.getSlicedArray()
 
         if slicedArray is None:
