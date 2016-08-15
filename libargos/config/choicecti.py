@@ -174,6 +174,17 @@ class ChoiceCti(AbstractCti):
         self._displayValues.insert(pos, displayValue if displayValue is not None else configValue)
 
 
+    def removeValue(self, configValue):
+        """ Will remove the configValue and the corresponding displayValue from the lists.
+        """
+        self.removeValueByIndex(self._configValues.index(configValue))
+
+
+    def removeValueByIndex(self, index):
+        """ Will remove the configValue and the corresponding displayValue given the index.
+        """
+        del self._configValues[index]
+        del self._displayValues[index]
 
 
 class ChoiceCtiEditor(AbstractCtiEditor):
@@ -263,6 +274,7 @@ class ChoiceCtiEditor(AbstractCtiEditor):
 
                     logger.info("Removing item from combobox: {}"
                                 .format(self.comboBox.currentText()))
+                    self.cti.removeValueByIndex(self.comboBox.currentIndex())
                     self.comboBox.removeItem(self.comboBox.currentIndex())
                     return True
 
