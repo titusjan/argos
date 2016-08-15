@@ -457,6 +457,9 @@ class MainWindow(QtGui.QMainWindow):
                                      .format(inspectorRegItem.identifier, ex))
                     inspector = None
                     self.getInspectorActionById(identifier).setEnabled(False)
+                    
+                    if DEBUGGING:
+                        raise
 
         self.__setInspector(inspector)
 

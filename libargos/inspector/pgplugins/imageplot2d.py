@@ -37,6 +37,8 @@ from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES,
                                                  PgGradientEditorItemCti, setXYAxesAutoRangeOn,
                                                  PgPlotDataItemCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
+from libargos.inspector.pgplugins.pghistlutitem import HistogramLUTItem
+
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
 from libargos.utils.cls import array_has_real_numbers, check_class, masked_to_regular_array
 
@@ -248,7 +250,7 @@ class PgImagePlot2d(AbstractInspector):
         self.imageItem = pg.ImageItem()
         self.imagePlotItem.addItem(self.imageItem)
 
-        self.histLutItem = pg.HistogramLUTItem() # what about GradientLegend?
+        self.histLutItem = HistogramLUTItem() # what about GradientLegend?
         self.histLutItem.setImageItem(self.imageItem)
         self.histLutItem.vb.setMenuEnabled(False)
         self.histLutItem.setHistogramRange(0, 100) # Disables autoscaling
@@ -397,7 +399,6 @@ class PgImagePlot2d(AbstractInspector):
         # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0}
         # doesn't seem to do anything.
         self.imageItem.setImage(self.slicedArray.transpose(), autoLevels=False)
-
 
         self.horCrossPlotItem.invertX(self.config.xFlippedCti.configValue)
         self.verCrossPlotItem.invertY(self.config.yFlippedCti.configValue)
