@@ -45,27 +45,53 @@ else:
 # Type conversion #
 ###################
 
-def masked_to_regular_array(masked_array, fill_value=np.nan):
+def masked_to_regular_array(masked_array, replacement_value=np.nan):
     """ Returns a copy of the masked array where masked values have been replaced with fill values.
 
         If masked_array is a regular numpy.ndarry, the function works, meaning a copy of the array
-        is returned. (TODO test)
+        is returned.
 
         :param masked_array: numpy masked
-        :param fill_value: replacement value (default=np.nan).
+        :param replacement_value: replacement value (default=np.nan).
             If None the masked_array.fill_value is used.
         :return: numpy.ndarray with masked arrays replaced by the fill_vluae
     """
-    return ma.filled(masked_array, fill_value=fill_value)
+    return ma.filled(masked_array, fill_value=replacement_value)
+
+
+def replace_missing_values(array, missing_value, replacement_value):
+    """ Returns a copy of the array where the missing_values are replaced with replacement_value.
+
+        If missing_value is None, nothing is replaced, a copy of the array is returned..
+        The missing_value can be Nan or infinite, these are replaced.
+
+        If array is a masked array the masked value are replaced (masked_to_regular_array).
+    """
+    if isinstance(array, ma.MaskedArray):
+        return masked_to_regular_array(array, replacement_value=replacement_value
+                                       )
+    if missing_value is None:
+        array = np.copy(array)
+    elif np.isnan(missing_value):
+        array[np.isnan(array)] = replacement_value
+    else:
+        array[array == missing_value] = replacement_value
+
+    return array
+
 
 
 #################
 # Type checking #
 #################
 
+# Use '{!r}' as default float format for Python 2. This will convert the floats with repr(), which
+# is necessary because str() or an empty format string will only print 2 decimals behind the point.
+# In Python 3 this is not necessary: all relevant decimals are printed.
+DEFAULT_NUM_FORMAT = '{!r}' if six.PY2 else '{}'
 
-def to_string(var, decode_bytes='utf-8',
-              strFormat="{}", intFormat="{}", numFormat="{}", otherFormat="{}"):
+def to_string(var, decode_bytes='utf-8', strFormat='{}',
+              intFormat='{}', numFormat=DEFAULT_NUM_FORMAT, noneFormat='{!r}', otherFormat='{}'):
     """ Converts var to a python string or uncode string so Qt widgets can display them.
 
         If var consists of bytes, the decode_bytes is used to decode the bytes.
@@ -74,9 +100,11 @@ def to_string(var, decode_bytes='utf-8',
         This is necessary to display the string in Qt widgets.
 
         :param decode_bytes': string containing the expected encoding when var is of type bytes
-        :param strFormat': new style format string used to format strings
-        :param intFormat': new style format string used to format integers
-        :param numFormat': new style format string used to format all numbers except integers.
+        :param strFormat' : new style format string used to format strings
+        :param intFormat' : new style format string used to format integers
+        :param numFormat' : new style format string used to format Nones.
+        :param noneFormat': new style format string used to format all numbers except integers.
+
         :param otherFormat': new style format string used to format all other types
     """
     #logger.debug("to_string: {!r} ({})".format(var, type(var)))
@@ -101,6 +129,9 @@ def to_string(var, decode_bytes='utf-8',
         decodedVar = var
     elif isinstance(var, numbers.Number):
         fmt = numFormat
+        decodedVar = var
+    elif var is None:
+        fmt = noneFormat
         decodedVar = var
     else:
         fmt = otherFormat

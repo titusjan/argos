@@ -11,11 +11,14 @@ TODO version 0.2:
 
     TextView inspector
         XML pretty print.
+        Also update string formats.
 
     Test by opening all test data.
 
     Inspector source in menu as separate. Also in inspector button.
 
+    Valid range to mask
+        /argos/hdf-eos/DeepBlue-SeaWiFS-1.0_L3_20100101_v002-20110527T191319Z.h5/viewing_zenith_angle
 
 TODO version 0.3:
 

@@ -25,7 +25,7 @@ import logging, os
 import h5py
 import numpy as np
 
-from libargos.utils.cls import check_class
+from libargos.utils.cls import to_string, check_class, is_an_array
 from libargos.repo.iconfactory import RtiIconFactory
 from libargos.repo.baserti import BaseRti
 
@@ -83,6 +83,8 @@ def dataSetUnit(h5Dataset):
         It searches in the attributes for one of the following keys:
         'unit', 'units', 'Unit', 'Units', 'UNIT', 'UNITS'. If these are not found, the empty
         string is returned.
+
+        Always returns a string
     """
     attributes = h5Dataset.attrs
     if not attributes:
@@ -92,14 +94,32 @@ def dataSetUnit(h5Dataset):
         if key in attributes:
             # In Python3 the attributes are byte strings so we must decode them
             # This a bug in h5py, see https://github.com/h5py/h5py/issues/379
-            unit = attributes[key]
-            if type(unit) == np.bytes_ or type(unit) == bytes:
-                return unit.decode('utf-8')
-            else:
-                return str(unit)
-    else:
-        return ''
+            return to_string(attributes[key])
+    # Not found
+    return ''
 
+
+def dataSetMissingValue(h5Dataset):
+    """ Returns the missingData given a HDF-5 dataset
+
+        Looks for one of the following attributes: _FillValue, missing_value, MissingValue,
+        missingValue. Returns None if these attributes are not found.
+
+        HDFEOS seems to put the attributes in lists, so if the attribute contains a list, the first
+        element is returned.
+    """
+    attributes = h5Dataset.attrs
+    if not attributes:
+        return None # a premature optimization :-)
+
+    for key in ('FillValue', '_FillValue', 'missing_value', 'MissingValue', 'missingValue'):
+        if key in attributes:
+            missingDataValue = attributes[key]
+            if is_an_array(missingDataValue) and len(missingDataValue) == 1:
+                return missingDataValue[0]
+            else:
+                return missingDataValue
+    return None
 
 
 
@@ -166,6 +186,13 @@ class H5pyScalarRti(BaseRti):
         """ Returns the unit of the RTI by calling dataSetUnit on the underlying dataset
         """
         return dataSetUnit(self._h5Dataset)
+
+
+    @property
+    def missingDataValue(self):
+        """ Returns the value to indicate missing data. None if no missing-data value is specified.
+        """
+        return dataSetMissingValue(self._h5Dataset)
 
 
 
@@ -274,6 +301,13 @@ class H5pyFieldRti(BaseRti):
         return dataSetUnit(self._h5Dataset)
 
 
+    @property
+    def missingDataValue(self):
+        """ Returns the value to indicate missing data. None if no missing-data value is specified.
+        """
+        return dataSetMissingValue(self._h5Dataset)
+
+
 
 class H5pyDatasetRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a HDF5 dataset.
@@ -355,6 +389,13 @@ class H5pyDatasetRti(BaseRti):
         """ Returns the unit of the RTI by calling dataSetUnit on the underlying dataset
         """
         return dataSetUnit(self._h5Dataset)
+
+
+    @property
+    def missingDataValue(self):
+        """ Returns the value to indicate missing data. None if no missing-data value is specified.
+        """
+        return dataSetMissingValue(self._h5Dataset)
 
 
     def _fetchAllChildren(self):

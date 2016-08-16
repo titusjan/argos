@@ -318,7 +318,8 @@ class SliceRti(ArrayRti):
         Inherits from ArrayRti and changes little. It overrides only the icon to indicate that the
         underlying data is the same as it's parent.
     """
-    _defaultIconGlyph = RtiIconFactory.FIELD
+    _defaultIconGlyph = RtiIconFactory.ARRAY
+    #_defaultIconGlyph = RtiIconFactory.FIELD
     _defaultIconColor = RtiIconFactory.COLOR_MEMORY
 
 

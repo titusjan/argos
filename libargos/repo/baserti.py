@@ -341,6 +341,17 @@ class BaseRti(AbstractLazyLoadTreeItem):
         """
         return ""
 
+
+    @property
+    def missingDataValue(self):
+        """ Returns the value to indicate missing data.
+
+            The base implementation returns None, indicating that there is no missing data
+            specified.
+        """
+        return None
+
+
 #    @property
 #    def dimensionInfo(self):
 #        """ Returns a list with a DimensionInfo objects for each of the RTI's dimensions.

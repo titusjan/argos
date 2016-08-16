@@ -21,7 +21,7 @@ import logging
 
 from libargos.qt import QtGui
 from libargos.repo.detailpanes import DetailTablePane
-from libargos.utils.cls import to_string
+from libargos.utils.cls import to_string, type_name
 from libargos.widgets.constants import COL_ELEM_TYPE_WIDTH
 
 logger = logging.getLogger(__name__)
@@ -63,17 +63,10 @@ class AttributesPane(DetailTablePane):
             table.setRowCount(len(attributes))
 
             for row, (attrName, attrValue) in enumerate(sorted(attributes.items())):
-                try: # a number
-                    attrStr = "{:g}".format(attrValue)
-                except RuntimeError:
-                    # Structured types give infinite recursion if printed as string.
-                    # Seems a bug: https://github.com/numpy/numpy/issues/385
-                    attrStr = repr(attrValue)
-                except Exception:
-                    attrStr = to_string(attrValue, decode_bytes='utf-8')
+                attrStr = to_string(attrValue, decode_bytes='utf-8')
 
                 try:
-                    type_str = type(attrValue).__name__
+                    type_str = type_name(attrValue)
                 except Exception as ex:
                     logger.exception(ex)
                     type_str = "<???>"

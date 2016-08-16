@@ -20,6 +20,7 @@
 from __future__ import division, print_function
 
 import logging
+import numpy as np
 import pyqtgraph as pg
 
 from functools import partial
@@ -36,7 +37,7 @@ from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES, view
                                                  setXYAxesAutoRangeOn, PgAxisLabelCti,
                                                  PgAxisLogModeCti, PgAxisRangeCti, PgPlotDataItemCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
-from libargos.utils.cls import array_has_real_numbers, check_class, masked_to_regular_array
+from libargos.utils.cls import array_has_real_numbers, check_class, replace_missing_values
 
 
 logger = logging.getLogger(__name__)
@@ -183,8 +184,11 @@ class PgLinePlot1d(AbstractInspector):
             See AbstractInspector.updateContents for their description.
         """
         # The sliced array can be a masked array or a (regular) numpy array. PyQtGraph doesn't
-        # handle masked array so we convert the masked values to Nans.
-        self.slicedArray = masked_to_regular_array(self.collector.getSlicedArray())
+        # handle masked array so we convert the masked values to Nans. Missing data values are
+        # replaced by NaNs. The PyQtGraph line plot omits the Nans, which is great.
+        missingDataValue = self.collector.rti.missingDataValue if self.collector.rti else None # TODO nicer solution
+        self.slicedArray = replace_missing_values(self.collector.getSlicedArray(),
+                                                  missingDataValue, np.nan)
 
         if not self._hasValidData():
             self._clearContents()
