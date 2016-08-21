@@ -71,8 +71,8 @@ def dataSetElementType(h5Dataset):
         return '<compound>'
     else:
         if dtype.metadata and 'vlen' in dtype.metadata:
-            vlen_type = dtype.metadata['vlen']
-            return "<vlen {}>".format(vlen_type.__name__)
+            vlen_dtype = dtype.metadata['vlen']
+            return "<vlen {}>".format(vlen_dtype.name)
 
     return str(dtype)
 

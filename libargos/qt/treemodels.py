@@ -3,7 +3,7 @@ import logging
 
 from libargos.qt.treeitems import BaseTreeItem
 from libargos.info import DEBUGGING
-from libargos.qt import Qt, QtCore, QtSignal
+from libargos.qt import Qt, QtCore, QtSignal, QtSlot
 from libargos.utils.cls import check_is_a_string, check_class
 from libargos.widgets.constants import TREE_CELL_SIZE_HINT
 
@@ -78,17 +78,28 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         return len(self.horizontalHeaders)
 
 
+    @QtSlot(QtCore.QModelIndex, Qt.ItemDataRole)
     def data(self, index, role=Qt.DisplayRole):
         """ Returns the data stored under the given role for the item referred to by the index.
 
             Calls self.itemData for valid items. Descendants should typically override itemData
             instead of this function.
         """
-        if index.isValid():
-            item = self.getItem(index, altItem=self.invisibleRootItem)
-            return self.itemData(item, index.column(), role=role)
-        else:
-            return None
+        try:
+            if index.isValid():
+                item = self.getItem(index, altItem=self.invisibleRootItem)
+                return self.itemData(item, index.column(), role=role)
+            else:
+                return None
+        except Exception as ex:
+            # This Qt slot is called directly from the event loop so uncaught exception make the
+            # application crash (exceptions can come from plugins here). Instead of crashing we
+            # show the error message in the table/tree and hope the users report the error.
+            if not DEBUGGING and role in (Qt.DisplayRole, Qt.EditRole, Qt.ToolTipRole,
+                                          Qt.StatusTipRole, Qt.WhatsThisRole):
+                return repr(ex)
+            else:
+                raise # Still fail hard for the other roles.
 
 
     def itemData(self, item, column, role=Qt.DisplayRole):
