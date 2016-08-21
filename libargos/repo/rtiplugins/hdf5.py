@@ -71,8 +71,11 @@ def dataSetElementType(h5Dataset):
         return '<compound>'
     else:
         if dtype.metadata and 'vlen' in dtype.metadata:
-            vlen_dtype = dtype.metadata['vlen']
-            return "<vlen {}>".format(vlen_dtype.name)
+            vlen_type = dtype.metadata['vlen']
+            try:
+                return "<vlen {}>".format(vlen_type.__name__)  # when vlen_type is a type
+            except AttributeError: #
+                return "<vlen {}>".format(vlen_type.name)      # when vlen_type is a dtype
 
     return str(dtype)
 
@@ -105,18 +108,18 @@ def dataSetMissingValue(h5Dataset):
         Looks for one of the following attributes: _FillValue, missing_value, MissingValue,
         missingValue. Returns None if these attributes are not found.
 
-        HDFEOS seems to put the attributes in lists, so if the attribute contains a list, the first
-        element is returned.
+        HDF-EOS and NetCDF files seem to put the attributes in 1-element arrays. So if the
+        attribute contains an array of one element, that first element is returned here.
     """
     attributes = h5Dataset.attrs
     if not attributes:
         return None # a premature optimization :-)
 
-    for key in ('FillValue', '_FillValue', 'missing_value', 'MissingValue', 'missingValue'):
+    for key in ('missing_value', 'MissingValue', 'missingValue', 'FillValue', '_FillValue'):
         if key in attributes:
             missingDataValue = attributes[key]
             if is_an_array(missingDataValue) and len(missingDataValue) == 1:
-                return missingDataValue[0]
+                return missingDataValue[0] # In case of HDF-EOS and NetCDF files
             else:
                 return missingDataValue
     return None
