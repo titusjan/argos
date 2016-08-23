@@ -98,7 +98,7 @@ def __addTestData(argosApp):
                          '-inf': np.NINF, 'nan': np.nan, 'complex': 8-9j, 'decimal': Decimal(4.444)}
     myDict['array'] = np.arange(240).reshape(8, 30).transpose()
 
-    masked_array = ma.arange(2400, dtype=np.float16).reshape(60, 40)
+    masked_array = ma.arange(2400, dtype=np.int16).reshape(60, 40)
     masked_array[:, 0:7] = ma.masked
     masked_array[15:45, 10:17] = ma.masked
     myDict['array_masked'] = masked_array

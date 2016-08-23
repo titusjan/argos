@@ -32,12 +32,14 @@ from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 
 from libargos.inspector.abstract import AbstractInspector, InvalidDataError
-from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES, viewBoxAxisRange,
+from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, viewBoxAxisRange,
                                                  defaultAutoRangeMethods, PgGridCti, PgAxisCti,
                                                  setXYAxesAutoRangeOn, PgAxisLabelCti,
-                                                 PgAxisLogModeCti, PgAxisRangeCti, PgPlotDataItemCti)
+                                                 PgAxisLogModeCti, PgAxisRangeCti,
+                                                 PgPlotDataItemCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
-from libargos.utils.cls import array_has_real_numbers, check_class, replace_missing_values
+from libargos.utils.cls import (array_has_real_numbers, check_class, fill_values_to_nan,
+                                is_an_array, check_is_an_array)
 
 
 logger = logging.getLogger(__name__)
@@ -186,9 +188,11 @@ class PgLinePlot1d(AbstractInspector):
         # The sliced array can be a masked array or a (regular) numpy array. PyQtGraph doesn't
         # handle masked array so we convert the masked values to Nans. Missing data values are
         # replaced by NaNs. The PyQtGraph line plot omits the Nans, which is great.
-        missingDataValue = self.collector.rti.missingDataValue if self.collector.rti else None # TODO nicer solution
-        self.slicedArray = replace_missing_values(self.collector.getSlicedArray(),
-                                                  missingDataValue, np.nan)
+
+        #missingDataValue = self.collector.rti.missingDataValue if self.collector.rti else None # TODO nicer solution
+        #self.slicedArray = replace_missing_values(,
+        #                                          missingDataValue, np.nan)
+        self.slicedArray = fill_values_to_nan(self.collector.getSlicedArray())
 
         if not self._hasValidData():
             self._clearContents()
@@ -200,7 +204,9 @@ class PgLinePlot1d(AbstractInspector):
         self.titleLabel.setText(self.configValue('title').format(**self.collector.rtiInfo))
 
         plotDataItem = self.config.plotDataItemCti.createPlotDataItem()
-        plotDataItem.setData(self.slicedArray, connect="finite")
+        connectPoints = ~self.slicedArray.mask if is_an_array(self.slicedArray.mask) else "all"
+        plotDataItem.setData(self.slicedArray, connect=connectPoints)
+
         self.plotItem.addItem(plotDataItem)
 
         if self.config.probeCti.configValue:

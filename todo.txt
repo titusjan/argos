@@ -20,6 +20,14 @@ TODO version 0.2:
     Valid range to mask
         /argos/hdf-eos/DeepBlue-SeaWiFS-1.0_L3_20100101_v002-20110527T191319Z.h5/viewing_zenith_angle
 
+    missing data:
+        /argos/hdf-eos/MLS-Aura_L2GP-BrO_v01-52-c01_2007d029.he5/HDFEOS/SWATHS/BrO/Data Fields/Status
+
+        test h5py fill_value.
+
+    Why doesn't the following variable have a shape?
+        /argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/report.detector1.nc/settings
+
 TODO version 0.3:
 
     Look at QSizePolicy::setControlType
@@ -149,6 +157,8 @@ BUGS:
     Line plot auto range yaxis weird with /argos/sidney/Knock.wav
 
     Close children editors when BoolCti is disabled.
+
+    Table headers in attributes/properties/dimensions are not persitent.
 
 
 DATA & LIBS:

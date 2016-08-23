@@ -48,6 +48,23 @@ def _createFromObject(obj, *args, **kwargs):
         return ScalarRti(obj, *args, **kwargs)
 
 
+def getMissingDataValue(obj):
+    """ Returns obj.fill_value or None if obj doesn't have a fill_value property.
+
+        Typically masked arrays have a fill_value and regular Numpy arrays don't.
+        If array is None, this funciont returns None, indicating no fill value.
+
+        :param array: None or a numpy array (masked or regular.
+        :return: None or value that represents missing data
+    """
+    if obj is None:
+        return None
+    else:
+        try:
+            return obj.fill_value # Masked arrays
+        except AttributeError:
+            return None # Regular Numpy arrays and scalar have no missing data value
+
 
 
 class ScalarRti(BaseRti):
@@ -108,6 +125,13 @@ class ScalarRti(BaseRti):
         """ String representation of the element type.
         """
         return type_name(self._scalar)
+
+
+    @property
+    def missingDataValue(self):
+        """ Returns the value to indicate missing data.
+        """
+        return getMissingDataValue(self._scalar)
 
 
 
@@ -209,6 +233,13 @@ class FieldRti(BaseRti):
         return mainArrayDims + subArrayDims
 
 
+    @property
+    def missingDataValue(self):
+        """ Returns the value to indicate missing data.
+        """
+        return getMissingDataValue(self._array)
+
+
 
 class ArrayRti(BaseRti):
     """ Represents a numpy array (or None for undefined/unopened nodes)
@@ -232,7 +263,7 @@ class ArrayRti(BaseRti):
     @property
     def attributes(self):
         """ The attribute dictionary.
-            Reimplemented from BaseRti: he attribute dictionary is stored per-object instead of
+            Reimplemented from BaseRti: the attribute dictionary is stored per-object instead of
             per-class.
         """
         return self._attributes
@@ -290,6 +321,13 @@ class ArrayRti(BaseRti):
         else:
             dtype =  self._array.dtype
             return '<compound>' if dtype.names else str(dtype)
+
+
+    @property
+    def missingDataValue(self):
+        """ Returns the value to indicate missing data.
+        """
+        return getMissingDataValue(self._array)
 
 
     def _fetchAllChildren(self):

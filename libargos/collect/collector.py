@@ -20,11 +20,12 @@ from __future__ import print_function
 
 import logging, os
 import numpy as np
+import numpy.ma as ma
 
 from libargos.collect.collectortree import CollectorTree, CollectorSpinBox
 from libargos.repo.baserti import BaseRti
 from libargos.qt import Qt, QtGui, QtCore, QtSignal, QtSlot
-from libargos.utils.cls import check_class, check_is_a_sequence
+from libargos.utils.cls import check_class, check_is_a_sequence, check_is_an_array, is_an_array
 from libargos.widgets.constants import (TOP_DOCK_HEIGHT)
 
 logger = logging.getLogger(__name__)
@@ -392,7 +393,8 @@ class Collector(QtGui.QWidget):
             spinBox.setMinimum(0)
             spinBox.setMaximum(dimSize - 1)
             spinBox.setSingleStep(1)
-            spinBox.setValue(dimSize // 2) # select the middle of the slice
+            #spinBox.setValue(dimSize // 2) # select the middle of the slice
+            spinBox.setValue(dimSize) # select the middle of the slice  # TODO: middle again
             spinBox.setPrefix("{}: ".format(self._rti.dimensionNames[dimNr]))
             spinBox.setSuffix("/{}".format(spinBox.maximum()))
             spinBox.setProperty("dim_nr", dimNr)
@@ -477,7 +479,7 @@ class Collector(QtGui.QWidget):
     def getSlicedArray(self):
         """ Slice the rti using a tuple of slices made from the values of the combo and spin boxes
 
-            :returns: Numpy array with the same number of dimension as the number of
+            :return: Numpy masked array with the same number of dimension as the number of
                 comboboxes (this can be zero!).
 
                 Returns None if no slice can be made (i.e. the RTI is not sliceable).
@@ -503,7 +505,8 @@ class Collector(QtGui.QWidget):
         logger.debug("Array slice list: {}".format(str(sliceList)))
         slicedArray = self.rti[tuple(sliceList)]
 
-        logger.debug("SlicedArray type before: {}".format(type(slicedArray)))
+        logger.debug("slicedArray 1: {!r}".format(slicedArray))
+
 
         # If there are no comboboxes the sliceList will contain no Slices objects, only ints. Then
         # the resulting slicedArray will be a usually a scalar (only compound fields may yield an
@@ -511,16 +514,28 @@ class Collector(QtGui.QWidget):
         # always get an array (having the same number of dimensions as the dimensionality of the
         # inspector, i.e. the number of comboboxes).
         if self.maxCombos == 0:
-            slicedArray = np.array(slicedArray)
+            slicedArray = ma.MaskedArray(slicedArray)
+
+        logger.debug("slicedArray 2: {!r}".format(slicedArray))
 
         # Post-condition type check
-        assert isinstance(slicedArray, np.ndarray), \
-            "Numpy array expected. Got: {}".format(type(slicedArray))
+        check_is_an_array(slicedArray, np.ndarray)
+
+        # Enforce the return type to be a masked array.
+        if not isinstance(slicedArray, ma.MaskedArray):
+            logger.warn("RTI does not return in masked_array. No mask used.")
+            assert False, "stopped"
+            slicedArray = ma.MaskedArray(slicedArray)
+
+        slicedArray.harden_mask()
+        logger.debug("slicedArray 3: {!r}".format(slicedArray))
 
         # Add fake dimensions of length 1 so that result.ndim will equal the number of combo boxes
         for dimNr in range(slicedArray.ndim, self.maxCombos):
             #logger.debug("Adding fake dimension: {}".format(dimNr))
-            slicedArray = np.expand_dims(slicedArray, dimNr)
+            slicedArray = ma.expand_dims(slicedArray, dimNr)
+
+        logger.debug("slicedArray 4: {!r}".format(slicedArray))
 
         # Post-condition dimension check
         assert slicedArray.ndim == self.maxCombos, \
@@ -532,9 +547,15 @@ class Collector(QtGui.QWidget):
         permutations = np.argsort(comboDims)
         logger.debug("slicedArray.shape: {}".format(slicedArray.shape))
         logger.debug("Transposing dimensions: {}".format(permutations))
-        slicedArray = np.transpose(slicedArray, permutations)
+        slicedArray = ma.transpose(slicedArray, permutations)
+
+        logger.debug("slicedArray 5: {!r}".format(slicedArray))
 
         logger.debug("slicedArray.shape: {}".format(slicedArray.shape))
+
+        # Post-condition type check (can be removed in the future)
+        assert isinstance(slicedArray, ma.MaskedArray), \
+            "Numpy masked array expected. Got: {}".format(type(slicedArray))
 
         return slicedArray
 

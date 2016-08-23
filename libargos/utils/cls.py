@@ -45,39 +45,56 @@ else:
 # Type conversion #
 ###################
 
-def masked_to_regular_array(masked_array, replacement_value=np.nan):
-    """ Returns a copy of the masked array where masked values have been replaced with fill values.
+# def masked_to_regular_array(masked_array, replacement_value=np.nan):
+#     """ Returns a copy of the masked array where masked values have been replaced with fill values.
+#
+#         If masked_array is a regular numpy.ndarry, the function works, meaning a copy of the array
+#         is returned.
+#
+#         :param masked_array: numpy masked
+#         :param replacement_value: replacement value (default=np.nan).
+#             If None the masked_array.fill_value is used.
+#         :return: numpy.ndarray with masked arrays replaced by the fill_vluae
+#     """
+#     return ma.filled(masked_array, fill_value=replacement_value)
 
-        If masked_array is a regular numpy.ndarry, the function works, meaning a copy of the array
-        is returned.
+#
+# def replace_missing_values(array, missing_value, replacement_value):
+#     """ Returns a copy of the array where the missing_values are replaced with replacement_value.
+#
+#         If missing_value is None, nothing is replaced, a copy of the array is returned..
+#         The missing_value can be Nan or infinite, these are replaced.
+#
+#         If array is a masked array the masked value are replaced (masked_to_regular_array).
+#     """
+#     if isinstance(array, ma.MaskedArray):
+#         logger.debug("^^^^^^^^^^^^^^^^^^^ mask: {}".format(array.mask))
+#
+#         return array
+#         return masked_to_regular_array(array, replacement_value=replacement_value)
+#     if missing_value is None:
+#         array = np.copy(array)
+#     elif np.isnan(missing_value):
+#         array[np.isnan(array)] = replacement_value
+#     else:
+#         array[array == missing_value] = replacement_value
+#
+#     return array
 
-        :param masked_array: numpy masked
-        :param replacement_value: replacement value (default=np.nan).
-            If None the masked_array.fill_value is used.
-        :return: numpy.ndarray with masked arrays replaced by the fill_vluae
+
+def fill_values_to_nan(masked_array):
+    """ Replaces the fill_values of the masked array by NaNs
+
+        If the array is None or it does not contain floating point values, it cannot contain NaNs.
+        In that case the original array is returned.
     """
-    return ma.filled(masked_array, fill_value=replacement_value)
-
-
-def replace_missing_values(array, missing_value, replacement_value):
-    """ Returns a copy of the array where the missing_values are replaced with replacement_value.
-
-        If missing_value is None, nothing is replaced, a copy of the array is returned..
-        The missing_value can be Nan or infinite, these are replaced.
-
-        If array is a masked array the masked value are replaced (masked_to_regular_array).
-    """
-    if isinstance(array, ma.MaskedArray):
-        return masked_to_regular_array(array, replacement_value=replacement_value
-                                       )
-    if missing_value is None:
-        array = np.copy(array)
-    elif np.isnan(missing_value):
-        array[np.isnan(array)] = replacement_value
+    if masked_array is not None and masked_array.dtype.kind == 'f':
+        check_class(masked_array, ma.masked_array)
+        logger.debug("Replacing fill_values by NaNs")
+        masked_array[:] = ma.filled(masked_array, np.nan)
+        masked_array.set_fill_value(np.nan)
     else:
-        array[array == missing_value] = replacement_value
-
-    return array
+        return masked_array
 
 
 
@@ -90,7 +107,7 @@ def replace_missing_values(array, missing_value, replacement_value):
 # In Python 3 this is not necessary: all relevant decimals are printed.
 DEFAULT_NUM_FORMAT = '{!r}' if six.PY2 else '{}'
 
-def to_string(var, decode_bytes='utf-8', strFormat='{}',
+def to_string(var, masked=None, decode_bytes='utf-8', maskFormat='', strFormat='{}',
               intFormat='{}', numFormat=DEFAULT_NUM_FORMAT, noneFormat='{!r}', otherFormat='{}'):
     """ Converts var to a python string or uncode string so Qt widgets can display them.
 
@@ -99,12 +116,17 @@ def to_string(var, decode_bytes='utf-8', strFormat='{}',
         If var consists of a numpy.str_, the result will be converted to a regular Python string.
         This is necessary to display the string in Qt widgets.
 
+        For the possible format string (replacement fields) see:
+            https://docs.python.org/3/library/string.html#format-string-syntax
+
+        :param masked: if True, the element is masked. The maskFormat is used.
         :param decode_bytes': string containing the expected encoding when var is of type bytes
         :param strFormat' : new style format string used to format strings
         :param intFormat' : new style format string used to format integers
         :param numFormat' : new style format string used to format Nones.
         :param noneFormat': new style format string used to format all numbers except integers.
-
+        :param maskFormat': override with this format used if masked is True.
+            If the maskFormat is empty, the format is never overriden.
         :param otherFormat': new style format string used to format all other types
     """
     #logger.debug("to_string: {!r} ({})".format(var, type(var)))
@@ -137,12 +159,17 @@ def to_string(var, decode_bytes='utf-8', strFormat='{}',
         fmt = otherFormat
         decodedVar = var
 
+    if masked and maskFormat != '{}':
+        fmt = maskFormat
+
     try:
         result = fmt.format(decodedVar)
     except Exception:
         result = "Invalid format {!r} for: {!r}".format(fmt, decodedVar)
 
-    #logger.debug("to_string: {!r} ({}) -> result = {!r}".format(var, type(var), result))
+    #if masked:
+    #    logger.debug("to_string (fmt={}): {!r} ({}) -> result = {!r}".format(maskFormat, var, type(var), result))
+
     return result
 
 

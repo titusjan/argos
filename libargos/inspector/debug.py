@@ -35,6 +35,7 @@ class DebugInspector(AbstractInspector):
         super(DebugInspector, self).__init__(collector, parent=parent)
 
         self.label = QtGui.QLabel()
+        self.label.setWordWrap(True)
         self.contentsLayout.addWidget(self.label)
 
         self._config = self._createConfig()
@@ -105,12 +106,15 @@ class DebugInspector(AbstractInspector):
         if slicedArray is None:
             text = "<None>"
         else:
-            text = str(slicedArray.shape)
+            text = ("data = {!r}, masked = {!r}, fill_value = {!r} (?= {}: {})"
+                    .format(slicedArray.data, slicedArray.mask, slicedArray.get_fill_value(),
+                            slicedArray.item(), slicedArray.item() == slicedArray.get_fill_value()))
 
-        logger.debug("_drawContents shape: {}".format(text))
+        logger.debug("_drawContents: {}".format(text))
+        logger.debug("_drawContents: {!r}".format(slicedArray))
 
         if DEBUGGING:
-            self.label.setText("slice shape: {}".format(text))
+            self.label.setText(text)
 
 
 
