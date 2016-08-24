@@ -250,6 +250,7 @@ class ArrayRti(BaseRti):
         """
         return self.isCompound
 
+
     @property
     def isSliceable(self):
         """ Returns True if the underlying array is not None.
@@ -321,6 +322,43 @@ class SliceRti(ArrayRti):
     _defaultIconGlyph = RtiIconFactory.ARRAY
     #_defaultIconGlyph = RtiIconFactory.FIELD
     _defaultIconColor = RtiIconFactory.COLOR_MEMORY
+
+
+
+class SyntheticArrayRti(ArrayRti):
+    """ Calls a function that yields a Numpy array when the RTI is opened.
+
+        Useful for creating test data.
+    """
+    def __init__(self, nodeName='', fun=None):
+        """ Constructor. Initializes as an ArrayRTI with None as underlying array.
+        """
+        super(SyntheticArrayRti, self).__init__(None, nodeName=nodeName,
+                                                iconColor=self._defaultIconColor)
+        assert callable(fun), "fun parameter should be callable"
+        self._fun = fun
+
+
+    def hasChildren(self):
+        """ Returns True if the item has (fetched or unfetched) children
+
+            Returns True so that the function can be called, even though the array has no children.
+        """
+        return True
+
+
+    def _openResources(self):
+        """ Evaluates the function to result an array
+        """
+        arr = self._fun()
+        check_is_an_array(arr)
+        self._array = arr
+
+
+    def _closeResources(self):
+        """ Closes the underlying resources
+        """
+        self._array = None
 
 
 

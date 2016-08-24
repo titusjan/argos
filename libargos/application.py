@@ -26,6 +26,7 @@ from libargos.qt.misc import removeSettingsGroup, handleException, initQApplicat
 from libargos.qt.registry import GRP_REGISTRY, nameToIdentifier
 from libargos.repo.repotreemodel import RepoTreeModel
 from libargos.repo.registry import globalRtiRegistry
+from libargos.repo.testdata import createArgosTestData
 from libargos.utils.misc import string_to_identifier
 from libargos.widgets.mainwindow import MainWindow, UpdateReason
 
@@ -70,7 +71,7 @@ def browse(fileNames=None,
     # Load data in common repository before windows are created.
     argosApp.loadFiles(fileNames)
     if DEBUGGING:
-        __addTestData(argosApp)
+        argosApp.repo.insertItem(createArgosTestData())
 
     # Create windows for this profile.
     argosApp.loadProfile(profile=profile, inspectorFullName=inspectorFullName)
@@ -83,52 +84,6 @@ def browse(fileNames=None,
     return argosApp.execute()
 
 
-def __addTestData(argosApp):
-    """ Temporary function to add test data
-    """
-    import numpy as np
-    import numpy.ma as ma
-    from decimal import Decimal
-    from libargos.repo.memoryrtis import MappingRti
-    myDict = {}
-    myDict['name'] = 'Pac Man'
-    myDict['age'] = 34
-    myDict['ghosts'] = ['Inky', 'Blinky', 'Pinky', 'Clyde']
-    myDict['numbers'] = {'int': 5, 'float': -6.6, 'large float': 7e77,
-                         '-inf': np.NINF, 'nan': np.nan, 'complex': 8-9j, 'decimal': Decimal(4.444)}
-    myDict['array'] = np.arange(240).reshape(8, 30).transpose()
-
-    masked_array = ma.arange(2400, dtype=np.float16).reshape(60, 40)
-    masked_array[:, 0:7] = ma.masked
-    masked_array[15:45, 10:17] = ma.masked
-    myDict['array_masked'] = masked_array
-
-    nan_array = np.arange(2400, dtype=np.float16).reshape(60, 40)
-    nan_array[:, 0:7] = np.nan
-    nan_array[15:45, 10:17] = np.nan
-    myDict['array_with_nans'] = nan_array
-
-    inf_array = np.arange(2400, dtype=np.float16).reshape(60, 40)
-    inf_array[:, 0:7] = np.inf
-    inf_array[15:45, 10:17] = np.NINF
-    myDict['array_with_infs'] = inf_array
-
-    myDict['structured_arr1'] = np.array([(1,2.,'Hello'), (2,3.,"World")],
-                                          dtype=[('foo', 'i4'),('bar', 'f4'), ('baz', 'S10')])
-
-    myDict['structured_arr2'] = np.array([(1.5,2.5,(1.0,2.0)),(3.,4.,(4.,5.)),(1.,3.,(2.,6.))],
-                                         dtype=[('x','f4'),('y',np.float32),('value','f4',(2,2))])
-    myDict['structured_arr3'] = np.array([(1.5,2.5,(2.0, )),(3.,4.,(5., )),(1.,3.,(2.,))],
-                                         dtype=[('1st','f4'),('2nd',np.float32),('3rd','f4',(2,))])
-    myDict['subDict'] = {'mean': np.ones(111), 'stddev': np.zeros(111, dtype=np.uint16)}
-
-    myDict['numpy string array']  = np.array(['Yackity', 'Smackity'])
-    myDict['numpy unicode array'] = np.array(['Table', u'ταБЬℓσ'])
-    myDict['byte array'] = bytearray(range(256))
-    myDict['bytes'] = bytes(bytearray(range(0, 256)))
-
-    mappingRti = MappingRti(myDict, nodeName="myDict", fileName='')
-    argosApp.repo.insertItem(mappingRti)
 
 
 class ArgosApplication(object):
