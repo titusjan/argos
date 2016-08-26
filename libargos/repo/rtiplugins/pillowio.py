@@ -70,7 +70,7 @@ class PillowFileRti(ArrayRti):
         super(PillowFileRti, self).__init__(None, nodeName=nodeName, fileName=fileName,
                                             iconColor=self._defaultIconColor)
         self._checkFileExists()
-        self._image = None
+        self._bands = [] # image band names
 
 
     def hasChildren(self):
@@ -82,16 +82,18 @@ class PillowFileRti(ArrayRti):
     def _openResources(self):
         """ Uses  open the underlying file
         """
-        self._image = Image.open(self._fileName)
-        self._array = np.asarray(self._image)
+        with Image.open(self._fileName) as image:
+            self._array = np.asarray(image)
+            self._bands = image.getbands()
 
-        # Fill attributes. For now assume that the info item are not overridden by the Image items.
-        self._attributes = dict(self._image.info)
-        self._attributes['Format'] = self._image.format
-        self._attributes['Mode'] = self._image.mode
-        self._attributes['Size'] = self._image.size
-        self._attributes['Width'] = self._image.width
-        self._attributes['Height'] = self._image.height
+            # Fill attributes. For now assume that the info item are not overridden by
+            # the Image items.
+            self._attributes = dict(image.info)
+            self._attributes['Format'] = image.format
+            self._attributes['Mode'] = image.mode
+            self._attributes['Size'] = image.size
+            self._attributes['Width'] = image.width
+            self._attributes['Height'] = image.height
 
 
     def _closeResources(self):
@@ -99,14 +101,12 @@ class PillowFileRti(ArrayRti):
         """
         self._array = None
         self._attributes = {}
-        self._image.close()
-        self._image = None
 
 
     def _fetchAllChildren(self):
         """ Adds the bands as separate fields so they can be inspected easily.
         """
-        bands = self._image.getbands()
+        bands = self._bands
         if len(bands) != self._array.shape[-1]:
             logger.warn("No bands added, bands != last_dim_lenght ({} !: {})"
                         .format(len(bands), self._array.shape[-1]))
