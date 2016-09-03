@@ -17,7 +17,7 @@
 
 """ Store and Tree items for representing data that is stored in memory.
 
-    The memory-RTIs store the attributes per-object instead of per-class.
+    The memory-RTIs store the attributes per-object (instead of returning an emtpy dictionary)
 """
 import logging, os
 import numpy as np
@@ -232,8 +232,7 @@ class ArrayRti(BaseRti):
     @property
     def attributes(self):
         """ The attribute dictionary.
-            Reimplemented from BaseRti: he attribute dictionary is stored per-object instead of
-            per-class.
+            Reimplemented from BaseRti: the attribute dictionary is stored per-object.
         """
         return self._attributes
 
@@ -387,8 +386,7 @@ class SequenceRti(BaseRti):
     @property
     def attributes(self):
         """ The attribute dictionary.
-            Reimplemented from BaseRti: he attribute dictionary is stored per-object instead of
-            per-class.
+            Reimplemented from BaseRti: the attribute dictionary is stored per-object.
         """
         return self._attributes
 
@@ -431,8 +429,7 @@ class MappingRti(BaseRti):
     @property
     def attributes(self):
         """ The attribute dictionary.
-            Reimplemented from BaseRti: he attribute dictionary is stored per-object instead of
-            per-class.
+            Reimplemented from BaseRti: the attribute dictionary is stored per-object.
         """
         return self._attributes
 

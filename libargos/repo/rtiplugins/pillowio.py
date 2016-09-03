@@ -100,6 +100,7 @@ class PillowFileRti(ArrayRti):
         """ Closes the underlying resources
         """
         self._array = None
+        self._bands = []
         self._attributes = {}
 
 

@@ -445,9 +445,9 @@ class PgImagePlot2d(AbstractInspector):
 
                 # Calculate the row and column at the cursor. I just math.floor because the pixel
                 # corners of the image lie at integer values (and not the centers of the pixels).
-                # Note that np.floor doesn't convert to int.
                 scenePos = self.viewBox.mapSceneToView(viewPos)
                 row, col = math.floor(scenePos.y()), math.floor(scenePos.x())
+                row, col = int(row), int(col) # Needed in Python 2
                 nRows, nCols = self.slicedArray.shape
 
                 if (0 <= row < nRows) and (0 <= col < nCols):

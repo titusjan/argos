@@ -345,7 +345,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
 
     def removeAllChildrenAtIndex(self, parentIndex):
         """ Removes all children of the item at the parentIndex.
-            The the children's finalize method is closed before removing them to give a
+            The children's finalize method is called before removing them to give them a
             chance to close their resources
         """
         if not parentIndex.isValid():
