@@ -21,6 +21,7 @@ import logging
 
 import numpy as np
 import numpy.ma as ma
+
 from decimal import Decimal
 from libargos.repo.memoryrtis import MappingRti, SyntheticArrayRti
 
@@ -131,7 +132,6 @@ def createArgosTestData():
                                          dtype=[('x','f4'),('y',np.float32),('value','f4',(2,2))])
     myDict['structured_arr3'] = np.array([(1.5,2.5,(2.0, )),(3.,4.,(5., )),(1.,3.,(2.,))],
                                          dtype=[('1st','f4'),('2nd',np.float32),('3rd','f4',(2,))])
-    myDict['subDict'] = {'mean': np.ones(111), 'stddev': np.zeros(111, dtype=np.uint16)}
 
     myDict['numpy string array']  = np.array(['Yackity', 'Smackity'])
     myDict['numpy unicode array'] = np.array(['Table', u'ταБЬℓσ'])
@@ -141,11 +141,41 @@ def createArgosTestData():
     mappingRti = MappingRti(myDict, nodeName="myDict")
 
     # Synthetic images for testing color maps.
-    colorMapCti = mappingRti.insertChild(MappingRti({}, nodeName="test color maps"))
-    colorMapCti.insertChild(SyntheticArrayRti('concentric circles', fun=makeConcentricCircles))
-    colorMapCti.insertChild(SyntheticArrayRti('ramp', fun=makeRamp))
-    colorMapCti.insertChild(SyntheticArrayRti('arctan2', fun=makeArcTan2))
-    colorMapCti.insertChild(SyntheticArrayRti('spiral', fun=makeSpiral))
-    colorMapCti.insertChild(SyntheticArrayRti('sine product', fun=makeSineProduct))
+    colorMapRti = mappingRti.insertChild(MappingRti({}, nodeName="test color maps"))
+    colorMapRti.insertChild(SyntheticArrayRti('concentric circles', fun=makeConcentricCircles))
+    colorMapRti.insertChild(SyntheticArrayRti('ramp', fun=makeRamp))
+    colorMapRti.insertChild(SyntheticArrayRti('arctan2', fun=makeArcTan2))
+    colorMapRti.insertChild(SyntheticArrayRti('spiral', fun=makeSpiral))
+    colorMapRti.insertChild(SyntheticArrayRti('sine product', fun=makeSineProduct))
+
+    addPandasTestData(mappingRti)
 
     return mappingRti
+
+
+def addPandasTestData(rti):
+    """ Add somd Pandas child RTIs to the rti
+    """
+    try:
+        import pandas as pd
+        from libargos.repo.rtiplugins.pandasio import PandasSeriesRti
+    except ImportError as ex:
+        logger.warning("No pandas test data created: {}".format(ex))
+        return
+
+    pandsRti = rti.insertChild(MappingRti({}, nodeName="pandas"))
+
+    s = pd.Series([1, 2, 3, -4, 5], index=list('abcde'), name='simple series')
+    pandsRti.insertChild(PandasSeriesRti(s, s.name))
+
+
+    df = pd.DataFrame({'A' : ['foo', 'bar', 'foo', 'bar', 'foo', 'bar', 'foo', 'foo'],
+                       'B' : ['one', 'one', 'two', 'three', 'two', 'two', 'one', 'three'],
+                       'C' : np.random.randn(8),
+                       'D' : np.random.randn(8)})
+
+    pandsRti.insertChild(PandasSeriesRti(df, 'df'))
+
+    # panel = pd.Panel(np.arange(24).reshape(2,3,4))
+    # pandsRti.insertChild(PandasSeriesRti(panel, 'panel'))
+
