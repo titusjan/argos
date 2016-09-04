@@ -112,7 +112,7 @@ class ScalarRti(BaseRti):
 
 
 class FieldRti(BaseRti):
-    """ Repository Tree Item (RTI) that contains a field in a compound numpy array.
+    """ Repository Tree Item (RTI) that contains a field in a structured numpy array.
     """
     _defaultIconGlyph = RtiIconFactory.FIELD
     _defaultIconColor = RtiIconFactory.COLOR_MEMORY
@@ -238,16 +238,16 @@ class ArrayRti(BaseRti):
 
 
     @property
-    def isCompound(self):
-        """ Returns True if the variable has a compound type, otherwise returns False.
+    def _isStructured(self):
+        """ Returns True if the variable has a structured type, otherwise returns False.
         """
         return self._array is not None and bool(self._array.dtype.names)
 
 
     def hasChildren(self):
-        """ Returns True if the variable has a compound type, otherwise returns False.
+        """ Returns True if the variable has a structured type, otherwise returns False.
         """
-        return self.isCompound
+        return self._isStructured
 
 
     @property
@@ -289,19 +289,19 @@ class ArrayRti(BaseRti):
             return super(ArrayRti, self).elementTypeName
         else:
             dtype =  self._array.dtype
-            return '<compound>' if dtype.names else str(dtype)
+            return '<structured>' if dtype.names else str(dtype)
 
 
     def _fetchAllChildren(self):
         """ Fetches all fields that this variable contains.
-            Only variables with a compound data type can have fields.
+            Only variables with a structured data type can have fields.
         """
         assert self.canFetchChildren(), "canFetchChildren must be True"
 
         childItems = []
 
-        # Add fields in case of an array of compound type.
-        if self.isCompound:
+        # Add fields in case of an array of structured type.
+        if self._isStructured:
             for fieldName in self._array.dtype.names:
                 childItem = FieldRti(self._array, nodeName=fieldName, fileName=self.fileName)
                 childItem._iconColor = self.iconColor

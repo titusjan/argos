@@ -68,7 +68,7 @@ def dataSetElementType(h5Dataset):
     dtype =  h5Dataset.dtype
 
     if dtype.names:
-        return '<compound>'
+        return '<structured>'
     else:
         if dtype.metadata and 'vlen' in dtype.metadata:
             vlen_type = dtype.metadata['vlen']
@@ -200,7 +200,7 @@ class H5pyScalarRti(BaseRti):
 
 
 class H5pyFieldRti(BaseRti):
-    """ Repository Tree Item (RTI) that contains a field in a compound HDF-5 variable.
+    """ Repository Tree Item (RTI) that contains a field in a structured HDF-5 variable.
     """
     _defaultIconGlyph = RtiIconFactory.FIELD
     _defaultIconColor = ICON_COLOR_H5PY
@@ -326,7 +326,7 @@ class H5pyDatasetRti(BaseRti):
         super(H5pyDatasetRti, self).__init__(nodeName, fileName=fileName)
         check_class(h5Dataset, h5py.Dataset)
         self._h5Dataset = h5Dataset
-        self._isCompound = bool(self._h5Dataset.dtype.names)
+        self._isStructured = bool(self._h5Dataset.dtype.names)
 
 
     @property
@@ -340,9 +340,9 @@ class H5pyDatasetRti(BaseRti):
 
 
     def hasChildren(self):
-        """ Returns True if the variable has a compound type, otherwise returns False.
+        """ Returns True if the variable has a structured type, otherwise returns False.
         """
-        return self._isCompound
+        return self._isStructured
 
 
     @property
@@ -403,14 +403,14 @@ class H5pyDatasetRti(BaseRti):
 
     def _fetchAllChildren(self):
         """ Fetches all fields that this variable contains.
-            Only variables with a compound data type can have fields.
+            Only variables with a structured data type can have fields.
         """
         assert self.canFetchChildren(), "canFetchChildren must be True"
 
         childItems = []
 
         # Add fields
-        if self._isCompound:
+        if self._isStructured:
             for fieldName in self._h5Dataset.dtype.names:
                 childItems.append(H5pyFieldRti(self._h5Dataset, nodeName=fieldName,
                                                fileName=self.fileName))

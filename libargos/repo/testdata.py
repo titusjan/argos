@@ -154,11 +154,12 @@ def createArgosTestData():
 
 
 def addPandasTestData(rti):
-    """ Add somd Pandas child RTIs to the rti
+    """ Add some Pandas child RTIs to the rti
     """
     try:
         import pandas as pd
-        from libargos.repo.rtiplugins.pandasio import PandasSeriesRti
+        from libargos.repo.rtiplugins.pandasio import (PandasSeriesRti, PandasDataFrameRti,
+                                                       PandasPanelRti)
     except ImportError as ex:
         logger.warning("No pandas test data created: {}".format(ex))
         return
@@ -174,8 +175,11 @@ def addPandasTestData(rti):
                        'C' : np.random.randn(8),
                        'D' : np.random.randn(8)})
 
-    pandsRti.insertChild(PandasSeriesRti(df, 'df'))
+    pandsRti.insertChild(PandasDataFrameRti(df, 'df'))
 
-    # panel = pd.Panel(np.arange(24).reshape(2,3,4))
-    # pandsRti.insertChild(PandasSeriesRti(panel, 'panel'))
+
+    panel = pd.Panel(np.random.randn(2, 5, 4), items=['Item1', 'Item2'],
+                     major_axis=pd.date_range('1/1/2000', periods=5),
+                     minor_axis=['A', 'B', 'C', 'D'])
+    pandsRti.insertChild(PandasPanelRti(panel, 'panel'))
 

@@ -267,8 +267,8 @@ def check_is_an_array(var, allow_none=False):
                         .format(type(var)))
 
 
-def array_is_compound(array):
-    """ Returns True if the array has a compound data type (record arrays)
+def array_is_structured(array):
+    """ Returns True if the array has a structured data type.
     """
     return bool(array.dtype.names)
 

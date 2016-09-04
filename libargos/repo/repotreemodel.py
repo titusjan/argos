@@ -63,6 +63,8 @@ class RepoTreeModel(BaseTreeModel):
                 else:
                     return ""
             elif column == self.COL_IS_OPEN:
+                # Only show for RTIs that actually open resources.
+                # TODO: this must be clearer. Use CanFetchChildren? Set is Open to None by default?
                 if treeItem.hasChildren():
                     return str(treeItem.isOpen)
                 else:

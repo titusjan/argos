@@ -97,7 +97,7 @@ class NcdfDimensionRti(BaseRti):
 
 
 class NcdfFieldRti(BaseRti):
-    """ Repository Tree Item (RTI) that contains a field in a compound NCDF variable.
+    """ Repository Tree Item (RTI) that contains a field in a structured NCDF variable.
     """
     _defaultIconGlyph = RtiIconFactory.FIELD
     _defaultIconColor = ICON_COLOR_NCDF4
@@ -216,16 +216,16 @@ class NcdfVariableRti(BaseRti):
         self._ncVar = ncVar
 
         try:
-            self._isCompound = bool(self._ncVar.dtype.names)
+            self._isStructured = bool(self._ncVar.dtype.names)
         except (AttributeError, KeyError):
             # If dtype is a string instead of an numpy dtype, netCDF4 raises a KeyError
             # or AttributeError, depending on its version.
-            self._isCompound = False
+            self._isStructured = False
 
     def hasChildren(self):
-        """ Returns True if the variable has a compound type, otherwise returns False.
+        """ Returns True if the variable has a structured type, otherwise returns False.
         """
-        return self._isCompound
+        return self._isStructured
 
 
     @property
@@ -281,7 +281,7 @@ class NcdfVariableRti(BaseRti):
             # (happens e.g. in the /PROCESSOR/processing_configuration of the Trop LX files)
             return dtype.__name__
 
-        return '<compound>' if dtype.names else str(dtype)
+        return '<structured>' if dtype.names else str(dtype)
 
 
     @property
@@ -300,14 +300,14 @@ class NcdfVariableRti(BaseRti):
 
     def _fetchAllChildren(self):
         """ Fetches all fields that this variable contains.
-            Only variables with a compound data type can have fields.
+            Only variables with a structured data type can have fields.
         """
         assert self.canFetchChildren(), "canFetchChildren must be True"
 
         childItems = []
 
         # Add fields
-        if self._isCompound:
+        if self._isStructured:
             for fieldName in self._ncVar.dtype.names:
                 childItems.append(NcdfFieldRti(self._ncVar, nodeName=fieldName, fileName=self.fileName))
 

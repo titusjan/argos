@@ -157,7 +157,9 @@ class BaseTreeItem(object):
         return self._childItems
 
     def hasChildren(self):
-        """ Returns True if the item has children
+        """ Returns True if the item has children.
+
+            If it has children the corresponding node in the tree can be expanded.
         """
         return len(self.childItems) > 0
 
@@ -288,20 +290,31 @@ class AbstractLazyLoadTreeItem(BaseTreeItem):
         super(AbstractLazyLoadTreeItem, self).__init__(nodeName=nodeName)
         self._childrenFetched = False
 
+
     def hasChildren(self):
         """ Returns True if the item has (fetched or unfetched) children
         """
         return True
         #return not self._childrenFetched or len(self.childItems) > 0 TODO: use this?
 
+
     def canFetchChildren(self):
+        """ Returns True if children can be fetched, and  False if they already have been fetched.
+        """
         return not self._childrenFetched
 
+
     def fetchChildren(self):
+        """ Fetches children.
+
+            The actual work is done by _fetchAllChildren. Decendant classes should typically
+            override that method instead of this one.
+        """
         assert not self._childrenFetched, "canFetchChildren must be True"
         childItems = self._fetchAllChildren()
         self._childrenFetched = True
         return childItems
+
 
     def _fetchAllChildren(self):
         """ The function that actually fetches the children.
@@ -312,6 +325,7 @@ class AbstractLazyLoadTreeItem(BaseTreeItem):
             :rtype: list of BaseRti objects
         """
         raise NotImplementedError
+
 
     def removeAllChildren(self):
         """ Removes all children """

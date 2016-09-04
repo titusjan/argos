@@ -506,7 +506,7 @@ class Collector(QtGui.QWidget):
         logger.debug("SlicedArray type before: {}".format(type(slicedArray)))
 
         # If there are no comboboxes the sliceList will contain no Slices objects, only ints. Then
-        # the resulting slicedArray will be a usually a scalar (only compound fields may yield an
+        # the resulting slicedArray will be a usually a scalar (only structured fields may yield an
         # array). We convert this scalar to a zero-dimensional Numpy array so that inspectors
         # always get an array (having the same number of dimensions as the dimensionality of the
         # inspector, i.e. the number of comboboxes).

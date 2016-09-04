@@ -150,6 +150,12 @@ BUGS:
 
     Close children editors when BoolCti is disabled.
 
+    Reload gives error for memory RTIs. TypeError: __init__() missing 1 required positional argument: 'dictionary'
+        Disable reload? Better try to implement this similarly to the object browser.
+        All memory RTIs constructors should probably have an obj parameter instead of the file_name.
+        The file_name parameter should be added by descendants that actuall use it.
+        However, the file_name should be passed on to children. So no.
+
 
 DATA & LIBS:
     http://pandas-datareader.readthedocs.org/en/latest/remote_data.html#google-finance

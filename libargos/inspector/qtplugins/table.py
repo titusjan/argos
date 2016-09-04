@@ -344,8 +344,8 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
     def __init__(self, parent = None):
         """ Constructor
 
-            :param separateFields: If True the fields of a compound array (recArray) have their
-                own separate cells.
+            :param separateFields: If True the fields of a structured array have their own
+                                   separate cells.
             :param parent: parent Qt widget.
         """
         super(TableInspectorModel, self).__init__(parent)
@@ -394,7 +394,7 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
             self._rtiInfo = rtiInfo
             self._separateFields = separateFields
 
-            # Don't put numbers in the header if the record is of compound type, fields are
+            # Don't put numbers in the header if the record is of structured type, fields are
             # placed in separate cells and the fake dimension is selected (combo index 0)
             if self._separateFields and self._fieldNames:
 

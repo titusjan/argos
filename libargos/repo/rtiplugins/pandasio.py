@@ -18,9 +18,14 @@
 """ Repository Tree Items (RTI) that store Pandas objects.
 
     See: http://pandas.pydata.org/
+
+    Experimental and not comprehensive. For instance, multi-indexes are not yet suported.
 """
-import logging, os
+import logging
+import numpy as np
 import pandas as pd
+
+from pandas.core.generic import NDFrame
 
 from libargos.repo.baserti import BaseRti
 from libargos.repo.iconfactory import RtiIconFactory
@@ -28,113 +33,337 @@ from libargos.utils.cls import check_class
 
 logger = logging.getLogger(__name__)
 
+ICON_COLOR_PANDAS = '#FB9A99'
 
-class PandasSeriesRti(BaseRti):
-    """ Represents a Pandas NDFrame (or None for undefined/unopened nodes)
-
+class PandasIndexRti(BaseRti):
+    """ Contains a Pandas undex.
     """
-    _defaultIconGlyph = RtiIconFactory.ARRAY
+    _defaultIconGlyph = RtiIconFactory.DIMENSION
     _defaultIconColor = RtiIconFactory.COLOR_MEMORY
 
-    def __init__(self, series, nodeName='', fileName='',
+    def __init__(self, index=None, nodeName='', fileName='',
                  iconColor=_defaultIconColor):
-        """ Constructor.
-            :param series: the underlying pandas object. May be undefined (None)
-            :type series: NDFrame
-        """
-        super(PandasSeriesRti, self).__init__(nodeName=nodeName, fileName=fileName)
-        check_class(series, (pd.Series, pd.DataFrame))
-        self._series = series
-        self._iconColor = iconColor
+        """ Constructor
 
-    #
-    # @property
-    # def isCompound(self):
-    #     """ Returns True if the variable has a compound type, otherwise returns False.
-    #     """
-    #     return self._array is not None and bool(self._array.dtype.names)
+            The Index is not part of Pandas' documented API, although it is not private either,
+            many metods return a pd.core.index.Index, but the class itself is not documented.
+            We therefore don't check if index is of the correct type, as it is not clear if
+            pd.core.index.Index is the ancestor of all panda index objects.
+
+            :param index: the underlying pandas index.
+        """
+        super(PandasIndexRti, self).__init__(nodeName=nodeName, fileName=fileName)
+
+        self._index = index
+        self._iconColor = iconColor
 
 
     def hasChildren(self):
-        """ Returns True if the variable has a compound type, otherwise returns False.
+        """ Returns False. An index never has child nodes.
         """
-        return self._series is not None
+        return False
 
 
     @property
     def isSliceable(self):
-        """ Returns True if the underlying series is not None.
+        """ Returns True because the underlying index is sliceable.
         """
-        return self._series is not None
+        return True
 
 
-    def __getitem__(self, index):
+    def __getitem__(self, idx):
         """ Called when using the RTI with an index (e.g. rti[0]).
-            Passes the index through to the underlying array.
+            Returns np.array(index[idx]), where index is the underlying Pandas index.
         """
-        # Will only be called if self.isSliceable is True, so self._array will not be None
-        return self._series.values.__getitem__(index)
-        #return self._series.to_records(index=False).__getitem__(index)
+        return np.array(self._index.__getitem__(idx))
 
 
     @property
     def nDims(self):
-        """ The number of dimensions of the series, which is always 1
+        """ The number of dimensions of the index. Will always be 1.
         """
-        # Will only be called if self.isSliceable is True, so self._array will not be None
-        return self._series.ndim
+        result = self._index.ndim
+        assert result == 1, "Expected index to be 1D, got: {}D".format(result)
+        return result
 
 
     @property
     def arrayShape(self):
-        """ Returns the shape of the underlying array.
+        """ Returns the shape of the underlying index.
         """
-        # Will only be called if self.isSliceable is True, so self._array will not be None
-        return self._series.shape
+        return self._index.shape
 
 
     @property
     def elementTypeName(self):
         """ String representation of the element type.
         """
-        if self._series is None:
-            return super(PandasSeriesRti, self).elementTypeName
+        try:
+            return str(self._index.dtype) # Series
+        except AttributeError:
+            assert False, "not yet implemented." # TODO multi-indexes
+            return '<structured>' # DataFrames and Panels
+
+
+
+
+
+class AbstractPandasNDFrameRti(BaseRti):
+    """ Contains a Pandas NDFrame object.
+
+        The NDFrame class is the ancestor of pandas Series, DataFrame and Panels.
+        May contain None as well (for unopened nodes).
+
+        This is an abstract class and should not be created directly. Use one of its subclasses
+        instead.
+    """
+    # _defaultIconGlyph = RtiIconFactory.ARRAY  # the iconGlyph property is overridden below
+    _defaultIconColor = RtiIconFactory.COLOR_MEMORY
+
+    def __init__(self, ndFrame=None, nodeName='', fileName='', standAlone=True,
+                 iconColor=_defaultIconColor):
+        """ Constructor
+
+            The NDFrame is not part of Pandas' documented API, although it mentions this
+            inheritance. Therefore it is not checked the ndFrame is actually of type NDFrame.
+
+            :param ndFrame: the underlying pandas object. May be undefined (None)
+            :type ndFrame: pandas.core.generic.NDFrame
+            :param standAlone: True if the NDFrame is a stand-alone object, False if it is part of
+                another higher-dimensional, NDFrame. This influences the array. Furthermore, if
+                standAlone is True the index of the NDFrame will be included when the children
+                are fetched and included in the tree (as a PandasIndexRti)
+        """
+        super(AbstractPandasNDFrameRti, self).__init__(nodeName=nodeName, fileName=fileName)
+        check_class(ndFrame, NDFrame, allow_none=True)
+
+        self._ndFrame = ndFrame
+        self._iconColor = iconColor
+        self._standAlone = standAlone
+
+
+    @property
+    def iconGlyph(self):
+        """ Shows an Array icon for regular NDFrames but a Field icon if it is part of another,
+            higher-dimensional, NDFrame.
+        """
+        return RtiIconFactory.ARRAY if self._standAlone else RtiIconFactory.FIELD
+
+
+    @property
+    def _isStructured(self):
+        """ Returns True if the class can be subdivided in separate fields.
+
+            Abstract method, will be overridden in the descendants.
+
+            A DataFrame is structured because it is composed of multiple Series. A Series can not
+            be subdivided further and thus will return False.
+        """
+        raise NotImplementedError()
+
+
+    def hasChildren(self):
+        """ Returns True if the variable has a structured type, otherwise returns False.
+        """
+        return self._ndFrame is not None and (self._isStructured or self._standAlone)
+
+
+    @property
+    def isSliceable(self):
+        """ Returns True if the underlying series is not None.
+        """
+        return self._ndFrame is not None
+
+
+    def __getitem__(self, index):
+        """ Called when using the RTI with an index (e.g. rti[0]).
+            Passes the index through to the values property of the underlying NDFrame.
+        """
+        assert self.isSliceable, "No underlying pandas object: self._ndFrame is None"
+        return self._ndFrame.values.__getitem__(index)
+
+
+    @property
+    def nDims(self):
+        """ The number of dimensions of the pandas object.
+        """
+        assert self.isSliceable, "No underlying pandas object: self._ndFrame is None"
+        return self._ndFrame.ndim
+
+
+    @property
+    def arrayShape(self):
+        """ Returns the shape of the underlying pandas object.
+        """
+        assert self.isSliceable, "No underlying pandas object: self._ndFrame is None"
+        return self._ndFrame.shape
+
+
+    @property
+    def elementTypeName(self):
+        """ String representation of the element type.
+        """
+        if self._ndFrame is None:
+            return super(AbstractPandasNDFrameRti, self).elementTypeName
         else:
             try:
-                return str(self._series.dtype) # Series
+                return str(self._ndFrame.dtype) # Series
             except AttributeError:
-                return '<compound>' # DataFrames and Panels
+                return '<structured>' # DataFrames and Panels
 
 
-    def _subNames(self):
-        """ The labels of the sub division of the NDFrame.
-
-            Returns [] for Series, columns for DataFrames, items for Panels and labels for Panel4D
+    def _createIndexRti(self, index, nodeName):
+        """ Auxiliary method that creates a PandasIndexRti.
         """
-        if self.nDims == 1:
-            return []
-        elif self.nDims == 2:
-            return self._series.columns
-        elif self.nDims == 3:
-            return self._series.items
-        elif self.nDims == 4:
-            return self._series.labels
-        else:
-            raise ValueError("_subNames not defined for dimension: ".format(self.ndim))
+        return PandasIndexRti(index=index, nodeName=nodeName, fileName=self.fileName,
+                              iconColor=self._iconColor)
+
+
+
+class PandasSeriesRti(AbstractPandasNDFrameRti):
+    """ Contains a Pandas Series.
+    """
+    @property
+    def _isStructured(self):
+        """ Returns False, because Series cannot be further subdivided.
+        """
+        return False
+
+
+    @property
+    def dimensionNames(self):
+        """ Returns a list with names that correspond to every NDFrame dimension.
+            For Series this is: ['index']
+        """
+        return ['index']
 
 
     def _fetchAllChildren(self):
-        """ Fetches all fields that this variable contains.
-            Only variables with a compound data type can have fields.
+        """ Fetches the index if the showIndex member is True
+
+            Descendants can override this function to add the subdevicions.
         """
-        assert self.canFetchChildren(), "canFetchChildren must be True"
-        assert self._series is not None, "No underlying pandas object"
+        assert self.isSliceable, "No underlying pandas object: self._ndFrame is None"
+        childItems = []
+        if self._standAlone:
+            childItems.append(self._createIndexRti(self._ndFrame.index, 'index'))
+        return childItems
+
+
+
+class PandasDataFrameRti(AbstractPandasNDFrameRti):
+    """ Contains a Pandas DataFrame
+    """
+    @property
+    def _isStructured(self):
+        """ Returns True, because DataFrames consist of Series
+        """
+        return True
+
+
+    @property
+    def dimensionNames(self):
+        """ Returns a list with names that correspond to every NDFrame dimension.
+            For DataFrames this is: ['index', 'columns']
+        """
+        return ['index', 'columns']
+
+
+    def _fetchAllChildren(self):
+        """ Fetches children items.
+
+            If this is stand-alone DataFrame the index, column etc are added as PandasIndexRti obj.
+        """
+        assert self.isSliceable, "No underlying pandas object: self._ndFrame is None"
 
         childItems = []
-        for subName in self._subNames():
-            childItem = PandasSeriesRti(self._series[subName], nodeName=subName,
-                                        fileName=self.fileName, iconColor=self._iconColor)
+
+        for subName in self._ndFrame.columns: # Note that this is not the first dimension!
+            childItem = PandasSeriesRti(self._ndFrame[subName], nodeName=subName,
+                                        fileName=self.fileName, iconColor=self._iconColor,
+                                        standAlone=False)
             childItems.append(childItem)
 
+        if self._standAlone:
+            childItems.append(self._createIndexRti(self._ndFrame.index, 'index'))
+            childItems.append(self._createIndexRti(self._ndFrame.columns, 'columns'))
+
         return childItems
+
+
+
+class PandasPanelRti(AbstractPandasNDFrameRti):
+    """ Contains a Pandas Panel
+    """
+    @property
+    def _isStructured(self):
+        """ Returns True, because Panels consist of DataFrames
+        """
+        return True
+
+
+    @property
+    def dimensionNames(self):
+        """ Returns a list with names that correspond to every NDFrame dimension.
+            For DataFrames this is: ['items', 'major_axis', 'minor_axis'], which correspond to the
+            data frames itself, the rows and the columns of the underlying DataFrames.
+        """
+        return ['items', 'major_axis', 'minor_axis']
+
+
+    def _fetchAllChildren(self):
+        """ Fetches children items.
+
+            If this is stand-alone Panel the index, column etc are added as PandasIndexRti obj.
+        """
+        assert self.isSliceable, "No underlying pandas object: self._ndFrame is None"
+
+        childItems = []
+
+        for subName in self._ndFrame.items:
+            childItem = PandasDataFrameRti(self._ndFrame[subName], nodeName=subName,
+                                           fileName=self.fileName, iconColor=self._iconColor,
+                                           standAlone=False)
+            childItems.append(childItem)
+
+        if self._standAlone:
+            childItems.append(self._createIndexRti(self._ndFrame.items, 'items'))
+            childItems.append(self._createIndexRti(self._ndFrame.major_axis, 'major_axis'))
+            childItems.append(self._createIndexRti(self._ndFrame.minor_axis, 'minor_axis'))
+
+        return childItems
+
+
+
+class PandasCsvFileRti(PandasDataFrameRti):
+    """ Reads a comma-separated file (CVS) into a Pandas DataFrame.
+    """
+    _defaultIconGlyph = RtiIconFactory.FILE
+    _defaultIconColor = ICON_COLOR_PANDAS
+
+    def __init__(self, nodeName='', fileName=''):
+        """ Constructor. Initializes as an ArrayRTI with None as underlying array.
+        """
+        super(PandasCsvFileRti, self).__init__(ndFrame=None, nodeName=nodeName, fileName=fileName,
+                                               iconColor=PandasCsvFileRti._defaultIconColor,
+                                               standAlone=True)
+        self._checkFileExists()
+
+
+    def hasChildren(self):
+        """ Returns True so that a triangle is added that expands the node and opens the file
+        """
+        return True
+
+
+    def _openResources(self):
+        """ Uses numpy.loadtxt to open the underlying file
+        """
+        self._ndFrame = pd.read_csv(self._fileName)
+
+
+    def _closeResources(self):
+        """ Closes the underlying resources
+        """
+        self._ndFrame = None
 

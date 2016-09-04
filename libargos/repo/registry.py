@@ -168,6 +168,10 @@ class RtiRegistry(ClassRegistry):
                        'libargos.repo.rtiplugins.scipyio.IdlSaveFileRti',
                        extensions=['sav']),
 
+            RtiRegItem('Pandas CSV file',
+                       'libargos.repo.rtiplugins.pandasio.PandasCsvFileRti',
+                        extensions=['csv']),
+
             RtiRegItem('Pillow image',
                        'libargos.repo.rtiplugins.pillowio.PillowFileRti',
                         extensions=['bmp', 'eps', 'im', 'gif', 'jpg', 'jpeg', 'msp', 'pcx',
