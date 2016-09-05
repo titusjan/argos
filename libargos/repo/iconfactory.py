@@ -63,7 +63,7 @@ class RtiIconFactory(object):
     COLOR_ERROR      = '#FF0000'
     COLOR_UNKNOWN    = '#999999'
     #COLOR_MEMORY     = '#FFAA00'
-    COLOR_MEMORY     = '#FFFF99'
+    COLOR_MEMORY     = '#FFFF40'
 
     _singleInstance = None
 

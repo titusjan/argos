@@ -469,7 +469,9 @@ class H5pyGroupRti(BaseRti):
 
 
 class H5pyFileRti(H5pyGroupRti):
-    """ Repository tree item that contains a netCDF file.
+    """ Reads an HDF-5 file using the h5py package.
+
+        See http://www.h5py.org/
     """
     _defaultIconGlyph = RtiIconFactory.FILE
     _defaultIconColor = ICON_COLOR_H5PY

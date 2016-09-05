@@ -294,8 +294,8 @@ class AbstractLazyLoadTreeItem(BaseTreeItem):
     def hasChildren(self):
         """ Returns True if the item has (fetched or unfetched) children
         """
-        return True
-        #return not self._childrenFetched or len(self.childItems) > 0 TODO: use this?
+        #return True
+        return not self._childrenFetched or len(self.childItems) > 0  # TODO: use this?
 
 
     def canFetchChildren(self):

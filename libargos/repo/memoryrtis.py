@@ -313,7 +313,7 @@ class ArrayRti(BaseRti):
 
 
 class SliceRti(ArrayRti):
-    """ Represents a slice of a numpy array (even before it's further sliced in the collecot)
+    """ Represents a slice of a numpy array (even before it's further sliced in the collector)
 
         Inherits from ArrayRti and changes little. It overrides only the icon to indicate that the
         underlying data is the same as it's parent.

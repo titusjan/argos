@@ -364,7 +364,9 @@ class NcdfGroupRti(BaseRti):
 
 
 class NcdfFileRti(NcdfGroupRti):
-    """ Repository tree item that contains a netCDF file.
+    """ Reads a NetCDF file using the netCDF4 module.
+
+        See http://unidata.github.io/netcdf4-python/
     """
     _defaultIconGlyph = RtiIconFactory.FILE
     _defaultIconColor = ICON_COLOR_NCDF4

@@ -37,7 +37,7 @@ ALLOW_PICKLE = False
 
 
 class NumpyTextFileRti(ArrayRti):
-    """ Reads a 2D array from a simple text file using with numpy.loadtxt().
+    """ Reads a 2D array from a simple text file using numpy.loadtxt().
     """
     _defaultIconGlyph = RtiIconFactory.FILE
     _defaultIconColor = ICON_COLOR_NUMPY
@@ -84,7 +84,7 @@ class NumpyTextFileRti(ArrayRti):
 
 
 class NumpyBinaryFileRti(ArrayRti):
-    """ Reads a Numpy array from a binary file (.npy) using with numpy.load().
+    """ Reads a Numpy array from a binary file (.npy) using numpy.load().
 
         The file must have been saved with numpy.save() and therefore contain a single arrays.
         A TypeError is raised if this is not the case.
@@ -126,7 +126,7 @@ class NumpyBinaryFileRti(ArrayRti):
 
 
 class NumpyCompressedFileRti(MappingRti):
-    """ Reads arrays from a Numpy zip file (.npz) using with numpy.load().
+    """ Reads arrays from a Numpy zip file (.npz) using numpy.load().
 
         The file must have been saved with numpy.savez() and therefore contain multiple arrays.
         A TypeError is raised if this is not the case.

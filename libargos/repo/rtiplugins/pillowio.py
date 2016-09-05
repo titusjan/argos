@@ -59,7 +59,9 @@ class PillowBandRti(SliceRti):
 
 
 class PillowFileRti(ArrayRti):
-    """ Image opened with the Python Imaging Library (Pillow)
+    """ Opens an image file with the Python Imaging Library (Pillow)
+
+        See https://python-pillow.org/
     """
     _defaultIconGlyph = RtiIconFactory.FILE
     _defaultIconColor = ICON_COLOR_PILLOW
