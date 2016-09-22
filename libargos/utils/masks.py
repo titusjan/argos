@@ -120,7 +120,7 @@ class ArrayWithMask(object):
         return cls(masked_arr.data, masked_arr.mask, masked_arr.fill_value)
 
 
-    def toMaskedArray(self, masked_arr):
+    def asMaskedArray(self):
         """ Creates converts to a masked array
         """
         return ma.masked_array(data=self.data, mask=self.mask, fill_value=self.fill_value)

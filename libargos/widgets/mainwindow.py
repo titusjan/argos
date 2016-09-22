@@ -407,12 +407,14 @@ class MainWindow(QtGui.QMainWindow):
 
     def setAndDrawInspectorById(self, identifier):
         """ Sets the inspector and draw the contents.
-            Does NOT trigger any actions, the user must updated the actions by hand (or call
+
+            Does NOT trigger any actions, so the check marks in the menus are not updated. To
+            achieve this, the user must update the actions by hand (or call
             getInspectorActionById(identifier).trigger() instead).
         """
         self.setInspectorById(identifier)
 
-        # Show dialog box if import was unsuccesful.
+        # Show dialog box if import was unsuccessful.
         regItem = self.inspectorRegItem
         if regItem and not regItem.successfullyImported:
             msg = "Unable to import {} inspector.\n{}".format(regItem.identifier, regItem.exception)
@@ -434,7 +436,7 @@ class MainWindow(QtGui.QMainWindow):
             NOTE: does not draw the new inspector, this is the responsibility of the caller.
             Also, the corresponding action is not triggered.
 
-            Emits the sigInspectorChanged(self.re
+            Emits the sigInspectorChanged(self.inspectorRegItem)
         """
         logger.info("Setting inspector: {}".format(identifier))
         if not identifier:
@@ -457,7 +459,7 @@ class MainWindow(QtGui.QMainWindow):
                                      .format(inspectorRegItem.identifier, ex))
                     inspector = None
                     self.getInspectorActionById(identifier).setEnabled(False)
-                    
+
                     if DEBUGGING:
                         raise
 
@@ -532,12 +534,13 @@ class MainWindow(QtGui.QMainWindow):
         """ Store the (non-default) config values for the current inspector in a local dictionary.
             This dictionary is later used to store value for persistence.
 
-            This function nust be called after the inspector was drawn because that may update
+            This function must be called after the inspector was drawn because that may update
             some derived config values (e.g. ranges)
         """
         if self.inspectorRegItem and self.inspector:
             key = self.inspectorRegItem.identifier
-            logger.debug("_updateNonDefaultsForCurrentInspector: {}".format(key))
+            logger.debug("_updateNonDefaultsForCurrentInspector: {} ()"
+                         .format(key, type(self.inspector)))
             self._inspectorsNonDefaults[key] = self.inspector.config.getNonDefaultsDict()
         else:
             logger.debug("_updateNonDefaultsForCurrentInspector: NO CURRENT INSPECTOR")

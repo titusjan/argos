@@ -113,8 +113,9 @@ class TextInspector(AbstractInspector):
             "Expected zero-dimensional array. Got: {}".format(slicedArray.ndim)
 
         # Valid data from here...
-        slicedScalar = slicedArray.data[()] # Convert to Numpy scalar
-        isMasked = slicedArray.mask[()]
+        maskedArr = slicedArray.asMaskedArray() # So that we call mask[()] for boolean masks
+        slicedScalar = maskedArr[()] # Convert to Numpy scalar
+        isMasked = maskedArr.mask[()]
 
         text = to_string(slicedScalar, masked=isMasked, maskFormat='--',
                          decode_bytes=self.config.encodingCti.configValue)

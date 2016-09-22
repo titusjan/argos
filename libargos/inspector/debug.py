@@ -107,8 +107,9 @@ class DebugInspector(AbstractInspector):
             text = "<None>"
         else:
             text = ("data = {!r}, masked = {!r}, fill_value = {!r} (?= {}: {})"
-                    .format(slicedArray.data, slicedArray.mask, slicedArray.get_fill_value(),
-                            slicedArray.item(), slicedArray.item() == slicedArray.get_fill_value()))
+                    .format(slicedArray.data, slicedArray.mask, slicedArray.fill_value,
+                            slicedArray.data.item(),
+                            slicedArray.data.item() == slicedArray.fill_value))
 
         logger.debug("_drawContents: {}".format(text))
         logger.debug("_drawContents: {!r}".format(slicedArray))

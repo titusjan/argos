@@ -22,6 +22,9 @@ TODO version 0.2:
 
         test h5py fill_value.
 
+        Missing data for structured array fields (unit column)
+        /argos/trop/ql_test_020_minutes-020-021/qlbd4raw.lx.nc/BAND4/ICID_04003_GROUP_00000/INSTRUMENT/housekeeping_data
+
     Why doesn't the following variable have a shape?
         /argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/report.detector1.nc/settings
 
@@ -33,7 +36,6 @@ TODO version 0.3:
 	QSettings should not use titusjan by default
 	(auto)refresh
 
-    Meta arrays http://scipy-cookbook.readthedocs.org/items/MetaArray.html
     Pandas
 
     Matplotlib inspector

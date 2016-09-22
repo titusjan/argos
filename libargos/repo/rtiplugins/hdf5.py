@@ -358,11 +358,11 @@ class H5pyDatasetRti(BaseRti):
             Passes the index through to the underlying dataset.
             Converts to a masked array using the missing data value as fill_value
         """
-        logger.debug("data: {!r}".format(self._h5Dataset.__getitem__(index)))
-        logger.debug("missing: {!r}".format(self.missingDataValue))
+        #logger.debug("data: {!r}".format(self._h5Dataset.__getitem__(index)))
+        #logger.debug("missing: {!r}".format(self.missingDataValue))
         result = ma.masked_equal(self._h5Dataset.__getitem__(index),
                                  self.missingDataValue, copy=False)  # works with missing == None
-        logger.debug("result: {!r}".format(result))
+        #logger.debug("result: {!r}".format(result))
         return result
 
 
