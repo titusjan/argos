@@ -38,9 +38,9 @@ from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES,
                                                  PgPlotDataItemCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.inspector.pgplugins.pghistlutitem import HistogramLUTItem
-
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
-from libargos.utils.cls import array_has_real_numbers, check_class, replace_missing_values
+from libargos.utils.cls import array_has_real_numbers, check_class
+from libargos.utils.masks import replaceMaskedValue
 
 logger = logging.getLogger(__name__)
 
@@ -65,20 +65,21 @@ def calcPgImagePlot2dDataRange(pgImagePlot2d, percentage, crossPlot):
             If the cursor is outside the image, there is no valid data under the cross-hair and
             the range will be determined from the sliced array as a fall back.
     """
+
     if crossPlot is None:
-        array = pgImagePlot2d.slicedArray
+        array = pgImagePlot2d.slicedArray.data
 
     elif crossPlot == 'horizontal':
         if pgImagePlot2d.crossPlotRow is not None:
-            array = pgImagePlot2d.slicedArray[pgImagePlot2d.crossPlotRow, :]
+            array = pgImagePlot2d.slicedArray.data[pgImagePlot2d.crossPlotRow, :]
         else:
-            array = pgImagePlot2d.slicedArray # fall back on complete sliced array
+            array = pgImagePlot2d.slicedArray.data # fall back on complete sliced array
 
     elif crossPlot == 'vertical':
         if pgImagePlot2d.crossPlotCol is not None:
-            array = pgImagePlot2d.slicedArray[:, pgImagePlot2d.crossPlotCol]
+            array = pgImagePlot2d.slicedArray.data[:, pgImagePlot2d.crossPlotCol]
         else:
-            array = pgImagePlot2d.slicedArray # fall back on complete sliced array
+            array = pgImagePlot2d.slicedArray.data # fall back on complete sliced array
     else:
         raise ValueError("crossPlot must be: None, 'horizontal' or 'vertical', got: {}"
                          .format(crossPlot))
@@ -332,7 +333,7 @@ class PgImagePlot2d(AbstractInspector):
     def _hasValidData(self):
         """ Returns True if the inspector has data that can be plotted.
         """
-        return self.slicedArray is not None and array_has_real_numbers(self.slicedArray)
+        return self.slicedArray is not None and array_has_real_numbers(self.slicedArray.data)
 
 
     def _clearContents(self):
@@ -389,21 +390,26 @@ class PgImagePlot2d(AbstractInspector):
         # replaced by NaNs. The PyQtGraph image plot shows this as the color at the lowest end
         # of the color scale. Unfortunately we cannot choose a missing-value color, but at least
         # the Nans do not influence for the histogram and color range.
-        missingDataValue = self.collector.rti.missingDataValue if self.collector.rti else None # TODO nicer solution
-        self.slicedArray = replace_missing_values(self.collector.getSlicedArray(),
-                                                  missingDataValue, np.nan)
+        #missingDataValue = self.collector.rti.missingDataValue if self.collector.rti else None # TODO nicer solution
+        #self.slicedArray = replace_missing_values(self.collector.getSlicedArray(),
+        #                                          missingDataValue, np.nan)
+
+        self.slicedArray = self.collector.getSlicedArray()
 
         if not self._hasValidData():
             self._clearContents()
             raise InvalidDataError("No data available or it does not contain real numbers")
 
         # Valid plot data from here on
+        self.slicedArray.replaceMaskedValueWithNan()  # will convert data to float if int
+
         self.titleLabel.setText(self.configValue('title').format(**self.collector.rtiInfo))
 
         # PyQtGraph uses the following dimension order: T, X, Y, Color.
         # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0}
         # doesn't seem to do anything.
-        self.imageItem.setImage(self.slicedArray.transpose(), autoLevels=False)
+        self.slicedArray = self.slicedArray.transpose()
+        self.imageItem.setImage(self.slicedArray.data, autoLevels=False)
 
         self.horCrossPlotItem.invertX(self.config.xFlippedCti.configValue)
         self.verCrossPlotItem.invertY(self.config.yFlippedCti.configValue)

@@ -123,8 +123,8 @@ def to_string(var, masked=None, decode_bytes='utf-8', maskFormat='', strFormat='
         :param decode_bytes': string containing the expected encoding when var is of type bytes
         :param strFormat' : new style format string used to format strings
         :param intFormat' : new style format string used to format integers
-        :param numFormat' : new style format string used to format Nones.
-        :param noneFormat': new style format string used to format all numbers except integers.
+        :param numFormat' : new style format string used to format all numbers except integers.
+        :param noneFormat': new style format string used to format Nones.
         :param maskFormat': override with this format used if masked is True.
             If the maskFormat is empty, the format is never overriden.
         :param otherFormat': new style format string used to format all other types
@@ -255,7 +255,7 @@ def is_binary(var, allow_none=False):
 def is_a_sequence(var, allow_none=False):
     """ Returns True if var is a list or a tuple (but not a string!)
     """
-    return (type(var) == list or type(var) == tuple or (var is None and allow_none))
+    return isinstance(var, (list, tuple)) or (var is None and allow_none)
 
 
 def check_is_a_sequence(var, allow_none=False):
@@ -342,7 +342,8 @@ def check_class(obj, target_class, allow_none = False):
 # Type info #
 #############
 
-# TODO: get_class_name and type_name the same?
+# TODO: get_class_name and type_name the same? Not for old style classes
+# #http://stackoverflow.com/questions/1060499/difference-between-typeobj-and-obj-class
 
 def type_name(var):
     """ Returns the name of the type of var"""

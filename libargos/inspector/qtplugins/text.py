@@ -102,8 +102,6 @@ class TextInspector(AbstractInspector):
         logger.debug("TextInspector._drawContents: {}".format(self))
         self.editor.clear()
 
-        # The sliced array can be a masked array or a (regular) numpy array.
-        # The table works fine with masked arrays, no need to replace the masked values.
         slicedArray = self.collector.getSlicedArray()
 
         if slicedArray is None:
@@ -111,16 +109,17 @@ class TextInspector(AbstractInspector):
 
         # Sanity check, the slicedArray should be zero-dimensional. It can be used as a scalar.
         # In fact, using an index (e.g. slicedArray[0]) will raise an exception.
-        assert slicedArray.ndim == 0, \
+        assert slicedArray.data.ndim == 0, \
             "Expected zero-dimensional array. Got: {}".format(slicedArray.ndim)
 
         # Valid data from here...
-        slicedScalar = slicedArray[()] # Convert to Numpy scalar
+        slicedScalar = slicedArray.data[()] # Convert to Numpy scalar
+        isMasked = slicedArray.mask[()]
 
-        self.editor.setWordWrapMode(self.config.wordWrapCti.configValue)
-
-        text = to_string(slicedScalar, decode_bytes=self.config.encodingCti.configValue)
+        text = to_string(slicedScalar, masked=isMasked, maskFormat='--',
+                         decode_bytes=self.config.encodingCti.configValue)
         self.editor.setPlainText(text)
+        self.editor.setWordWrapMode(self.config.wordWrapCti.configValue)
 
         # Update the editor font from the font config item (will call self.editor.setFont)
         self.config.updateTarget()

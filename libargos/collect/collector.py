@@ -26,6 +26,7 @@ from libargos.collect.collectortree import CollectorTree, CollectorSpinBox
 from libargos.repo.baserti import BaseRti
 from libargos.qt import Qt, QtGui, QtCore, QtSignal, QtSlot
 from libargos.utils.cls import check_class, check_is_a_sequence, check_is_an_array, is_an_array
+from libargos.utils.masks import ArrayWithMask
 from libargos.widgets.constants import (TOP_DOCK_HEIGHT)
 
 logger = logging.getLogger(__name__)
@@ -505,9 +506,6 @@ class Collector(QtGui.QWidget):
         logger.debug("Array slice list: {}".format(str(sliceList)))
         slicedArray = self.rti[tuple(sliceList)]
 
-        logger.debug("slicedArray 1: {!r}".format(slicedArray))
-
-
         # If there are no comboboxes the sliceList will contain no Slices objects, only ints. Then
         # the resulting slicedArray will be a usually a scalar (only compound fields may yield an
         # array). We convert this scalar to a zero-dimensional Numpy array so that inspectors
@@ -516,48 +514,37 @@ class Collector(QtGui.QWidget):
         if self.maxCombos == 0:
             slicedArray = ma.MaskedArray(slicedArray)
 
-        logger.debug("slicedArray 2: {!r}".format(slicedArray))
-
         # Post-condition type check
         check_is_an_array(slicedArray, np.ndarray)
 
         # Enforce the return type to be a masked array.
         if not isinstance(slicedArray, ma.MaskedArray):
-            logger.warn("RTI does not return in masked_array. No mask used.")
-            assert False, "stopped"
-            slicedArray = ma.MaskedArray(slicedArray)
-
-        slicedArray.harden_mask()
-        logger.debug("slicedArray 3: {!r}".format(slicedArray))
+             slicedArray = ma.MaskedArray(slicedArray)
 
         # Add fake dimensions of length 1 so that result.ndim will equal the number of combo boxes
         for dimNr in range(slicedArray.ndim, self.maxCombos):
             #logger.debug("Adding fake dimension: {}".format(dimNr))
             slicedArray = ma.expand_dims(slicedArray, dimNr)
 
-        logger.debug("slicedArray 4: {!r}".format(slicedArray))
-
         # Post-condition dimension check
         assert slicedArray.ndim == self.maxCombos, \
             "Bug: getSlicedArray should return a {:d}D array, got: {}D" \
             .format(self.maxCombos, slicedArray.ndim)
 
+        # Convert to ArrayWithMask class for working around issues with the numpy maskedarray
+        awm = ArrayWithMask.createFromMaskedArray(slicedArray)
+        del slicedArray
+
         # Shuffle the dimensions to be in the order as specified by the combo boxes
         comboDims = [self._comboBoxDimensionIndex(cb) for cb in self._comboBoxes]
         permutations = np.argsort(comboDims)
-        logger.debug("slicedArray.shape: {}".format(slicedArray.shape))
+        logger.debug("slicedArray.shape: {}".format(awm.data.shape))
         logger.debug("Transposing dimensions: {}".format(permutations))
-        slicedArray = ma.transpose(slicedArray, permutations)
+        awm = awm.transpose(permutations)
 
-        logger.debug("slicedArray 5: {!r}".format(slicedArray))
+        awm.checkIsConsistent()
 
-        logger.debug("slicedArray.shape: {}".format(slicedArray.shape))
-
-        # Post-condition type check (can be removed in the future)
-        assert isinstance(slicedArray, ma.MaskedArray), \
-            "Numpy masked array expected. Got: {}".format(type(slicedArray))
-
-        return slicedArray
+        return awm
 
 
     def getSlicesString(self):

@@ -133,7 +133,7 @@ def inspectorDataRange(inspector, percentage):
         The first parameter is an inspector, it's not an array, because we would then have to
         regenerate the range function every time sliced array of an inspector changes.
     """
-    array = inspector.slicedArray
+    array = inspector.slicedArray.data
     logger.debug("Discarding {}% from id: {}".format(percentage, id(array)))
     return np.nanpercentile(array, (percentage, 100-percentage) )
 

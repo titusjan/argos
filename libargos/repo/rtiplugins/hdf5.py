@@ -361,7 +361,7 @@ class H5pyDatasetRti(BaseRti):
         logger.debug("data: {!r}".format(self._h5Dataset.__getitem__(index)))
         logger.debug("missing: {!r}".format(self.missingDataValue))
         result = ma.masked_equal(self._h5Dataset.__getitem__(index),
-                               self.missingDataValue, copy=False)  # works with missing == None
+                                 self.missingDataValue, copy=False)  # works with missing == None
         logger.debug("result: {!r}".format(result))
         return result
 

@@ -3,11 +3,8 @@ TODO version 0.2:
 
 	Masked arrays and fill values. (/Users/titusjan/Data/argos/OMI-Aura_L3-OMDOAO3e_2010m0602_v003-2011m1109t115919.he5)
 
-
 	Inspector selection dropwindow (use in new window)
 	    Fix 'clone-window' in main menu (is there a need for a separate 'new window'?)
-
-
 
     TextView inspector
         XML pretty print.
@@ -47,6 +44,9 @@ TODO version 0.3:
    	Combine property attribute windows in a tree.
    	    Config values.
 
+    Table inspector flip Y axis?
+
+    Changing the inspector should not change the collector spinboxes.
 
 
 Collectors:
@@ -152,13 +152,15 @@ BUGS:
 
     Exit context menu in PyQtGraphs with a left click gives an error.
 
-    Cross hair choice is always False after changing inspector
+    Cross hair choice is always False after changing inspector. Also color scale.
 
     Line plot auto range yaxis weird with /argos/sidney/Knock.wav
 
     Close children editors when BoolCti is disabled.
 
-    Table headers in attributes/properties/dimensions are not persitent.
+    Table headers in attributes/properties/dimensions are not persistent.
+
+    Selecting the same dimension in multiple color scales fails.
 
 
 DATA & LIBS:

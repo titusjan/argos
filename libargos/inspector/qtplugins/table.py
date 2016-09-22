@@ -408,8 +408,8 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
                 self._fieldNames = []
             else:
                 self._nRows, self._nCols = self._slicedArray.shape
-                if self._slicedArray.dtype.names:
-                    self._fieldNames = self._slicedArray.dtype.names
+                if self._slicedArray.data.dtype.names:
+                    self._fieldNames = self._slicedArray.data.dtype.names
                 else:
                     self._fieldNames = []
 
