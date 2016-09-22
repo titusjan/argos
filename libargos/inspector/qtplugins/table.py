@@ -24,14 +24,15 @@ from libargos.config.groupcti import GroupCti, MainGroupCti
 from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.intcti import IntCti
-from libargos.config.qtctis import FontCti
+from libargos.config.qtctis import FontCti, ColorCti
 from libargos.info import DEBUGGING
 from libargos.inspector.abstract import AbstractInspector
 from libargos.utils.cls import check_class, check_is_a_string
+from libargos.utils.misc import is_quoted
 from libargos.utils import six
 
 from libargos.qt import Qt, QtCore, QtGui
-from libargos.utils.cls import to_string
+from libargos.utils.cls import to_string, is_an_array
 
 logger = logging.getLogger(__name__)
 
@@ -54,12 +55,15 @@ def resizeAllSections(header, sectionSize):
 def makeReplacementField(formatSpec, altFormatSpec='', testValue=None):
     """ Prepends a colon and wraps the formatSpec in curly braces to yield a replacement field.
 
-        If the formatSpec code is empty or None, the altFormatSpec is wrapped in braces.
-
         The format specification is part of a replacement field, which can be used in new-style
         string formatting. See:
             https://docs.python.org/3/library/string.html#format-string-syntax
             https://docs.python.org/3/library/string.html#format-specification-mini-language
+
+        If the formatSpec does not contain a a color or exclamation mark, a colon is prepended.
+
+        If the formatSpec starts and end in quotes (single or double) only the quotes are removed,
+        no curly braces or colon charactes are added. This allows users to define a format spec.
 
         :param formatSpec: e.g. '5.2f' will return '{:5.2f}'
         :param altFormatSpec: alternative that will be used if the formatSpec evaluates to False
@@ -69,8 +73,11 @@ def makeReplacementField(formatSpec, altFormatSpec='', testValue=None):
     check_is_a_string(formatSpec)
     check_is_a_string(altFormatSpec)
     fmt = altFormatSpec if not formatSpec else formatSpec
-    if '{' not in fmt and '}' not in fmt:
-        if ':' not in fmt and '!' not in fmt:
+
+    if is_quoted(fmt):
+        fmt = fmt[1:-1] # remove quotes
+    else:
+        if fmt and ':' not in fmt and '!' not in fmt:
             fmt = ':' + fmt
         fmt = '{' + fmt + '}'
 
@@ -128,24 +135,34 @@ class TableInspectorCti(MainGroupCti):
         self.strFormatCti = fmtCti.insertChild(
             ChoiceCti("strings", 0, editable=True, completer=None,
                       configValues=['', 's', '!r', '!a',
-                                    '10.10s', '_<15s', '_>15s', 'str: {}']))
+                                    '10.10s', '_<15s', '_>15s', "'str: {}'"]))
 
         self.intFormatCti = fmtCti.insertChild(
             ChoiceCti("integers", 0, editable=True, completer=None,
                       configValues=['', 'd', 'n', 'c', '#b', '#o', '#x', '!r',
-                                    '8d', '#8.2g', '_<10', '_>10', 'int: {}']))
+                                    '8d', '#8.4g', '_<10', '_>10', "'int: {}'"]))
 
         self.numFormatCti = fmtCti.insertChild(
             ChoiceCti("other numbers", numDefaultValue, editable=True, completer=None,
                       configValues=['', 'f', 'g', 'n', '%', '!r',
-                                    '8.2e', '#8.2g', '_<15', '_>15', 'num: {}']))
+                                    '8.3e', '#8.4g', '_<15', '_>15', "'num: {}'"]))
 
         self.otherFormatCti = fmtCti.insertChild(
             ChoiceCti("other types", 0, editable=True, completer=None,
-                      configValues=['', '!s', '!r', 'other: {}']))
+                      configValues=['', '!s', '!r', "'other: {}'"]))
+
+        self.maskFormatCti = fmtCti.insertChild(
+            ChoiceCti("missing data", 2, editable=True, completer=None,
+                      configValues=['', "' '", "'--'", "'<masked>'", '!r']))
 
         self.fontCti = self.insertChild(FontCti(self.tableInspector, "font",
                                                 defaultData=QtGui.QFont('Courier', 14)))
+
+        self.dataColorCti = self.insertChild(
+            ColorCti('text color', QtGui.QColor('#000000')))
+
+        self.missingColorCti = self.insertChild(
+            ColorCti('missing data color', QtGui.QColor('#B0B0B0')))
 
         self.horAlignCti = self.insertChild(
             ChoiceCti('horizontal alignment',
@@ -262,6 +279,8 @@ class TableInspector(AbstractInspector):
         self.model.encoding = self.config.encodingCti.configValue
         self.model.horAlignment = self.config.horAlignCti.configValue
         self.model.verAlignment = self.config.verAlignCti.configValue
+        self.model.dataColor = self.config.dataColorCti.configValue
+        self.model.missingColor = self.config.missingColorCti.configValue
 
         self.model.strFormat   = makeReplacementField(self.config.strFormatCti.configValue,
                                                       testValue='my_string')
@@ -270,6 +289,8 @@ class TableInspector(AbstractInspector):
         self.model.numFormat   = makeReplacementField(self.config.numFormatCti.configValue,
                                                       testValue=0.0)
         self.model.otherFormat = makeReplacementField(self.config.otherFormatCti.configValue,
+                                                      testValue=None)
+        self.model.maskFormat  = makeReplacementField(self.config.maskFormatCti.configValue,
                                                       testValue=None)
 
         scrollMode = self.configValue("scroll")
@@ -366,6 +387,7 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         self.numFormat = None
         self.intFormat = None
         self.otherFormat = None
+        self.maskFormat = None
         self.textAlignment = None
         self.verAlignment = None
 
@@ -386,8 +408,8 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
                 self._fieldNames = []
             else:
                 self._nRows, self._nCols = self._slicedArray.shape
-                if self._slicedArray.dtype.names:
-                    self._fieldNames = self._slicedArray.dtype.names
+                if self._slicedArray.data.dtype.names:
+                    self._fieldNames = self._slicedArray.data.dtype.names
                 else:
                     self._fieldNames = []
 
@@ -416,7 +438,7 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
 
 
     def _cellValue(self, index):
-        """ Returns the value at the index (without any string conversion)
+        """ Returns the data value of the cell at the index (without any string conversion)
         """
         row = index.row()
         col = index.column()
@@ -427,14 +449,42 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         assert self._slicedArray is not None, "Sanity check failed."
 
         nFields = len(self._fieldNames)
-        if self._separateFieldOrientation == Qt.Horizontal:
-            cellValue = self._slicedArray[row, col // nFields][self._fieldNames[col % nFields]]
-        elif self._separateFieldOrientation == Qt.Vertical:
-            cellValue = self._slicedArray[row // nFields, col][self._fieldNames[row % nFields]]
-        else:
-            cellValue = self._slicedArray[row, col]
 
-        return cellValue
+        data = self._slicedArray.data
+        if self._separateFieldOrientation == Qt.Horizontal:
+            dataValue = data[row, col // nFields][self._fieldNames[col % nFields]]
+        elif self._separateFieldOrientation == Qt.Vertical:
+            dataValue = data[row // nFields, col][self._fieldNames[row % nFields]]
+        else:
+            dataValue = data[row, col]
+
+        return dataValue
+
+
+    def _cellMask(self, index):
+        """ Returns the data mask of the cell at the index (without any string conversion)
+        """
+        row = index.row()
+        col = index.column()
+        if (row < 0 or row >= self.rowCount() or col < 0 or col >= self.columnCount()):
+            return None
+
+        # The check above should have returned None if the sliced array is None
+        assert self._slicedArray is not None, "Sanity check failed."
+
+        nFields = len(self._fieldNames)
+        mask = self._slicedArray.mask
+        if is_an_array(mask):
+            if self._separateFieldOrientation == Qt.Horizontal:
+                maskValue = mask[row, col // nFields][self._fieldNames[col % nFields]]
+            elif self._separateFieldOrientation == Qt.Vertical:
+                maskValue = mask[row // nFields, col][self._fieldNames[row % nFields]]
+            else:
+                maskValue = mask[row, col]
+        else:
+            maskValue = mask
+
+        return maskValue
 
 
     def data(self, index, role = Qt.DisplayRole):
@@ -442,13 +492,20 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         """
         try:
             if role == Qt.DisplayRole:
-                return to_string(self._cellValue(index), decode_bytes=self.encoding,
+                return to_string(self._cellValue(index), masked=self._cellMask(index),
+                                 decode_bytes=self.encoding, maskFormat=self.maskFormat,
                                  strFormat=self.strFormat, intFormat=self.intFormat,
                                  numFormat=self.numFormat, otherFormat=self.otherFormat)
 
             elif role == Qt.FontRole:
                 #assert self._font, "Font undefined"
                 return self._font
+
+            elif role == Qt.TextColorRole:
+                if self._cellMask(index):
+                    return self.missingColor
+                else:
+                    return self.dataColor
 
             elif role == Qt.TextAlignmentRole:
                 if self.horAlignment == ALIGN_SMART:

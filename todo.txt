@@ -3,11 +3,8 @@ TODO version 0.2:
 
 	Masked arrays and fill values. (/Users/titusjan/Data/argos/OMI-Aura_L3-OMDOAO3e_2010m0602_v003-2011m1109t115919.he5)
 
-
 	Inspector selection dropwindow (use in new window)
 	    Fix 'clone-window' in main menu (is there a need for a separate 'new window'?)
-
-
 
     TextView inspector
         XML pretty print.
@@ -19,6 +16,14 @@ TODO version 0.2:
 
     Valid range to mask
         /argos/hdf-eos/DeepBlue-SeaWiFS-1.0_L3_20100101_v002-20110527T191319Z.h5/viewing_zenith_angle
+
+    missing data:
+        /argos/hdf-eos/MLS-Aura_L2GP-BrO_v01-52-c01_2007d029.he5/HDFEOS/SWATHS/BrO/Data Fields/Status
+
+        test h5py fill_value.
+
+    Why doesn't the following variable have a shape?
+        /argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/report.detector1.nc/settings
 
 TODO version 0.3:
 
@@ -39,6 +44,9 @@ TODO version 0.3:
    	Combine property attribute windows in a tree.
    	    Config values.
 
+    Table inspector flip Y axis?
+
+    Changing the inspector should not change the collector spinboxes.
 
 
 Collectors:
@@ -147,7 +155,7 @@ BUGS:
 
     Exit context menu in PyQtGraphs with a left click gives an error.
 
-    Cross hair choice is always False after changing inspector
+    Cross hair choice is always False after changing inspector. Also color scale.
 
     Line plot auto range yaxis weird with /argos/sidney/Knock.wav
 
@@ -158,6 +166,10 @@ BUGS:
         All memory RTIs constructors should probably have an obj parameter instead of the file_name.
         The file_name parameter should be added by descendants that actuall use it.
         However, the file_name should be passed on to children. So no.
+
+    Table headers in attributes/properties/dimensions are not persistent.
+
+    Selecting the same dimension in multiple color scales fails.
 
 
 DATA & LIBS:
@@ -220,6 +232,7 @@ DATA & LIBS:
     # voxel data
     http://www.gris.uni-tuebingen.de/edu/areas/scivis/volren/datasets/datasets.html
     http://www.gris.uni-tuebingen.de/edu/areas/scivis/volren/datasets/new.html
+    http://yt-project.org/doc/index.html
 
     # USGC/NASA
     http://nsidc.org/data/modis/index.html

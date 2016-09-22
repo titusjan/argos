@@ -24,6 +24,7 @@
 import logging, os
 import h5py
 import numpy as np
+import numpy.ma as ma
 
 from libargos.utils.cls import to_string, check_class, is_an_array
 from libargos.repo.iconfactory import RtiIconFactory
@@ -354,9 +355,15 @@ class H5pyDatasetRti(BaseRti):
 
     def __getitem__(self, index):
         """ Called when using the RTI with an index (e.g. rti[0]).
-            Passes the index through to the underlying array.
+            Passes the index through to the underlying dataset.
+            Converts to a masked array using the missing data value as fill_value
         """
-        return self._h5Dataset.__getitem__(index)
+        logger.debug("data: {!r}".format(self._h5Dataset.__getitem__(index)))
+        logger.debug("missing: {!r}".format(self.missingDataValue))
+        result = ma.masked_equal(self._h5Dataset.__getitem__(index),
+                                 self.missingDataValue, copy=False)  # works with missing == None
+        logger.debug("result: {!r}".format(result))
+        return result
 
 
     @property

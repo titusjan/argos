@@ -117,6 +117,16 @@ def prepend_point_to_extension(extension):
         return '.' + extension
 
 
+def is_quoted(s):
+    """ Returns True if the string begins and ends with quotes (single or double)
+
+        :param s: a string
+        :return: boolean
+    """
+    return (s.startswith("'") and s.endswith("'")) or (s.startswith('"') and s.endswith('"'))
+
+
+
 def string_to_identifier(s, white_space_becomes='_'):
     """ Takes a string and makes it suitable for use as an identifier
 

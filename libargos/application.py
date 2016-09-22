@@ -85,7 +85,6 @@ def browse(fileNames=None,
 
 
 
-
 class ArgosApplication(object):
     """ The application singleton which holds global state.
     """
