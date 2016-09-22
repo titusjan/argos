@@ -394,8 +394,7 @@ class Collector(QtGui.QWidget):
             spinBox.setMinimum(0)
             spinBox.setMaximum(dimSize - 1)
             spinBox.setSingleStep(1)
-            #spinBox.setValue(dimSize // 2) # select the middle of the slice
-            spinBox.setValue(dimSize) # select the middle of the slice  # TODO: middle again
+            spinBox.setValue(dimSize // 2) # select the middle of the slice
             spinBox.setPrefix("{}: ".format(self._rti.dimensionNames[dimNr]))
             spinBox.setSuffix("/{}".format(spinBox.maximum()))
             spinBox.setProperty("dim_nr", dimNr)

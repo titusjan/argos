@@ -49,9 +49,16 @@ class ArrayWithMask(object):
         """
         check_is_an_array(data)
         check_class(mask, (np.ndarray, bool, np.bool_))
-        self._data = data
-        self._mask = mask
-        self._fill_value= fill_value
+
+        # Init fields
+        self._data = None
+        self._mask = None
+        self._fill_value= None
+
+        # Use setters
+        self.data = data
+        self.mask = mask
+        self.fill_value= fill_value
 
 
     @property
@@ -78,7 +85,7 @@ class ArrayWithMask(object):
         """ The mask values. Must be an array or a boolean scalar."""
         check_class(mask, (np.ndarray, bool, np.bool_))
         if isinstance(mask, (bool, np.bool_)):
-            self._make = bool(mask)
+            self._mask = bool(mask)
         else:
             self._mask = mask
 
@@ -147,7 +154,6 @@ class ArrayWithMask(object):
             :param awm: ArrayWithMask
             :return: copy/view with transposed
         """
-        logger.debug("awm.transpose: array.shape: {}, mask: {}")
         tdata = np.transpose(self.data, *args, **kwargs)
         tmask = np.transpose(self.mask, *args, **kwargs) if is_an_array(self.mask) else self.mask
         return ArrayWithMask(tdata, tmask, self.fill_value)

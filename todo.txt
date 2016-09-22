@@ -169,7 +169,7 @@ BUGS:
 
     Table headers in attributes/properties/dimensions are not persistent.
 
-    Selecting the same dimension in multiple color scales fails.
+    Pandas multi index
 
 
 DATA & LIBS:
