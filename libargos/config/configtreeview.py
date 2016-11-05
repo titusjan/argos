@@ -104,11 +104,9 @@ class ConfigTreeView(ArgosTreeView):
         if index.isValid():
             if expanded is None:
                 item = configModel.getItem(index)
-                newExpanded = item.expanded
+                self.setExpanded(index, item.expanded)
             else:
-                newExpanded = expanded
-
-            self.setExpanded(index, newExpanded)
+                self.setExpanded(index, expanded)
 
         for rowNr in range(configModel.rowCount(index)):
             childIndex = configModel.index(rowNr, configModel.COL_NODE_NAME, parentIndex=index)

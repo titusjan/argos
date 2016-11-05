@@ -145,14 +145,14 @@ class PgImagePlot2dCti(MainGroupCti):
         self.xAxisCti = self.insertChild(PgAxisCti('x-axis'))
         #xAxisCti.insertChild(PgAxisShowCti(imagePlotItem, 'bottom')) # disabled, seems broken
         self.xAxisCti.insertChild(PgAxisLabelCti(imagePlotItem, 'bottom', self.pgImagePlot2d.collector,
-            defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{x-dim}"]))
+            defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "idx of {x-dim}"]))
         self.xFlippedCti = self.xAxisCti.insertChild(PgAxisFlipCti(viewBox, X_AXIS))
         self.xAxisRangeCti = self.xAxisCti.insertChild(PgAxisRangeCti(viewBox, X_AXIS))
 
         self.yAxisCti = self.insertChild(PgAxisCti('y-axis'))
         #yAxisCti.insertChild(PgAxisShowCti(imagePlotItem, 'left'))  # disabled, seems broken
         self.yAxisCti.insertChild(PgAxisLabelCti(imagePlotItem, 'left', self.pgImagePlot2d.collector,
-            defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{y-dim}"]))
+            defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "idx of {y-dim}"]))
         self.yFlippedCti = self.yAxisCti.insertChild(PgAxisFlipCti(viewBox, Y_AXIS))
         self.yAxisRangeCti = self.yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS))
 

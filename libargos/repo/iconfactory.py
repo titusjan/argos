@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Miscellaneous Qt routines.
+""" Contains the RtiIconFactory
 """
 from __future__ import print_function
 import logging, os
@@ -105,7 +105,7 @@ class RtiIconFactory(object):
                 If the filename is a relative path, the ICONS_DIRECTORY will be prepended.
             :param glyph: a string describing the glyph (e.g. 'file', 'array')
             :param isOpen: boolean that indicates if the RTI is open or closed.
-                If None, the icond will be registered for open is both True and False
+                If None, the icon will be registered for open is both True and False
             :return: QIcon
         """
         check_class(isOpen, bool, allow_none=True)

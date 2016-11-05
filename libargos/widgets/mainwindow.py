@@ -267,7 +267,7 @@ class MainWindow(QtGui.QMainWindow):
         ### Help Menu ###
         menuBar.addSeparator()
         helpMenu = menuBar.addMenu("&Help")
-        helpMenu.addAction('&About', self.about)
+        helpMenu.addAction('&About...', self.about)
 
         ### Context menu ###
 
@@ -635,18 +635,18 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def trySelectRtiByPath(self, path):
-        """ Selects a repository tree item given a path.
+        """ Selects a repository tree item given a path, expanding nodes if along the way if needed.
 
-            Returns True if the path was selected succesfully, else a warning is logged and False
-            is returned.
+            Returns (item, index) if the path was selected successfully, else a warning is logged
+            and (None, None) is returned.
         """
         try:
-            _lastItem, lastIndex = self.repoTreeView.expandPath(path)
+            lastItem, lastIndex = self.repoTreeView.expandPath(path)
             self.repoTreeView.setCurrentIndex(lastIndex)
-            return True
+            return lastItem, lastIndex
         except Exception as ex:
             logger.warn(ex)
-            return False
+            return None, None
 
 
     def readViewSettings(self, settings=None): # TODO: rename to readProfile?
@@ -733,8 +733,11 @@ class MainWindow(QtGui.QMainWindow):
 
     @QtSlot()
     def myTest(self):
-        """ Function for testing """
-        logger.debug("myTest for window: {}".format(self.windowNumber))
+        """ Function for small ad-hoc tests
+        """
+        self.testSelectAllData()
+
+        #logger.debug("myTest for window: {}".format(self.windowNumber))
         # logger.debug("Repo icon size: {}".format(self.repoTreeView.iconSize()))
         # #self.repoTreeView.setIconSize(QtCore.QSize(32, 32))
         # self.repoTreeView.setIconSize(QtCore.QSize(24, 24))
@@ -755,7 +758,52 @@ class MainWindow(QtGui.QMainWindow):
         # gc.collect()
         # printAllWidgets(self._argosApplication._qApplication, ofType=MainWindow)
 
-        for item in self.argosApplication.inspectorRegistry.items:
-            logger.debug("item: {}".format(item))
+        #for item in self.argosApplication.inspectorRegistry.items:
+        #    logger.debug("item: {}".format(item))
 
+
+    def testSelectAllData(self):
+        """ Selects all nodes in a subtree for all inspectors
+        """
+        def visitNodes(index):
+            """ Visits all the nodes recursively.
+            """
+            assert index.isValid(), "sanity check"
+
+            repoModel = self.repoTreeView.model()
+            item = repoModel.getItem(index)
+            logger.info("Visiting: {} ({} children)".
+                        format(item.nodePath, repoModel.rowCount(index)))
+
+            # Select index
+            self.repoTreeView.setCurrentIndex(index)
+            QtGui.qApp.processEvents() # Cause Qt to update UI
+
+            # Expand node to load children.
+            self.repoTreeView.setExpanded(index, True)
+            QtGui.qApp.processEvents() # Cause Qt to load children.
+
+            for rowNr in range(repoModel.rowCount(index)):
+                childIndex = repoModel.index(rowNr, 0, parentIndex=index)
+                visitNodes(childIndex)
+
+        # Actual boddy
+        rootNodes = ['/myDict']
+
+        for rootNode in rootNodes:
+            logger.info("Selecting all nodes in: {}".format(rootNode))
+
+            nodeItem, nodeIndex = self.trySelectRtiByPath(rootNode)
+            #self.repoTreeView.expandBranch(index = nodeIndex, expanded=True)
+            #QtGui.qApp.processEvents()
+            visitNodes(nodeIndex)
+
+            #
+            # try:
+            #
+            #     self.repoTreeView.setCurrentIndex(lastIndex)
+            # except Exception as ex:
+            #     logger.error(ex)
+            #     if DEBUGGING:
+            #         raise
 

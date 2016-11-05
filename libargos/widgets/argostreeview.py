@@ -46,7 +46,7 @@
 from __future__ import print_function
 
 import logging
-from libargos.qt import Qt, QtGui
+from libargos.qt import QtCore, QtGui
 from libargos.qt.togglecolumn import ToggleColumnTreeView
 from libargos.qt.treemodels import BaseTreeModel
 from libargos.utils.cls import check_class
@@ -124,7 +124,7 @@ class ArgosTreeView(ToggleColumnTreeView):
 
 
     def expandPath(self, path):
-        """ Expand all nodes in a node-path.
+        """ Follows the path and expand all nodes along the way.
             Returns (item, index) tuple of the last node in the path (the leaf node). This can be
             reused e.g. to select it.
         """
@@ -135,4 +135,24 @@ class ArgosTreeView(ToggleColumnTreeView):
 
         leaf = iiPath[-1]
         return leaf
+
+
+    def expandBranch(self, index=None, expanded=True):
+        """ Expands or collapses the node at the index and all it's descendants.
+
+            If expanded is True the nodes will be expanded, if False they will be collapsed.
+
+            If parentIndex is None, the invisible root will be used (i.e. the complete forest will
+            be expanded).
+        """
+        treeModel = self.model()
+        if index is None:
+            index = QtCore.QModelIndex()
+
+        if index.isValid():
+            self.setExpanded(index, expanded)
+
+        for rowNr in range(treeModel.rowCount(index)):
+            childIndex = treeModel.index(rowNr, 0, parentIndex=index)
+            self.expandBranch(index=childIndex, expanded=expanded)
 
