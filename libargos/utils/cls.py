@@ -159,7 +159,7 @@ def to_string(var, masked=None, decode_bytes='utf-8', maskFormat='', strFormat='
         fmt = otherFormat
         decodedVar = var
 
-    if masked and maskFormat != '{}':
+    if not is_an_array(masked) and masked and maskFormat != '{}':
         fmt = maskFormat
 
     try:

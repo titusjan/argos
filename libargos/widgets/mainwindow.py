@@ -780,7 +780,7 @@ class MainWindow(QtGui.QMainWindow):
             QtGui.qApp.processEvents() # Cause Qt to update UI
 
             # Expand node to load children.
-            self.repoTreeView.setExpanded(index, True)
+            #self.repoTreeView.setExpanded(index, True)
             QtGui.qApp.processEvents() # Cause Qt to load children.
 
             for rowNr in range(repoModel.rowCount(index)):
@@ -794,7 +794,7 @@ class MainWindow(QtGui.QMainWindow):
             logger.info("Selecting all nodes in: {}".format(rootNode))
 
             nodeItem, nodeIndex = self.trySelectRtiByPath(rootNode)
-            #self.repoTreeView.expandBranch(index = nodeIndex, expanded=True)
+            self.repoTreeView.expandBranch(index = nodeIndex, expanded=True) # TODO: why necessary?
             #QtGui.qApp.processEvents()
             visitNodes(nodeIndex)
 

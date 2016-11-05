@@ -502,7 +502,8 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
                 return self._font
 
             elif role == Qt.TextColorRole:
-                if self._cellMask(index):
+                masked = self._cellMask(index)
+                if not is_an_array(masked) and masked:
                     return self.missingColor
                 else:
                     return self.dataColor
