@@ -29,7 +29,20 @@ TODO version 0.2:
         /argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/report.detector1.nc/settings
 
 
+    AttributeError: 'NotImplementedType' object has no attribute 'ndim' (in table)
+    /argos/trop/ql_test_020_minutes-020-021/qlbd1raw.lx.nc/BAND1/ICID_04003_GROUP_00000/PROCESSOR/measurement_to_detector_row_table
+
+
     Pandas multi index
+
+    Layout and Margins.
+
+
+    Toggle columns (less text, add to View menu)
+
+    Icons size, Darker yellow for test data.
+
+    Qt-5
 
 TODO version 0.3:
 
@@ -38,8 +51,6 @@ TODO version 0.3:
 	Interaction in IPython
 	QSettings should not use titusjan by default
 	(auto)refresh
-
-    Pandas
 
     Matplotlib inspector
 

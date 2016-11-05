@@ -117,7 +117,10 @@ class AbstractPandasNDFrameRti(BaseRti):
         This is an abstract class and should not be created directly. Use one of its subclasses
         instead.
     """
-    # _defaultIconGlyph = RtiIconFactory.ARRAY  # the iconGlyph property is overridden below
+    # Show always an array, even when _standAlone is false. In this case the NDFrame is a slice of
+    # a higher-dimensional NDFrame, so the Field glyph, does not apply (fields have the same nr
+    # of dimensions as their parents).
+    _defaultIconGlyph = RtiIconFactory.ARRAY
     _defaultIconColor = RtiIconFactory.COLOR_MEMORY
 
     def __init__(self, ndFrame=None, nodeName='', fileName='', standAlone=True,
@@ -140,14 +143,6 @@ class AbstractPandasNDFrameRti(BaseRti):
         self._ndFrame = ndFrame
         self._iconColor = iconColor
         self._standAlone = standAlone
-
-
-    @property
-    def iconGlyph(self):
-        """ Shows an Array icon for regular NDFrames but a Field icon if it is part of another,
-            higher-dimensional, NDFrame.
-        """
-        return RtiIconFactory.ARRAY if self._standAlone else RtiIconFactory.FIELD
 
 
     @property

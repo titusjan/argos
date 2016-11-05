@@ -183,3 +183,11 @@ def addPandasTestData(rti):
                      minor_axis=['A', 'B', 'C', 'D'])
     pandsRti.insertChild(PandasPanelRti(panel, 'panel'))
 
+
+    # Multi index
+    arrays = [['bar', 'bar', 'baz', 'baz', 'foo', 'foo', 'qux', 'qux'],
+              ['one', 'two', 'one', 'two', 'one', 'two', 'one', 'two']]
+    tuples = list(zip(*arrays))
+    index = pd.MultiIndex.from_tuples(tuples, names=['first', 'second'])
+    s = pd.Series(np.random.randn(8), index=index)
+    pandsRti.insertChild(PandasSeriesRti(s, "multi-index"))
