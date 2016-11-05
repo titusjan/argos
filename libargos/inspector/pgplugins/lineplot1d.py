@@ -25,7 +25,7 @@ import pyqtgraph as pg
 
 from functools import partial
 
-from libargos.qt import QtGui
+from libargos.qt import QtCore, QtGui, QtSlot
 from libargos.info import DEBUGGING
 from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
@@ -227,11 +227,11 @@ class PgLinePlot1d(AbstractInspector):
         self.config.updateTarget()
 
 
+    @QtSlot(QtCore.QPointF)
     def mouseMoved(self, viewPos):
         """ Updates the probe text with the values under the cursor.
             Draws a vertical line and a symbol at the position of the probe.
         """
-        data = self.slicedArray.data
         try:
             if (not self._hasValidData() or not self.config.probeCti.configValue or
                 not self.viewBox.sceneBoundingRect().contains(viewPos)):
@@ -243,6 +243,7 @@ class PgLinePlot1d(AbstractInspector):
             else:
                 scenePos = self.viewBox.mapSceneToView(viewPos)
                 index = int(scenePos.x())
+                data = self.slicedArray.data
 
                 if data is not None and 0 <= index < len(data):
                     txt = "pos = {!r}, value = {!r}".format(index, data[index])

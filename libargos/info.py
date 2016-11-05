@@ -19,7 +19,7 @@
 """
 import os
 
-DEBUGGING = True
+DEBUGGING = False
 
 VERSION = '0.2.0'
 REPO_NAME = "argos"
