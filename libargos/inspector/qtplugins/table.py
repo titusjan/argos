@@ -255,6 +255,12 @@ class TableInspector(AbstractInspector):
         return self.model.setFont(font)
 
 
+    def _clearContents(self):
+        """ Clears the  the inspector widget when no valid input is available.
+        """
+        pass
+
+
     def _drawContents(self, reason=None, initiator=None):
         """ Draws the table contents from the sliced array of the collected repo tree item.
 

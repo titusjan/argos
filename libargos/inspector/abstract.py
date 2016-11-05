@@ -27,7 +27,7 @@ from libargos.widgets.display import MessageDisplay
 
 logger = logging.getLogger(__name__)
 
-class InvalidDataError(TypeError):
+class InvalidDataError(Exception):
     """ Exception that should be raised if the inspector cannot handle this type of data.
         Can be used to distuingish the situation from other exceptions an then, for example,
         draw an empty plot instead of the error message pane.
@@ -188,10 +188,11 @@ class AbstractInspector(QtGui.QStackedWidget):
             logger.info("Unable to draw the inspector contents: {}".format(ex))
 
         except Exception as ex:
-            if DEBUGGING:
+            if DEBUGGING:  # TODO: enable
                 raise
             logger.error("Error while drawing the inspector: {} ----".format(ex))
             logger.exception(ex)
+            self._clearContents()
             self.setCurrentIndex(self.ERROR_PAGE_IDX)
             self._showError(msg=str(ex), title=type_name(ex))
         else:
@@ -204,6 +205,15 @@ class AbstractInspector(QtGui.QStackedWidget):
             the updateContents will show the error page if an exception is raised.
 
             See updateContents for the reason and initiator parameters.
+        """
+        raise NotImplementedError()
+
+
+    def _clearContents(self):
+        """ Override to clear the widget contents.
+
+            Is called to empty the inspector when an exception occurs during _drawContents,
+            to prevent further errors.
         """
         raise NotImplementedError()
 

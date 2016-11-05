@@ -41,6 +41,7 @@ from libargos.repo.detailplugins.attr import AttributesPane
 from libargos.repo.detailplugins.dim import DimensionsPane
 from libargos.repo.detailplugins.prop import PropertiesPane
 from libargos.repo.repotreeview import RepoTreeView
+from libargos.repo.testdata import createArgosTestData
 from libargos.utils.cls import check_class
 from libargos.utils.misc import string_to_identifier
 from libargos.widgets.aboutdialog import AboutDialog
@@ -242,9 +243,6 @@ class MainWindow(QtGui.QMainWindow):
         fileMenu.addSeparator()
         fileMenu.addAction("Close &Window", self.close, QtGui.QKeySequence.Close)
         fileMenu.addAction("E&xit", self.argosApplication.closeAllWindows, QtGui.QKeySequence.Quit)
-        if DEBUGGING:
-            fileMenu.addSeparator()
-            fileMenu.addAction("&Test-{}".format(self.windowNumber), self.myTest, "Ctrl+T")
 
         ### View Menu ###
         self.viewMenu = menuBar.addMenu("&View")
@@ -268,6 +266,11 @@ class MainWindow(QtGui.QMainWindow):
         menuBar.addSeparator()
         helpMenu = menuBar.addMenu("&Help")
         helpMenu.addAction('&About...', self.about)
+
+        helpMenu.addSeparator()
+        helpMenu.addAction("&Test", self.myTest, "Alt+T")
+        helpMenu.addAction("Add Test Data", self.addTestData, "Alt+A")
+
 
         ### Context menu ###
 
@@ -729,6 +732,14 @@ class MainWindow(QtGui.QMainWindow):
         aboutDialog = AboutDialog(parent=self)
         aboutDialog.show()
         aboutDialog.addDependencyInfo()
+
+
+    @QtSlot()
+    def addTestData(self):
+        """ Adds test data to the repository
+        """
+        logger.info("Adding test data to the repository.")
+        self.argosApplication.repo.insertItem(createArgosTestData())
 
 
     @QtSlot()

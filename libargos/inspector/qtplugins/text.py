@@ -93,6 +93,12 @@ class TextInspector(AbstractInspector):
         return TextInspectorCti(textInspector=self, nodeName='inspector')
 
 
+    def _clearContents(self):
+        """ Clears the  the inspector widget when no valid input is available.
+        """
+        self.editor.clear()
+
+
     def _drawContents(self, reason=None, initiator=None):
         """ Converts the (zero-dimensional) sliced array to string and puts it in the text editor.
 
@@ -100,7 +106,7 @@ class TextInspector(AbstractInspector):
             See AbstractInspector.updateContents for their description.
         """
         logger.debug("TextInspector._drawContents: {}".format(self))
-        self.editor.clear()
+        self._clearContents()
 
         slicedArray = self.collector.getSlicedArray()
 
