@@ -65,7 +65,7 @@ class ToggleColumnMixIn(object):
         for col in range(horizontal_header.count()):
             column_label = self.model().headerData(col, Qt.Horizontal, Qt.DisplayRole)
             #logger.debug("Adding: col {}: {}".format(col, column_label))
-            action = QtGui.QAction("Show {} column".format(column_label),
+            action = QtGui.QAction(str(column_label),
                                    self.toggle_column_actions_group,
                                    checkable = checkable.get(column_label, True),
                                    enabled = enabled.get(column_label, True),
