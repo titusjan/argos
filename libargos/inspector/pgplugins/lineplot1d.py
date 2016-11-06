@@ -186,13 +186,6 @@ class PgLinePlot1d(AbstractInspector):
             The reason and initiator parameters are ignored.
             See AbstractInspector.updateContents for their description.
         """
-        # The sliced array can be a masked array or a (regular) numpy array. PyQtGraph doesn't
-        # handle masked array so we convert the masked values to Nans. Missing data values are
-        # replaced by NaNs. The PyQtGraph line plot omits the Nans, which is great.
-
-        #missingDataValue = self.collector.rti.missingDataValue if self.collector.rti else None # TODO nicer solution
-        #self.slicedArray = replace_missing_values(,
-        #                                          missingDataValue, np.nan)
         self.slicedArray = self.collector.getSlicedArray()
 
         if not self._hasValidData():
@@ -200,15 +193,24 @@ class PgLinePlot1d(AbstractInspector):
             raise InvalidDataError("No data available or it does not contain real numbers")
 
         # Valid plot data here
+
+        # The sliced array can be a masked array or a (regular) numpy array. PyQtGraph doesn't
+        # handle masked arrays so we convert the masked values to Nans (missing data values are
+        # replaced by NaNs). The PyQtGraph line plot omits the Nans, which is great.
         self.slicedArray.replaceMaskedValueWithNan()  # will convert data to float if int
 
         self.plotItem.clear()
 
         self.titleLabel.setText(self.configValue('title').format(**self.collector.rtiInfo))
 
+        connected = np.isfinite(self.slicedArray.data)
+        if is_an_array(self.slicedArray.mask):
+            connected = np.logical_and(connected, ~self.slicedArray.mask)
+        else:
+            connected = np.zeros_like(self.slicedArray.data) if self.slicedArray.mask else connected
+
         plotDataItem = self.config.plotDataItemCti.createPlotDataItem()
-        connectPoints = ~self.slicedArray.mask if is_an_array(self.slicedArray.mask) else "all"
-        plotDataItem.setData(self.slicedArray.data, connect=connectPoints)
+        plotDataItem.setData(self.slicedArray.data, connect=connected)
 
         self.plotItem.addItem(plotDataItem)
 
@@ -233,32 +235,30 @@ class PgLinePlot1d(AbstractInspector):
             Draws a vertical line and a symbol at the position of the probe.
         """
         try:
-            if (not self._hasValidData() or not self.config.probeCti.configValue or
-                not self.viewBox.sceneBoundingRect().contains(viewPos)):
+            self.crossLineVerShadow.setVisible(False)
+            self.crossLineVertical.setVisible(False)
+            self.probeLabel.setText("")
+            self.probeDataItem.clear()
 
-                self.crossLineVerShadow.setVisible(False)
-                self.crossLineVertical.setVisible(False)
-                self.probeLabel.setText("")
-                self.probeDataItem.clear()
-            else:
+            if (self._hasValidData() and self.config.probeCti.configValue and
+                self.viewBox.sceneBoundingRect().contains(viewPos)):
+
                 scenePos = self.viewBox.mapSceneToView(viewPos)
                 index = int(scenePos.x())
                 data = self.slicedArray.data
 
-                if data is not None and 0 <= index < len(data):
-                    txt = "pos = {!r}, value = {!r}".format(index, data[index])
-                    self.probeLabel.setText(txt)
-                    self.crossLineVerShadow.setVisible(True)
-                    self.crossLineVerShadow.setPos(index)
-                    self.crossLineVertical.setVisible(True)
-                    self.crossLineVertical.setPos(index)
-                    self.probeDataItem.setData((index,), (data[index],))
-                else:
+                if data is None or not 0 <= index < len(data):
                     txt = "<span style='color: grey'>no data at cursor</span>"
                     self.probeLabel.setText(txt)
-                    self.crossLineVerShadow.setVisible(False)
-                    self.crossLineVertical.setVisible(False)
-                    self.probeDataItem.clear()
+                else:
+                    txt = "pos = {!r}, value = {!r}".format(index, data[index])
+                    self.probeLabel.setText(txt)
+                    if np.isfinite(data[index]):
+                        self.crossLineVerShadow.setVisible(True)
+                        self.crossLineVerShadow.setPos(index)
+                        self.crossLineVertical.setVisible(True)
+                        self.crossLineVertical.setPos(index)
+                        self.probeDataItem.setData((index,), (data[index],))
 
         except Exception as ex:
             # In contrast to _drawContents, this function is a slot and thus must not throw

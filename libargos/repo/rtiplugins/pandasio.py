@@ -18,8 +18,6 @@
 """ Repository Tree Items (RTI) that store Pandas objects.
 
     See: http://pandas.pydata.org/
-
-    Experimental and not comprehensive. For instance, multi-indexes are not yet suported.
 """
 import logging
 import numpy as np

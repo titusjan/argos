@@ -32,9 +32,6 @@ TODO version 0.2:
     AttributeError: 'NotImplementedType' object has no attribute 'ndim' (in table)
     /argos/trop/ql_test_020_minutes-020-021/qlbd1raw.lx.nc/BAND1/ICID_04003_GROUP_00000/PROCESSOR/measurement_to_detector_row_table
 
-
-    Pandas multi index
-
     Layout and Margins.
 
 
