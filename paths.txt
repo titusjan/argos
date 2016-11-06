@@ -1,0 +1,22 @@
+***
+/argos/gstp-rad/2014-04-29_FEL-350/calib_1050nm/2014-04-29T11_53_38Nothing m2.h5/scan_procedure/procedure
+/argos/mytests/string.hdf5/
+
+/argos/trop/ql_test_020_minutes-020-021/qlbd3eps.lx.nc/BAND3/ICID_04003_GROUP_00000/OBSERVATIONS
+
+/argos/fel_nist/nist_fel-xxx_irrad.txt
+/argos/sidney/SQUARE_WAVE.h5/datagrams
+
+/Users/kenter/work/sentinel-5/src/s5cal_runtask/external_data/s5-generate-aux/rad_cal/RA_IRR_FEL
+/argos/penguins.jpg/G
+
+* Empty groups.
+/argos/trop/2015_03_16T16_32_16_MonA/after_dccorr_l1bavg/gseDat.nc
+
+* fill values
+/argos/trop/ql_test_020_minutes-020-021/qlbd4raw.lx.nc/BAND4/ICID_04003_GROUP_00000/OBSERVATIONS/signal # msmt_idx = 0
+/argos/trop/ql_test_020_minutes-020-021/qlbd4raw.lx.nc/BAND4/ICID_04003_GROUP_00000/OBSERVATIONS/signal_msmt_quality
+/argos/hdf-eos/OMI-Aura_L3-OMTO3e_2005m1214_v002-2006m0929t143855.he5/HDFEOS/GRIDS/OMI Column Amount O3/Data Fields/ColumnAmountO3
+
+*** DEMO ***
+/argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/qlbd1eps.lx.nc/BAND1/ICID_04003_GROUP_00000/OBSERVATIONS/signal

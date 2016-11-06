@@ -247,7 +247,7 @@ class PgLinePlot1d(AbstractInspector):
                 index = int(scenePos.x())
                 data = self.slicedArray.data
 
-                if data is None or not 0 <= index < len(data):
+                if not 0 <= index < len(data):
                     txt = "<span style='color: grey'>no data at cursor</span>"
                     self.probeLabel.setText(txt)
                 else:
