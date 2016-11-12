@@ -168,7 +168,7 @@ BUGS:
 
     Exit context menu in PyQtGraphs with a left click gives an error.
 
-    Cross hair choice is always False after changing inspector. Also color scale.
+    Cross hair choice Cti is always False after changing inspector. Also color scale.
 
     Line plot auto range yaxis weird with /argos/sidney/Knock.wav
 
@@ -177,12 +177,15 @@ BUGS:
     Reload gives error for memory RTIs. TypeError: __init__() missing 1 required positional argument: 'dictionary'
         Disable reload? Better try to implement this similarly to the object browser.
         All memory RTIs constructors should probably have an obj parameter instead of the file_name.
-        The file_name parameter should be added by descendants that actuall use it.
+        The file_name parameter should be added by descendants that actual use it.
         However, the file_name should be passed on to children. So no.
 
     Table headers in attributes/properties/dimensions are not persistent.
 
     Installed plugins dialog doesn't work if scipy is not installed.
+
+     When showing /myDict/array_masked[0,0] in the TextView plugin:
+        AttributeError: 'MaskedConstant' object has no attribute '_fill_value'
 
 
 DATA & LIBS:

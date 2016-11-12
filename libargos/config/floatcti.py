@@ -17,8 +17,7 @@
 
 """ Contains the FloatCti and FloatCtiEditor classes
 """
-import logging
-import numpy as np
+import logging, math, sys
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
 from libargos.qt import QtGui, QtSlot
@@ -59,9 +58,24 @@ class FloatCti(AbstractCti):
 
 
     def _enforceDataType(self, data):
-        """ Converts to int so that this CTI always stores that type.
+        """ Converts to float so that this CTI always stores that type.
+
+            Replaces infinite with the maximum respresentable float.
+            Raises a ValueError if data is a NaN.
         """
-        return float(data)
+        value = float(data)
+        if math.isnan(value):
+            raise ValueError("FloatCti can't store NaNs")
+
+        if math.isinf(value):
+            if value > 0:
+                logger.warn("Replacing inf by the largest representable float")
+                value = sys.float_info.max
+            else:
+                logger.warn("Replacing -inf by the smallest representable float")
+                value = -sys.float_info.max
+
+        return value
 
 
     def _dataToString(self, data):
@@ -102,12 +116,12 @@ class FloatCtiEditor(AbstractCtiEditor):
         spinBox.setKeyboardTracking(False)
 
         if cti.minValue is None:
-            spinBox.setMinimum(np.finfo('d').min)
+            spinBox.setMinimum(-sys.float_info.max)
         else:
             spinBox.setMinimum(cti.minValue)
 
         if cti.maxValue is None:
-            spinBox.setMaximum(np.finfo('d').max)
+            spinBox.setMaximum(sys.float_info.max)
         else:
             spinBox.setMaximum(cti.maxValue)
 
@@ -201,9 +215,24 @@ class SnFloatCti(AbstractCti):
 
 
     def _enforceDataType(self, data):
-        """ Converts to int so that this CTI always stores that type.
+        """ Converts to float so that this CTI always stores that type.
+
+            Replaces infinite with the maximum respresentable float.
+            Raises a ValueError if data is a NaN.
         """
-        return float(data)
+        value = float(data)
+        if math.isnan(value):
+            raise ValueError("SnFloatCti can't store NaNs")
+
+        if math.isinf(value):
+            if value > 0:
+                logger.warn("Replacing inf by the largest representable float")
+                value = sys.float_info.max
+            else:
+                logger.warn("Replacing -inf by the smallest representable float")
+                value = -sys.float_info.max
+
+        return value
 
 
     def _dataToString(self, data):
@@ -244,12 +273,12 @@ class SnFloatCtiEditor(AbstractCtiEditor):
         spinBox.setKeyboardTracking(False)
 
         if cti.minValue is None:
-            spinBox.setMinimum(np.finfo('d').min)
+            spinBox.setMinimum(-sys.float_info.max)
         else:
             spinBox.setMinimum(cti.minValue)
 
         if cti.maxValue is None:
-            spinBox.setMaximum(np.finfo('d').max)
+            spinBox.setMaximum(sys.float_info.max)
         else:
             spinBox.setMaximum(cti.maxValue)
 

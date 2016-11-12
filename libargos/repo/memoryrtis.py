@@ -357,7 +357,7 @@ class SliceRti(ArrayRti):
         Inherits from ArrayRti and changes little. It overrides only the icon to indicate that the
         underlying data is the same as it's parent.
     """
-    # Use ARRAY icon here, the a FIELD array should be used when the number of dimension is equal
+    # Use ARRAY icon here, the a FIELD icon should be used when the number of dimension is equal
     # to the array to which the field belongs. A slice decreases the number of dimensions.
     _defaultIconGlyph = RtiIconFactory.ARRAY
     #_defaultIconGlyph = RtiIconFactory.FIELD

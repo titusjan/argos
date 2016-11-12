@@ -39,8 +39,8 @@ from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES,
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.inspector.pgplugins.pghistlutitem import HistogramLUTItem
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
-from libargos.utils.cls import array_has_real_numbers, check_class
-from libargos.utils.masks import replaceMaskedValue
+from libargos.utils.cls import array_has_real_numbers, check_class, is_an_array, to_string
+from libargos.utils.masks import replaceMaskedValueWithFloat
 
 logger = logging.getLogger(__name__)
 
@@ -228,7 +228,7 @@ class PgImagePlot2dCti(MainGroupCti):
 
 
 class PgImagePlot2d(AbstractInspector):
-    """ Inspector that contains a PyQtGraph 2-dimensional image plot
+    """ Inspector that contains a PyQtGraph 2-dimensional image plot.
     """
 
     def __init__(self, collector, parent=None):
@@ -347,6 +347,9 @@ class PgImagePlot2d(AbstractInspector):
         self.imagePlotItem.setLabel('left', '')
         self.imagePlotItem.setLabel('bottom', '')
 
+        # Set the histogram range to finite values to prevent errors when drawing.
+        self.histLutItem.setHistogramRange(0, 100)
+
 
     def _drawContents(self, reason=None, initiator=None):
         """ Draws the plot contents from the sliced array of the collected repo tree item.
@@ -385,31 +388,37 @@ class PgImagePlot2d(AbstractInspector):
                 self.verPlotAdded = False
                 gridLayout.activate()
 
-        # The sliced array can be a masked array or a (regular) numpy array. PyQtGraph doesn't
-        # handle masked array so we convert the masked values to Nans. Missing data values are
-        # replaced by NaNs. The PyQtGraph image plot shows this as the color at the lowest end
-        # of the color scale. Unfortunately we cannot choose a missing-value color, but at least
-        # the Nans do not influence for the histogram and color range.
-        #missingDataValue = self.collector.rti.missingDataValue if self.collector.rti else None # TODO nicer solution
-        #self.slicedArray = replace_missing_values(self.collector.getSlicedArray(),
-        #                                          missingDataValue, np.nan)
-
         self.slicedArray = self.collector.getSlicedArray()
 
         if not self._hasValidData():
             self._clearContents()
             raise InvalidDataError("No data available or it does not contain real numbers")
 
-        # Valid plot data from here on
-        self.slicedArray.replaceMaskedValueWithNan()  # will convert data to float if int
+        # Valid plot data from here on.
 
-        self.titleLabel.setText(self.configValue('title').format(**self.collector.rtiInfo))
+        # PyQtGraph doesn't handle masked array so we convert the masked values to Nans. Missing
+        # data values are replaced by NaNs. The PyQtGraph image plot shows this as the color at the
+        # lowest end of the color scale. Unfortunately we cannot choose a missing-value color, but
+        # at least the Nans do not influence for the histogram and color range.
+        # We don't update self.slicedArray here because the data probe should still be able to
+        # print the actual value.
+        imageArray = replaceMaskedValueWithFloat(self.slicedArray.data, self.slicedArray.mask,
+                                                 np.nan, copyOnReplace=True)
+
+        # Replace infinite value with Nans because PyQtGraph fails on them. WNote that the CTIs of
+        # the cross plots (e.g. horCrossPlotRangeCti) are still connected to self.slicedArray, so
+        # if the cross section consists of only infs, they may not able to update the autorange.
+        # A warning is issued in that case.
+        # We don't update self.slicedArray here because the data probe should still be able to
+        # print the actual value.
+        imageArray = replaceMaskedValueWithFloat(imageArray, np.isinf(self.slicedArray.data),
+                                                 np.nan, copyOnReplace=True)
 
         # PyQtGraph uses the following dimension order: T, X, Y, Color.
         # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0}
         # doesn't seem to do anything.
-        self.slicedArray = self.slicedArray.transpose()
-        self.imageItem.setImage(self.slicedArray.data, autoLevels=False)
+        imageArray = imageArray.transpose()
+        self.imageItem.setImage(imageArray, autoLevels=False)
 
         self.horCrossPlotItem.invertX(self.config.xFlippedCti.configValue)
         self.verCrossPlotItem.invertY(self.config.yFlippedCti.configValue)
@@ -422,6 +431,8 @@ class PgImagePlot2d(AbstractInspector):
             self.imagePlotItem.addItem(self.crossLineHorizontal, ignoreBounds=True)
         else:
             self.probeLabel.setVisible(False)
+
+        self.titleLabel.setText(self.configValue('title').format(**self.collector.rtiInfo))
 
         # Update the config tree from the (possibly) new state of the PgImagePlot2d inspector,
         # e.g. the axis range or color range may have changed while drawing.
@@ -449,7 +460,7 @@ class PgImagePlot2d(AbstractInspector):
             if (self._hasValidData() and self.slicedArray is not None
                 and self.viewBox.sceneBoundingRect().contains(viewPos)):
 
-                # Calculate the row and column at the cursor. I just math.floor because the pixel
+                # Calculate the row and column at the cursor. We use math.floor because the pixel
                 # corners of the image lie at integer values (and not the centers of the pixels).
                 scenePos = self.viewBox.mapSceneToView(viewPos)
                 row, col = math.floor(scenePos.y()), math.floor(scenePos.x())
@@ -459,8 +470,11 @@ class PgImagePlot2d(AbstractInspector):
                 if (0 <= row < nRows) and (0 <= col < nCols):
                     self.viewBox.setCursor(Qt.CrossCursor)
                     self.crossPlotRow, self.crossPlotCol = row, col
-                    value = self.slicedArray[row, col]
-                    txt = "pos = ({:d}, {:d}), value = {!r}".format(row, col, value)
+                    index = tuple([row, col])
+                    valueStr = to_string(self.slicedArray[index],
+                                         masked=self.slicedArray.maskAt(index),
+                                         maskFormat='&lt;masked&gt;')
+                    txt = "pos = ({:d}, {:d}), value = {}".format(row, col, valueStr)
                     self.probeLabel.setText(txt)
 
                     # Show cross section at the cursor pos in the line plots
@@ -469,8 +483,23 @@ class PgImagePlot2d(AbstractInspector):
                         self.crossLineHorizontal.setVisible(True)
                         self.crossLineHorShadow.setPos(row)
                         self.crossLineHorizontal.setPos(row)
+
+                        # Line plot of cross section row.
+                        # First determine which points are connected or separated by masks/nans.
+                        rowData = self.slicedArray.data[row, :]
+                        connected = np.isfinite(rowData)
+                        if is_an_array(self.slicedArray.mask):
+                            connected = np.logical_and(connected, ~self.slicedArray.mask[row, :])
+                        else:
+                            connected = (np.zeros_like(rowData)
+                                         if self.slicedArray.mask else connected)
+
+                        # Replace infinite value with nans because PyQtGraph can't handle them
+                        rowData = replaceMaskedValueWithFloat(rowData, np.isinf(rowData),
+                                                              np.nan, copyOnReplace=True)
+
                         horPlotDataItem = self.config.crossPenCti.createPlotDataItem()
-                        horPlotDataItem.setData(self.slicedArray[row, :], connect="finite")
+                        horPlotDataItem.setData(rowData, connect=connected)
                         self.horCrossPlotItem.addItem(horPlotDataItem)
 
                         # Vertical line in hor-cross plot
@@ -486,19 +515,34 @@ class PgImagePlot2d(AbstractInspector):
                             crossPoint90 = pg.PlotDataItem(symbolPen=self.crossPen)
                             crossPoint90.setSymbolBrush(QtGui.QBrush(self.config.crossPenCti.penColor))
                             crossPoint90.setSymbolSize(10)
-                            crossPoint90.setData((col,), (self.slicedArray[row, col],))
+                            crossPoint90.setData((col,), (rowData[col],))
                             self.horCrossPlotItem.addItem(crossPoint90, ignoreBounds=True)
 
                         self.config.horCrossPlotRangeCti.updateTarget() # update auto range
+                        del rowData # defensive programming
 
                     if self.config.verCrossPlotCti.configValue:
                         self.crossLineVerShadow.setVisible(True)
                         self.crossLineVertical.setVisible(True)
                         self.crossLineVerShadow.setPos(col)
                         self.crossLineVertical.setPos(col)
+
+                        # Line plot of cross section row.
+                        # First determine which points are connected or separated by masks/nans.
+                        colData = self.slicedArray.data[:, col]
+                        connected = np.isfinite(colData)
+                        if is_an_array(self.slicedArray.mask):
+                            connected = np.logical_and(connected, ~self.slicedArray.mask[:, col])
+                        else:
+                            connected = (np.zeros_like(colData)
+                                         if self.slicedArray.mask else connected)
+
+                        # Replace infinite value with nans because PyQtGraph can't handle them
+                        colData = replaceMaskedValueWithFloat(colData, np.isinf(colData),
+                                                              np.nan, copyOnReplace=True)
+
                         verPlotDataItem = self.config.crossPenCti.createPlotDataItem()
-                        verPlotDataItem.setData(self.slicedArray[:, col], np.arange(nRows),
-                                                connect="finite")
+                        verPlotDataItem.setData(colData, np.arange(nRows), connect=connected)
                         self.verCrossPlotItem.addItem(verPlotDataItem)
 
                         # Horizontal line in ver-cross plot
@@ -514,10 +558,11 @@ class PgImagePlot2d(AbstractInspector):
                             crossPoint0 = pg.PlotDataItem(symbolPen=self.crossPen)
                             crossPoint0.setSymbolBrush(QtGui.QBrush(self.config.crossPenCti.penColor))
                             crossPoint0.setSymbolSize(10)
-                            crossPoint0.setData((self.slicedArray[row, col],), (row,))
+                            crossPoint0.setData((colData[row],), (row,))
                             self.verCrossPlotItem.addItem(crossPoint0, ignoreBounds=True)
 
                         self.config.verCrossPlotRangeCti.updateTarget() # update auto range
+                        del colData # defensive programming
 
         except Exception as ex:
             # In contrast to _drawContents, this function is a slot and thus must not throw

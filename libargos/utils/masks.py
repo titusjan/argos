@@ -16,7 +16,7 @@
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
 """
-Class for storing values and a mask. Masked arrays would have been a good sollution but
+Class for storing values and a mask. Masked arrays would have been a good solution but
 unfortunately they are very buggy.
 """
 
@@ -126,6 +126,18 @@ class ArrayWithMask(object):
         return ma.masked_array(data=self.data, mask=self.mask, fill_value=self.fill_value)
 
 
+    def maskAt(self, index):
+        """ Returns the mask at the index.
+
+            It the mask is a boolean it is returned since this boolean representes the mask for
+            all array elements.
+        """
+        if isinstance(self.mask, bool):
+            return self.mask
+        else:
+            return self.mask[index]
+
+
     @property
     def shape(self):
         """ Convenience method, returns the shape of the data.
@@ -191,20 +203,47 @@ class ArrayWithMask(object):
             self.data[self.mask] = np.NaN
 
 
-def replaceMaskedValue(data, mask, replacementValue):
+
+def replaceMaskedValue(data, mask, replacementValue, copyOnReplace=True):
     """ Replaces values where the mask is True with the replacement value.
 
-        :return: None or ArrayWithMask with masked values replaced with replacementValue
+        :copyOnReplace makeCopy: If True (the default) it makes a copy if data is replaced.
     """
-    result = np.copy(data)
     if mask is False:
-        pass
+        result = data
     elif mask is True:
+        result = np.copy(data) if copyOnReplace else data
         result[:] = replacementValue
     else:
+        #logger.debug("############ count_nonzero: {}".format(np.count_nonzero(mask)))
+        if copyOnReplace and np.any(mask):
+            #logger.debug("Making copy")
+            result = np.copy(data)
+        else:
+            result = data
+
         result[mask] = replacementValue
 
     return result
+
+
+def replaceMaskedValueWithFloat(data, mask, replacementValue, copyOnReplace=True):
+    """ Replaces values where the mask is True with the replacement value.
+
+        Will change the data type to float if the data is an integer.
+        If the data is not a float (or int) the function does nothing. Otherwise it will call
+        replaceMaskedValue with the same parameters.
+
+        :copyOnReplace makeCopy: If True (the default) it makes a copy if data is replaced.
+    """
+    kind = data.dtype.kind
+    if kind == 'i' or kind == 'u': # signed/unsigned int
+        data = data.astype(np.float, casting='safe')
+
+    if data.dtype.kind != 'f':
+        return # only replace for floats
+    else:
+        return replaceMaskedValue(data, mask, replacementValue, copyOnReplace=copyOnReplace)
 
 
 

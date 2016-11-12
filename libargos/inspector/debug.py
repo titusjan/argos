@@ -56,6 +56,7 @@ class DebugInspector(AbstractInspector):
 
         if DEBUGGING:
             # Some test config items.
+            import numpy as np
             from libargos.config.untypedcti import UntypedCti
             from libargos.config.stringcti import StringCti
             from libargos.config.intcti import IntCti
@@ -78,7 +79,7 @@ class DebugInspector(AbstractInspector):
             rootItem.insertChild(StringCti('letter', 'aa', maxLength = 1))
             grpItem.insertChild(FloatCti('width', 2, minValue =5, stepSize=0.45, decimals=3,
                                          prefix="@", suffix="%", specialValueText="so very special"))
-            grpItem.insertChild(SnFloatCti('scientific'))
+            grpItem.insertChild(SnFloatCti('scientific', defaultData=-np.inf))
 
             gridItem = rootItem.insertChild(BoolGroupCti('grid', True))
             gridItem.insertChild(BoolCti('X-Axis', True))

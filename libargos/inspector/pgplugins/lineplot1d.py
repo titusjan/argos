@@ -39,7 +39,7 @@ from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, viewBoxAxisRang
                                                  PgPlotDataItemCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.utils.cls import (array_has_real_numbers, check_class, fill_values_to_nan,
-                                is_an_array, check_is_an_array)
+                                is_an_array, check_is_an_array, to_string)
 from libargos.utils.masks import replaceMaskedValue
 
 
@@ -194,9 +194,8 @@ class PgLinePlot1d(AbstractInspector):
 
         # Valid plot data here
 
-        # The sliced array can be a masked array or a (regular) numpy array. PyQtGraph doesn't
-        # handle masked arrays so we convert the masked values to Nans (missing data values are
-        # replaced by NaNs). The PyQtGraph line plot omits the Nans, which is great.
+        # PyQtGraph doesn't handle masked arrays so we convert the masked values to Nans (missing
+        # data values are replaced by NaNs). The PyQtGraph line plot omits the Nans, which is great.
         self.slicedArray.replaceMaskedValueWithNan()  # will convert data to float if int
 
         self.plotItem.clear()
@@ -251,8 +250,9 @@ class PgLinePlot1d(AbstractInspector):
                     txt = "<span style='color: grey'>no data at cursor</span>"
                     self.probeLabel.setText(txt)
                 else:
-                    txt = "pos = {!r}, value = {!r}".format(index, data[index])
-                    self.probeLabel.setText(txt)
+                    valueStr = to_string(data[index], masked=self.slicedArray.maskAt(index),
+                                         maskFormat='&lt;masked&gt;')
+                    self.probeLabel.setText("pos = {!r}, value = {}".format(index, valueStr))
                     if np.isfinite(data[index]):
                         self.crossLineVerShadow.setVisible(True)
                         self.crossLineVerShadow.setPos(index)

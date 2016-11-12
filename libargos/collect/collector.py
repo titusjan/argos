@@ -476,8 +476,14 @@ class Collector(QtGui.QWidget):
         self.sigContentsChanged.emit()
 
 
-    def getSlicedArray(self):
-        """ Slice the rti using a tuple of slices made from the values of the combo and spin boxes
+    def getSlicedArray(self, copy=True):
+        """ Slice the rti using a tuple of slices made from the values of the combo and spin boxes.
+
+            :param copy: If True (the default), a copy is made so that inspectors cannot
+                accidentally modify the underlying of the RTIs. You can set copy=False as a
+                potential optimization, but only if you are absolutely sure that you don't modify
+                the the slicedArray in your inspector! Note that this function calls transpose,
+                which can still make a copy of the array for certain permutations.
 
             :return: Numpy masked array with the same number of dimension as the number of
                 comboboxes (this can be zero!).
@@ -504,6 +510,10 @@ class Collector(QtGui.QWidget):
         # See: http://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
         logger.debug("Array slice list: {}".format(str(sliceList)))
         slicedArray = self.rti[tuple(sliceList)]
+
+        # Make a copy to prevent inspectors from modifying the underlying array.
+        if copy:
+            slicedArray = ma.copy(slicedArray)
 
         # If there are no comboboxes the sliceList will contain no Slices objects, only ints. Then
         # the resulting slicedArray will be a usually a scalar (only structured fields may yield an
