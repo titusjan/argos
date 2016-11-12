@@ -442,6 +442,13 @@ class MainWindow(QtGui.QMainWindow):
             Emits the sigInspectorChanged(self.inspectorRegItem)
         """
         logger.info("Setting inspector: {}".format(identifier))
+
+        # Use the identifier to find a registered inspector and set self.inspectorRegItem.
+        # Then create an inspector object from it.
+
+        oldInspectorRegItem = self.inspectorRegItem
+        oldInspector = self.inspector
+
         if not identifier:
             inspector = None
             self._inspectorRegItem = None
@@ -466,23 +473,10 @@ class MainWindow(QtGui.QMainWindow):
                     if DEBUGGING:
                         raise
 
-        self.__setInspector(inspector)
+        ######################
+        # Set self.inspector #
+        ######################
 
-        logger.debug("Emitting sigInspectorChanged({})".format(self.inspectorRegItem))
-        self.sigInspectorChanged.emit(self.inspectorRegItem)
-
-
-    def __setInspector(self, inspector):
-        """ Sets the central inspector widget.
-
-            This is a private method because it doesn't set the inspectorRegItem.
-            Therefore, do not call it directly, use setInpectorById instead!
-
-            Does NOT draw the new inspector, this is the responsibility of the caller.
-            It does however update the inspector node in the config tree.
-
-            If inspector is None, the inspector will be unset.
-        """
         check_class(inspector, AbstractInspector, allow_none=True)
 
         logger.debug("Disabling updates.")
@@ -491,20 +485,20 @@ class MainWindow(QtGui.QMainWindow):
             centralLayout = self.centralWidget().layout()
 
             # Delete old inspector
-            if self.inspector is None: # can be None at start-up
+            if oldInspector is None: # can be None at start-up
                 oldConfigPosition = None
             else:
-                self._updateNonDefaultsForCurrentInspector()
+                self._updateNonDefaultsForInspector(oldInspectorRegItem, oldInspector)
 
                 # Remove old inspector configuration from tree
-                oldConfigPosition = self.inspector.config.childNumber()
-                configPath = self.inspector.config.nodePath
+                oldConfigPosition = oldInspector.config.childNumber()
+                configPath = oldInspector.config.nodePath
                 _, oldConfigIndex = self._configTreeModel.findItemAndIndexPath(configPath)[-1]
                 self._configTreeModel.deleteItemAtIndex(oldConfigIndex)
 
-                self.inspector.finalize() # TODO: before removing config
-                centralLayout.removeWidget(self.inspector)
-                self.inspector.deleteLater()
+                oldInspector.finalize() # TODO: before removing config
+                centralLayout.removeWidget(oldInspector)
+                oldInspector.deleteLater()
 
             # Set new inspector
             self._inspector = inspector
@@ -518,7 +512,7 @@ class MainWindow(QtGui.QMainWindow):
                     # Add and apply config values to the inspector
                     key = self.inspectorRegItem.identifier
                     nonDefaults = self._inspectorsNonDefaults.get(key, {})
-                    logger.debug("setting non defaults: {}".format(nonDefaults))
+                    logger.debug("$$$$$$$$$$$$$$     setting non defaults: {}".format(nonDefaults))
                     self.inspector.config.setValuesFromDict(nonDefaults)
                     self._configTreeModel.insertItem(self.inspector.config, oldConfigPosition)
                     self.configTreeView.expandBranch()
@@ -532,21 +526,26 @@ class MainWindow(QtGui.QMainWindow):
 
             self.setWindowTitle(self.constructWindowTitle())
 
+            logger.debug("Emitting sigInspectorChanged({})".format(self.inspectorRegItem))
+            self.sigInspectorChanged.emit(self.inspectorRegItem)
 
-    def _updateNonDefaultsForCurrentInspector(self):
+
+
+
+    def _updateNonDefaultsForInspector(self, inspectorRegItem, inspector):
         """ Store the (non-default) config values for the current inspector in a local dictionary.
             This dictionary is later used to store value for persistence.
 
             This function must be called after the inspector was drawn because that may update
             some derived config values (e.g. ranges)
         """
-        if self.inspectorRegItem and self.inspector:
-            key = self.inspectorRegItem.identifier
-            logger.debug("_updateNonDefaultsForCurrentInspector: {} ()"
-                         .format(key, type(self.inspector)))
-            self._inspectorsNonDefaults[key] = self.inspector.config.getNonDefaultsDict()
+        if inspectorRegItem and inspector:
+            key = inspectorRegItem.identifier
+            logger.debug("$$$$$$$$$$$$$$$$$$  _updateNonDefaultsForInspector: {} {}"
+                         .format(key, type(inspector)))
+            self._inspectorsNonDefaults[key] = inspector.config.getNonDefaultsDict()
         else:
-            logger.debug("_updateNonDefaultsForCurrentInspector: NO CURRENT INSPECTOR")
+            logger.debug("_updateNonDefaultsForInspector: no inspector")
 
 
     @QtSlot()
@@ -685,11 +684,10 @@ class MainWindow(QtGui.QMainWindow):
             logger.warn("No inspector with ID {!r}.: {}".format(identifier, ex))
 
 
-
     def saveProfile(self, settings=None):
         """ Writes the view settings to the persistent store
         """
-        self._updateNonDefaultsForCurrentInspector()
+        self._updateNonDefaultsForInspector(self.inspectorRegItem, self.inspector)
 
         if settings is None:
             settings = QtCore.QSettings()
