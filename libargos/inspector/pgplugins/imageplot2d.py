@@ -350,6 +350,17 @@ class PgImagePlot2d(AbstractInspector):
         # Set the histogram range to finite values to prevent errors when drawing.
         self.histLutItem.setHistogramRange(0, 100)
 
+        self.crossPlotRow, self.crossPlotCol = None, None
+
+        self.probeLabel.setText('')
+        self.crossLineHorizontal.setVisible(False)
+        self.crossLineVertical.setVisible(False)
+        self.crossLineHorShadow.setVisible(False)
+        self.crossLineVerShadow.setVisible(False)
+
+        self.horCrossPlotItem.clear()
+        self.verCrossPlotItem.clear()
+
 
     def _drawContents(self, reason=None, initiator=None):
         """ Draws the plot contents from the sliced array of the collected repo tree item.
