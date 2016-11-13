@@ -512,7 +512,7 @@ class MainWindow(QtGui.QMainWindow):
                     # Add and apply config values to the inspector
                     key = self.inspectorRegItem.identifier
                     nonDefaults = self._inspectorsNonDefaults.get(key, {})
-                    logger.debug("$$$$$$$$$$$$$$     setting non defaults: {}".format(nonDefaults))
+                    logger.debug("Setting non defaults: {}".format(nonDefaults))
                     self.inspector.config.setValuesFromDict(nonDefaults)
                     self._configTreeModel.insertItem(self.inspector.config, oldConfigPosition)
                     self.configTreeView.expandBranch()
@@ -775,7 +775,8 @@ class MainWindow(QtGui.QMainWindow):
         """ Selects all nodes in a subtree for all inspectors
         """
         # Skip nodes that give known, unfixable errors.
-        skipPaths = ['/myDict/numbers/-inf'] # in 1Dplot
+        skipPaths = ['/myDict/numbers/-inf', '/myDict/numbers/nan',
+                     '/myDict/numbers/large float'] # in 2D image plot
 
         def visitNodes(index):
             """ Visits all the nodes recursively.
@@ -805,6 +806,7 @@ class MainWindow(QtGui.QMainWindow):
 
         # Actual boddy
         rootNodes = ['/myDict']
+        rootNodes = ['/argos/icm/S5P_ICM_CA_UVN_20120919T051721_20120919T065655_01890_01_001000_20151002T140000.h5']
 
         for rootNode in rootNodes:
             logger.info("Selecting all nodes in: {}".format(rootNode))

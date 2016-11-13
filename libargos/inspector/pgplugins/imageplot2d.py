@@ -347,8 +347,10 @@ class PgImagePlot2d(AbstractInspector):
         self.imagePlotItem.setLabel('left', '')
         self.imagePlotItem.setLabel('bottom', '')
 
-        # Set the histogram range to finite values to prevent errors when drawing.
+        # Set the histogram range and levels to finite values to prevent futher errors if this
+        # function was called after an exception in self.drawContents
         self.histLutItem.setHistogramRange(0, 100)
+        self.histLutItem.setLevels(0, 100)
 
         self.crossPlotRow, self.crossPlotCol = None, None
 
