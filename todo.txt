@@ -40,6 +40,8 @@ TODO version 0.2:
     Icons size, Darker yellow for test data.
 
     Qt-5
+        - Qt5 in about dialog.
+        - Test all CTIs by modifying them
 
 TODO version 0.3:
 

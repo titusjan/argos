@@ -20,7 +20,7 @@
 import logging
 
 from libargos.info import DEBUGGING
-from libargos.qt import QtSlot, QtCore, QtGui
+from libargos.qt import QtSlot, QtCore, QtWidgets
 from libargos.qt.togglecolumn import ToggleColumnTableWidget
 from libargos.utils.cls import get_class_name
 from libargos.widgets.constants import DOCK_SPACING, DOCK_MARGIN, LEFT_DOCK_WIDTH
@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 
-class DetailBasePane(QtGui.QStackedWidget):
+class DetailBasePane(QtWidgets.QStackedWidget):
     """ Base class for plugins that show details of the current repository tree item.
         Serves as an interface but can also be instantiated for debugging purposes.
         A detail pane is a stacked widget; it has a contents page and and error page.
@@ -51,10 +51,10 @@ class DetailBasePane(QtGui.QStackedWidget):
         self.errorWidget = MessageDisplay()
         self.addWidget(self.errorWidget)
 
-        self.contentsWidget = QtGui.QWidget()
+        self.contentsWidget = QtWidgets.QWidget()
         self.addWidget(self.contentsWidget)
 
-        self.contentsLayout = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom)
+        self.contentsLayout = QtWidgets.QBoxLayout(QtWidgets.QBoxLayout.TopToBottom)
         self.contentsLayout.setSpacing(DOCK_SPACING)
         self.contentsLayout.setContentsMargins(DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN)
         self.contentsWidget.setLayout(self.contentsLayout)
@@ -149,16 +149,16 @@ class DetailTablePane(DetailBasePane):
         #self.table.setTextElideMode(QtCore.Qt.ElideNone)
         self.table.setColumnCount(len(self.HEADERS))
         self.table.setHorizontalHeaderLabels(self.HEADERS)
-        self.table.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.table.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.table.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+        self.table.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.table.verticalHeader().hide()
         self.table.setAlternatingRowColors(True)
         self.table.setShowGrid(False)
 
-        self.table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.table.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.table.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
         tableHeader = self.table.horizontalHeader()
-        tableHeader.setResizeMode(QtGui.QHeaderView.Interactive) # don't set to stretch
+        tableHeader.setSectionResizeMode(QtWidgets.QHeaderView.Interactive) # don't set to stretch
         tableHeader.setStretchLastSection(True)
 

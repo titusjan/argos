@@ -20,7 +20,7 @@
 import logging
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
-from libargos.qt import Qt, QtGui
+from libargos.qt import Qt, QtGui, QtWidgets
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ class GroupCtiEditor(AbstractCtiEditor):
         super(GroupCtiEditor, self).__init__(cti, delegate, parent=parent)
 
         # Add hidden widget to store editor value
-        self.widget = self.addSubEditor(QtGui.QWidget())
+        self.widget = self.addSubEditor(QtWidgets.QWidget())
         self.widget.hide()
 
 

@@ -20,5 +20,5 @@
 """
 # Import commonly used function into the package name space for convenience.
 
-from libargos.qt.misc import USE_PYQT, Qt, QtCore, QtGui, QtSvg, QtSignal, QtSlot
+from libargos.qt.misc import Qt, QtCore, QtGui, QtWidgets, QtSvg, QtSignal, QtSlot
 from libargos.qt.misc import initQApplication, initQCoreApplication

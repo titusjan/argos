@@ -6,7 +6,7 @@ import unittest, logging, sys, copy
 from json import loads, dumps
 
 from libargos import configBasicLogging
-from libargos.qt import QtGui
+from libargos.qt import QtWidgets
 from libargos.config.abstractcti import ctiDumps, CtiDecoder
 from libargos.config.untypedcti import UntypedCti
 from libargos.config.qtctis import ColorCti

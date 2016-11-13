@@ -9,7 +9,7 @@ from __future__ import division
 import logging
 
 from libargos.info import PROJECT_NAME, VERSION
-from libargos.qt import QtCore, QtGui
+from libargos.qt import QtCore, QtGui, QtWidgets
 from libargos.utils.cls import is_a_string
 from libargos.utils import moduleinfo as mi
 
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 # pylint: disable=R0901, R0902, R0904, W0201
 
 
-class AboutDialog(QtGui.QDialog):
+class AboutDialog(QtWidgets.QDialog):
     """ Dialog window that shows dependency information.
     """
     def __init__(self, parent=None):
@@ -31,10 +31,10 @@ class AboutDialog(QtGui.QDialog):
         super(AboutDialog, self).__init__(parent=parent)
         self.setModal(True)
 
-        mainLayout = QtGui.QVBoxLayout()
+        mainLayout = QtWidgets.QVBoxLayout()
         self.setLayout(mainLayout)
 
-        progVersionLabel = QtGui.QLabel()
+        progVersionLabel = QtWidgets.QLabel()
         progVersionLabel.setText("{} {}".format(PROJECT_NAME, VERSION))
         progVersionLabel.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         mainLayout.addWidget(progVersionLabel)
@@ -44,7 +44,7 @@ class AboutDialog(QtGui.QDialog):
         font.setFixedPitch(True)
         font.setPointSize(13)
 
-        self.editor = QtGui.QPlainTextEdit()
+        self.editor = QtWidgets.QPlainTextEdit()
         self.editor.setReadOnly(True)
         self.editor.setFont(font)
         self.editor.setWordWrapMode(QtGui.QTextOption.NoWrap)
@@ -52,10 +52,10 @@ class AboutDialog(QtGui.QDialog):
         self.editor.setPlainText("Retrieving package info...")
         mainLayout.addWidget(self.editor)
 
-        self.progressLabel = QtGui.QLabel()
+        self.progressLabel = QtWidgets.QLabel()
         mainLayout.addWidget(self.progressLabel)
 
-        buttonBox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok)
+        buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok)
         buttonBox.accepted.connect(self.accept)
         mainLayout.addWidget(buttonBox)
 
@@ -72,7 +72,7 @@ class AboutDialog(QtGui.QDialog):
 
         line = "{:12s}: {}".format(moduleInfo.name, moduleInfo.verboseVersion)
         self.editor.appendPlainText(line)
-        QtGui.qApp.processEvents()
+        QtWidgets.qApp.processEvents()
 
 
     def addDependencyInfo(self):

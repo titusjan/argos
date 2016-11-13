@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import logging
 
-from ..qt import QtCore, QtGui, Qt
+from libargos.qt import QtCore, QtWidgets, Qt
 
 logger = logging.getLogger(__name__)
 
@@ -58,14 +58,14 @@ class ToggleColumnMixIn(object):
         horizontal_header = self.horizontalHeader()
         horizontal_header.setContextMenuPolicy(Qt.ActionsContextMenu)
 
-        self.toggle_column_actions_group = QtGui.QActionGroup(self)
+        self.toggle_column_actions_group = QtWidgets.QActionGroup(self)
         self.toggle_column_actions_group.setExclusive(False)
         self.__toggle_functions = []  # for keeping references
 
         for col in range(horizontal_header.count()):
             column_label = self.model().headerData(col, Qt.Horizontal, Qt.DisplayRole)
             #logger.debug("Adding: col {}: {}".format(col, column_label))
-            action = QtGui.QAction(str(column_label),
+            action = QtWidgets.QAction(str(column_label),
                                    self.toggle_column_actions_group,
                                    checkable = checkable.get(column_label, True),
                                    enabled = enabled.get(column_label, True),
@@ -124,21 +124,21 @@ class ToggleColumnMixIn(object):
 
 
 
-class ToggleColumnTableWidget(QtGui.QTableWidget, ToggleColumnMixIn):
+class ToggleColumnTableWidget(QtWidgets.QTableWidget, ToggleColumnMixIn):
     """ A QTableWidget where right clicking on the header allows the user to show/hide columns
     """
     pass
 
 
 
-class ToggleColumnTableView(QtGui.QTableView, ToggleColumnMixIn):
+class ToggleColumnTableView(QtWidgets.QTableView, ToggleColumnMixIn):
     """ A QTableView where right clicking on the header allows the user to show/hide columns
     """
     pass
 
 
 
-class ToggleColumnTreeWidget(QtGui.QTreeWidget, ToggleColumnMixIn):
+class ToggleColumnTreeWidget(QtWidgets.QTreeWidget, ToggleColumnMixIn):
     """ A QTreeWidget where right clicking on the header allows the user to show/hide columns
     """
     def horizontalHeader(self):
@@ -150,7 +150,7 @@ class ToggleColumnTreeWidget(QtGui.QTreeWidget, ToggleColumnMixIn):
 
 
 
-class ToggleColumnTreeView(QtGui.QTreeView, ToggleColumnMixIn):
+class ToggleColumnTreeView(QtWidgets.QTreeView, ToggleColumnMixIn):
     """ A QTreeView where right clicking on the header allows the user to show/hide columns
     """
     def horizontalHeader(self):

@@ -19,7 +19,7 @@
 """
 import logging
 
-from libargos.qt import QtGui
+from libargos.qt import QtWidgets
 from libargos.repo.detailpanes import DetailTablePane
 from libargos.utils.cls import to_string, type_name
 from libargos.widgets.constants import COL_ELEM_TYPE_WIDTH
@@ -57,7 +57,7 @@ class AttributesPane(DetailTablePane):
         try:
             table.clearContents()
             verticalHeader = table.verticalHeader()
-            verticalHeader.setResizeMode(QtGui.QHeaderView.Fixed)
+            verticalHeader.setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
 
             attributes = currentRti.attributes if currentRti is not None else {}
             table.setRowCount(len(attributes))
@@ -71,16 +71,16 @@ class AttributesPane(DetailTablePane):
                     logger.exception(ex)
                     type_str = "<???>"
 
-                nameItem = QtGui.QTableWidgetItem(attrName)
+                nameItem = QtWidgets.QTableWidgetItem(attrName)
                 nameItem.setToolTip(attrName)
                 table.setItem(row, self.COL_ATTR_NAME, nameItem)
-                valItem = QtGui.QTableWidgetItem(attrStr)
+                valItem = QtWidgets.QTableWidgetItem(attrStr)
                 valItem.setToolTip(attrStr)
                 table.setItem(row, self.COL_VALUE, valItem)
-                table.setItem(row, self.COL_ELEM_TYPE, QtGui.QTableWidgetItem(type_str))
+                table.setItem(row, self.COL_ELEM_TYPE, QtWidgets.QTableWidgetItem(type_str))
                 table.resizeRowToContents(row)
 
-            verticalHeader.setResizeMode(QtGui.QHeaderView.ResizeToContents)
+            verticalHeader.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
 
         finally:
             table.setUpdatesEnabled(True)

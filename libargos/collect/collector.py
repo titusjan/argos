@@ -24,7 +24,7 @@ import numpy.ma as ma
 
 from libargos.collect.collectortree import CollectorTree, CollectorSpinBox
 from libargos.repo.baserti import BaseRti
-from libargos.qt import Qt, QtGui, QtCore, QtSignal, QtSlot
+from libargos.qt import Qt, QtWidgets, QtGui, QtCore, QtSignal, QtSlot
 from libargos.utils.cls import check_class, check_is_a_sequence, check_is_an_array, is_an_array
 from libargos.utils.masks import ArrayWithMask
 from libargos.widgets.constants import (TOP_DOCK_HEIGHT)
@@ -40,7 +40,7 @@ FAKE_DIM_OFFSET = 1000  # Fake dimensions start here (so all arrays must have a 
 
 
 
-class Collector(QtGui.QWidget):
+class Collector(QtWidgets.QWidget):
     """ Widget for collecting the selected data.
         Consists of a tree to collect the VisItems, plus some buttons to add or remove then.
 
@@ -66,10 +66,10 @@ class Collector(QtGui.QWidget):
         self._comboBoxes = []        # Will be set in clearAndSetComboBoxes
         self._spinBoxes = []         # Will be set in createSpinBoxes
 
-        self.layout = QtGui.QHBoxLayout(self)
+        self.layout = QtWidgets.QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
-        self.buttonLayout = QtGui.QVBoxLayout()
+        self.buttonLayout = QtWidgets.QVBoxLayout()
         self.layout.setContentsMargins(2, 0, 2, 0)
 
         # Add tree
@@ -77,10 +77,10 @@ class Collector(QtGui.QWidget):
         self.layout.addWidget(self.tree)
 
         # Add buttons (not yet implemented)
-        # self.addVisItemButton = QtGui.QPushButton("Add")
+        # self.addVisItemButton = QtWidgets.QPushButton("Add")
         # self.addVisItemButton.setEnabled(False) # not yet implemented
         # self.buttonLayout.addWidget(self.addVisItemButton, stretch=0)
-        # self.removeVisItemButton = QtGui.QPushButton("Remove")
+        # self.removeVisItemButton = QtWidgets.QPushButton("Remove")
         # self.removeVisItemButton.setEnabled(False) # not yet implemented
         # self.buttonLayout.addWidget(self.removeVisItemButton, stretch=0)
         # self.buttonLayout.addStretch(stretch=1)
@@ -267,12 +267,12 @@ class Collector(QtGui.QWidget):
 
         for col, _ in enumerate(self._axisNames, self.COL_FIRST_COMBO):
             logger.debug("Adding combobox at ({}, {})".format(row, col))
-            comboBox = QtGui.QComboBox()
-            comboBox.setSizeAdjustPolicy(QtGui.QComboBox.AdjustToContents)
+            comboBox = QtWidgets.QComboBox()
+            comboBox.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
             comboBox.activated.connect(self._comboBoxActivated)
             self._comboBoxes.append(comboBox)
 
-            #editor = LabeledWidget(QtGui.QLabel(comboLabel), comboBox)
+            #editor = LabeledWidget(QtWidgets.QLabel(comboLabel), comboBox)
             tree.setIndexWidget(model.index(row, col), comboBox)
 
 
@@ -389,7 +389,7 @@ class Collector(QtGui.QWidget):
             self._spinBoxes.append(spinBox)
 
             spinBox.setKeyboardTracking(False)
-            spinBox.setCorrectionMode(QtGui.QAbstractSpinBox.CorrectToNearestValue)
+            spinBox.setCorrectionMode(QtWidgets.QAbstractSpinBox.CorrectToNearestValue)
 
             spinBox.setMinimum(0)
             spinBox.setMaximum(dimSize - 1)

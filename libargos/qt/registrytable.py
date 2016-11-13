@@ -21,7 +21,7 @@ from __future__ import print_function
 
 import logging
 
-from libargos.qt import QtCore, QtGui, Qt
+from libargos.qt import QtCore, QtGui, QtWidgets, Qt
 from libargos.qt.registry import ClassRegistry, ClassRegItem
 from libargos.qt.togglecolumn import ToggleColumnTableView
 from libargos.utils.cls import check_class
@@ -144,7 +144,7 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
 
 
 
-class RegistryTableProxyModel(QtGui.QSortFilterProxyModel):
+class RegistryTableProxyModel(QtCore.QSortFilterProxyModel):
     """ Proxy model that overrides the sorting and can filter out regItems that are not imported.
     """
     def __init__(self, onlyShowImported=False, parent=None):
@@ -229,22 +229,22 @@ class RegistryTableView(ToggleColumnTableView):
         else:
             assert False, "not yet implemented"
 
-        #self.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        #self.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        #self.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+        #self.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.verticalHeader().hide()
         self.setAlternatingRowColors(True)
         self.setShowGrid(False)
         self.setSortingEnabled(True)
         self.setTabKeyNavigation(False)
 
-        self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.setWordWrap(True)
 
         tableHeader = self.horizontalHeader()
         tableHeader.setDefaultAlignment(Qt.AlignVCenter | Qt.AlignLeft)
-        tableHeader.setResizeMode(QtGui.QHeaderView.Interactive) # don't set to stretch
+        tableHeader.setSectionResizeMode(QtWidgets.QHeaderView.Interactive) # don't set to stretch
         tableHeader.setStretchLastSection(True)
 
 

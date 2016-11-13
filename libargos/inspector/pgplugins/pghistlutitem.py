@@ -5,7 +5,7 @@
 """
 
 
-from pyqtgraph.Qt import QtGui, QtCore
+from pyqtgraph.Qt import QtWidgets, QtCore
 from pyqtgraph.graphicsItems.GraphicsWidget import GraphicsWidget
 from pyqtgraph.graphicsItems.ViewBox import *
 from pyqtgraph.graphicsItems.GradientEditorItem import *
@@ -44,7 +44,7 @@ class HistogramLUTItem(GraphicsWidget):
         self.lut = None
         self.imageItem = lambda: None  # fake a dead weakref
 
-        self.layout = QtGui.QGraphicsGridLayout()
+        self.layout = QtWidgets.QGraphicsGridLayout()
         self.setLayout(self.layout)
         self.layout.setContentsMargins(1,1,1,1)
         self.layout.setSpacing(0)
@@ -82,7 +82,7 @@ class HistogramLUTItem(GraphicsWidget):
 
         if image is not None:
             self.setImageItem(image)
-        #self.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
+        #self.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
 
     def fillHistogram(self, fill=True, level=0.0, color=(100, 100, 200)):
         if fill:

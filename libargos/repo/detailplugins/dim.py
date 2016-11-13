@@ -19,7 +19,7 @@
 """
 import logging
 
-from libargos.qt import Qt, QtGui, QtCore
+from libargos.qt import Qt, QtWidgets, QtCore
 from libargos.repo.detailpanes import DetailTablePane
 
 logger = logging.getLogger(__name__)
@@ -62,7 +62,7 @@ class DimensionsPane(DetailTablePane):
         try:
             table.clearContents()
             verticalHeader = table.verticalHeader()
-            verticalHeader.setResizeMode(QtGui.QHeaderView.Fixed)
+            verticalHeader.setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
 
             if currentRti is None or not currentRti.isSliceable:
                 return
@@ -79,13 +79,13 @@ class DimensionsPane(DetailTablePane):
 
             table.setRowCount(nDims)
             for row, (dimName, dimSize, dimGroup) in enumerate(zip(dimNames, dimSizes, dimGroups)):
-                table.setItem(row, self.COL_NAME, QtGui.QTableWidgetItem(dimName))
-                table.setItem(row, self.COL_SIZE, QtGui.QTableWidgetItem(str(dimSize)))
+                table.setItem(row, self.COL_NAME, QtWidgets.QTableWidgetItem(dimName))
+                table.setItem(row, self.COL_SIZE, QtWidgets.QTableWidgetItem(str(dimSize)))
                 table.item(row, self.COL_SIZE).setTextAlignment(sizeAlignment)
-                table.setItem(row, self.COL_GROUP, QtGui.QTableWidgetItem(str(dimGroup)))
+                table.setItem(row, self.COL_GROUP, QtWidgets.QTableWidgetItem(str(dimGroup)))
                 table.resizeRowToContents(row)
 
-            verticalHeader.setResizeMode(QtGui.QHeaderView.ResizeToContents)
+            verticalHeader.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
 
         finally:
             table.setUpdatesEnabled(True)

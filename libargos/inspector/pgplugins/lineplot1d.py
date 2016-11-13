@@ -228,12 +228,13 @@ class PgLinePlot1d(AbstractInspector):
         self.config.updateTarget()
 
 
-    @QtSlot(QtCore.QPointF)
+    @QtSlot(object)
     def mouseMoved(self, viewPos):
         """ Updates the probe text with the values under the cursor.
             Draws a vertical line and a symbol at the position of the probe.
         """
         try:
+            check_class(viewPos, QtCore.QPointF)
             self.crossLineVerShadow.setVisible(False)
             self.crossLineVertical.setVisible(False)
             self.probeLabel.setText("")

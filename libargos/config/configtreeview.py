@@ -20,7 +20,7 @@
 from __future__ import print_function
 
 import logging
-from libargos.qt import QtCore, QtGui, QtSlot
+from libargos.qt import QtCore, QtWidgets, QtSlot
 from libargos.widgets.argostreeview import ArgosTreeView
 from libargos.widgets.constants import RIGHT_DOCK_WIDTH
 from libargos.config.configitemdelegate import ConfigItemDelegate
@@ -43,7 +43,7 @@ class ConfigTreeView(ArgosTreeView):
         self.expanded.connect(configTreeModel.expand)
         self.collapsed.connect(configTreeModel.collapse)
         #configTreeModel.update.connect(self.update) # not necessary
-        #self.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
+        #self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectItems)
 
         treeHeader = self.header()
         treeHeader.resizeSection(ConfigTreeModel.COL_NODE_NAME, RIGHT_DOCK_WIDTH * 0.5)
@@ -61,12 +61,12 @@ class ConfigTreeView(ArgosTreeView):
         self.setRootIsDecorated(False)
         self.setUniformRowHeights(True)
         self.setItemDelegate(ConfigItemDelegate())
-        self.setEditTriggers(QtGui.QAbstractItemView.AllEditTriggers)
+        self.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)
 
-        #self.setEditTriggers(QtGui.QAbstractItemView.DoubleClicked |
-        #                     QtGui.QAbstractItemView.EditKeyPressed |
-        #                     QtGui.QAbstractItemView.AnyKeyPressed |
-        #                     QtGui.QAbstractItemView.SelectedClicked)
+        #self.setEditTriggers(QtWidgets.QAbstractItemView.DoubleClicked |
+        #                     QtWidgets.QAbstractItemView.EditKeyPressed |
+        #                     QtWidgets.QAbstractItemView.AnyKeyPressed |
+        #                     QtWidgets.QAbstractItemView.SelectedClicked)
 
 
     def sizeHint(self):
@@ -74,7 +74,7 @@ class ConfigTreeView(ArgosTreeView):
         return QtCore.QSize(RIGHT_DOCK_WIDTH, 500)
 
 
-    @QtSlot(QtGui.QWidget, QtGui.QAbstractItemDelegate.EndEditHint)
+    @QtSlot(QtWidgets.QWidget, QtWidgets.QAbstractItemDelegate.EndEditHint)
     def closeEditor(self, editor, hint):
         """ Finalizes, closes and releases the given editor.
         """

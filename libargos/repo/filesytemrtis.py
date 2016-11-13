@@ -20,7 +20,7 @@
 
 import logging, os
 from .baserti import BaseRti
-from libargos.qt import QtGui
+from libargos.qt import QtWidgets
 from libargos.repo.iconfactory import RtiIconFactory
 from libargos.repo.registry import globalRtiRegistry
 

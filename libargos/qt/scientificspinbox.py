@@ -8,7 +8,7 @@ from __future__ import division
 
 import re, logging
 import numpy as np
-from libargos.qt import QtGui
+from libargos.qt import QtGui, QtWidgets
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class FloatValidator(QtGui.QValidator):
 
 
 
-class ScientificDoubleSpinBox(QtGui.QDoubleSpinBox):
+class ScientificDoubleSpinBox(QtWidgets.QDoubleSpinBox):
     """ A QDoubleSpinBox that can handle scientific notation.
     """
     def __init__(self,
@@ -190,7 +190,7 @@ if __name__ == "__main__":
     def main():
         """ Small stand-alone test
         """
-        app = QtGui.QApplication(sys.argv[1:])
+        app = QtWidgets.QApplication(sys.argv[1:])
         spinBox = ScientificDoubleSpinBox(precision = 9, largeStepFactor=2, smallStepsPerLargeStep=3)
         spinBox.selectAll()
         spinBox.setSingleStep(2)

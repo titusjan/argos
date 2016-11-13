@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import logging
 from libargos.config.abstractcti import InvalidInputError
-from libargos.qt import Qt, QtCore, QtGui
+from libargos.qt import Qt, QtCore, QtWidgets
 from libargos.qt.misc import widgetSubCheckBoxRect
 from libargos.widgets.constants import TREE_CELL_SIZE_HINT
 
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 # Qt classes have many ancestors
 #pylint: disable=R0901
 
-class ConfigItemDelegate(QtGui.QStyledItemDelegate):
+class ConfigItemDelegate(QtWidgets.QStyledItemDelegate):
     """ Provides editing facilities for config tree items.
         Creates an editor kd on the underlying config tree item at an index.
 

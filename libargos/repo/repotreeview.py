@@ -19,7 +19,7 @@
 from __future__ import print_function
 
 import logging
-from libargos.qt import QtGui, QtCore, QtSlot, Qt
+from libargos.qt import QtWidgets, QtGui, QtCore, QtSlot, Qt
 from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
 from libargos.repo.registry import globalRtiRegistry
@@ -70,27 +70,27 @@ class RepoTreeView(ArgosTreeView):
         self.setUniformRowHeights(True)
 
         # Add actions
-        self.topLevelItemActionGroup = QtGui.QActionGroup(self) # TODO: not used anymore?
+        self.topLevelItemActionGroup = QtWidgets.QActionGroup(self) # TODO: not used anymore?
         self.topLevelItemActionGroup.setExclusive(False)
-        self.currentItemActionGroup = QtGui.QActionGroup(self)
+        self.currentItemActionGroup = QtWidgets.QActionGroup(self)
         self.currentItemActionGroup.setExclusive(False)
 
-        removeFileAction = QtGui.QAction("Remove from Tree", self.currentItemActionGroup,
+        removeFileAction = QtWidgets.QAction("Remove from Tree", self.currentItemActionGroup,
                                          shortcut=QtGui.QKeySequence.Delete,
                                          triggered=self.removeCurrentItem)
         self.addAction(removeFileAction)
 
-        reloadFileAction = QtGui.QAction("Reload File", self.currentItemActionGroup,
+        reloadFileAction = QtWidgets.QAction("Reload File", self.currentItemActionGroup,
                                          shortcut=QtGui.QKeySequence.Refresh,   #"Ctrl+R",
                                          triggered=self.reloadFileOfCurrentItem)
         self.addAction(reloadFileAction)
 
-        self.openItemAction = QtGui.QAction("Open Item", self,
+        self.openItemAction = QtWidgets.QAction("Open Item", self,
                                        #shortcut="Ctrl+Shift+C",
                                        triggered=self.openCurrentItem)
         self.addAction(self.openItemAction)
 
-        self.closeItemAction = QtGui.QAction("Close Item", self,
+        self.closeItemAction = QtWidgets.QAction("Close Item", self,
                                         #shortcut="Ctrl+C", # Ctrl+C already taken for Copy
                                         triggered=self.closeCurrentItem)
         self.addAction(self.closeItemAction)
@@ -104,7 +104,7 @@ class RepoTreeView(ArgosTreeView):
     def contextMenuEvent(self, event):
         """ Creates and executes the context menu for the tree view
         """
-        menu = QtGui.QMenu(self)
+        menu = QtWidgets.QMenu(self)
 
         for action in self.actions():
             menu.addAction(action)
@@ -119,7 +119,7 @@ class RepoTreeView(ArgosTreeView):
     def createOpenAsMenu(self, parent=None):
         """ Creates the submenu for the Open As choice
         """
-        openAsMenu = QtGui.QMenu(parent=parent)
+        openAsMenu = QtWidgets.QMenu(parent=parent)
         openAsMenu.setTitle("Open Item As")
 
         registry = globalRtiRegistry()
@@ -130,7 +130,7 @@ class RepoTreeView(ArgosTreeView):
                 _rtiRegItem = rtiRegItem # keep reference in closure
                 return lambda: self.reloadFileOfCurrentItem(_rtiRegItem)
 
-            action = QtGui.QAction("{}".format(rtiRegItem.name), self,
+            action = QtWidgets.QAction("{}".format(rtiRegItem.name), self,
                 enabled=bool(rtiRegItem.successfullyImported is not False),
                 triggered=createTrigger())
             openAsMenu.addAction(action)

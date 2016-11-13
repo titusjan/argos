@@ -24,7 +24,7 @@ import logging
 from libargos.qt.registry import ClassRegItem
 from libargos.qt.registrytable import RegistryTableModel, RegistryTableProxyModel, RegistryTableView
 from libargos.qt.registrytable import QCOLOR_REGULAR, QCOLOR_NOT_IMPORTED, QCOLOR_ERROR
-from libargos.qt import QtCore, QtGui, Qt, QtSlot
+from libargos.qt import QtCore, QtGui, QtWidgets, Qt, QtSlot
 from libargos.utils.cls import check_class
 
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 # pylint: disable=R0901, R0902, R0904, W0201
 
 
-class RegistryTab(QtGui.QWidget):
+class RegistryTab(QtWidgets.QWidget):
     """ Tab that shows the contents of a single plugin registry.
 
     """
@@ -64,21 +64,21 @@ class RegistryTab(QtGui.QWidget):
             assert len(headerSizes) == len(attrNames), \
                 "Size mismatch {} != {}".format(len(headerSizes), len(attrNames))
 
-        layout = QtGui.QVBoxLayout(self)
-        statusLayout = QtGui.QHBoxLayout()
+        layout = QtWidgets.QVBoxLayout(self)
+        statusLayout = QtWidgets.QHBoxLayout()
         layout.addLayout(statusLayout)
 
-        self.statusLabel = QtGui.QLabel("")
+        self.statusLabel = QtWidgets.QLabel("")
         statusLayout.addWidget(self.statusLabel)
         statusLayout.setStretch(0, 1)
 
-        self.loadAllButton = QtGui.QPushButton("Load all")
+        self.loadAllButton = QtWidgets.QPushButton("Load all")
         self.loadAllButton.setFocusPolicy(Qt.ClickFocus)
         self.loadAllButton.clicked.connect(self.tryImportAllPlugins)
         statusLayout.addWidget(self.loadAllButton)
         statusLayout.setStretch(1, 0)
 
-        splitter = QtGui.QSplitter(Qt.Vertical)
+        splitter = QtWidgets.QSplitter(Qt.Vertical)
         layout.addWidget(splitter)
 
         # Table
@@ -105,7 +105,7 @@ class RegistryTab(QtGui.QWidget):
         font.setFixedPitch(True)
         font.setPointSize(13)
 
-        self.editor = QtGui.QTextEdit()
+        self.editor = QtWidgets.QTextEdit()
         self.editor.setReadOnly(True)
         self.editor.setFont(font)
         self.editor.setWordWrapMode(QtGui.QTextOption.NoWrap)
@@ -134,11 +134,11 @@ class RegistryTab(QtGui.QWidget):
             Writes this in the statusLabel while the import is in progress.
         """
         self.statusLabel.setText("Importing {}...".format(regItem.fullName))
-        QtGui.qApp.processEvents()
+        QtWidgets.qApp.processEvents()
         regItem.tryImportClass()
         self.tableView.model().emitDataChanged(regItem)
         self.statusLabel.setText("")
-        QtGui.qApp.processEvents()
+        QtWidgets.qApp.processEvents()
 
 
     def tryImportAllPlugins(self):
@@ -194,7 +194,7 @@ class RegistryTab(QtGui.QWidget):
 
 
 
-class PluginsDialog(QtGui.QDialog):
+class PluginsDialog(QtWidgets.QDialog):
     """ Dialog window that shows the installed plugins.
     """
 
@@ -209,9 +209,9 @@ class PluginsDialog(QtGui.QDialog):
         self.setWindowTitle("Installed Argos Plugins")
         self.setModal(False)
 
-        layout = QtGui.QVBoxLayout(self)
+        layout = QtWidgets.QVBoxLayout(self)
 
-        self.tabWidget = QtGui.QTabWidget()
+        self.tabWidget = QtWidgets.QTabWidget()
         layout.addWidget(self.tabWidget)
 
         attrNames = ['fullName', 'fullClassName', 'pythonPath']
@@ -232,7 +232,7 @@ class PluginsDialog(QtGui.QDialog):
             self.tabWidget.widget(tabNr).tableView.sortByColumn(0, Qt.AscendingOrder)
 
         # Buttons
-        buttonBox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok)
+        buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok)
         buttonBox.accepted.connect(self.accept)
         layout.addWidget(buttonBox)
 

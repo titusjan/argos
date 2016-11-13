@@ -19,7 +19,7 @@
 """
 import logging
 
-from libargos.qt import QtGui, QtCore
+from libargos.qt import QtWidgets, QtCore
 from libargos.repo.detailpanes import DetailTablePane
 from libargos.repo.repotreemodel import RepoTreeModel
 
@@ -57,7 +57,7 @@ class PropertiesPane(DetailTablePane):
         try:
             table.clearContents()
             verticalHeader = table.verticalHeader()
-            verticalHeader.setResizeMode(QtGui.QHeaderView.Fixed)
+            verticalHeader.setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
 
             if currentRti is None:
                 return
@@ -68,16 +68,16 @@ class PropertiesPane(DetailTablePane):
             table.setRowCount(len(propNames))
 
             for row, propName in enumerate(propNames):
-                nameItem = QtGui.QTableWidgetItem(propName)
+                nameItem = QtWidgets.QTableWidgetItem(propName)
                 nameItem.setToolTip(propName)
                 table.setItem(row, self.COL_PROP_NAME, nameItem)
                 propValue = repoModel.itemData(currentRti, row)
-                propItem = QtGui.QTableWidgetItem(propValue)
+                propItem = QtWidgets.QTableWidgetItem(propValue)
                 propItem.setToolTip(propValue)
                 table.setItem(row, self.COL_VALUE, propItem)
                 table.resizeRowToContents(row)
 
-            verticalHeader.setResizeMode(QtGui.QHeaderView.ResizeToContents)
+            verticalHeader.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
 
         finally:
             table.setUpdatesEnabled(True)

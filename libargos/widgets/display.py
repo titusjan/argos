@@ -21,7 +21,7 @@ from __future__ import print_function
 
 import logging
 
-from libargos.qt import Qt, QtGui
+from libargos.qt import Qt, QtGui, QtWidgets
 
 
 logger = logging.getLogger(__name__)
@@ -32,17 +32,17 @@ logger = logging.getLogger(__name__)
 # pylint: disable=R0901, R0902, R0904, W0201
 
 
-class MessageDisplay(QtGui.QWidget):
+class MessageDisplay(QtWidgets.QWidget):
     """ Widget that shows a label and title.
         Consists of a title label and a larger message label for details.
     """
     def __init__(self, parent=None, msg="", title="Error"):
         super(MessageDisplay, self).__init__(parent)
 
-        self.layout = QtGui.QVBoxLayout()
+        self.layout = QtWidgets.QVBoxLayout()
         self.setLayout(self.layout)
 
-        self.titleLabel = QtGui.QLabel(title)
+        self.titleLabel = QtWidgets.QLabel(title)
         self.titleLabel.setTextFormat(Qt.PlainText)
         self.titleLabel.setTextInteractionFlags(Qt.TextSelectableByMouse)
         self.titleLabel.setAlignment(Qt.AlignHCenter)
@@ -53,13 +53,13 @@ class MessageDisplay(QtGui.QWidget):
         font.setFixedPitch(True)
         font.setPointSize(13)
 
-        self.messageLabel = QtGui.QLabel(msg)
+        self.messageLabel = QtWidgets.QLabel(msg)
         self.messageLabel.setFont(font)
         self.messageLabel.setTextFormat(Qt.PlainText)
         self.messageLabel.setTextInteractionFlags(Qt.TextSelectableByMouse)
         self.messageLabel.setWordWrap(True)
         self.messageLabel.setAlignment(Qt.AlignTop)
-        self.messageLabel.setFrameStyle(QtGui.QFrame.Panel | QtGui.QFrame.Plain)
+        self.messageLabel.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Plain)
         self.layout.addWidget(self.messageLabel, stretch=1)
 
 

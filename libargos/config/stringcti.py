@@ -20,7 +20,7 @@
 import logging
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
-from libargos.qt import QtGui
+from libargos.qt import QtWidgets
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ class StringCtiEditor(AbstractCtiEditor):
         """ See the AbstractCtiEditor for more info on the parameters
         """
         super(StringCtiEditor, self).__init__(cti, delegate, parent=parent)
-        self.lineEditor = self.addSubEditor(QtGui.QLineEdit(), isFocusProxy=True)
+        self.lineEditor = self.addSubEditor(QtWidgets.QLineEdit(), isFocusProxy=True)
 
         if cti.maxLength is not None:
             self.lineEditor.setMaxLength(cti.maxLength)

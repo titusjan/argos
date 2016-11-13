@@ -25,7 +25,7 @@ from libargos.qt import initQCoreApplication
 from libargos.config.groupcti import MainGroupCti
 from libargos.inspector.abstract import AbstractInspector
 from libargos.inspector.registry import InspectorRegistry
-from libargos.qt import Qt, QtGui
+from libargos.qt import Qt, QtWidgets
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class BuggyInspector(AbstractInspector):
 
         super(BuggyInspector, self).__init__(collector, parent=parent)
 
-        self.label = QtGui.QLabel()
+        self.label = QtWidgets.QLabel()
         self.contentsLayout.addWidget(self.label)
 
         self._config = self._createConfig()

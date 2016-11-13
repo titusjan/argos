@@ -22,7 +22,7 @@ import numpy as np
 
 from numpy.lib.npyio import NpzFile
 
-from libargos.qt import QtGui
+from libargos.qt import QtWidgets
 from libargos.repo.iconfactory import RtiIconFactory
 from libargos.repo.memoryrtis import ArrayRti, SliceRti, MappingRti
 from libargos.utils.cls import check_is_an_array, check_class

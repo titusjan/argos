@@ -21,7 +21,7 @@ from __future__ import print_function
 
 import logging
 
-from libargos.qt import Qt, QtCore, QtGui
+from libargos.qt import Qt, QtCore, QtWidgets
 from libargos.inspector.registry import InspectorRegItem
 from libargos.utils.cls import check_class
 from libargos.widgets.pluginsdialog import RegistryTab
@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 # ancestors public methods and attributes.
 # pylint: disable=R0901, R0902, R0904, W0201
 
-class OpenInspectorDialog(QtGui.QDialog):
+class OpenInspectorDialog(QtWidgets.QDialog):
     """ Dialog window that allows the user to open an inspector plugins.
 
         SIDE EFFECT: will try to import all underlying inspector classes.
@@ -50,7 +50,7 @@ class OpenInspectorDialog(QtGui.QDialog):
 
         self.setWindowTitle('Open Inspector')
         self.setModal(True)
-        layout = QtGui.QVBoxLayout(self)
+        layout = QtWidgets.QVBoxLayout(self)
 
         attrNames = ['name', 'library', 'nDims']
         headerSizes = [250, 250, None]
@@ -61,8 +61,8 @@ class OpenInspectorDialog(QtGui.QDialog):
         layout.addWidget(self.inspectorTab)
 
         # Buttons
-        buttonBox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok |
-                                           QtGui.QDialogButtonBox.Cancel)
+        buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok |
+                                           QtWidgets.QDialogButtonBox.Cancel)
         buttonBox.accepted.connect(self.accept)
         buttonBox.rejected.connect(self.reject)
         layout.addWidget(buttonBox)

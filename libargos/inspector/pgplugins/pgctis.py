@@ -35,7 +35,7 @@ from libargos.config.floatcti import SnFloatCti, FloatCti
 from libargos.config.qtctis import PenCti, ColorCti, createPenStyleCti, createPenWidthCti
 from libargos.config.untypedcti import UntypedCti
 from libargos.inspector.pgplugins.pghistlutitem import HistogramLUTItem
-from libargos.qt import QtGui
+from libargos.qt import QtGui, QtWidgets
 from libargos.utils.cls import check_class
 
 from pyqtgraph.graphicsItems.GradientEditorItem import Gradients as GRADIENTS

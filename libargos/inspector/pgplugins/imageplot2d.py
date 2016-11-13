@@ -38,7 +38,7 @@ from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES,
                                                  PgPlotDataItemCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.inspector.pgplugins.pghistlutitem import HistogramLUTItem
-from libargos.qt import Qt, QtCore, QtGui, QtSlot
+from libargos.qt import Qt, QtCore, QtWidgets, QtSlot
 from libargos.utils.cls import array_has_real_numbers, check_class, is_an_array, to_string
 from libargos.utils.masks import replaceMaskedValueWithFloat
 
@@ -452,12 +452,13 @@ class PgImagePlot2d(AbstractInspector):
         self.config.updateTarget()
 
 
-    @QtSlot(QtCore.QPointF)
+    @QtSlot(object)
     def mouseMoved(self, viewPos):
         """ Updates the probe text with the values under the cursor.
             Draws a vertical line and a symbol at the position of the probe.
         """
         try:
+            check_class(viewPos, QtCore.QPointF)
             show_data_point = False # shows the data point as a circle in the cross hair plots
             self.crossPlotRow, self.crossPlotCol = None, None
 

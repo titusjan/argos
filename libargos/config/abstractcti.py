@@ -21,7 +21,7 @@ import logging, os
 from json import JSONEncoder, JSONDecoder, loads, dumps
 
 from libargos.info import DEBUGGING, icons_directory
-from libargos.qt import Qt, QtCore, QtGui, QtSlot
+from libargos.qt import Qt, QtCore, QtGui, QtWidgets, QtSlot
 from libargos.qt.treeitems import BaseTreeItem
 from libargos.utils.cls import get_full_class_name, import_symbol
 
@@ -511,7 +511,7 @@ class AbstractCti(BaseTreeItem):
 
 
 
-class AbstractCtiEditor(QtGui.QWidget):
+class AbstractCtiEditor(QtWidgets.QWidget):
     """ An editor for use in the ConfigTreeView (CTI).
 
         It consists of a horizontal collection of child widgets, the last of which is a reset
@@ -545,12 +545,12 @@ class AbstractCtiEditor(QtGui.QWidget):
         # (e.g., with setAutoFillBackground()).
         self.setFocusPolicy(Qt.StrongFocus)
 
-        self.hBoxLayout = QtGui.QHBoxLayout()
+        self.hBoxLayout = QtWidgets.QHBoxLayout()
         self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
         self.hBoxLayout.setSpacing(0)
         self.setLayout(self.hBoxLayout)
 
-        self.resetButton = QtGui.QToolButton()
+        self.resetButton = QtWidgets.QToolButton()
         self.resetButton.setText("Reset")
         self.resetButton.setToolTip("Reset to default value.")
         self.resetButton.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'reset-l.svg')))
@@ -655,7 +655,7 @@ class AbstractCtiEditor(QtGui.QWidget):
         """
         if self.delegate:
             self.delegate.commitData.emit(self)
-            self.delegate.closeEditor.emit(self, QtGui.QAbstractItemDelegate.NoHint) # CLOSES SELF!
+            self.delegate.closeEditor.emit(self, QtWidgets.QAbstractItemDelegate.NoHint) # CLOSES SELF!
         else:
             # QAbstractItemView.closeEditor is sometimes called directly, without the
             # QAbstractItemDelegate.closeEditor signal begin emitted, e.g when the currentItem
@@ -683,9 +683,9 @@ class AbstractCtiEditor(QtGui.QWidget):
         """ Reimplementation of paintEvent to allow for style sheets
             See: http://qt-project.org/wiki/How_to_Change_the_Background_Color_of_QWidget
         """
-        opt = QtGui.QStyleOption()
+        opt = QtWidgets.QStyleOption()
         opt.initFrom(self)
         painter = QtGui.QPainter(self)
-        self.style().drawPrimitive(QtGui.QStyle.PE_Widget, opt, painter, self)
+        self.style().drawPrimitive(QtWidgets.QStyle.PE_Widget, opt, painter, self)
         painter.end()
 

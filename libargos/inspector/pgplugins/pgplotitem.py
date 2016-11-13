@@ -24,7 +24,7 @@ import pyqtgraph as pg
 
 from functools import partial
 from libargos.info import DEBUGGING
-from libargos.qt import Qt, QtCore, QtGui, QtSignal
+from libargos.qt import Qt, QtCore, QtWidgets, QtSignal
 
 logger = logging.getLogger(__name__)
 
@@ -103,17 +103,17 @@ class ArgosPgPlotItem(PlotItem):
         # Context menu with actions to reset the zoom.
         #self.setContextMenuPolicy(Qt.ActionsContextMenu)
 
-        self.resetAxesAction = QtGui.QAction("Reset Axes", self,
+        self.resetAxesAction = QtWidgets.QAction("Reset Axes", self,
                                  triggered = lambda: self.emitResetAxisSignal(BOTH_AXES),
                                  statusTip = "Resets the zoom factor of the X-axis and Y-axis")
         self.addAction(self.resetAxesAction)
 
-        self.resetXAxisAction = QtGui.QAction("Reset X-axis", self,
+        self.resetXAxisAction = QtWidgets.QAction("Reset X-axis", self,
                                  triggered = lambda: self.emitResetAxisSignal(X_AXIS),
                                  statusTip = "Resets the zoom factor of the X-axis")
         self.addAction(self.resetXAxisAction)
 
-        self.resetYAxisAction = QtGui.QAction("Reset Y-axis", self,
+        self.resetYAxisAction = QtWidgets.QAction("Reset Y-axis", self,
                                  triggered = lambda: self.emitResetAxisSignal(Y_AXIS),
                                  statusTip = "Resets the zoom factor of the Y-axis")
         self.addAction(self.resetYAxisAction)
@@ -134,7 +134,7 @@ class ArgosPgPlotItem(PlotItem):
             QGraphicsWidget, and not from QWidget, and therefore doesn't have the
             customContextMenuRequested signal.
         """
-        contextMenu = QtGui.QMenu()
+        contextMenu = QtWidgets.QMenu()
         for action in self.actions():
             contextMenu.addAction(action)
         contextMenu.exec_(event.screenPos())

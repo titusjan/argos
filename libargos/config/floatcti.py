@@ -20,7 +20,7 @@
 import logging, math, sys
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
-from libargos.qt import QtGui, QtSlot
+from libargos.qt import QtWidgets, QtSlot
 from libargos.qt.scientificspinbox import ScientificDoubleSpinBox
 
 logger = logging.getLogger(__name__)
@@ -112,7 +112,7 @@ class FloatCtiEditor(AbstractCtiEditor):
         """
         super(FloatCtiEditor, self).__init__(cti, delegate, parent=parent)
 
-        spinBox = QtGui.QDoubleSpinBox(parent)
+        spinBox = QtWidgets.QDoubleSpinBox(parent)
         spinBox.setKeyboardTracking(False)
 
         if cti.minValue is None:

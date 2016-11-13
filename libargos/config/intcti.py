@@ -21,7 +21,7 @@ import logging
 import numpy as np
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
-from libargos.qt import QtGui, QtSlot
+from libargos.qt import QtWidgets, QtSlot
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +93,7 @@ class IntCtiEditor(AbstractCtiEditor):
         """
         super(IntCtiEditor, self).__init__(cti, delegate, parent=parent)
 
-        spinBox = QtGui.QSpinBox(parent)
+        spinBox = QtWidgets.QSpinBox(parent)
         spinBox.setKeyboardTracking(False)
 
         if cti.minValue is None:

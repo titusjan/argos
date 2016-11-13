@@ -20,7 +20,7 @@
 import logging
 from libargos.config.groupcti import MainGroupCti
 from libargos.info import DEBUGGING
-from libargos.qt import QtGui, QtSlot
+from libargos.qt import QtWidgets, QtSlot
 from libargos.utils.cls import type_name
 from libargos.widgets.constants import DOCK_SPACING, DOCK_MARGIN
 from libargos.widgets.display import MessageDisplay
@@ -43,7 +43,7 @@ class UpdateReason(object):
     CONFIG_CHANGED = "config changed"
 
 
-class AbstractInspector(QtGui.QStackedWidget):
+class AbstractInspector(QtWidgets.QStackedWidget):
     """ Abstract base class for inspectors.
         An inspector is a stacked widget; it has a contents page and and error page.
     """
@@ -65,7 +65,7 @@ class AbstractInspector(QtGui.QStackedWidget):
 
         super(AbstractInspector, self).__init__(parent)
 
-        self.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
         self._config = MainGroupCti(nodeName='inspector') # Is typically redefined.
         self._collector = collector
@@ -73,10 +73,10 @@ class AbstractInspector(QtGui.QStackedWidget):
         self.errorWidget = MessageDisplay()
         self.addWidget(self.errorWidget)
 
-        self.contentsWidget = QtGui.QWidget()
+        self.contentsWidget = QtWidgets.QWidget()
         self.addWidget(self.contentsWidget)
 
-        self.contentsLayout = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom)
+        self.contentsLayout = QtWidgets.QBoxLayout(QtWidgets.QBoxLayout.TopToBottom)
         self.contentsLayout.setSpacing(DOCK_SPACING)
         self.contentsLayout.setContentsMargins(DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN)
         self.contentsWidget.setLayout(self.contentsLayout)

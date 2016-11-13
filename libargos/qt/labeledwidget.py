@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import logging
 
-from libargos.qt import QtCore, QtGui, Qt
+from libargos.qt import QtCore, QtWidgets, Qt
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 #pylint: disable=R0901
 
 
-class LabeledWidget(QtGui.QWidget):
+class LabeledWidget(QtWidgets.QWidget):
     """ A places a label and a widget next to each other.
 
         The layout will be created. It can be accessed as self.layout
@@ -49,7 +49,7 @@ class LabeledWidget(QtGui.QWidget):
         """
         super(LabeledWidget, self).__init__(parent=parent)
 
-        self.layout = QtGui.QHBoxLayout(self)
+        self.layout = QtWidgets.QHBoxLayout(self)
         self.layout.setContentsMargins(*layoutContentsMargins)
         if layoutSpacing is not None:
             self.layout.setSpacing(layoutSpacing)
@@ -130,8 +130,8 @@ def harmonizeLabelsTextWidth(labels, width=None):
 if __name__ == "__main__":
 
     def _setLabelProps(label):
-        #label.setFrameStyle(QtGui.QFrame.Box | QtGui.QFrame.Raised)
-        label.setFrameStyle(QtGui.QFrame.Box | QtGui.QFrame.Plain)
+        #label.setFrameStyle(QtWidgets.QFrame.Box | QtWidgets.QFrame.Raised)
+        label.setFrameStyle(QtWidgets.QFrame.Box | QtWidgets.QFrame.Plain)
         label.setLineWidth(1)
 
         #label.setMidLineWidth(10)
@@ -141,7 +141,7 @@ if __name__ == "__main__":
         #self.label.setMaximumWidth(labelMinimumWidth)
 
 
-    class MyTableView(QtGui.QTableView):
+    class MyTableView(QtWidgets.QTableView):
 
         def __init__(self):
             super(MyTableView, self).__init__()
@@ -157,9 +157,9 @@ if __name__ == "__main__":
     def main():
         import sys
 
-        app = QtGui.QApplication(sys.argv)
-        window = QtGui.QWidget()
-        layout = QtGui.QVBoxLayout(window)
+        app = QtWidgets.QApplication(sys.argv)
+        window = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout(window)
 
         if 0:
             if 1:
@@ -178,9 +178,9 @@ if __name__ == "__main__":
                     }
                 """)
 
-        label0 = QtGui.QLabel('my great line edit')
-        label1 = QtGui.QLabel('edit')
-        label2 = QtGui.QLabel('combo')
+        label0 = QtWidgets.QLabel('my great line edit')
+        label1 = QtWidgets.QLabel('edit')
+        label2 = QtWidgets.QLabel('combo')
 
         all_labels = [label0, label1, label2]
         for lbl in all_labels:
@@ -190,7 +190,7 @@ if __name__ == "__main__":
         maxWidth = labelsMaxTextWidth([label0, label1, label2])
         print("\mmaxWidth: {}".format(maxWidth))
 
-        tableView =QtGui.QTableView()
+        tableView =QtWidgets.QTableView()
         layout.addWidget(tableView)
         model = QtGui.QStandardItemModel(3, 2)
         tableView.setModel(model)
@@ -198,21 +198,21 @@ if __name__ == "__main__":
         tableView.horizontalHeader().resizeSection(1, 300)
         layoutSpacing = 0
 
-        editor0 = QtGui.QSpinBox()
+        editor0 = QtWidgets.QSpinBox()
         editor0.setValue(5)
-        editor0.setSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
+        editor0.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
         lw0 = LabeledWidget(label0, editor0, layoutSpacing=layoutSpacing)
         model.setData(model.index(0, 0), "A small")
         tableView.setIndexWidget(model.index(0, 1), lw0)
 
-        editor1 = QtGui.QSpinBox()
+        editor1 = QtWidgets.QSpinBox()
         editor1.setValue(7)
-        editor1.setSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
+        editor1.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
         lw1 = LabeledWidget(label1, editor1, layoutSpacing=layoutSpacing)
         model.setData(model.index(1, 0), "A SMALL seasoned curly")
         tableView.setIndexWidget(model.index(1, 1), lw1)
 
-        comboBox = QtGui.QComboBox()
+        comboBox = QtWidgets.QComboBox()
         comboBox.addItems(["Half diet coke", "Half regular coke", "Junior western bacon cheese"])
         lw2 = LabeledWidget(label2, comboBox, layoutSpacing=layoutSpacing)
         model.setData(model.index(2, 0), "What else?")

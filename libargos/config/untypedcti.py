@@ -20,7 +20,7 @@
 import logging
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
-from libargos.qt import QtGui, Qt
+from libargos.qt import QtWidgets, Qt
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ class UntypedCtiEditor(AbstractCtiEditor):
         """ See the AbstractCtiEditor for more info on the parameters
         """
         super(UntypedCtiEditor, self).__init__(cti, delegate, parent=parent)
-        self.lineEditor = self.addSubEditor(QtGui.QLineEdit(), isFocusProxy=True)
+        self.lineEditor = self.addSubEditor(QtWidgets.QLineEdit(), isFocusProxy=True)
 
     def setData(self, data):
         """ Provides the main editor widget with a data to manipulate.

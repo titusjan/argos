@@ -35,7 +35,7 @@ from libargos.inspector.abstract import AbstractInspector, UpdateReason
 from libargos.inspector.dialog import OpenInspectorDialog
 from libargos.inspector.registry import InspectorRegItem
 from libargos.inspector.selectionpane import InspectorSelectionPane, addInspectorActionsToMenu
-from libargos.qt import Qt, QtCore, QtGui, QtSignal, QtSlot
+from libargos.qt import Qt, QtCore, QtGui, QtWidgets, QtSignal, QtSlot
 
 from libargos.repo.detailplugins.attr import AttributesPane
 from libargos.repo.detailplugins.dim import DimensionsPane
@@ -57,7 +57,7 @@ logger = logging.getLogger(__name__)
 # pylint: disable=R0901, R0902, R0904, W0201
 
 
-class MainWindow(QtGui.QMainWindow):
+class MainWindow(QtWidgets.QMainWindow):
     """ Main application window.
     """
     __numInstances = 0
@@ -175,8 +175,8 @@ class MainWindow(QtGui.QMainWindow):
         # Define a central widget that will be the parent of the inspector widget.
         # We don't set the inspector directly as the central widget to retain the size when the
         # inspector is changed.
-        widget = QtGui.QWidget()
-        layout = QtGui.QVBoxLayout(widget)
+        widget = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout(widget)
         layout.setContentsMargins(CENTRAL_MARGIN, CENTRAL_MARGIN, CENTRAL_MARGIN, CENTRAL_MARGIN)
         layout.setSpacing(CENTRAL_SPACING)
         self.setCentralWidget(widget)
@@ -193,7 +193,7 @@ class MainWindow(QtGui.QMainWindow):
             # Don't use self.menuBar(), on OS-X this is not shared across windows.
             # See: http://qt-project.org/doc/qt-4.8/qmenubar.html#details
             # And:http://qt-project.org/doc/qt-4.8/qmainwindow.html#menuBar
-            menuBar = QtGui.QMenuBar() # Make a menu without parent.
+            menuBar = QtWidgets.QMenuBar() # Make a menu without parent.
             self.setMenuBar(menuBar)
         else:
             menuBar = self.menuBar()
@@ -211,11 +211,11 @@ class MainWindow(QtGui.QMainWindow):
         fileMenu.addSeparator()
 
         action = fileMenu.addAction("Browse Directory...",
-            lambda: self.openFiles(fileMode = QtGui.QFileDialog.Directory))
+            lambda: self.openFiles(fileMode = QtWidgets.QFileDialog.Directory))
         action.setShortcut(QtGui.QKeySequence("Ctrl+B"))
 
         action = fileMenu.addAction("&Open Files...",
-            lambda: self.openFiles(fileMode = QtGui.QFileDialog.ExistingFiles))
+            lambda: self.openFiles(fileMode = QtWidgets.QFileDialog.ExistingFiles))
         action.setShortcut(QtGui.QKeySequence("Ctrl+O"))
 
         openAsMenu = fileMenu.addMenu("Open As")
@@ -225,10 +225,10 @@ class MainWindow(QtGui.QMainWindow):
                 "Function to create a closure with the regItem"
                 _rtiRegItem = rtiRegItem # keep reference in closure
                 return lambda: self.openFiles(rtiRegItem=_rtiRegItem,
-                                              fileMode = QtGui.QFileDialog.ExistingFiles,
+                                              fileMode = QtWidgets.QFileDialog.ExistingFiles,
                                               caption="Open {}".format(_rtiRegItem.name))
 
-            action = QtGui.QAction("{}...".format(rtiRegItem.name), self,
+            action = QtWidgets.QAction("{}...".format(rtiRegItem.name), self,
                 enabled=True, # Since this is only executed at start-up, it must be static
                 #enabled=bool(rtiRegItem.successfullyImported), # TODO: make this work?
                 triggered=createTrigger())
@@ -251,12 +251,12 @@ class MainWindow(QtGui.QMainWindow):
         self.viewMenu.addSeparator()
 
         ### Inspector Menu ###
-        self.execInspectorDialogAction = QtGui.QAction("&Browse Inspectors...", self,
+        self.execInspectorDialogAction = QtWidgets.QAction("&Browse Inspectors...", self,
                                                        triggered=self.execInspectorDialog)
         self.execInspectorDialogAction.setShortcut(QtGui.QKeySequence("Ctrl+i"))
 
         self.inspectorActionGroup = self.__createInspectorActionGroup(self)
-        self.inspectorMenu = QtGui.QMenu("Inspector", parent=self)
+        self.inspectorMenu = QtWidgets.QMenu("Inspector", parent=self)
         addInspectorActionsToMenu(self.inspectorMenu, self.execInspectorDialogAction,
                                   self.inspectorActionGroup)
         menuBar.addMenu(self.inspectorMenu)
@@ -283,7 +283,7 @@ class MainWindow(QtGui.QMainWindow):
     def __createInspectorActionGroup(self, parent):
         """ Creates an action group with 'set inspector' actions for all installed inspector.
         """
-        actionGroup = QtGui.QActionGroup(parent)
+        actionGroup = QtWidgets.QActionGroup(parent)
         actionGroup.setExclusive(True)
 
         sortedItems = sorted(self.argosApplication.inspectorRegistry.items,
@@ -292,7 +292,7 @@ class MainWindow(QtGui.QMainWindow):
         for item in sortedItems:
             logger.debug("item: {}".format(item.identifier))
             setAndDrawFn = partial(self.setAndDrawInspectorById, item.identifier)
-            action = QtGui.QAction(item.name, self, triggered=setAndDrawFn, checkable=True)
+            action = QtWidgets.QAction(item.name, self, triggered=setAndDrawFn, checkable=True)
             action.setData(item.identifier)
             if shortCutNr <= 9 and "debug" not in item.identifier: # TODO: make configurable by the user
                 action.setShortcut(QtGui.QKeySequence("Ctrl+{}".format(shortCutNr)))
@@ -340,7 +340,7 @@ class MainWindow(QtGui.QMainWindow):
     def showContextMenu(self, pos):
         """ Shows the context menu at position pos.
         """
-        contextMenu = QtGui.QMenu()
+        contextMenu = QtWidgets.QMenu()
         addInspectorActionsToMenu(contextMenu, self.execInspectorDialogAction,
                                   self.inspectorActionGroup)
         contextMenu.exec_(self.mapToGlobal(pos))
@@ -352,7 +352,7 @@ class MainWindow(QtGui.QMainWindow):
         """
         assert widget.parent() is None, "Widget already has a parent"
 
-        dockWidget = QtGui.QDockWidget(title, parent=self)
+        dockWidget = QtWidgets.QDockWidget(title, parent=self)
         dockWidget.setObjectName("dock_" + string_to_identifier(title))
         dockWidget.setWidget(widget)
 
@@ -421,7 +421,7 @@ class MainWindow(QtGui.QMainWindow):
         regItem = self.inspectorRegItem
         if regItem and not regItem.successfullyImported:
             msg = "Unable to import {} inspector.\n{}".format(regItem.identifier, regItem.exception)
-            QtGui.QMessageBox.warning(self, "Warning", msg)
+            QtWidgets.QMessageBox.warning(self, "Warning", msg)
             logger.warn(msg)
 
         self.drawInspectorContents(reason=UpdateReason.INSPECTOR_CHANGED)
@@ -604,10 +604,10 @@ class MainWindow(QtGui.QMainWindow):
             :param rtiRegItem: Open the files as this type of registered RTI. None=autodetect.
             :param caption: Optional caption for the file dialog.
             :param fileMode: is passed to the file dialog.
-            :rtype fileMode: QtGui.QFileDialog.FileMode constant
+            :rtype fileMode: QtWidgets.QFileDialog.FileMode constant
         """
         if fileNames is None:
-            dialog = QtGui.QFileDialog(self, caption=caption)
+            dialog = QtWidgets.QFileDialog(self, caption=caption)
 
             if rtiRegItem is None:
                 nameFilter = 'All files (*);;' # Default show all files.
@@ -620,7 +620,7 @@ class MainWindow(QtGui.QMainWindow):
             if fileMode:
                 dialog.setFileMode(fileMode)
 
-            if dialog.exec_() == QtGui.QFileDialog.Accepted:
+            if dialog.exec_() == QtWidgets.QFileDialog.Accepted:
                 fileNames = dialog.selectedFiles()
             else:
                 fileNames = []
@@ -794,11 +794,11 @@ class MainWindow(QtGui.QMainWindow):
                 return
 
             self.repoTreeView.setCurrentIndex(index)
-            QtGui.qApp.processEvents() # Cause Qt to update UI
+            QtWidgets.qApp.processEvents() # Cause Qt to update UI
 
             # Expand node to load children.
             #self.repoTreeView.setExpanded(index, True)
-            #QtGui.qApp.processEvents() # Cause Qt to load children.
+            #QtWidgets.qApp.processEvents() # Cause Qt to load children.
 
             for rowNr in range(repoModel.rowCount(index)):
                 childIndex = repoModel.index(rowNr, 0, parentIndex=index)
@@ -806,14 +806,14 @@ class MainWindow(QtGui.QMainWindow):
 
         # Actual boddy
         rootNodes = ['/myDict']
-        rootNodes = ['/argos/icm/S5P_ICM_CA_UVN_20120919T051721_20120919T065655_01890_01_001000_20151002T140000.h5']
+        #rootNodes = ['/argos/icm/S5P_ICM_CA_UVN_20120919T051721_20120919T065655_01890_01_001000_20151002T140000.h5']
 
         for rootNode in rootNodes:
             logger.info("Selecting all nodes in: {}".format(rootNode))
 
             nodeItem, nodeIndex = self.trySelectRtiByPath(rootNode)
             self.repoTreeView.expandBranch(index = nodeIndex, expanded=True) # TODO: why necessary?
-            #QtGui.qApp.processEvents()
+            #QtWidgets.qApp.processEvents()
             visitNodes(nodeIndex)
 
             #

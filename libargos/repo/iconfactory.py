@@ -20,7 +20,7 @@
 from __future__ import print_function
 import logging, os
 
-from libargos.qt import Qt, QtCore, QtGui, QtSvg
+from libargos.qt import Qt, QtCore, QtGui, QtWidgets, QtSvg
 from libargos.info import program_directory, DEBUGGING
 from libargos.utils.cls import check_class
 
@@ -193,7 +193,9 @@ class RtiIconFactory(object):
                 svg = svg.replace(oldColor, color)
 
         # From http://stackoverflow.com/questions/15123544/change-the-color-of-an-svg-in-qt
-        svgRenderer = QtSvg.QSvgRenderer(QtCore.QByteArray(svg))
+        qByteArray = QtCore.QByteArray()
+        qByteArray.append(svg)
+        svgRenderer = QtSvg.QSvgRenderer(qByteArray)
         icon = QtGui.QIcon() # TODO: set Qt::AA_UseHighDpiPixmaps in Qt5?
         for size in self.renderSizes:
             pixMap = QtGui.QPixmap(QtCore.QSize(size, size))

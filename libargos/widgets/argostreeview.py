@@ -46,7 +46,7 @@
 from __future__ import print_function
 
 import logging
-from libargos.qt import QtCore, QtGui
+from libargos.qt import QtCore, QtWidgets
 from libargos.qt.togglecolumn import ToggleColumnTreeView
 from libargos.qt.treemodels import BaseTreeModel
 from libargos.utils.cls import check_class
@@ -72,16 +72,16 @@ class ArgosTreeView(ToggleColumnTreeView):
             self.setModel(treeModel)
 
         self.setAlternatingRowColors(True)
-        self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.setAnimated(True)
         self.setAllColumnsShowFocus(True)
         self.setIconSize(TREE_ICON_SIZE)
 
         treeHeader = self.header()
-        treeHeader.setMovable(True)
-        treeHeader.setResizeMode(QtGui.QHeaderView.Interactive) # don't set to stretch
+        treeHeader.setSectionsMovable(True)
+        treeHeader.setSectionResizeMode(QtWidgets.QHeaderView.Interactive) # don't set to stretch
         treeHeader.setStretchLastSection(True)
 
 
@@ -99,8 +99,8 @@ class ArgosTreeView(ToggleColumnTreeView):
             See also the notes at the top of this module on current item vs selected item(s).
         """
         selectionModel = self.selectionModel()
-        selectionFlags = (QtGui.QItemSelectionModel.ClearAndSelect |
-                          QtGui.QItemSelectionModel.Rows)
+        selectionFlags = (QtCore.QItemSelectionModel.ClearAndSelect |
+                          QtCore.QItemSelectionModel.Rows)
         selectionModel.setCurrentIndex(currentIndex, selectionFlags)
 
 

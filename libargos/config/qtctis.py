@@ -25,7 +25,7 @@ from libargos.config.choicecti import ChoiceCti
 from libargos.config.intcti import IntCti
 from libargos.config.floatcti import FloatCti
 from libargos.info import DEBUGGING
-from libargos.qt import Qt, QtCore, QtGui, QtSlot
+from libargos.qt import Qt, QtCore, QtGui, QtWidgets, QtSlot
 from libargos.utils.cls import check_is_a_string
 
 
@@ -158,14 +158,14 @@ class ColorCtiEditor(AbstractCtiEditor):
         """
         super(ColorCtiEditor, self).__init__(cti, delegate, parent=parent)
 
-        lineEditor = QtGui.QLineEdit(parent)
+        lineEditor = QtWidgets.QLineEdit(parent)
         regExp = QtCore.QRegExp(r'#?[0-9A-F]{6}', Qt.CaseInsensitive)
-        validator = QtGui.QRegExpValidator(regExp, parent=lineEditor)
+        validator = QtWidgets.QRegExpValidator(regExp, parent=lineEditor)
         lineEditor.setValidator(validator)
 
         self.lineEditor = self.addSubEditor(lineEditor, isFocusProxy=True)
 
-        pickButton = QtGui.QToolButton()
+        pickButton = QtWidgets.QToolButton()
         pickButton.setText("...")
         pickButton.setToolTip("Open color dialog.")
         pickButton.setFocusPolicy(Qt.NoFocus)
@@ -378,7 +378,7 @@ class FontCtiEditor(AbstractCtiEditor):
         """
         super(FontCtiEditor, self).__init__(cti, delegate, parent=parent)
 
-        pickButton = QtGui.QToolButton()
+        pickButton = QtWidgets.QToolButton()
         pickButton.setText("...")
         pickButton.setToolTip("Open font dialog.")
         pickButton.setFocusPolicy(Qt.NoFocus)
@@ -387,9 +387,9 @@ class FontCtiEditor(AbstractCtiEditor):
         self.pickButton = self.addSubEditor(pickButton)
 
         if DEBUGGING:
-            self.label = self.addSubEditor(QtGui.QLabel(self.cti.displayValue))
+            self.label = self.addSubEditor(QtWidgets.QLabel(self.cti.displayValue))
             labelSizePolicy = self.label.sizePolicy()
-            self.label.setSizePolicy(QtGui.QSizePolicy.MinimumExpanding,
+            self.label.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
                                      labelSizePolicy.verticalPolicy())
 
 
@@ -448,7 +448,7 @@ class FontChoiceCti(ChoiceCti):
         check_is_a_string(defaultFamily)
 
         # Get a list of of configValues by reading them from a temporary QFontComboBox.
-        tempFontComboBox = QtGui.QFontComboBox()
+        tempFontComboBox = QtWidgets.QFontComboBox()
         configValues = []
         defaultData = 0
         for idx in range(tempFontComboBox.count()):
@@ -477,7 +477,7 @@ class FontChoiceCtiEditor(AbstractCtiEditor):
         """
         super(FontChoiceCtiEditor, self).__init__(cti, delegate, parent=parent)
 
-        comboBox = QtGui.QFontComboBox()
+        comboBox = QtWidgets.QFontComboBox()
         # The QFontCombobox is not editable. because an non-existing value resulted in a QFont()
         # without parameter whose font family was probably some style sheet value. This didn't
         # work well with the extra options of the automatic configValue generation and with the

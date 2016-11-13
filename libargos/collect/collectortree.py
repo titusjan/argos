@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import logging
 
-from libargos.qt import Qt, QtCore, QtGui, QtSlot
+from libargos.qt import Qt, QtCore, QtGui, QtWidgets, QtSlot
 from libargos.qt.togglecolumn import ToggleColumnTreeView
 from libargos.widgets.constants import COLLECTOR_TREE_ICON_SIZE
 
@@ -56,9 +56,9 @@ class CollectorTree(ToggleColumnTreeView):
         self.setUniformRowHeights(True)
 
         self.setAlternatingRowColors(True)
-        self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.setAnimated(True)
         self.setAllColumnsShowFocus(True)
         self.setContextMenuPolicy(Qt.ActionsContextMenu)
@@ -66,10 +66,10 @@ class CollectorTree(ToggleColumnTreeView):
 
         treeHeader = self.header()
         treeHeader.setStretchLastSection(False)
-        treeHeader.setMovable(False)
+        treeHeader.setSectionsMovable(False)
 
         treeHeader.resizeSection(0, 400) # For item path
-        treeHeader.setResizeMode(QtGui.QHeaderView.Interactive) # don't set to stretch
+        treeHeader.setSectionResizeMode(QtWidgets.QHeaderView.Interactive) # don't set to stretch
 
         labels = [''] * model.columnCount()
         labels[0] = "path"
@@ -100,7 +100,7 @@ class CollectorTree(ToggleColumnTreeView):
 
 
 
-class CollectorSpinBox(QtGui.QSpinBox):
+class CollectorSpinBox(QtWidgets.QSpinBox):
     """ A spinbox for use in the collector.
         Overrides the sizeHint so that is not truncated when large dimension names are selected
     """
@@ -150,24 +150,24 @@ class CollectorSpinBox(QtGui.QSpinBox):
 
         w += 2 # cursor blinking space
 
-        opt = QtGui.QStyleOptionSpinBox()
+        opt = QtWidgets.QStyleOptionSpinBox()
         self.initStyleOption(opt)
         hint = QtCore.QSize(w, h)
         extra = QtCore.QSize(35, 6)
 
         opt.rect.setSize(hint + extra)
-        extra += hint - self.style().subControlRect(QtGui.QStyle.CC_SpinBox, opt,
-                                                    QtGui.QStyle.SC_SpinBoxEditField, self).size()
+        extra += hint - self.style().subControlRect(QtWidgets.QStyle.CC_SpinBox, opt,
+                                                    QtWidgets.QStyle.SC_SpinBoxEditField, self).size()
 
         # get closer to final result by repeating the calculation
         opt.rect.setSize(hint + extra)
-        extra += hint - self.style().subControlRect(QtGui.QStyle.CC_SpinBox, opt,
-                                                    QtGui.QStyle.SC_SpinBoxEditField, self).size()
+        extra += hint - self.style().subControlRect(QtWidgets.QStyle.CC_SpinBox, opt,
+                                                    QtWidgets.QStyle.SC_SpinBoxEditField, self).size()
         hint += extra
 
         opt.rect = self.rect()
-        result = (self.style().sizeFromContents(QtGui.QStyle.CT_SpinBox, opt, hint, self)
-                  .expandedTo(QtGui.QApplication.globalStrut()))
+        result = (self.style().sizeFromContents(QtWidgets.QStyle.CT_SpinBox, opt, hint, self)
+                  .expandedTo(QtWidgets.QApplication.globalStrut()))
         self._cachedSizeHint = result
 
         # Use the height ancestor's sizeHint

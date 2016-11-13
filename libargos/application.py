@@ -100,7 +100,7 @@ class ArgosApplication(object):
                 programming IHMO as it is easy to miss errors. I strongly recommend that you set
                 the setExceptHook to True.
         """
-        # Call initQtGuiApplicationInstance() so that the users can call libargos.browse without
+        # Call initQtWidgetsApplicationInstance() so that the users can call libargos.browse without
         # having to call it themselves.
         self._qApplication = initQApplication()
 
@@ -137,7 +137,7 @@ class ArgosApplication(object):
 
     @property
     def qApplication(self):
-        """ Returns the QApplication object. Equivalent to QtGui.qApp.
+        """ Returns the QApplication object. Equivalent to QtWidgets.qApp.
         """
         return self._qApplication
 

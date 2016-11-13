@@ -29,38 +29,50 @@ logger = logging.getLogger(__name__)
 # Importing PyQt/PySide #
 #########################
 
+USE_QTPY = os.environ.get('ARGOS_USE_QTPY', False)
 
-# Abstracts away the differences between PySide and PyQt
-# PySide is not officially supported but I will try to make Argos work for both PySide and PyQt.
-USE_PYQT = True # PySide is used when False
+if USE_QTPY:
+    assert False, "not yet implemented"
 
-if USE_PYQT:
-    # This is only needed for Python v2 but is harmless for Python v3.
-    import sip
-    sip.setapi('QDate', 2)
-    sip.setapi('QDateTime', 2)
-    sip.setapi('QString', 2)
-    sip.setapi('QTextStream', 2)
-    sip.setapi('QTime', 2)
-    sip.setapi('QUrl', 2)
-    sip.setapi('QVariant', 2)
+logger.debug("Using PyQt5")
+from PyQt5 import QtCore, QtGui, QtWidgets, QtSvg
+from PyQt5.QtCore import Qt
+from PyQt5.QtCore import pyqtSignal as QtSignal
+from PyQt5.QtCore import pyqtSlot as QtSlot
 
 
-if USE_PYQT:
-    from PyQt4 import QtCore, QtGui, QtSvg
-    from PyQt4.QtCore import Qt
-    from PyQt4.QtCore import pyqtSignal as QtSignal
-    from PyQt4.QtCore import pyqtSlot as QtSlot
-else:
-    # PySide in combination with Python-3 gives the following error:
-    # TypeError: unhashable type: 'PgImagePlot2dCti'
-    # I don't know a fix and as long as the future of PySide2 is unclear I won't spend time on it.
-    assert python2(), "PySide is currently not supported with Python-3"
-
-    from PySide import QtCore, QtGui, QtSvg
-    from PySide.QtCore import Qt
-    from PySide.QtCore import Signal as QtSignal
-    from PySide.QtCore import Slot as QtSlot
+#
+# # Abstracts away the differences between PySide and PyQt
+# # PySide is not officially supported but I will try to make Argos work for both PySide and PyQt.
+# USE_PYQT = True # PySide is used when False
+#
+# if USE_PYQT:
+#     # This is only needed for Python v2 but is harmless for Python v3.
+#     import sip
+#     sip.setapi('QDate', 2)
+#     sip.setapi('QDateTime', 2)
+#     sip.setapi('QString', 2)
+#     sip.setapi('QTextStream', 2)
+#     sip.setapi('QTime', 2)
+#     sip.setapi('QUrl', 2)
+#     sip.setapi('QVariant', 2)
+#
+#
+# if USE_PYQT:
+#     from PyQt4 import QtCore, QtWidgets, QtSvg
+#     from PyQt4.QtCore import Qt
+#     from PyQt4.QtCore import pyqtSignal as QtSignal
+#     from PyQt4.QtCore import pyqtSlot as QtSlot
+# else:
+#     # PySide in combination with Python-3 gives the following error:
+#     # TypeError: unhashable type: 'PgImagePlot2dCti'
+#     # I don't know a fix and as long as the future of PySide2 is unclear I won't spend time on it.
+#     assert python2(), "PySide is currently not supported with Python-3"
+#
+#     from PySide import QtCore, QtWidgets, QtSvg
+#     from PySide.QtCore import Qt
+#     from PySide.QtCore import Signal as QtSignal
+#     from PySide.QtCore import Slot as QtSlot
 
 
 ################
@@ -83,7 +95,7 @@ def initQCoreApplication():
 
 
 def initQApplication():
-    """ Initializes the QtGui.QApplication instance. Creates one if it doesn't exist.
+    """ Initializes the QtWidgets.QApplication instance. Creates one if it doesn't exist.
 
         Sets Argos specific attributes, such as the OrganizationName, so that the application
         persistent settings are read/written to the correct settings file/winreg. It is therefore
@@ -97,7 +109,7 @@ def initQApplication():
         os.environ.setdefault('QT_GRAPHICSSYSTEM', graphicsSystem)
         logger.info("Setting QT_GRAPHICSSYSTEM to: {}".format(graphicsSystem))
 
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     initArgosApplicationSettings(app)
     return app
 
@@ -108,7 +120,7 @@ def initArgosApplicationSettings(app): # TODO: this is Argos specific. Move some
         important to call this function at startup. The ArgosApplication constructor does this.
     """
     assert app, \
-        "app undefined. Call QtGui.QApplication.instance() or QtCor.QApplication.instance() first."
+        "app undefined. Call QtWidgets.QApplication.instance() or QtCor.QApplication.instance() first."
 
     logger.debug("Setting Argos QApplication settings.")
     app.setApplicationName(info.REPO_NAME)
@@ -121,7 +133,7 @@ def initArgosApplicationSettings(app): # TODO: this is Argos specific. Move some
 # Exception Handling #
 ######################
 
-class ResizeDetailsMessageBox(QtGui.QMessageBox):
+class ResizeDetailsMessageBox(QtWidgets.QMessageBox):
     """ Message box that enlarges when the 'Show Details' button is clicked.
         Can be used to better view stack traces. I could't find how to make a resizeable message
         box but this it the next best thing.
@@ -144,7 +156,7 @@ class ResizeDetailsMessageBox(QtGui.QMessageBox):
         """
         result = super(ResizeDetailsMessageBox, self).resizeEvent(event)
 
-        details_box = self.findChild(QtGui.QTextEdit)
+        details_box = self.findChild(QtWidgets.QTextEdit)
         if details_box is not None:
             #details_box.setFixedSize(details_box.sizeHint())
             details_box.setFixedSize(QtCore.QSize(self.detailsBoxWidth, self.detailBoxHeight))
@@ -164,15 +176,15 @@ def handleException(exc_type, exc_value, exc_traceback):
         sys.exit(1)
     else:
         # Constructing a QApplication in case this hasn't been done yet.
-        if not QtGui.qApp:
-            _app = QtGui.QApplication()
+        if not QtWidgets.qApp:
+            _app = QtWidgets.QApplication()
 
         msgBox = ResizeDetailsMessageBox()
         msgBox.setText("Bug: uncaught {}".format(exc_type.__name__))
         msgBox.setInformativeText(str(exc_value))
         lst = traceback.format_exception(exc_type, exc_value, exc_traceback)
         msgBox.setDetailedText("".join(lst))
-        msgBox.setIcon(QtGui.QMessageBox.Warning)
+        msgBox.setIcon(QtWidgets.QMessageBox.Warning)
         msgBox.exec_()
         logger.info("Quitting application with exit code 1")
         sys.exit(1)
@@ -255,8 +267,8 @@ def printAllWidgets(qApplication, ofType=None):
 def widgetSubCheckBoxRect(widget, option):
     """ Returns the rectangle of a check box drawn as a sub element of widget
     """
-    opt = QtGui.QStyleOption()
+    opt = QtWidgets.QStyleOption()
     opt.initFrom(widget)
     style = widget.style()
-    return style.subElementRect(QtGui.QStyle.SE_ViewItemCheckIndicator, opt, widget)
+    return style.subElementRect(QtWidgets.QStyle.SE_ViewItemCheckIndicator, opt, widget)
 

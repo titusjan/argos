@@ -20,7 +20,7 @@
 import logging, copy
 
 from libargos.config.abstractcti import AbstractCti, AbstractCtiEditor
-from libargos.qt import  Qt, QtCore, QtGui, QtSlot
+from libargos.qt import  Qt, QtCore, QtWidgets, QtSlot
 from libargos.utils.cls import check_class
 from libargos.utils.misc import NOT_SPECIFIED
 
@@ -37,7 +37,7 @@ class ChoiceCti(AbstractCti):
         A QCombobox will pop-up if the user clicks on the cell to edit it.
     """
     def __init__(self, nodeName, defaultData=0, configValues=None, displayValues=None,
-                 editable=False, insertPolicy=QtGui.QComboBox.InsertAtBottom,
+                 editable=False, insertPolicy=QtWidgets.QComboBox.InsertAtBottom,
                  completer=NOT_SPECIFIED):
         """ Constructor.
 
@@ -56,7 +56,7 @@ class ChoiceCti(AbstractCti):
                 If None the config values are used as display values as well.
             :param editable: if True the combobox will be editable
             :param insertPolicy: determines where user-inserted items should appear in the combobox
-                must be of type QtGui.QComboBox.InsertPolicy
+                must be of type QtWidgets.QComboBox.InsertPolicy
             :param completer: a QCompleter that will be used by the combobox for auto-completion.
                 If NotSpecified a default completer is used, i.e. case-insensitive auto-completion.
                 Use None, 0 or False to disable auto-completion.
@@ -64,9 +64,9 @@ class ChoiceCti(AbstractCti):
             For the  parameters see the AbstractCti constructor documentation.
 
         """
-        check_class(insertPolicy, QtGui.QComboBox.InsertPolicy)
+        check_class(insertPolicy, QtWidgets.QComboBox.InsertPolicy)
         if completer: # completer may be False
-            check_class(completer, QtGui.QCompleter)
+            check_class(completer, QtWidgets.QCompleter)
 
         self.editable = editable
         self.insertPolicy = insertPolicy
@@ -195,7 +195,7 @@ class ChoiceCtiEditor(AbstractCtiEditor):
         """
         super(ChoiceCtiEditor, self).__init__(cti, delegate, parent=parent)
 
-        comboBox = QtGui.QComboBox()
+        comboBox = QtWidgets.QComboBox()
         comboBox.setEditable(cti.editable)
         comboBox.setInsertPolicy(cti.insertPolicy)
         if cti.completer is not NOT_SPECIFIED:

@@ -22,7 +22,7 @@ import logging
 from libargos.info import DEBUGGING
 from libargos.config.groupcti import MainGroupCti, GroupCti
 from libargos.inspector.abstract import AbstractInspector
-from libargos.qt import Qt, QtGui
+from libargos.qt import Qt, QtGui, QtWidgets
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ class DebugInspector(AbstractInspector):
 
         super(DebugInspector, self).__init__(collector, parent=parent)
 
-        self.label = QtGui.QLabel()
+        self.label = QtWidgets.QLabel()
         self.label.setWordWrap(True)
         self.contentsLayout.addWidget(self.label)
 

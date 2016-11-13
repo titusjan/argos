@@ -19,7 +19,7 @@
 """
 import logging
 
-from libargos.qt import QtGui, QtSlot
+from libargos.qt import QtWidgets, QtSlot
 from libargos.utils.cls import to_string
 
 from libargos.inspector.registry import InspectorRegItem
@@ -45,23 +45,23 @@ def addInspectorActionsToMenu(inspectorMenu, execInspectorDialogAction, inspecto
     return inspectorMenu
 
 
-class InspectorSelectionPane(QtGui.QFrame):
+class InspectorSelectionPane(QtWidgets.QFrame):
     """ Shows the attributes of the selected repo tree item
     """
     def __init__(self, execInspectorDialogAction, inspectorActionGroup, parent=None):
         super(InspectorSelectionPane, self).__init__(parent=parent)
 
-        self.setFrameShape(QtGui.QFrame.Box)
-        self.layout = QtGui.QHBoxLayout()
+        self.setFrameShape(QtWidgets.QFrame.Box)
+        self.layout = QtWidgets.QHBoxLayout()
         self.setLayout(self.layout)
 
-        # self.label = QtGui.QLabel("Current inspector")
+        # self.label = QtWidgets.QLabel("Current inspector")
         # self.layout.addWidget(self.label)
 
-        self.menuButton = QtGui.QPushButton("No inspector")
+        self.menuButton = QtWidgets.QPushButton("No inspector")
         self.layout.addWidget(self.menuButton)
 
-        inspectorMenu = QtGui.QMenu("Change Inspector", parent=self.menuButton)
+        inspectorMenu = QtWidgets.QMenu("Change Inspector", parent=self.menuButton)
         addInspectorActionsToMenu(inspectorMenu, execInspectorDialogAction, inspectorActionGroup)
         self.menuButton.setMenu(inspectorMenu)
 

@@ -31,7 +31,7 @@ from libargos.utils.cls import check_class, check_is_a_string
 from libargos.utils.misc import is_quoted
 from libargos.utils import six
 
-from libargos.qt import Qt, QtCore, QtGui
+from libargos.qt import Qt, QtCore, QtGui, QtWidgets
 from libargos.utils.cls import to_string, is_an_array
 
 logger = logging.getLogger(__name__)
@@ -177,8 +177,8 @@ class TableInspectorCti(MainGroupCti):
 
         # Per pixel scrolling works better for large cells (e.g. containing XML strings).
         self.insertChild(ChoiceCti("scroll", displayValues=["Per cell", "Per pixel"],
-                                   configValues=[QtGui.QAbstractItemView.ScrollPerItem,
-                                                 QtGui.QAbstractItemView.ScrollPerPixel]))
+                                   configValues=[QtWidgets.QAbstractItemView.ScrollPerItem,
+                                                 QtWidgets.QAbstractItemView.ScrollPerPixel]))
 
 
     def _refreshNodeFromTarget(self):
@@ -214,10 +214,10 @@ class TableInspector(AbstractInspector):
         super(TableInspector, self).__init__(collector, parent=parent)
 
         self.model = TableInspectorModel(parent=self)
-        self.tableView = QtGui.QTableView()
+        self.tableView = QtWidgets.QTableView()
         self.contentsLayout.addWidget(self.tableView)
         self.tableView.setModel(self.model)
-        self.tableView.setSelectionMode(QtGui.QTableView.ContiguousSelection)
+        self.tableView.setSelectionMode(QtWidgets.QTableView.ContiguousSelection)
 
         horHeader = self.tableView.horizontalHeader()
         verHeader = self.tableView.verticalHeader()
@@ -314,19 +314,19 @@ class TableInspector(AbstractInspector):
             numCells = self.model.rowCount() * self.model.columnCount()
             if numCells <= OPTIMIZE_RESIZE_AT_SIZE:
                 logger.debug("Setting vertical resize mode to ResizeToContents")
-                verHeader.setResizeMode(QtGui.QHeaderView.ResizeToContents)
+                verHeader.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
             else:
                 # ResizeToContents can be very slow because it gets all rows.
                 # Work around: resize only first row and columns and apply this to all rows/cols
                 # TODO: perhaps use SizeHintRole?
                 logger.warning("Performance work around: for tables with more than 1000 cells " +
                                "only the current row is resized and the others use that size.")
-                verHeader.setResizeMode(QtGui.QHeaderView.Interactive)
+                verHeader.setSectionResizeMode(QtWidgets.QHeaderView.Interactive)
                 self.tableView.resizeRowToContents(oldRow)
                 resizeAllSections(verHeader, self.tableView.rowHeight(oldRow))
         else:
             logger.debug("Setting vertical resize mode to Interactive and reset header")
-            verHeader.setResizeMode(QtGui.QHeaderView.Interactive)
+            verHeader.setSectionResizeMode(QtWidgets.QHeaderView.Interactive)
             verHeader.setDefaultSectionSize(self.config.defaultRowHeightCti.configValue)
             verHeader.reset()
 
@@ -337,19 +337,19 @@ class TableInspector(AbstractInspector):
             numCells = self.model.rowCount() * self.model.columnCount()
             if numCells <= OPTIMIZE_RESIZE_AT_SIZE:
                 logger.debug("setting horizontal resize mode to ResizeToContents")
-                horHeader.setResizeMode(QtGui.QHeaderView.ResizeToContents)
+                horHeader.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
             else:
                 # ResizeToContents can be very slow because it gets all rows.
                 # Work around: resize only first row and columns and apply this to all rows/cols
                 # TODO: perhaps use SizeHintRole?
                 logger.warning("Performance work around: for tables with more than 1000 cells " +
                                "only the current column is resized and the others use that size.")
-                horHeader.setResizeMode(QtGui.QHeaderView.Interactive)
+                horHeader.setSectionResizeMode(QtWidgets.QHeaderView.Interactive)
                 self.tableView.resizeColumnToContents(oldCol)
                 resizeAllSections(horHeader, self.tableView.columnWidth(oldCol))
         else:
             logger.debug("Setting horizontal resize mode to Interactive and reset header")
-            horHeader.setResizeMode(QtGui.QHeaderView.Interactive)
+            horHeader.setSectionResizeMode(QtWidgets.QHeaderView.Interactive)
             resizeAllSections(horHeader, self.config.defaultColWidthCti.configValue)
             horHeader.reset()
 
