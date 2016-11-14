@@ -81,7 +81,7 @@ class PgLinePlot1dCti(MainGroupCti):
         self.yAxisCti.insertChild(PgAxisLabelCti(plotItem, 'left', self.pgLinePlot1d.collector,
             defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{name} {unit}", "{path} {unit}",
                                          "{name}", "{path}", "{raw-unit}"]))
-        self.yAxisCti.insertChild(PgAxisLogModeCti(plotItem, Y_AXIS))
+        self.yLogCti = self.yAxisCti.insertChild(PgAxisLogModeCti(plotItem, Y_AXIS))
 
         rangeFunctions = defaultAutoRangeMethods(self.pgLinePlot1d,
             {PgAxisRangeCti.PYQT_RANGE: partial(viewBoxAxisRange, viewBox, Y_AXIS)})
@@ -259,7 +259,8 @@ class PgLinePlot1d(AbstractInspector):
                         self.crossLineVerShadow.setPos(index)
                         self.crossLineVertical.setVisible(True)
                         self.crossLineVertical.setPos(index)
-                        self.probeDataItem.setData((index,), (data[index],))
+                        if data[index] > 0 or self.config.yLogCti.configValue == False:
+                            self.probeDataItem.setData((index,), (data[index],))
 
         except Exception as ex:
             # In contrast to _drawContents, this function is a slot and thus must not throw
