@@ -160,7 +160,7 @@ class ColorCtiEditor(AbstractCtiEditor):
 
         lineEditor = QtWidgets.QLineEdit(parent)
         regExp = QtCore.QRegExp(r'#?[0-9A-F]{6}', Qt.CaseInsensitive)
-        validator = QtWidgets.QRegExpValidator(regExp, parent=lineEditor)
+        validator = QtGui.QRegExpValidator(regExp, parent=lineEditor)
         lineEditor.setValidator(validator)
 
         self.lineEditor = self.addSubEditor(lineEditor, isFocusProxy=True)
@@ -189,7 +189,7 @@ class ColorCtiEditor(AbstractCtiEditor):
         except InvalidInputError:
             currentColor = self.cti.data
 
-        qColor = QtGui.QColorDialog.getColor(currentColor, self)
+        qColor = QtWidgets.QColorDialog.getColor(currentColor, self)
 
         if qColor.isValid():
             self.setData(qColor)

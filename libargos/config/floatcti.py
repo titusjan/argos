@@ -144,7 +144,7 @@ class FloatCtiEditor(AbstractCtiEditor):
         super(FloatCtiEditor, self).finalize()
 
 
-    @QtSlot(int)
+    @QtSlot(float)
     def commitChangedValue(self, value):
         """ Commits the new value to the delegate so the inspector can be updated
         """
@@ -299,7 +299,7 @@ class SnFloatCtiEditor(AbstractCtiEditor):
         super(SnFloatCtiEditor, self).finalize()
 
 
-    @QtSlot(int)
+    @QtSlot(float)
     def commitChangedValue(self, value):
         """ Commits the new value to the delegate so the inspector can be updated
         """
