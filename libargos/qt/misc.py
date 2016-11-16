@@ -21,7 +21,7 @@ from __future__ import division, print_function
 import sys, logging, os, traceback
 
 from libargos import info
-from libargos.utils.misc import python2
+from libargos.utils.six import PY3
 from libargos.utils.cls import environment_var_to_bool
 
 
@@ -40,6 +40,8 @@ logger = logging.getLogger(__name__)
 # that can vary (Python 2 & 3, Windows & Linux & OS-X, etc) so I don't want to support even more
 # combinations. I keep PyQt4 and PySide working as long as it is practical but I don't do extensive
 # testing. If you encounter issues with PyQt4/PySide please report them and I'll see what I can do.
+# Note that pyside does currenlty not work in combination with Python3!
+
 
 USE_QTPY = environment_var_to_bool(os.environ.get('ARGOS_USE_QTPY', False))
 
@@ -52,6 +54,8 @@ if USE_QTPY:
     from qtpy.QtCore import Qt
     from qtpy.QtCore import Signal as QtSignal
     from qtpy.QtCore import Slot as QtSlot
+    from qtpy import PYQT_VERSION
+    from qtpy import QT_VERSION
 
     QT_API = qtpy.API
     QT_API_NAME = qtpy.API_NAME
@@ -62,6 +66,13 @@ if USE_QTPY:
         # At least commit e863f422c7ef78f66223adaa40d52cba4a3b2fce
         logger.warning("You need qtpy version > 1.1.2, got: {}".format(QTPY_VERSION))
 
+    # PySide in combination with Python-3 gives the following error:
+    # TypeError: unhashable type: 'PgImagePlot2dCti'
+    # I don't know a fix and as long as the future of PySide2 is unclear I won't spend time on it.
+    if QT_API == 'pyside' and PY3:
+        raise ImportError("PySide in combination with Python 3 is buggy in Argos and supported.")
+
+
 else:
     if info.DEBUGGING:
         logger.debug("ARGOS_USE_QTPY = {}, using PyQt5 directly".format(USE_QTPY))
@@ -70,6 +81,8 @@ else:
     from PyQt5.QtCore import Qt
     from PyQt5.QtCore import pyqtSignal as QtSignal
     from PyQt5.QtCore import pyqtSlot as QtSlot
+    from PyQt5.Qt import PYQT_VERSION_STR as PYQT_VERSION
+    from PyQt5.Qt import QT_VERSION_STR as QT_VERSION
 
     QT_API = ''
     QT_API_NAME = 'PyQt5'

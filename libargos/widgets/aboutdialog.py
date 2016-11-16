@@ -70,7 +70,7 @@ class AboutDialog(QtWidgets.QDialog):
         if is_a_string(moduleInfo):
             moduleInfo = mi.ImportedModuleInfo(moduleInfo)
 
-        line = "{:12s}: {}".format(moduleInfo.name, moduleInfo.verboseVersion)
+        line = "{:15s}: {}".format(moduleInfo.name, moduleInfo.verboseVersion)
         self.editor.appendPlainText(line)
         QtWidgets.QApplication.instance().processEvents()
 
@@ -83,12 +83,13 @@ class AboutDialog(QtWidgets.QDialog):
         self.editor.clear()
 
         self._addModuleInfo(mi.PythonModuleInfo())
-        self._addModuleInfo(mi.PyQt4ModuleInfo())
+        self._addModuleInfo(mi.QtModuleInfo())
 
-        modules = ['PySide', 'numpy', 'scipy', 'pyqtgraph', 'matplotlib']
+        modules = ['numpy', 'scipy', 'pandas', 'pyqtgraph']
         for module in modules:
             self._addModuleInfo(module)
 
+        self._addModuleInfo(mi.PillowInfo())
         self._addModuleInfo(mi.H5pyModuleInfo())
         self._addModuleInfo(mi.NetCDF4ModuleInfo())
 

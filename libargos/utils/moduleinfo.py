@@ -139,16 +139,22 @@ class ImportedModuleInfo(ReadOnlyModuleInfo):
         """
         self._name = name
         try:
-            self._module = __import__(name)
+            import importlib
+            self._module = importlib.import_module(name)
         except ImportError:
             self._module = None
             self._version = ''
             self._packagePath = ''
         else:
             if self._versionAttribute:
-                self._version = getattr(self._module, self._versionAttribute)
+                self._version = getattr(self._module, self._versionAttribute, '???')
             if self._pathAttribute:
-                self._packagePath = getattr(self._module, self._pathAttribute)
+                self._packagePath = getattr(self._module, self._pathAttribute, '???')
+
+
+#################
+# Special cases #
+#################
 
 
 class H5pyModuleInfo(ImportedModuleInfo):
@@ -174,15 +180,23 @@ class NetCDF4ModuleInfo(ImportedModuleInfo):
                                             self.module.__hdf5libversion__))
 
 
-class PyQt4ModuleInfo(ImportedModuleInfo):
+class PillowInfo(ImportedModuleInfo):
 
     def __init__(self):
 
-        super(PyQt4ModuleInfo, self).__init__('PyQt4', versionAttribute=None)
-        if self.module:
-            from PyQt4.Qt import PYQT_VERSION_STR
-            from PyQt4.QtCore import QT_VERSION_STR
-            self._version = PYQT_VERSION_STR
-            self._verboseVersion = ('{} (Qt: {})'.format(PYQT_VERSION_STR, QT_VERSION_STR))
+        super(PillowInfo, self).__init__('PIL', versionAttribute='PILLOW_VERSION')
+        self._name = 'pillow (PIL)'
 
+
+class QtModuleInfo(ImportedModuleInfo):
+
+    def __init__(self):
+        import libargos.qt.misc as qtmisc
+        super(QtModuleInfo, self).__init__(name=qtmisc.QT_API_NAME, module=qtmisc,
+                                           versionAttribute='PYQT_VERSION', pathAttribute=None)
+
+        self._verboseVersion = qtmisc.PYQT_VERSION + " ("
+        if qtmisc.QT_API:
+            self._verboseVersion += "api {}, qtpy: {}, ".format(qtmisc.QT_API, qtmisc.QTPY_VERSION)
+        self._verboseVersion += "Qt: {})".format(qtmisc.QT_VERSION)
 

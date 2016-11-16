@@ -541,7 +541,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         if inspectorRegItem and inspector:
             key = inspectorRegItem.identifier
-            logger.debug("$$$$$$$$$$$$$$$$$$  _updateNonDefaultsForInspector: {} {}"
+            logger.debug("_updateNonDefaultsForInspector: {} {}"
                          .format(key, type(inspector)))
             self._inspectorsNonDefaults[key] = inspector.config.getNonDefaultsDict()
         else:
