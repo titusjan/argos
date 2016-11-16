@@ -22,6 +22,8 @@ import sys, logging, os, traceback
 
 from libargos import info
 from libargos.utils.misc import python2
+from libargos.utils.cls import environment_var_to_bool
+
 
 logger = logging.getLogger(__name__)
 
@@ -29,50 +31,51 @@ logger = logging.getLogger(__name__)
 # Importing PyQt/PySide #
 #########################
 
-USE_QTPY = os.environ.get('ARGOS_USE_QTPY', False)
+# Argos requires PyQt5. However, if you install qtpy (the master branch or the next version > 1.1.2)
+# and set the ARGOS_USE_QTPY environment variable to "1", Argos will work with PyQt4 or PySide.
+# You then can force which Qt bindings are used by setting the QT_API environment variable to pyqt5,
+# pyqt4 or pyside. If the QT_API environment variable is not set, qtpy will autodetect the bindings.
+#
+# Note that PyQt4 and PySide or not officially supported! There are already enough dependencies
+# that can vary (Python 2 & 3, Windows & Linux & OS-X, etc) so I don't want to support even more
+# combinations. I keep PyQt4 and PySide working as long as it is practical but I don't do extensive
+# testing. If you encounter issues with PyQt4/PySide please report them and I'll see what I can do.
+
+USE_QTPY = environment_var_to_bool(os.environ.get('ARGOS_USE_QTPY', False))
 
 if USE_QTPY:
-    assert False, "not yet implemented"
+    if info.DEBUGGING:
+        logger.debug("ARGOS_USE_QTPY = {}, using qtpy to find Qt bindings".format(USE_QTPY))
 
-logger.debug("Using PyQt5")
-from PyQt5 import QtCore, QtGui, QtWidgets, QtSvg
-from PyQt5.QtCore import Qt
-from PyQt5.QtCore import pyqtSignal as QtSignal
-from PyQt5.QtCore import pyqtSlot as QtSlot
+    import qtpy._version
+    from qtpy import QtCore, QtGui, QtWidgets, QtSvg
+    from qtpy.QtCore import Qt
+    from qtpy.QtCore import Signal as QtSignal
+    from qtpy.QtCore import Slot as QtSlot
 
+    QT_API = qtpy.API
+    QT_API_NAME = qtpy.API_NAME
+    QTPY_VERSION = '.'.join(map(str, qtpy._version.version_info))
+    ABOUT_QT_BINDINGS = "{} (api {}, qtpy: {})".format(QT_API_NAME, QT_API, QTPY_VERSION)
 
-#
-# # Abstracts away the differences between PySide and PyQt
-# # PySide is not officially supported but I will try to make Argos work for both PySide and PyQt.
-# USE_PYQT = True # PySide is used when False
-#
-# if USE_PYQT:
-#     # This is only needed for Python v2 but is harmless for Python v3.
-#     import sip
-#     sip.setapi('QDate', 2)
-#     sip.setapi('QDateTime', 2)
-#     sip.setapi('QString', 2)
-#     sip.setapi('QTextStream', 2)
-#     sip.setapi('QTime', 2)
-#     sip.setapi('QUrl', 2)
-#     sip.setapi('QVariant', 2)
-#
-#
-# if USE_PYQT:
-#     from PyQt4 import QtCore, QtWidgets, QtSvg
-#     from PyQt4.QtCore import Qt
-#     from PyQt4.QtCore import pyqtSignal as QtSignal
-#     from PyQt4.QtCore import pyqtSlot as QtSlot
-# else:
-#     # PySide in combination with Python-3 gives the following error:
-#     # TypeError: unhashable type: 'PgImagePlot2dCti'
-#     # I don't know a fix and as long as the future of PySide2 is unclear I won't spend time on it.
-#     assert python2(), "PySide is currently not supported with Python-3"
-#
-#     from PySide import QtCore, QtWidgets, QtSvg
-#     from PySide.QtCore import Qt
-#     from PySide.QtCore import Signal as QtSignal
-#     from PySide.QtCore import Slot as QtSlot
+    if qtpy._version.version_info <= (1, 1, 2):
+        # At least commit e863f422c7ef78f66223adaa40d52cba4a3b2fce
+        logger.warning("You need qtpy version > 1.1.2, got: {}".format(QTPY_VERSION))
+
+else:
+    if info.DEBUGGING:
+        logger.debug("ARGOS_USE_QTPY = {}, using PyQt5 directly".format(USE_QTPY))
+
+    from PyQt5 import QtCore, QtGui, QtWidgets, QtSvg
+    from PyQt5.QtCore import Qt
+    from PyQt5.QtCore import pyqtSignal as QtSignal
+    from PyQt5.QtCore import pyqtSlot as QtSlot
+
+    QT_API = ''
+    QT_API_NAME = 'PyQt5'
+    QTPY_VERSION = ''
+    ABOUT_QT_BINDINGS = 'PyQt5'
+
 
 
 ################

@@ -25,7 +25,7 @@ logging.basicConfig(level='DEBUG', stream=sys.stderr,
                     format='%(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s')
 
 from libargos import browse
-#from libargos.qt import USE_PYQT
+from libargos.qt.misc import ABOUT_QT_BINDINGS
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, DEFAULT_PROFILE
 from libargos.utils.misc import remove_process_serial_number
 
@@ -73,6 +73,8 @@ def main():
     logger.info('Started {} {}'.format(PROJECT_NAME, VERSION))
     logger.info("Python version: {}".format(sys.version).replace('\n', ''))
     #logger.info('Using: {}'.format('PyQt' if USE_PYQT else 'PySide'))
+    logger.info("Using {}".format(ABOUT_QT_BINDINGS))
+
     if DEBUGGING:
         logger.warn("Debugging flag is on!")
 

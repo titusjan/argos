@@ -45,6 +45,7 @@ else:
 # Type conversion #
 ###################
 
+
 # def masked_to_regular_array(masked_array, replacement_value=np.nan):
 #     """ Returns a copy of the masked array where masked values have been replaced with fill values.
 #
@@ -81,6 +82,30 @@ else:
 #
 #     return array
 
+def environment_var_to_bool(env_var):
+    """ Converts an environment variable to a boolean
+
+        Returns False if the environment variable is False, 0 or a case-insenstive string "false"
+        or "0".
+    """
+
+    # Try to see if env_var can be converted to an int
+    try:
+        env_var = int(env_var)
+    except ValueError:
+        pass
+
+    if isinstance(env_var, numbers.Number):
+        return bool(env_var)
+    elif is_a_string(env_var):
+        env_var = env_var.lower().strip()
+        if env_var in "false":
+            return False
+        else:
+            return True
+    else:
+        return bool(env_var)
+
 
 def fill_values_to_nan(masked_array):
     """ Replaces the fill_values of the masked array by NaNs
@@ -96,6 +121,23 @@ def fill_values_to_nan(masked_array):
     else:
         return masked_array
 
+
+# Needed because boolean QSettings in Pyside are converted incorrect the second
+# time in Windows (and Linux?) because of a bug in Qt. See:
+# https://www.mail-archive.com/pyside@lists.pyside.org/msg00230.html
+def setting_str_to_bool(s):
+    """ Converts 'true' to True and 'false' to False if s is a string
+    """
+    if isinstance(s, six.string_types):
+        s = s.lower()
+        if s == 'true':
+            return True
+        elif s == 'false':
+            return False
+        else:
+            return ValueError('Invalid boolean representation: {!r}'.format(s))
+    else:
+        return s
 
 
 #################

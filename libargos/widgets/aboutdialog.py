@@ -72,7 +72,7 @@ class AboutDialog(QtWidgets.QDialog):
 
         line = "{:12s}: {}".format(moduleInfo.name, moduleInfo.verboseVersion)
         self.editor.appendPlainText(line)
-        QtWidgets.qApp.processEvents()
+        QtWidgets.QApplication.instance().processEvents()
 
 
     def addDependencyInfo(self):
