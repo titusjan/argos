@@ -72,7 +72,7 @@ class PgLinePlot1dCti(MainGroupCti):
 
         self.xAxisCti = self.insertChild(PgAxisCti('x-axis'))
         self.xAxisCti.insertChild(PgAxisLabelCti(plotItem, 'bottom', self.pgLinePlot1d.collector,
-            defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "idx of {x-dim}"]))
+            defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{x-dim} [index]"]))
         # No logarithmic X-Axis as long as abcissa is not yet implemented.
         #xAxisCti.insertChild(PgAxisLogModeCti(imagePlotItem, X_AXIS))
         self.xAxisRangeCti = self.xAxisCti.insertChild(PgAxisRangeCti(viewBox, X_AXIS))

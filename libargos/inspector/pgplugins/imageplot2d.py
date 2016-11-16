@@ -108,7 +108,7 @@ def crossPlotAutoRangeMethods(pgImagePlot2d, crossPlot, intialItems=None):
             rangeFunctions[label] = partial(calcPgImagePlot2dDataRange, pgImagePlot2d,
                                             percentage, crossPlot)
 
-    # Always add functions that determine the data from the intire sliced array.
+    # Always add functions that determine the data from the complete sliced array.
     for percentage in [0.1, 0.2, 0.5, 1, 2, 5, 10, 20]:
         rangeFunctions['image all data'] = partial(calcPgImagePlot2dDataRange, pgImagePlot2d,
                                                    0.0, None)
@@ -145,14 +145,14 @@ class PgImagePlot2dCti(MainGroupCti):
         self.xAxisCti = self.insertChild(PgAxisCti('x-axis'))
         #xAxisCti.insertChild(PgAxisShowCti(imagePlotItem, 'bottom')) # disabled, seems broken
         self.xAxisCti.insertChild(PgAxisLabelCti(imagePlotItem, 'bottom', self.pgImagePlot2d.collector,
-            defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "idx of {x-dim}"]))
+            defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{x-dim} [index]"]))
         self.xFlippedCti = self.xAxisCti.insertChild(PgAxisFlipCti(viewBox, X_AXIS))
         self.xAxisRangeCti = self.xAxisCti.insertChild(PgAxisRangeCti(viewBox, X_AXIS))
 
         self.yAxisCti = self.insertChild(PgAxisCti('y-axis'))
         #yAxisCti.insertChild(PgAxisShowCti(imagePlotItem, 'left'))  # disabled, seems broken
         self.yAxisCti.insertChild(PgAxisLabelCti(imagePlotItem, 'left', self.pgImagePlot2d.collector,
-            defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "idx of {y-dim}"]))
+            defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{y-dim} [index]"]))
         self.yFlippedCti = self.yAxisCti.insertChild(PgAxisFlipCti(viewBox, Y_AXIS))
         self.yAxisRangeCti = self.yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS))
 
