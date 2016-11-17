@@ -200,20 +200,32 @@ class ArgosApplication(object):
 #        self.inspectorRegistry.saveSettings(self.GRP_REGISTRY_INSPECTORS)
 
 
-    def _profileGroupName(self, profile):
-        """ Returns the name of the QSetting group for this profile.
+    def profileGroupName(self, profile=None):
+        """ Returns the name of the QSetting group for the profile.
             Converts to lower case and removes whitespace, interpunction, etc.
             Prepends _debug_ if the debugging flag is set
+
+            :param profile: profile name. If None the current profile is used.
         """
+        profile = profile if profile else self.profile
         profGroupName = '_debug_' if DEBUGGING else ''
         profGroupName += string_to_identifier(profile)
         return profGroupName
 
 
+    def windowGroupName(self, windowNumber, profile=None):
+        """ Returns the name of the QSetting group for this window in the this profile.
+
+            :param windowNumber: int
+            :param profile: profile name. If None the current profile is used.
+        """
+        return "{}/window-{:02d}".format(self.profileGroupName(profile=profile), windowNumber)
+
+
     def deleteProfile(self, profile):
         """ Removes a profile from the persistent settings
         """
-        profGroupName = self._profileGroupName(profile)
+        profGroupName = self.profileGroupName(profile)
         logger.debug("Resetting profile settings: {}".format(profGroupName))
         settings = QtCore.QSettings()
         settings.remove(profGroupName)
@@ -237,7 +249,7 @@ class ArgosApplication(object):
         logger.info("Reading profile {!r} from: {}".format(profile, settings.fileName()))
 
         self._profile = profile
-        profGroupName = self._profileGroupName(profile)
+        profGroupName = self.profileGroupName(profile)
 
         # Instantiate windows from groups
         settings.beginGroup(profGroupName)
@@ -267,7 +279,6 @@ class ArgosApplication(object):
 
         if len(self.mainWindows) == 0:
             logger.info("No open windows in profile (creating one).")
-            #self.addNewMainWindow(inspectorFullName='Qt/Table')
             self.addNewMainWindow(inspectorFullName=DEFAULT_INSPECTOR)
 
 
@@ -282,20 +293,16 @@ class ArgosApplication(object):
         settings = QtCore.QSettings()
         logger.debug("Writing settings to: {}".format(settings.fileName()))
 
-        profGroupName = self._profileGroupName(self.profile)
+        profGroupName = self.profileGroupName()
         settings.remove(profGroupName) # start with a clean slate
 
         assert self.mainWindows, "no main windows found"
-        settings.beginGroup(profGroupName)
-        try:
-            for winNr, mainWindow in enumerate(self.mainWindows):
-                settings.beginGroup("window-{:02d}".format(winNr))
-                try:
-                    mainWindow.saveProfile(settings)
-                finally:
-                    settings.endGroup()
-        finally:
-            settings.endGroup()
+        for winNr, mainWindow in enumerate(self.mainWindows):
+            settings.beginGroup(self.windowGroupName(winNr))
+            try:
+                mainWindow.saveProfile(settings)
+            finally:
+                settings.endGroup()
 
 
     def saveSettings(self):
@@ -345,10 +352,16 @@ class ArgosApplication(object):
             inspectorId = nameToIdentifier(inspectorFullName)
             mainWindow.setInspectorById(inspectorId)
 
-        mainWindow.getInspectorActionById(mainWindow.inspectorId).setChecked(True)
+        if mainWindow.inspectorRegItem: # can be None at start
+            inspectorId = mainWindow.inspectorRegItem.identifier
+            mainWindow.getInspectorActionById(inspectorId).setChecked(True)
+            logger.info("Created new window with inspector: {}"
+                        .format(mainWindow.inspectorRegItem.fullName))
+        else:
+            logger.info("Created new window without inspector")
+
         mainWindow.drawInspectorContents(reason=UpdateReason.NEW_MAIN_WINDOW)
         mainWindow.show()
-
 
         if sys.platform.startswith('darwin'):
             # Calling raise before the QApplication.exec_ only shows the last window

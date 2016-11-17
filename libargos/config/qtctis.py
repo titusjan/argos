@@ -586,7 +586,7 @@ class PenCti(BoolCti):
 
             width = self.findByNodePath('width').configValue
             if width == 0.0 and altWidth is not None:
-                logger.debug("Setting altWidth = {!r}".format(altWidth))
+                #logger.debug("Setting altWidth = {!r}".format(altWidth))
                 pen.setWidthF(altWidth)
 
         return pen

@@ -202,11 +202,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         fileMenu = menuBar.addMenu("&File")
 
-        action = fileMenu.addAction("&New Window...", self.argosApplication.addNewMainWindow)
+        action = fileMenu.addAction("&New Window...", self.cloneWindow)
         action.setShortcut(QtGui.QKeySequence("Ctrl+N")) # TODO. Should open inspector selection window
-
-        action = fileMenu.addAction("&Clone Window", self.argosApplication.addNewMainWindow)
-        action.setShortcut(QtGui.QKeySequence("Ctrl+Shift+N"))
 
         fileMenu.addSeparator()
 
@@ -405,7 +402,7 @@ class MainWindow(QtWidgets.QMainWindow):
         for action in self.inspectorActionGroup.actions():
             if action.data() == identifier:
                 return action
-        raise KeyError("No action found with ID: {}".format(identifier))
+        raise KeyError("No action found with ID: {!r}".format(identifier))
 
 
     def setAndDrawInspectorById(self, identifier):
@@ -710,6 +707,40 @@ class MainWindow(QtWidgets.QMainWindow):
 
         identifier = self.inspectorRegItem.identifier if self.inspectorRegItem else ''
         settings.setValue("inspector", identifier)
+
+
+    @QtSlot()
+    def cloneWindow(self):
+        """ Opens a new window with the same inspector as the current window.
+        """
+        # Save current window settings.
+        settings = QtCore.QSettings()
+        settings.beginGroup(self.argosApplication.windowGroupName(self.windowNumber))
+        try:
+            self.saveProfile(settings)
+
+            # Create new window with the freshly baked settings of the current window.
+            name = self.inspectorRegItem.fullName
+            newWindow = self.argosApplication.addNewMainWindow(settings=settings,
+                                                               inspectorFullName=name)
+        finally:
+            settings.endGroup()
+
+        # Select the current item in the new window.
+        currentItem, _currentIndex = self.repoTreeView.getCurrentItem()
+        if currentItem:
+            newWindow.trySelectRtiByPath(currentItem.nodePath)
+
+        # Move the new window 24 pixels to the bottom right and raise it to the front.
+        newGeomRect = newWindow.geometry()
+        logger.debug("newGeomRect: x={}".format(newGeomRect.x()))
+        newGeomRect.moveTo(newGeomRect.x() + 24, newGeomRect.y() + 24)
+
+        newWindow.setGeometry(newGeomRect)
+        logger.debug("newGeomRect: x={}".format(newGeomRect.x()))
+
+        newWindow.raise_()
+
 
 
     def closeEvent(self, event):

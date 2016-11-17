@@ -32,16 +32,16 @@ TODO version 0.2:
     AttributeError: 'NotImplementedType' object has no attribute 'ndim' (in table)
     /argos/trop/ql_test_020_minutes-020-021/qlbd1raw.lx.nc/BAND1/ICID_04003_GROUP_00000/PROCESSOR/measurement_to_detector_row_table
 
+    Remove collector checkbox from options.
+
+    In the config options, set 1DPlot (and such) in stead of "inspector"
+
+
     Layout and Margins.
-
-
-    Toggle columns (less text, add to View menu)
 
     Icons size, Darker yellow for test data.
 
-    Qt-5
-        - Qt5 in about dialog.
-        - Test all CTIs by modifying them
+    --list inspector command line option that show the available inspector
 
 TODO version 0.3:
 
