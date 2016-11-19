@@ -246,6 +246,13 @@ def replaceMaskedValueWithFloat(data, mask, replacementValue, copyOnReplace=True
         return replaceMaskedValue(data, mask, replacementValue, copyOnReplace=copyOnReplace)
 
 
+def maskedNanPercentile(maskedArray, *args, **kwargs):
+    """ Calculates np.nanpercentile on the non-masked values
+    """
+    array = maskedArray.data[~maskedArray.mask]
+    return np.nanpercentile(array, *args, **kwargs)
+
+
 
 #
 # def replace_missing_values(array, missing_value, replacement_value):

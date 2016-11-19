@@ -40,7 +40,7 @@ from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.inspector.pgplugins.pghistlutitem import HistogramLUTItem
 from libargos.qt import Qt, QtCore, QtGui, QtSlot
 from libargos.utils.cls import array_has_real_numbers, check_class, is_an_array, to_string
-from libargos.utils.masks import replaceMaskedValueWithFloat
+from libargos.utils.masks import replaceMaskedValueWithFloat, maskedNanPercentile, ArrayWithMask
 
 logger = logging.getLogger(__name__)
 
@@ -65,26 +65,27 @@ def calcPgImagePlot2dDataRange(pgImagePlot2d, percentage, crossPlot):
             If the cursor is outside the image, there is no valid data under the cross-hair and
             the range will be determined from the sliced array as a fall back.
     """
+    check_class(pgImagePlot2d.slicedArray, ArrayWithMask) # sanity check
 
     if crossPlot is None:
-        array = pgImagePlot2d.slicedArray.data
+        array = pgImagePlot2d.slicedArray  # the whole image
 
     elif crossPlot == 'horizontal':
         if pgImagePlot2d.crossPlotRow is not None:
-            array = pgImagePlot2d.slicedArray.data[pgImagePlot2d.crossPlotRow, :]
+            array = pgImagePlot2d.slicedArray.asMaskedArray()[pgImagePlot2d.crossPlotRow, :]
         else:
-            array = pgImagePlot2d.slicedArray.data # fall back on complete sliced array
+            array = pgImagePlot2d.slicedArray # fall back on complete sliced array
 
     elif crossPlot == 'vertical':
         if pgImagePlot2d.crossPlotCol is not None:
-            array = pgImagePlot2d.slicedArray.data[:, pgImagePlot2d.crossPlotCol]
+            array = pgImagePlot2d.slicedArray.asMaskedArray()[:, pgImagePlot2d.crossPlotCol]
         else:
-            array = pgImagePlot2d.slicedArray.data # fall back on complete sliced array
+            array = pgImagePlot2d.slicedArray # fall back on complete sliced array
     else:
         raise ValueError("crossPlot must be: None, 'horizontal' or 'vertical', got: {}"
                          .format(crossPlot))
 
-    return np.nanpercentile(array, (percentage, 100-percentage) )
+    return maskedNanPercentile(array, (percentage, 100-percentage) )
 
 
 def crossPlotAutoRangeMethods(pgImagePlot2d, crossPlot, intialItems=None):

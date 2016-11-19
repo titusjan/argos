@@ -37,6 +37,7 @@ from libargos.config.untypedcti import UntypedCti
 from libargos.inspector.pgplugins.pghistlutitem import HistogramLUTItem
 from libargos.qt import QtGui, QtWidgets
 from libargos.utils.cls import check_class
+from libargos.utils.masks import maskedNanPercentile
 
 from pyqtgraph.graphicsItems.GradientEditorItem import Gradients as GRADIENTS
 
@@ -46,7 +47,6 @@ X_AXIS = pg.ViewBox.XAxis
 Y_AXIS = pg.ViewBox.YAxis
 BOTH_AXES = pg.ViewBox.XYAxes
 VALID_AXIS_POSITIONS =  ('left', 'right', 'bottom', 'top')
-
 
 
 
@@ -133,9 +133,8 @@ def inspectorDataRange(inspector, percentage):
         The first parameter is an inspector, it's not an array, because we would then have to
         regenerate the range function every time sliced array of an inspector changes.
     """
-    array = inspector.slicedArray.data
-    logger.debug("Discarding {}% from id: {}".format(percentage, id(array)))
-    return np.nanpercentile(array, (percentage, 100-percentage) )
+    logger.debug("Discarding {}% from id: {}".format(percentage, id(inspector.slicedArray)))
+    return maskedNanPercentile(inspector.slicedArray, (percentage, 100-percentage) )
 
 
 def defaultAutoRangeMethods(inspector, intialItems=None):
