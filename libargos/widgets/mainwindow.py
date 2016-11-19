@@ -116,7 +116,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._collector = Collector(self.windowNumber)
         self.configTreeView = ConfigTreeView(self._configTreeModel)
         self.repoTreeView = RepoTreeView(self.argosApplication.repo, self.collector)
-        self._configTreeModel.insertItem(self.repoTreeView.config)
+        # self._configTreeModel.insertItem(self.repoTreeView.config) # No configurable items yet
 
         # Define a central widget that will be the parent of the inspector widget.
         # We don't set the inspector directly as the central widget to retain the size when the
@@ -513,7 +513,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             # Delete old inspector
             if oldInspector is None: # can be None at start-up
-                oldConfigPosition = None
+                oldConfigPosition = None # Last top level element in the config tree.
             else:
                 self._updateNonDefaultsForInspector(oldInspectorRegItem, oldInspector)
 
