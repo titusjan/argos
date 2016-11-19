@@ -90,7 +90,7 @@ class TextInspector(AbstractInspector):
     def _createConfig(self):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
-        return TextInspectorCti(textInspector=self, nodeName='inspector')
+        return TextInspectorCti(textInspector=self, nodeName='text')
 
 
     def _clearContents(self):

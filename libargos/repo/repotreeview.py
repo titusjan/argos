@@ -115,7 +115,6 @@ class RepoTreeView(ArgosTreeView):
         menu.exec_(event.globalPos())
 
 
-
     def createOpenAsMenu(self, parent=None):
         """ Creates the submenu for the Open As choice
         """

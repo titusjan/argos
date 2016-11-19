@@ -38,7 +38,7 @@ from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES,
                                                  PgPlotDataItemCti)
 from libargos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from libargos.inspector.pgplugins.pghistlutitem import HistogramLUTItem
-from libargos.qt import Qt, QtCore, QtWidgets, QtSlot
+from libargos.qt import Qt, QtCore, QtGui, QtSlot
 from libargos.utils.cls import array_has_real_numbers, check_class, is_an_array, to_string
 from libargos.utils.masks import replaceMaskedValueWithFloat
 
@@ -305,7 +305,7 @@ class PgImagePlot2d(AbstractInspector):
         gridLayout.setColumnStretchFactor(COL_VER_LINE, 1)
 
         # Configuration tree
-        self._config = PgImagePlot2dCti(pgImagePlot2d=self, nodeName='inspector')
+        self._config = PgImagePlot2dCti(pgImagePlot2d=self, nodeName='2D image plot')
 
         # Connect signals
         # Based mouseMoved on crosshair.py from the PyQtGraph examples directory.

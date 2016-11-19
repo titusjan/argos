@@ -125,8 +125,6 @@ class PgLinePlot1d(AbstractInspector):
         self.contentsLayout.addWidget(self.graphicsLayoutWidget)
         self.titleLabel = self.graphicsLayoutWidget.addLabel('<plot title goes here>', 0, 0)
 
-        # The actual plot item.
-
         self.plotItem = ArgosPgPlotItem()
         self.viewBox = self.plotItem.getViewBox()
         self.graphicsLayoutWidget.addItem(self.plotItem, 1, 0)
@@ -140,7 +138,7 @@ class PgLinePlot1d(AbstractInspector):
         self.probeLabel = self.graphicsLayoutWidget.addLabel('', 2, 0, justify='left')
 
         # Configuration tree
-        self._config = PgLinePlot1dCti(pgLinePlot1d=self, nodeName='inspector') # TODO: should be able to change nodeName without --reset
+        self._config = PgLinePlot1dCti(pgLinePlot1d=self, nodeName='1D line plot')
 
         # Connect signals
         # Based mouseMoved on crosshair.py from the PyQtGraph examples directory.

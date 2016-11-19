@@ -224,7 +224,7 @@ class TableInspector(AbstractInspector):
         horHeader.setCascadingSectionResizes(False)
         verHeader.setCascadingSectionResizes(False)
 
-        self._config = TableInspectorCti(tableInspector=self, nodeName='inspector')
+        self._config = TableInspectorCti(tableInspector=self, nodeName='table')
 
         if self.config.defaultRowHeightCti.configValue < 0: # If not yet initialized
             self.config.defaultRowHeightCti.data = verHeader.defaultSectionSize()

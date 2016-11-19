@@ -52,7 +52,7 @@ class DebugInspector(AbstractInspector):
     def _createConfig(self):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
-        rootItem = MainGroupCti('inspector')
+        rootItem = MainGroupCti('debug inspector')
 
         if DEBUGGING:
             # Some test config items.
