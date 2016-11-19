@@ -91,7 +91,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setUnifiedTitleAndToolBarOnMac(True)
         #self.setDocumentMode(True) # Look of tabs as Safari on OS-X (disabled, ugly)
         self.resize(1300, 700)  # Assumes minimal resolution of 1366 x 768
-        self.setWindowTitle(self.constructWindowTitle())
 
         self.__setupViews()
         self.__setupMenus()
@@ -109,59 +108,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self._configTreeModel.sigItemChanged.disconnect(self.configContentsChanged)
         self.sigInspectorChanged.disconnect(self.inspectorSelectionPane.updateFromInspectorRegItem)
         self.customContextMenuRequested.disconnect(self.showContextMenu)
-
-
-    @property
-    def windowNumber(self):
-        """ The instance number of this window.
-        """
-        return self._windowNumber
-
-    @property
-    def inspectorRegItem(self):
-        """ The InspectorRegItem that has been selected. Contains an InspectorRegItem.
-            Can be None (e.g. at start-up).
-        """
-        return self._inspectorRegItem
-
-    @property
-    def inspectorId(self):
-        """ The ID of the inspector registry item that has been selected.
-            E.g. ''. Can be None (e.g. at start-up).
-        """
-        return self._inspectorRegItem.identifier if self._inspectorRegItem else None
-
-    @property
-    def inspectorName(self):
-        """ The name of the inspector registry item that has been selected.
-            E.g. 'Table'. Can be None (e.g. at start-up).
-        """
-        return self._inspectorRegItem.name if self._inspectorRegItem else None
-
-    @property
-    def inspectorFullName(self):
-        """ The full name of the inspector registry item that has been selected.
-            E.g. 'Qt/Table'. Can be None (e.g. at start-up).
-        """
-        return self._inspectorRegItem.fullName if self._inspectorRegItem else None
-
-    @property
-    def inspector(self):
-        """ The inspector widget of this window. Can be None (e.g. at start-up).
-        """
-        return self._inspector
-
-    @property
-    def collector(self):
-        """ The collector widget of this window
-        """
-        return self._collector
-
-    @property
-    def argosApplication(self):
-        """ The ArgosApplication to which this window belongs.
-        """
-        return self._argosApplication
 
 
     def __setupViews(self):
@@ -202,8 +148,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         fileMenu = menuBar.addMenu("&File")
 
-        action = fileMenu.addAction("&New Window...", self.cloneWindow)
-        action.setShortcut(QtGui.QKeySequence("Ctrl+N")) # TODO. Should open inspector selection window
+        action = fileMenu.addAction("&New Window", self.cloneWindow)
+        action.setShortcut(QtGui.QKeySequence("Ctrl+N"))
 
         fileMenu.addSeparator()
 
@@ -249,16 +195,25 @@ class MainWindow(QtWidgets.QMainWindow):
 
         ### Inspector Menu ###
         self.execInspectorDialogAction = QtWidgets.QAction("&Browse Inspectors...", self,
-                                                       triggered=self.execInspectorDialog)
+                                                           triggered=self.execInspectorDialog)
         self.execInspectorDialogAction.setShortcut(QtGui.QKeySequence("Ctrl+i"))
 
         self.inspectorActionGroup = self.__createInspectorActionGroup(self)
-        self.inspectorMenu = QtWidgets.QMenu("Inspector", parent=self)
+        self.inspectorMenu = menuBar.addMenu("Inspector")
         addInspectorActionsToMenu(self.inspectorMenu, self.execInspectorDialogAction,
                                   self.inspectorActionGroup)
-        menuBar.addMenu(self.inspectorMenu)
 
+        ### Window Menu ###
+        self.windowMenu = menuBar.addMenu("&Window")
 
+        # The action added to the menu in the repopulateWindowMenu method, which is called by
+        # the ArgosApplication object every time a window is added or removed.
+        self.activateWindowAction = QtWidgets.QAction("Window #{}".format(self.windowNumber),
+                                                      self, triggered=self.activateAndRaise,
+                                                      checkable=True)
+        if self.windowNumber <= 9:
+            self.activateWindowAction.setShortcut(QtGui.QKeySequence("Meta+{}"
+                                                                     .format(self.windowNumber)))
         ### Help Menu ###
         menuBar.addSeparator()
         helpMenu = menuBar.addMenu("&Help")
@@ -267,7 +222,6 @@ class MainWindow(QtWidgets.QMainWindow):
         helpMenu.addSeparator()
         helpMenu.addAction("&Test", self.myTest, "Alt+T")
         helpMenu.addAction("Add Test Data", self.addTestData, "Alt+A")
-
 
         ### Context menu ###
 
@@ -331,8 +285,75 @@ class MainWindow(QtWidgets.QMainWindow):
         if sys.platform.startswith('darwin'):
             self.viewMenu.addSeparator()
 
+    ##############
+    # Properties #
+    ##############
 
-    # -- End of setup_methods --
+    @property
+    def windowNumber(self):
+        """ The instance number of this window.
+        """
+        return self._windowNumber
+
+    @property
+    def inspectorRegItem(self):
+        """ The InspectorRegItem that has been selected. Contains an InspectorRegItem.
+            Can be None (e.g. at start-up).
+        """
+        return self._inspectorRegItem
+
+    @property
+    def inspectorId(self):
+        """ The ID of the inspector registry item that has been selected.
+            E.g. ''. Can be None (e.g. at start-up).
+        """
+        return self._inspectorRegItem.identifier if self._inspectorRegItem else None
+
+    @property
+    def inspectorName(self):
+        """ The name of the inspector registry item that has been selected.
+            E.g. 'Table'. Can be None (e.g. at start-up).
+        """
+        return self._inspectorRegItem.name if self._inspectorRegItem else None
+
+    @property
+    def inspectorFullName(self):
+        """ The full name of the inspector registry item that has been selected.
+            E.g. 'Qt/Table'. Can be None (e.g. at start-up).
+        """
+        return self._inspectorRegItem.fullName if self._inspectorRegItem else None
+
+    @property
+    def inspector(self):
+        """ The inspector widget of this window. Can be None (e.g. at start-up).
+        """
+        return self._inspector
+
+    @property
+    def collector(self):
+        """ The collector widget of this window
+        """
+        return self._collector
+
+    @property
+    def argosApplication(self):
+        """ The ArgosApplication to which this window belongs.
+        """
+        return self._argosApplication
+
+    ###########
+    # Methods #
+    ###########
+
+    def repopulateWinowMenu(self, actionGroup):
+        """ Clear the window menu and fills it with the actions of the actionGroup
+        """
+        for action in self.windowMenu.actions():
+            self.windowMenu.removeAction(action)
+
+        for action in actionGroup.actions():
+            self.windowMenu.addAction(action)
+
 
     def showContextMenu(self, pos):
         """ Shows the context menu at position pos.
@@ -379,8 +400,17 @@ class MainWindow(QtWidgets.QMainWindow):
     def constructWindowTitle(self):
         """ Constructs the window title given the current inspector and profile.
         """
-        return "{} #{} | {}-{}".format(self.inspectorName, self.windowNumber,
-                                       PROJECT_NAME, self.argosApplication.profile)
+        return
+
+    def updateWindowTitle(self):
+        """ Updates the window title frm the window number, inspector, etc
+            Also updates the Window Menu
+        """
+        self.setWindowTitle("{} #{} | {}-{}".format(self.inspectorName, self.windowNumber,
+                                                    PROJECT_NAME, self.argosApplication.profile))
+        #self.activateWindowAction.setText("{} window".format(self.inspectorName, self.windowNumber))
+        self.activateWindowAction.setText("{} window".format(self.inspectorName))
+
 
     @QtSlot()
     def execInspectorDialog(self):
@@ -521,7 +551,7 @@ class MainWindow(QtWidgets.QMainWindow):
             logger.debug("Enabling updates.")
             self.setUpdatesEnabled(True)
 
-            self.setWindowTitle(self.constructWindowTitle())
+            self.updateWindowTitle()
 
             logger.debug("Emitting sigInspectorChanged({})".format(self.inspectorRegItem))
             self.sigInspectorChanged.emit(self.inspectorRegItem)
@@ -742,6 +772,24 @@ class MainWindow(QtWidgets.QMainWindow):
         newWindow.raise_()
 
 
+    @QtSlot()
+    def activateAndRaise(self):
+        """ Activates and raises the window.
+        """
+        logger.debug("Activate and raising window: {}".format(self.windowNumber))
+        self.activateWindow()
+        self.raise_()
+
+
+    def event(self, ev):
+        """ Detects the WindowActivate event. Pass all event through to the super class.
+        """
+        if ev.type() == QtCore.QEvent.WindowActivate:
+            logger.debug("Window activated: {}".format(self.windowNumber))
+            self.activateWindowAction.setChecked(True)
+
+        return super().event(ev);
+
 
     def closeEvent(self, event):
         """ Called when closing this window.
@@ -775,9 +823,18 @@ class MainWindow(QtWidgets.QMainWindow):
     def myTest(self):
         """ Function for small ad-hoc tests
         """
-        self.testSelectAllData()
+        #self.testSelectAllData()
 
-        #logger.debug("myTest for window: {}".format(self.windowNumber))
+        logger.info("myTest for window: {}".format(self.windowNumber))
+
+        for action in self.argosApplication.windowActionGroup.actions():
+            print(repr(action))
+            for widget in action.associatedWidgets():
+                print("  " + repr(widget))
+
+        action.trigger()
+
+
         # logger.debug("Repo icon size: {}".format(self.repoTreeView.iconSize()))
         # #self.repoTreeView.setIconSize(QtCore.QSize(32, 32))
         # self.repoTreeView.setIconSize(QtCore.QSize(24, 24))

@@ -21,7 +21,7 @@ import sys, logging, platform
 
 from libargos.info import DEBUGGING, DEFAULT_PROFILE
 from libargos.inspector.registry import InspectorRegistry, DEFAULT_INSPECTOR
-from libargos.qt import QtCore, QtSlot
+from libargos.qt import QtCore, QtWidgets, QtSlot
 from libargos.qt.misc import removeSettingsGroup, handleException, initQApplication
 from libargos.qt.registry import GRP_REGISTRY, nameToIdentifier
 from libargos.repo.repotreemodel import RepoTreeModel
@@ -85,7 +85,7 @@ def browse(fileNames=None,
 
 
 
-class ArgosApplication(object):
+class ArgosApplication(QtCore.QObject):
     """ The application singleton which holds global state.
     """
     def __init__(self, setExceptHook=True):
@@ -100,6 +100,8 @@ class ArgosApplication(object):
                 programming IHMO as it is easy to miss errors. I strongly recommend that you set
                 the setExceptHook to True.
         """
+        super().__init__()
+
         # Call initQtWidgetsApplicationInstance() so that the users can call libargos.browse without
         # having to call it themselves.
         self._qApplication = initQApplication()
@@ -120,6 +122,10 @@ class ArgosApplication(object):
 
         self.qApplication.lastWindowClosed.connect(self.quit)
 
+        # Activate-actions for all windows
+        self.windowActionGroup = QtWidgets.QActionGroup(self)
+        self.windowActionGroup.setExclusive(True)
+
         # Call setup when the event loop starts.
         QtCore.QTimer.singleShot(0, self.setup)
 
@@ -132,8 +138,12 @@ class ArgosApplication(object):
         # Raising all window because in OS-X window 0 is not shown.
         #self.raiseAllWindows()
         # activateWindow also solves the issue but doesn't work with the --inspector option.
-        self.mainWindows[0].activateWindow()
+        self.windowActionGroup.actions()[0].trigger()
 
+
+    ##############
+    # Properties #
+    ##############
 
     @property
     def qApplication(self):
@@ -141,11 +151,13 @@ class ArgosApplication(object):
         """
         return self._qApplication
 
+
     @property
     def repo(self):
         """ Returns the global repository
         """
         return self._repo
+
 
     @property
     def rtiRegistry(self):
@@ -153,11 +165,13 @@ class ArgosApplication(object):
         """
         return self._rtiRegistry
 
+
     @property
     def inspectorRegistry(self):
         """ Returns the repository tree item (rti) registry
         """
         return self._inspectorRegistry
+
 
     @property
     def profile(self):
@@ -167,17 +181,21 @@ class ArgosApplication(object):
         """
         return self._profile
 
-    def focusChanged(self, old, now):
-        """ Is called when the focus changes. Useful for debugging.
-        """
-        logger.debug("Focus changed from {} to {}".format(old, now))
-
 
     @property
     def mainWindows(self):
         """ Returns the list of MainWindows. For read-only purposes only.
         """
         return self._mainWindows
+
+    ###########
+    # Methods #
+    ###########
+
+    def focusChanged(self, old, now):
+        """ Is called when the focus changes. Useful for debugging.
+        """
+        logger.debug("Focus changed from {} to {}".format(old, now))
 
 
     def deleteRegistries(self):
@@ -335,6 +353,15 @@ class ArgosApplication(object):
             self.repo.loadFile(fileName, rtiClass=rtiClass)
 
 
+    def repopulateAllWindowMenus(self):
+        """ Repopulates the Window menu of all main windows from scratch.
+
+            To be called when a main window is created or removed.
+        """
+        for win in self.mainWindows:
+            win.repopulateWinowMenu(self.windowActionGroup)
+
+
     @QtSlot()
     def addNewMainWindow(self, settings=None, inspectorFullName=None):
         """ Creates and shows a new MainWindow.
@@ -344,6 +371,9 @@ class ArgosApplication(object):
         """
         mainWindow = MainWindow(self)
         self.mainWindows.append(mainWindow)
+
+        self.windowActionGroup.addAction(mainWindow.activateWindowAction)
+        self.repopulateAllWindowMenus()
 
         if settings:
             mainWindow.readViewSettings(settings)
@@ -377,6 +407,10 @@ class ArgosApplication(object):
         """ Removes the mainWindow from the list of windows. Saves the settings
         """
         logger.debug("removeMainWindow called")
+
+        self.windowActionGroup.removeAction(mainWindow.activateWindowAction)
+        self.repopulateAllWindowMenus()
+
         self.mainWindows.remove(mainWindow)
 
 
