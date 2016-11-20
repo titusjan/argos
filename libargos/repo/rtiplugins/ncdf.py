@@ -67,6 +67,24 @@ def ncVarUnit(ncVar):
 
 
 
+def variableMissingValue(ncVar):
+    """ Returns the missingData given a NetCDF variable
+
+        Looks for one of the following attributes: _FillValue, missing_value, MissingValue,
+        missingValue. Returns None if these attributes are not found.
+    """
+    attributes = ncVarAttributes(ncVar)
+    if not attributes:
+        return None # a premature optimization :-)
+
+    for key in ('missing_value', 'MissingValue', 'missingValue', 'FillValue', '_FillValue'):
+        if key in attributes:
+            missingDataValue = attributes[key]
+            return missingDataValue
+    return None
+
+
+
 class NcdfDimensionRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a NCDF group.
     """
@@ -201,6 +219,21 @@ class NcdfFieldRti(BaseRti):
         return list(self._ncVar.dimensions + tuple(subArrayDims))
 
 
+    @property
+    def missingDataValue(self):
+        """ Returns the value to indicate missing data. None if no missing-data value is specified.
+        """
+        value = variableMissingValue(self._ncVar)
+        fieldNames = self._ncVar.dtype.names
+
+        # If the missing value attibute is a list with the same length as the number of fields,
+        # return the missing value for field that equals the self.nodeName.
+        if hasattr(value, '__len__') and len(value) == len(fieldNames):
+            idx = fieldNames.index(self.nodeName)
+            return value[idx]
+        else:
+            return value
+
 
 class NcdfVariableRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a NCDF variable.
@@ -297,6 +330,13 @@ class NcdfVariableRti(BaseRti):
 #        """
 #        return [dim.group().path for dim in self._ncVar.dimensions.values()] # TODO: cache?
 #
+
+    @property
+    def missingDataValue(self):
+        """ Returns the value to indicate missing data. None if no missing-data value is specified.
+        """
+        return variableMissingValue(self._ncVar)
+
 
     def _fetchAllChildren(self):
         """ Fetches all fields that this variable contains.

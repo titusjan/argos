@@ -26,7 +26,7 @@ import h5py
 import numpy as np
 import numpy.ma as ma
 
-from libargos.utils.cls import to_string, check_class, is_an_array
+from libargos.utils.cls import to_string, check_class, is_an_array, is_a_sequence
 from libargos.repo.iconfactory import RtiIconFactory
 from libargos.repo.baserti import BaseRti
 
@@ -309,7 +309,16 @@ class H5pyFieldRti(BaseRti):
     def missingDataValue(self):
         """ Returns the value to indicate missing data. None if no missing-data value is specified.
         """
-        return dataSetMissingValue(self._h5Dataset)
+        value = dataSetMissingValue(self._h5Dataset)
+        fieldNames = self._h5Dataset.dtype.names
+
+        # If the missing value attibute is a list with the same length as the number of fields,
+        # return the missing value for field that equals the self.nodeName.
+        if hasattr(value, '__len__') and len(value) == len(fieldNames):
+            idx = fieldNames.index(self.nodeName)
+            return value[idx]
+        else:
+            return value
 
 
 
