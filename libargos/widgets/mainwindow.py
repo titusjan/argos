@@ -674,7 +674,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.repoTreeView.setCurrentIndex(lastIndex)
             return lastItem, lastIndex
         except Exception as ex:
-            logger.warn(ex)
+            logger.warn("Unable to select {!r} because: {}".format(path, ex))
+            if DEBUGGING:
+                raise
             return None, None
 
 

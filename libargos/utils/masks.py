@@ -25,7 +25,7 @@ import logging
 import numpy as np
 import numpy.ma as ma
 
-from libargos.utils.cls import is_an_array, check_is_an_array, check_class
+from libargos.utils.cls import check_class, is_an_array, check_is_an_array, array_is_structured
 
 logger = logging.getLogger(__name__)
 
@@ -203,6 +203,9 @@ class ArrayWithMask(object):
             self.data[self.mask] = np.NaN
 
 
+#############
+# functions #
+#############
 
 def replaceMaskedValue(data, mask, replacementValue, copyOnReplace=True):
     """ Replaces values where the mask is True with the replacement value.
@@ -292,3 +295,35 @@ def fill_values_to_nan(masked_array):
     else:
         return masked_array
 
+
+
+def maskedEqual(array, missingValue):
+    """ Mask an array where equal to a given (missing)value.
+
+        Unfortunately ma.masked_equal does not work with structured arrays. See:
+        https://mail.scipy.org/pipermail/numpy-discussion/2011-July/057669.html
+
+        If the data is a structured array the mask is applied for every field (i.e. forming a
+        logical-and). Otherwise ma.masked_equal is called.
+    """
+    if array_is_structured(array):
+        # Enforce the array to be masked
+        if not isinstance(array, ma.MaskedArray):
+            array = ma.MaskedArray(array)
+
+        # Set the mask separately per field
+        for nr, field in enumerate(array.dtype.names):
+            if hasattr(missingValue, '__len__'):
+                fieldMissingValue = missingValue[nr]
+            else:
+                fieldMissingValue = missingValue
+
+            array[field] = ma.masked_equal(array[field], fieldMissingValue)
+
+        check_class(array, ma.MaskedArray) # post-condition check
+        return array
+    else:
+        # masked_equal works with missing is None
+        result = ma.masked_equal(array, missingValue, copy=False)
+        check_class(result, ma.MaskedArray) # post-condition check
+        return result

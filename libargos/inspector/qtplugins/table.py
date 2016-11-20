@@ -490,7 +490,14 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         else:
             maskValue = mask
 
-        return maskValue
+        # Here maskValue can still be a list in case of structured arrays.
+        try:
+            allMasked = all(maskValue)
+        except TypeError as ex:
+            logger.error(ex)
+            allMasked = bool(maskValue)
+
+        return allMasked
 
 
     def data(self, index, role = Qt.DisplayRole):

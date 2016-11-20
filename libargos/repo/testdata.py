@@ -135,6 +135,10 @@ def createArgosTestData():
     myDict['structured_arr3'] = np.array([(1.5,2.5,(2.0, )),(3.,4.,(5., )),(1.,3.,(2.,))],
                                          dtype=[('1st','f4'),('2nd',np.float32),('3rd','f4',(2,))])
 
+    myDict['structured_masked_arr2'] = ma.MaskedArray(myDict['structured_arr2'], fill_value=-99999)
+    myDict['structured_masked_arr2'].mask[0][0] = True
+    myDict['structured_masked_arr2'].mask[0][2][0,1] = True # doesn't seem to work
+
     myDict['numpy string array']  = np.array(['Yackity', 'Smackity'])
     myDict['numpy unicode array'] = np.array(['Table', u'ταБЬℓσ'])
     myDict['byte array'] = bytearray(range(256))

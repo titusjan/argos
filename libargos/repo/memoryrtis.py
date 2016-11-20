@@ -237,7 +237,18 @@ class FieldRti(BaseRti):
     def missingDataValue(self):
         """ Returns the value to indicate missing data.
         """
-        return getMissingDataValue(self._array)
+        value =  getMissingDataValue(self._array)
+        fieldNames = self._array.dtype.names
+
+        # If the missing value attibute is a list with the same length as the number of fields,
+        # return the missing value for field that equals the self.nodeName.
+        if hasattr(value, '__len__') and len(value) == len(fieldNames):
+            idx = fieldNames.index(self.nodeName)
+            return value[idx]
+        else:
+            return value
+
+
 
 
 

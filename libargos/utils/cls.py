@@ -151,7 +151,7 @@ DEFAULT_NUM_FORMAT = '{!r}' if six.PY2 else '{}'
 
 def to_string(var, masked=None, decode_bytes='utf-8', maskFormat='', strFormat='{}',
               intFormat='{}', numFormat=DEFAULT_NUM_FORMAT, noneFormat='{!r}', otherFormat='{}'):
-    """ Converts var to a python string or uncode string so Qt widgets can display them.
+    """ Converts var to a python string or unicode string so Qt widgets can display them.
 
         If var consists of bytes, the decode_bytes is used to decode the bytes.
 
@@ -201,8 +201,15 @@ def to_string(var, masked=None, decode_bytes='utf-8', maskFormat='', strFormat='
         fmt = otherFormat
         decodedVar = var
 
-    if not is_an_array(masked) and masked and maskFormat != '{}':
-        fmt = maskFormat
+    if maskFormat != '{}':
+        try:
+            allMasked = all(masked)
+        except TypeError as ex:
+            logger.error(ex)
+            allMasked = bool(masked)
+
+        if allMasked:
+            fmt = maskFormat
 
     try:
         result = fmt.format(decodedVar)

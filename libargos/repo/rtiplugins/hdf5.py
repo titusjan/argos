@@ -24,11 +24,12 @@
 import logging, os
 import h5py
 import numpy as np
-import numpy.ma as ma
 
-from libargos.utils.cls import to_string, check_class, is_an_array, is_a_sequence
+
 from libargos.repo.iconfactory import RtiIconFactory
 from libargos.repo.baserti import BaseRti
+from libargos.utils.cls import to_string, check_class, is_an_array
+from libargos.utils.masks import maskedEqual
 
 logger = logging.getLogger(__name__)
 
@@ -160,8 +161,10 @@ class H5pyScalarRti(BaseRti):
             The scalar will be wrapped in an array with one element so it can be inspected.
         """
         array = np.array([self._h5Dataset[()]]) # slice with empty tuple
-        assert array.shape == (1, ), "Scalar wrapper shape mismatch: {}".format(array.shape)
-        return array[index] # Use the index to ensure the slice has the correct shape
+        maskedArray = maskedEqual(array, self.missingDataValue)
+
+        assert maskedArray.shape == (1, ), "Scalar wrapper shape mismatch: {}".format(array.shape)
+        return maskedArray[index] # Use the index to ensure the slice has the correct shape
 
 
     @property
@@ -250,7 +253,8 @@ class H5pyFieldRti(BaseRti):
         fieldArray = mainArray[self.nodeName]
         subIndex = tuple([Ellipsis]) + index[mainArrayNumDims:]
         slicedArray = fieldArray[subIndex]
-        return slicedArray
+
+        return maskedEqual(slicedArray, self.missingDataValue)
 
 
     @property
@@ -367,12 +371,7 @@ class H5pyDatasetRti(BaseRti):
             Passes the index through to the underlying dataset.
             Converts to a masked array using the missing data value as fill_value
         """
-        #logger.debug("data: {!r}".format(self._h5Dataset.__getitem__(index)))
-        #logger.debug("missing: {!r}".format(self.missingDataValue))
-        result = ma.masked_equal(self._h5Dataset.__getitem__(index),
-                                 self.missingDataValue, copy=False)  # works with missing == None
-        #logger.debug("result: {!r}".format(result))
-        return result
+        return maskedEqual(self._h5Dataset.__getitem__(index), self.missingDataValue)
 
 
     @property

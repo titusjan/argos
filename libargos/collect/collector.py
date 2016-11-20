@@ -528,7 +528,7 @@ class Collector(QtWidgets.QWidget):
 
         # Enforce the return type to be a masked array.
         if not isinstance(slicedArray, ma.MaskedArray):
-             slicedArray = ma.MaskedArray(slicedArray)
+            slicedArray = ma.MaskedArray(slicedArray)
 
         # Add fake dimensions of length 1 so that result.ndim will equal the number of combo boxes
         for dimNr in range(slicedArray.ndim, self.maxCombos):
