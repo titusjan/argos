@@ -205,9 +205,22 @@ class NcdfFieldRti(BaseRti):
 
     @property
     def unit(self):
-        """ Returns the unit of the RTI by calling dataSetUnit on the underlying ncdf variable
+        """ Returns the unit attribute of the underlying ncdf variable.
+
+            If the units has a length (e.g is a list) and has precisely one element per field,
+            the unit for this field is returned.
         """
-        return ncVarUnit(self._ncVar)
+        unit = ncVarUnit(self._ncVar)
+        fieldNames = self._ncVar.dtype.names
+
+        # If the missing value attribute is a list with the same length as the number of fields,
+        # return the missing value for field that equals the self.nodeName.
+        if hasattr(unit, '__len__') and len(unit) == len(fieldNames):
+            idx = fieldNames.index(self.nodeName)
+            return unit[idx]
+        else:
+            return unit
+
 
 
     @property
@@ -299,7 +312,7 @@ class NcdfVariableRti(BaseRti):
 
     @property
     def unit(self):
-        """ Returns the unit of the RTI by calling dataSetUnit on the underlying ncdf variable
+        """ Returns the unit attribute of the underlying ncdf variable
         """
         return ncVarUnit(self._ncVar)
 

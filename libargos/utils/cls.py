@@ -25,7 +25,6 @@ import numpy.ma as ma
 
 from libargos.info import DEBUGGING
 from libargos.utils import six
-from .misc import python2
 
 
 logger = logging.getLogger(__name__)
@@ -205,7 +204,6 @@ def to_string(var, masked=None, decode_bytes='utf-8', maskFormat='', strFormat='
         try:
             allMasked = all(masked)
         except TypeError as ex:
-            logger.error(ex)
             allMasked = bool(masked)
 
         if allMasked:

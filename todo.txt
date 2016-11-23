@@ -6,26 +6,18 @@ TODO version 0.2:
     missing data:
 
 
-        Color range doesn't work for 2D image with floats in the order of 1e-15:
-            /argos/ckd_release/abs_irr_uvn/irrad_conv_factors.band1.ckd.nc/BAND1/abs_irr_conv_factor_qvd1/error
-
         Missing data for structured array fields (unit column)
         /argos/trop/ql_test_020_minutes-020-021/qlbd4raw.lx.nc/BAND4/ICID_04003_GROUP_00000/INSTRUMENT/housekeeping_data
+            # I think the issue is that the unit is a list wiht a single tuple [ (b'K', b'K', b'K', b'K', b's', b'K', b'K', b'K', b'K', b'K', b'K', b'K', b'K', b'K', b'K', b'K', b'K', b'K', b'K', b'K', b'K', b'K', b'K', b'1', b'1', b'1', b'1', b'1', b'1', b'1', b'1', b'1', b'1', b'1', b'1', b'1', b'1', b'V')]
 
-        /argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/engDat.nc/DETECTOR1/clock
+            # Idem
+            /argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/engDat.nc/DETECTOR1/clock
 
-        /argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/qlbd1eps.lx.nc/BAND1/ICID_04003_GROUP_00000/OBSERVATIONS/signal
+
 
     Why doesn't the following variable have a shape?
         /argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/report.detector1.nc/settings
 
-
-    AttributeError: 'NotImplementedType' object has no attribute 'ndim' (in table)
-    /argos/trop/ql_test_020_minutes-020-021/qlbd1raw.lx.nc/BAND1/ICID_04003_GROUP_00000/PROCESSOR/measurement_to_detector_row_table
-
-    Remove collector checkbox from options.
-
-    In the config options, set 1DPlot (and such) in stead of "inspector"
 
 
     Layout and Margins.
@@ -187,11 +179,19 @@ BUGS:
      When showing /myDict/array_masked[0,0] in the TextView plugin:
         AttributeError: 'MaskedConstant' object has no attribute '_fill_value'
 
-    Seems to have the wrong data in hdf-5. Same issue as at KNMI?
+    Color range doesn't work for 2D image with floats in the order of 1e-15:
+        /argos/ckd_release/abs_irr_uvn/irrad_conv_factors.band1.ckd.nc/BAND1/abs_irr_conv_factor_qvd1/error
+        /argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/qlbd1eps.lx.nc/BAND1/ICID_04003_GROUP_00000/OBSERVATIONS/signal
+        /argos/Mini Scanner Output/acceptance2.h5/samples/re (same issue?)
+
+        /argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/qlbd6raw.lx.nc/BAND6/ICID_30175_GROUP_00001/OBSERVATIONS/signal_data_avg
+
+    Seems to have the wrong data in hdf-5. Same issue as at KNMI? Fixed in HDF5 1.10?
             was: size of tuple must match number of fields. (when reading with NetCDF4)
             also was: Had 'NotImplementedType' object has no attribute 'ndim'  (when reading with H5py mode!), this is fixed onw
         /argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/engDat.nc/DETECTOR4/swir_settings
 
+        /argos/trop/ql_test_020_minutes-020-021/qlbd4raw.lx.nc/BAND4/ICID_04003_GROUP_00000/INSTRUMENT/housekeeping_data (this one also?)
 
 
 DATA & LIBS:

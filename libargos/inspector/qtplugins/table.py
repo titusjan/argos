@@ -494,7 +494,6 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         try:
             allMasked = all(maskValue)
         except TypeError as ex:
-            logger.error(ex)
             allMasked = bool(maskValue)
 
         return allMasked

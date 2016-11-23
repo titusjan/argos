@@ -151,8 +151,8 @@ class RtiRegistry(ClassRegistry):
             RtiRegItem('NCDF file',
                        'libargos.repo.rtiplugins.ncdf.NcdfFileRti',
                        #extensions=['nc', 'nc3', 'nc4']),
-                       extensions=['nc', 'nc4']),
-                       #extensions=[]),
+                       #extensions=['nc', 'nc4']),
+                       extensions=[]),
 
             RtiRegItem('NumPy binary file',
                        'libargos.repo.rtiplugins.numpyio.NumpyBinaryFileRti',

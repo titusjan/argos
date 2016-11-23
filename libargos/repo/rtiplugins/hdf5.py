@@ -306,7 +306,16 @@ class H5pyFieldRti(BaseRti):
     def unit(self):
         """ Returns the unit of the RTI by calling dataSetUnit on the underlying dataset
         """
-        return dataSetUnit(self._h5Dataset)
+        unit = dataSetUnit(self._h5Dataset)
+        fieldNames = self._h5Dataset.dtype.names
+
+        # If the missing value attribute is a list with the same length as the number of fields,
+        # return the missing value for field that equals the self.nodeName.
+        if hasattr(unit, '__len__') and len(unit) == len(fieldNames):
+            idx = fieldNames.index(self.nodeName)
+            return unit[idx]
+        else:
+            return unit
 
 
     @property
@@ -316,7 +325,7 @@ class H5pyFieldRti(BaseRti):
         value = dataSetMissingValue(self._h5Dataset)
         fieldNames = self._h5Dataset.dtype.names
 
-        # If the missing value attibute is a list with the same length as the number of fields,
+        # If the missing value attribute is a list with the same length as the number of fields,
         # return the missing value for field that equals the self.nodeName.
         if hasattr(value, '__len__') and len(value) == len(fieldNames):
             idx = fieldNames.index(self.nodeName)
