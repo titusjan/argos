@@ -502,6 +502,7 @@ class PgGradientEditorItemCti(ChoiceCti):
         self.gradientEditorItem.loadPreset(self.configValue)
 
 
+
 class PgAspectRatioCti(BoolCti):
     """ BoolCti for locking and specifying the aspect ratio (x/y)
     """

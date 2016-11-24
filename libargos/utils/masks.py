@@ -138,6 +138,17 @@ class ArrayWithMask(object):
             return self.mask[index]
 
 
+    def maskIndex(self):
+        """ Returns a boolean index with True if the value is masked.
+
+            Always has the same shape as the maksedArray.data, event if the mask is a single boolan.
+        """
+        if isinstance(self.mask, bool):
+            return np.full(self.data.shape, self.mask, dtype=np.bool)
+        else:
+            return self.mask
+
+
     @property
     def shape(self):
         """ Convenience method, returns the shape of the data.
@@ -249,11 +260,27 @@ def replaceMaskedValueWithFloat(data, mask, replacementValue, copyOnReplace=True
         return replaceMaskedValue(data, mask, replacementValue, copyOnReplace=copyOnReplace)
 
 
-def maskedNanPercentile(maskedArray, *args, **kwargs):
+
+def maskedNanPercentile(maskedArray, percentiles, *args, **kwargs):
     """ Calculates np.nanpercentile on the non-masked values
     """
-    array = maskedArray.data[~maskedArray.mask]
-    return np.nanpercentile(array, *args, **kwargs)
+
+    #https://docs.scipy.org/doc/numpy/reference/maskedarray.generic.html#accessing-the-data
+    awm = ArrayWithMask.createFromMaskedArray(maskedArray)
+
+    maskIdx = awm.maskIndex()
+    validData = awm.data[~maskIdx]
+
+    if len(validData) >= 1:
+        result = np.nanpercentile(validData, percentiles, *args, **kwargs)
+    else:
+        # If np.nanpercentile on an empty list only returns a single Nan. We correct this here.
+        result = np.full(percentiles.shape, np.nan)
+
+    assert len(result) == len(percentiles), \
+        "shape mismatch: {} != {}".format(len(result), len(percentiles))
+
+    return result # as expected
 
 
 
@@ -281,7 +308,7 @@ def maskedNanPercentile(maskedArray, *args, **kwargs):
 #     return array
 
 
-def fill_values_to_nan(masked_array):
+def fillValuesToNan(masked_array):
     """ Replaces the fill_values of the masked array by NaNs
 
         If the array is None or it does not contain floating point values, it cannot contain NaNs.
@@ -296,7 +323,8 @@ def fill_values_to_nan(masked_array):
         return masked_array
 
 
-
+#TODO: does recordMask help here?
+# https://docs.scipy.org/doc/numpy/reference/maskedarray.baseclass.html#numpy.ma.MaskedArray.recordmask
 def maskedEqual(array, missingValue):
     """ Mask an array where equal to a given (missing)value.
 
