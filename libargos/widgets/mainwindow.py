@@ -397,11 +397,6 @@ class MainWindow(QtWidgets.QMainWindow):
         return dockWidget
 
 
-    def constructWindowTitle(self):
-        """ Constructs the window title given the current inspector and profile.
-        """
-        return
-
     def updateWindowTitle(self):
         """ Updates the window title frm the window number, inspector, etc
             Also updates the Window Menu

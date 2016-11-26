@@ -279,9 +279,13 @@ class RepoTreeView(ArgosTreeView):
         """
         logger.debug("reloadFileOfCurrentItem, rtiClass={}".format(rtiRegItem))
 
+
         currentIndex = self.getRowCurrentIndex()
         if not currentIndex.isValid():
             return
+
+        currentItem, _ = self.getCurrentItem()
+        oldPath = currentItem.nodePath
 
         fileRtiIndex = self.model().findFileRtiIndex(currentIndex)
         isExpanded = self.isExpanded(fileRtiIndex)
@@ -293,9 +297,18 @@ class RepoTreeView(ArgosTreeView):
             rtiClass = rtiRegItem.cls
 
         newRtiIndex = self.model().reloadFileAtIndex(fileRtiIndex, rtiClass=rtiClass)
-        self.setExpanded(newRtiIndex, isExpanded)
-        self.setCurrentIndex(newRtiIndex)
-        return newRtiIndex
+
+        try:
+            # Expand and select the name with the old path
+            _lastItem, lastIndex = self.expandPath(oldPath)
+            self.setCurrentIndex(lastIndex)
+            return lastIndex
+        except Exception as ex:
+            # The old path may not exist anymore. In that case select file RTI
+            logger.warning("Unable to select {!r} beause of: {}".format(oldPath, ex))
+            self.setExpanded(newRtiIndex, isExpanded)
+            self.setCurrentIndex(newRtiIndex)
+            return newRtiIndex
 
 
     @QtSlot(QtCore.QModelIndex)
