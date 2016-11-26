@@ -280,6 +280,12 @@ class PgImagePlot2d(AbstractInspector):
         self.crossLineVerShadow = pg.InfiniteLine(angle=90, movable=False, pen=self.crossShadowPen)
         self.crossLineHorizontal = pg.InfiniteLine(angle=0, movable=False, pen=self.crossPen)
         self.crossLineVertical = pg.InfiniteLine(angle=90, movable=False, pen=self.crossPen)
+
+        self.imagePlotItem.addItem(self.crossLineVerShadow, ignoreBounds=True)
+        self.imagePlotItem.addItem(self.crossLineHorShadow, ignoreBounds=True)
+        self.imagePlotItem.addItem(self.crossLineVertical, ignoreBounds=True)
+        self.imagePlotItem.addItem(self.crossLineHorizontal, ignoreBounds=True)
+
         self.probeLabel = pg.LabelItem('', justify='left')
 
         # Layout
@@ -440,14 +446,7 @@ class PgImagePlot2d(AbstractInspector):
         self.horCrossPlotItem.invertX(self.config.xFlippedCti.configValue)
         self.verCrossPlotItem.invertY(self.config.yFlippedCti.configValue)
 
-        if self.config.probeCti.configValue:
-            self.probeLabel.setVisible(True)
-            self.imagePlotItem.addItem(self.crossLineVerShadow, ignoreBounds=True)
-            self.imagePlotItem.addItem(self.crossLineHorShadow, ignoreBounds=True)
-            self.imagePlotItem.addItem(self.crossLineVertical, ignoreBounds=True)
-            self.imagePlotItem.addItem(self.crossLineHorizontal, ignoreBounds=True)
-        else:
-            self.probeLabel.setVisible(False)
+        self.probeLabel.setVisible(self.config.probeCti.configValue)
 
         self.titleLabel.setText(self.configValue('title').format(**self.collector.rtiInfo))
 
@@ -487,6 +486,7 @@ class PgImagePlot2d(AbstractInspector):
 
                 if (0 <= row < nRows) and (0 <= col < nCols):
                     self.viewBox.setCursor(Qt.CrossCursor)
+
                     self.crossPlotRow, self.crossPlotCol = row, col
                     index = tuple([row, col])
                     valueStr = to_string(self.slicedArray[index],
