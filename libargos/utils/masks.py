@@ -275,7 +275,7 @@ def maskedNanPercentile(maskedArray, percentiles, *args, **kwargs):
         result = np.nanpercentile(validData, percentiles, *args, **kwargs)
     else:
         # If np.nanpercentile on an empty list only returns a single Nan. We correct this here.
-        result = np.full(percentiles.shape, np.nan)
+        result = len(percentiles) * [np.nan]
 
     assert len(result) == len(percentiles), \
         "shape mismatch: {} != {}".format(len(result), len(percentiles))

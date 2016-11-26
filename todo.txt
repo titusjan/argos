@@ -5,6 +5,8 @@ TODO version 0.2:
 
     Default outlier percentage op 0.1%?
 
+    Current Inspector window should not be resizeable.
+
     Layout and Margins.
 
     Icons size, Darker yellow for test data.
@@ -115,26 +117,20 @@ USE CASES:
 
 BUGS:
 
-	https://bugreports.qt.io/browse/QTBUG-40585
-
-	Why doesn't value attribute show in
-	/Users/titusjan/Data/argos/2015_04_21T01_00_34_LaserSunIsrfStraySts/quicklook_000_minutes-000-020
+    # Check oude laptop
+    Pg image 2d plot breaks histogram
+        /argos/OMI-Aura_L3-OMDOAO3e_2010m0602_v003-2011m1109t115919.he5/HDFEOS/GRIDS/ColumnAmountO3/Data Fields/TerrainHeight
 
 	/users/titusjan/data/trop_lx/pre_env/2014_08_27t19_27_53_short_test_orbit/proc_000_raw
 	PyQtGraph line plot KeyError: 'attribute units has unsupported datatype'
 
-	When a floatCti has many decimals, the spin box doesn't cover the text behind it.
-
-    Pg image 2d plot breaks histogram
-        /argos/OMI-Aura_L3-OMDOAO3e_2010m0602_v003-2011m1109t115919.he5/HDFEOS/GRIDS/ColumnAmountO3/Data Fields/TerrainHeight
-
     image plot of /argos/occ/bg_corr_nominals/report.detector1.nc/DETECTOR1/illum shows a black box (autolevels.
     /Users/titusjan/Data/argos/occ/bg_corr_nominals/report.detector1.nc
 
-    image plot of:
-	/argos/hdf-eos/OMI-Aura_L2-OMNO2_2008m0720t2016-o21357_v003-2008m0721t101450.he5/HDFEOS/SWATHS/ColumnAmountNO2/Data Fields/CloudRadianceFraction
-	  File "/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/numpy/lib/function_base.py", line 257, in histogram
-        'bins must increase monotonically.')
+
+    Where are the crosshairs?
+        /argos/hdf-eos/OMI-Aura_L2-OMNO2_2008m0720t2016-o21357_v003-2008m0721t101450.he5/HDFEOS/SWATHS/ColumnAmountNO2/Data Fields/CloudRadianceFraction
+
 
     # Exit code 139 segfault
     /argos/icm/S5P_ICM_CA_UVN_20120919T051721_20120919T065655_01890_01_001000_20151002T140000.h5/BAND1_ANALYSIS/GAINS_CCD/gains_ccd_B_group_keys
@@ -181,6 +177,12 @@ SOLVED (WON'T FIX)
 
         # Idem
         /argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/engDat.nc/DETECTOR1/clock
+
+
+    https://bugreports.qt.io/browse/QTBUG-40585
+        (modalSession has been exited prematurely - check for a reentrant call to endModalSession)
+        Seems to have disappeared.
+
 
 
 DATA & LIBS:
