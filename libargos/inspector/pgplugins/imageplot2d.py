@@ -30,7 +30,7 @@ from libargos.config.boolcti import BoolCti, BoolGroupCti
 from libargos.config.choicecti import ChoiceCti
 from libargos.config.groupcti import MainGroupCti
 from libargos.inspector.abstract import AbstractInspector, InvalidDataError
-from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES,
+from libargos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES, viewBoxAxisRange,
                                                  defaultAutoRangeMethods, PgAxisLabelCti,
                                                  PgAxisCti, PgAxisFlipCti, PgAspectRatioCti,
                                                  PgAxisRangeCti, PgHistLutColorRangeCti, PgGridCti,
@@ -164,7 +164,10 @@ class PgImagePlot2dCti(MainGroupCti):
 
         histViewBox = pgImagePlot2d.histLutItem.vb
         histViewBox.enableAutoRange(Y_AXIS, False)
+        rangeFunctions = defaultAutoRangeMethods(self.pgImagePlot2d,
+            {PgAxisRangeCti.PYQT_RANGE: partial(viewBoxAxisRange, histViewBox, Y_AXIS)})
         self.histRangeCti = self.insertChild(PgAxisRangeCti(histViewBox, Y_AXIS,
+                                                            autoRangeFunctions=rangeFunctions,
                                                             nodeName='histogram range'))
 
         self.insertChild(PgGradientEditorItemCti(self.pgImagePlot2d.histLutItem.gradient))
