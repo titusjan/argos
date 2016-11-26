@@ -484,8 +484,13 @@ class H5pyGroupRti(BaseRti):
                 else:
                     childItems.append(H5pyDatasetRti(h5Child, nodeName=childName,
                                                      fileName=self.fileName))
+
+            elif isinstance(h5Child, h5py.Datatype):
+                #logger.debug("Ignored DataType item: {}".format(childName))
+                pass
             else:
-                logger.warn("Unexpected HDF-5 type (ignored): {}".format(type(h5Child)))
+                logger.warn("Ignored {}. It has an unexpected HDF-5 type: {}"
+                            .format(childName, type(h5Child)))
 
         self._childrenFetched = True
         return childItems

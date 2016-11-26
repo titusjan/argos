@@ -114,8 +114,6 @@ USE CASES:
 
 
 BUGS:
-    /Users/kenter/data/argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/engDat.nc
-        hdf5.py:488  : WARNING: Unexpected HDF-5 type (ignored): <class 'h5py._hl.datatype.Datatype'>
 
 	https://bugreports.qt.io/browse/QTBUG-40585
 
