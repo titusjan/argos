@@ -820,17 +820,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def myTest(self):
         """ Function for small ad-hoc tests
         """
-        #self.testSelectAllData()
-
-        logger.info("myTest for window: {}".format(self.windowNumber))
-
-        for action in self.argosApplication.windowActionGroup.actions():
-            print(repr(action))
-            for widget in action.associatedWidgets():
-                print("  " + repr(widget))
-
-        action.trigger()
-
+        self.testSelectAllData()
 
         # logger.debug("Repo icon size: {}".format(self.repoTreeView.iconSize()))
         # #self.repoTreeView.setIconSize(QtCore.QSize(32, 32))

@@ -132,20 +132,8 @@ USE CASES:
 BUGS:
 
 
-
-    
-
-    Reload gives error for memory RTIs. TypeError: __init__() missing 1 required positional argument: 'dictionary'
-        Disable reload? Better try to implement this similarly to the object browser.
-        All memory RTIs constructors should probably have an obj parameter instead of the file_name.
-        The file_name parameter should be added by descendants that actual use it.
-        However, the file_name should be passed on to children. So no.
-
     Table headers in attributes/properties/dimensions are not persistent.
 
-
-     When showing /myDict/array_masked[0,0] in the TextView plugin:
-        AttributeError: 'MaskedConstant' object has no attribute '_fill_value'
 
 
     Set the {path} the plot title, then set the {name} in the plot title. The title is not centered.
@@ -156,6 +144,15 @@ BUGS:
         /argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/engDat.nc/DETECTOR4/swir_settings
 
         /argos/trop/ql_test_020_minutes-020-021/qlbd4raw.lx.nc/BAND4/ICID_04003_GROUP_00000/INSTRUMENT/housekeeping_data (this one also?)
+
+
+NEXT VERSION:
+    Reload gives error for memory RTIs. TypeError: __init__() missing 1 required positional argument: 'dictionary'
+        Disable reload? Better try to implement this similarly to the object browser.
+        All memory RTIs constructors should probably have an obj parameter instead of the file_name.
+        The file_name parameter should be added by descendants that actual use it.
+        However, the file_name should be passed on to children. So no.
+
 
 SOLVED (WON'T FIX)
     Why doesn't the following variable have a shape? (Because it is a HDF-5 scalar. Won't fix)

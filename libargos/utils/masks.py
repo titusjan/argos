@@ -114,10 +114,17 @@ class ArrayWithMask(object):
     def createFromMaskedArray(cls, masked_arr):
         """ Creates an ArrayWithMak
 
-        :param masked_arr: a numpy MaskedArray or numpy array
-        :return:
+            :param masked_arr: a numpy MaskedArray or numpy array
+            :return: ArrayWithMask
         """
-        return cls(masked_arr.data, masked_arr.mask, masked_arr.fill_value)
+        check_class(masked_arr, (np.ndarray, ma.MaskedArray))
+
+        # A MaskedConstant (i.e. masked) is a special case of MaskedArray. It does not seem to have
+        # a fill_value so we use None to use the default.
+        # https://docs.scipy.org/doc/numpy/reference/maskedarray.baseclass.html#numpy.ma.masked
+        fill_value = getattr(masked_arr, 'fill_value', None)
+
+        return cls(masked_arr.data, masked_arr.mask, fill_value)
 
 
     def asMaskedArray(self):
