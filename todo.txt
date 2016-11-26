@@ -13,6 +13,20 @@ TODO version 0.2:
 
     --list inspector command line option that show the available inspector
 
+
+    # Check oude laptop
+        Pg image 2d plot breaks histogram
+            /argos/OMI-Aura_L3-OMDOAO3e_2010m0602_v003-2011m1109t115919.he5/HDFEOS/GRIDS/ColumnAmountO3/Data Fields/TerrainHeight
+
+        /users/titusjan/data/trop_lx/pre_env/2014_08_27t19_27_53_short_test_orbit/proc_000_raw
+        PyQtGraph line plot KeyError: 'attribute units has unsupported datatype'
+
+        image plot of /argos/occ/bg_corr_nominals/report.detector1.nc/DETECTOR1/illum shows a black box (autolevels.
+        /Users/titusjan/Data/argos/occ/bg_corr_nominals/report.detector1.nc
+
+    Installed plugins dialog doesn't work if scipy is not installed.  (Test under Linux)
+
+
 TODO version 0.3:
 
     Look at QSizePolicy::setControlType
@@ -117,31 +131,9 @@ USE CASES:
 
 BUGS:
 
-    # Check oude laptop
-    Pg image 2d plot breaks histogram
-        /argos/OMI-Aura_L3-OMDOAO3e_2010m0602_v003-2011m1109t115919.he5/HDFEOS/GRIDS/ColumnAmountO3/Data Fields/TerrainHeight
-
-	/users/titusjan/data/trop_lx/pre_env/2014_08_27t19_27_53_short_test_orbit/proc_000_raw
-	PyQtGraph line plot KeyError: 'attribute units has unsupported datatype'
-
-    image plot of /argos/occ/bg_corr_nominals/report.detector1.nc/DETECTOR1/illum shows a black box (autolevels.
-    /Users/titusjan/Data/argos/occ/bg_corr_nominals/report.detector1.nc
 
 
-    Where are the crosshairs?
-        /argos/hdf-eos/OMI-Aura_L2-OMNO2_2008m0720t2016-o21357_v003-2008m0721t101450.he5/HDFEOS/SWATHS/ColumnAmountNO2/Data Fields/CloudRadianceFraction
-
-
-    # Exit code 139 segfault
-    /argos/icm/S5P_ICM_CA_UVN_20120919T051721_20120919T065655_01890_01_001000_20151002T140000.h5/BAND1_ANALYSIS/GAINS_CCD/gains_ccd_B_group_keys
-
-    Exit context menu in PyQtGraphs with a left click gives an error.
-
-    Cross hair choice Cti is always False after changing inspector. Also color scale.
-
-    Line plot auto range yaxis weird with /argos/sidney/Knock.wav
-
-    Close children editors when BoolCti is disabled.
+    
 
     Reload gives error for memory RTIs. TypeError: __init__() missing 1 required positional argument: 'dictionary'
         Disable reload? Better try to implement this similarly to the object browser.
@@ -151,7 +143,6 @@ BUGS:
 
     Table headers in attributes/properties/dimensions are not persistent.
 
-    Installed plugins dialog doesn't work if scipy is not installed.
 
      When showing /myDict/array_masked[0,0] in the TextView plugin:
         AttributeError: 'MaskedConstant' object has no attribute '_fill_value'
@@ -182,6 +173,10 @@ SOLVED (WON'T FIX)
     https://bugreports.qt.io/browse/QTBUG-40585
         (modalSession has been exited prematurely - check for a reentrant call to endModalSession)
         Seems to have disappeared.
+
+    # Exit code 139 segfault (11)
+        /argos/icm/S5P_ICM_CA_UVN_20120919T051721_20120919T065655_01890_01_001000_20151002T140000.h5/BAND1_ANALYSIS/GAINS_CCD/gains_ccd_B_group_keys
+        # This happens when I read the file with h5py, so not an argos issue.
 
 
 

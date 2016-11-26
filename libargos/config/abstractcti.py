@@ -558,6 +558,8 @@ class AbstractCtiEditor(QtWidgets.QWidget):
         self.resetButton.clicked.connect(self.resetEditorValue)
         self.hBoxLayout.addWidget(self.resetButton, alignment=Qt.AlignRight)
 
+        self.cti.model.sigItemChanged.connect(self.modelItemChanged)
+
         for subEditor in (subEditors if subEditors is not None else []):
             self.addSubEditor(subEditor)
 
@@ -571,6 +573,7 @@ class AbstractCtiEditor(QtWidgets.QWidget):
         for subEditor in self._subEditors:
             self.removeSubEditor(subEditor)
 
+        self.cti.model.sigItemChanged.disconnect(self.modelItemChanged)
         self.resetButton.clicked.disconnect(self.resetEditorValue)
         self.cti = None # just to make sure it's not used again.
         self.delegate = None
@@ -644,6 +647,25 @@ class AbstractCtiEditor(QtWidgets.QWidget):
         return super(AbstractCtiEditor, self).eventFilter(watchedObject, event)
 
 
+    @QtSlot(BaseTreeItem)
+    def modelItemChanged(self, cti):
+        """ Called when the an Config Tree Item (CTI) in the model has changed.
+
+            If the CTI is a different one than the CTI that belongs to this editor, the editor
+            is closed. This can happen if the user has checked a checkbox. Qt does not close other
+            editors in the view in that case, so this is why we do it here.
+
+            If the cti parameter is the CTI belonging to this editor, nothing is done. We don't
+            close the editor because the user may want to continue editing.
+        """
+        if cti is not self.cti:
+            logger.debug("Another config tree item has changed: {}. Closing editor for {}"
+                         .format(cti, self.cti))
+            self.delegate.closeEditor.emit(self, QtWidgets.QAbstractItemDelegate.NoHint) # CLOSES SELF!
+        else:
+            logger.debug("Cti of this editor has changed: {}".format(cti))
+
+
     @QtSlot()
     def commitAndClose(self):
         """ Commits the data of the sub editor and instructs the delegate to close this ctiEditor.
@@ -660,7 +682,7 @@ class AbstractCtiEditor(QtWidgets.QWidget):
             # QAbstractItemView.closeEditor is sometimes called directly, without the
             # QAbstractItemDelegate.closeEditor signal begin emitted, e.g when the currentItem
             # changes. Therefore the commitAndClose method can be called twice, if we call it
-            # explicitly as well (e.g. in FontCtiEditor.execFontDialog(). We guard againts this.
+            # explicitly as well (e.g. in FontCtiEditor.execFontDialog(). We guard against this.
             logger.debug("AbstractCtiEditor.commitAndClose: editor already closed (ignored).")
 
 

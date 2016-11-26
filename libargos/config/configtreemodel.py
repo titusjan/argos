@@ -51,7 +51,6 @@ class ConfigTreeModel(BaseTreeModel):
         self._refreshBlocked = False
 
 
-
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
     def debug(self, topLeftIndex, bottomRightIndex):
         """ Temporary debug to test the dataChanged signal. TODO: remove.
@@ -149,7 +148,7 @@ class ConfigTreeModel(BaseTreeModel):
             if column != self.COL_VALUE:
                 return False
             else:
-                logger.debug("setting check state (col={}): {!r}".format(column, value))
+                logger.debug("Setting check state (col={}): {!r}".format(column, value))
                 treeItem.checkState = value
                 return True
 
@@ -157,7 +156,7 @@ class ConfigTreeModel(BaseTreeModel):
             if column != self.COL_VALUE:
                 return False
             else:
-                logger.debug("set Edit value (col={}): {!r}".format(column, value))
+                logger.debug("Set Edit value (col={}): {!r}".format(column, value))
                 treeItem.data = value
                 return True
         else:
