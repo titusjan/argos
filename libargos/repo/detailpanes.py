@@ -90,6 +90,8 @@ class DetailBasePane(QtWidgets.QStackedWidget):
         selectionModel = self._repoTreeView.selectionModel()
         if visible:
             selectionModel.currentChanged.connect(self.currentChanged)
+            self._repoTreeView.sigCurrentOpened.connect(self.currentChanged)
+            self._repoTreeView.sigCurrentClosed.connect(self.currentChanged)
             self._isConntected = True
             currentIndex = selectionModel.currentIndex()
             if currentIndex:
@@ -98,12 +100,15 @@ class DetailBasePane(QtWidgets.QStackedWidget):
             # At start-up the pane be be hidden but the signals are not connected.
             # A disconnect would fail in that case so we test for isConnected == True.
             if self.isConntected:
+                self._repoTreeView.sigCurrentClosed.disconnect(self.currentChanged)
+                self._repoTreeView.sigCurrentOpened.disconnect(self.currentChanged)
                 selectionModel.currentChanged.disconnect(self.currentChanged)
             self._isConntected = False
             self.errorWidget.setError(msg="Contents disabled", title="Error")
             self.setCurrentIndex(self.ERROR_PAGE_IDX)
 
 
+    @QtSlot(QtCore.QModelIndex)
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
     def currentChanged(self, currentIndex=None, _previousIndex=None):
         """ Updates the content when the current repo tree item changes.

@@ -19,9 +19,10 @@
 from __future__ import print_function
 
 import logging
-from libargos.qt import QtWidgets, QtGui, QtCore, QtSlot, Qt
+from libargos.qt import QtWidgets, QtGui, QtCore, QtSignal, QtSlot, Qt
 from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
+from libargos.repo.baserti import BaseRti
 from libargos.repo.registry import globalRtiRegistry
 from libargos.repo.repotreemodel import RepoTreeModel
 from libargos.widgets.argostreeview import ArgosTreeView
@@ -38,8 +39,10 @@ class RepoTreeView(ArgosTreeView):
 
         Currently it supports only selecting one item. That is, the current item is always the
         selected item (see notes in ArgosTreeView documentation for details).
-
     """
+    sigCurrentOpened = QtSignal(QtCore.QModelIndex)
+    sigCurrentClosed = QtSignal(QtCore.QModelIndex)
+
     def __init__(self, repoTreeModel, collector, parent=None):
         """ Constructor.
 
@@ -97,8 +100,13 @@ class RepoTreeView(ArgosTreeView):
 
         # Connect signals
         selectionModel = self.selectionModel() # need to store to prevent crash in PySide
+
         selectionModel.currentChanged.connect(self.updateCurrentItemActions)
         selectionModel.currentChanged.connect(self.updateCollector)
+        self.sigCurrentOpened.connect(self.updateCurrentItemActions)
+        self.sigCurrentOpened.connect(self.updateCollector)
+        self.sigCurrentClosed.connect(self.updateCurrentItemActions)
+        self.sigCurrentClosed.connect(self.updateCollector)
 
 
     def contextMenuEvent(self, event):
@@ -137,10 +145,14 @@ class RepoTreeView(ArgosTreeView):
         return openAsMenu
 
 
-
     def finalize(self):
         """ Disconnects signals and frees resources
         """
+        self.sigCurrentClosed.disconnect(self.updateCollector)
+        self.sigCurrentClosed.disconnect(self.updateCurrentItemActions)
+        self.sigCurrentOpened.disconnect(self.updateCollector)
+        self.sigCurrentOpened.disconnect(self.updateCurrentItemActions)
+
         selectionModel = self.selectionModel() # need to store to prevent crash in PySide
         selectionModel.currentChanged.disconnect(self.updateCollector)
         selectionModel.currentChanged.disconnect(self.updateCurrentItemActions)
@@ -168,13 +180,15 @@ class RepoTreeView(ArgosTreeView):
         """
         return self._collector
 
+
     def sizeHint(self):
         """ The recommended size for the widget."""
         return QtCore.QSize(LEFT_DOCK_WIDTH, 450)
 
 
+    @QtSlot(QtCore.QModelIndex)
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
-    def updateCurrentItemActions(self, currentIndex, _previousIndex):
+    def updateCurrentItemActions(self, currentIndex, _previousIndex=None):
         """ Enables/disables actions when a new item is the current item in the tree view.
         """
         logger.debug("updateCurrentItemActions... ")
@@ -197,12 +211,14 @@ class RepoTreeView(ArgosTreeView):
         """ Opens the current item in the repository.
         """
         logger.debug("openCurrentItem")
-        _currentIten, currentIndex = self.getCurrentItem()
+        _currentItem, currentIndex = self.getCurrentItem()
         if not currentIndex.isValid():
             return
 
         # Expanding the node will visit the children and thus show the 'open' icons
         self.expand(currentIndex)
+
+        self.sigCurrentOpened.emit(currentIndex)
 
 
     @QtSlot()
@@ -220,8 +236,10 @@ class RepoTreeView(ArgosTreeView):
         currentItem.close()
         self.dataChanged(currentIndex, currentIndex)
         self.collapse(currentIndex) # otherwise the children will be fetched immediately
-                                    # Note that this will happen anyway if the item is e in
+                                    # Note that this will happen anyway if the item is open in
                                     # in another view (TODO: what to do about this?)
+        self.sigCurrentClosed.emit(currentIndex)
+
 
     # @QtSlot()
     # def __not_used__removeCurrentFile(self):
@@ -280,8 +298,9 @@ class RepoTreeView(ArgosTreeView):
         return newRtiIndex
 
 
+    @QtSlot(QtCore.QModelIndex)
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
-    def updateCollector(self, currentIndex, _previousIndex):
+    def updateCollector(self, currentIndex, _previousIndex=None):
         """ Updates the collector based on the current selection.
 
             A selector always operates on one collector. Each selector implementation will update
