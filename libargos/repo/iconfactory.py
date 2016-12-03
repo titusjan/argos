@@ -63,7 +63,8 @@ class RtiIconFactory(object):
     COLOR_ERROR      = '#FF0000'
     COLOR_UNKNOWN    = '#999999'
     #COLOR_MEMORY     = '#FFAA00'
-    COLOR_MEMORY     = '#FFFF40'
+    #COLOR_MEMORY     = '#FFFF40'
+    COLOR_MEMORY     = '#FFDD20'
 
     _singleInstance = None
 
@@ -196,7 +197,7 @@ class RtiIconFactory(object):
         qByteArray = QtCore.QByteArray()
         qByteArray.append(svg)
         svgRenderer = QtSvg.QSvgRenderer(qByteArray)
-        icon = QtGui.QIcon() # TODO: set Qt::AA_UseHighDpiPixmaps in Qt5?
+        icon = QtGui.QIcon()
         for size in self.renderSizes:
             pixMap = QtGui.QPixmap(QtCore.QSize(size, size))
             pixMap.fill(Qt.transparent)

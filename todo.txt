@@ -9,8 +9,6 @@ TODO version 0.2:
 
     Layout and Margins.
 
-    Icons size, Darker yellow for test data.
-
     --list inspector command line option that show the available inspector
 
 
@@ -132,12 +130,13 @@ USE CASES:
 BUGS:
 
 
-    Table headers in attributes/properties/dimensions are not persistent.
 
-    Set the {path} the plot title, then set the {name} in the plot title. The title is not centered.
 
 
 NEXT VERSION:
+
+    Table headers in attributes/properties/dimensions are not persistent.
+
     Reload gives error for memory RTIs. TypeError: __init__() missing 1 required positional argument: 'dictionary'
         Disable reload? Better try to implement this similarly to the object browser.
         All memory RTIs constructors should probably have an obj parameter instead of the file_name.
@@ -145,7 +144,7 @@ NEXT VERSION:
         However, the file_name should be passed on to children. So no.
 
 
-SOLVED (WON'T FIX)
+SOLVED or WON'T FIX
     Why doesn't the following variable have a shape? (Because it is a HDF-5 scalar. Won't fix)
         /argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/report.detector1.nc/settings
 
@@ -179,9 +178,10 @@ SOLVED (WON'T FIX)
         Wrong data: 2.6.0 (libhdf5: 1.8.17) h5py
         Correct data: 2.6.0 (libhdf5: 1.8.17) NCDF
 
-        The wrong data order was probably due to files made in libhdf 1.8 that where read with libhdf 1.10 (e.g. KNMI ICM file)
+        The wrong data order was probably due to files made in libhdf 1.8 that where read with libhdf 1.10 or vice versa (e.g. KNMI ICM file)
 
-
+    PyQtGraph issue:
+        Set the {path} the plot title, then set the {name} in the plot title. The title is not centered.
 
 DATA & LIBS:
     http://pandas-datareader.readthedocs.org/en/latest/remote_data.html#google-finance

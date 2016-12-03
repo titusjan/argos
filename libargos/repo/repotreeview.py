@@ -71,6 +71,7 @@ class RepoTreeView(ArgosTreeView):
 
         self.setContextMenuPolicy(Qt.DefaultContextMenu) # will call contextMenuEvent
         self.setUniformRowHeights(True)
+        #self.setIconSize(QtCore.QSize(16, 16))
 
         # Add actions
         self.topLevelItemActionGroup = QtWidgets.QActionGroup(self) # TODO: not used anymore?

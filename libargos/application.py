@@ -55,6 +55,11 @@ def browse(fileNames=None,
     #if DEBUGGING: # TODO temporary
     #    _gcMon = createGcMonitor()
 
+    try:
+        QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
+    except Exception as ex:
+        logger.debug("AA_UseHighDpiPixmaps not available in PyQt4: {}".format(ex))
+
     # Create
     argosApp = ArgosApplication()
 
