@@ -18,6 +18,7 @@
 """ Contains TableInspector and TableInspectorModel
 """
 import logging, numbers
+import numpy as np
 
 from libargos.collect.collector import FAKE_DIM_NAME
 from libargos.config.groupcti import GroupCti, MainGroupCti
@@ -490,11 +491,15 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         else:
             maskValue = mask
 
-        # Here maskValue can still be a list in case of structured arrays.
-        try:
-            allMasked = all(maskValue)
-        except TypeError as ex:
-            allMasked = bool(maskValue)
+        # Here maskValue can still be a list in case of structured arrays. It can even still be
+        # a numpy array in case of a structured array with sub arrays as fields
+        if is_an_array(maskValue):
+            allMasked = np.all(maskValue)
+        else:
+            try:
+                allMasked = all(maskValue)
+            except TypeError as ex:
+                allMasked = bool(maskValue)
 
         return allMasked
 
