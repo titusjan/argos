@@ -19,7 +19,7 @@
 """
 import logging
 
-from libargos.qt import QtWidgets, QtSlot
+from libargos.qt import QtGui, QtWidgets, QtSlot
 from libargos.utils.cls import to_string
 
 from libargos.inspector.registry import InspectorRegItem
@@ -51,7 +51,7 @@ class InspectorSelectionPane(QtWidgets.QFrame):
     def __init__(self, execInspectorDialogAction, inspectorActionGroup, parent=None):
         super(InspectorSelectionPane, self).__init__(parent=parent)
 
-        self.setFrameShape(QtWidgets.QFrame.Box)
+        #self.setFrameShape(QtWidgets.QFrame.Box)
         self.layout = QtWidgets.QHBoxLayout()
         self.setLayout(self.layout)
 
@@ -64,6 +64,10 @@ class InspectorSelectionPane(QtWidgets.QFrame):
         inspectorMenu = QtWidgets.QMenu("Change Inspector", parent=self.menuButton)
         addInspectorActionsToMenu(inspectorMenu, execInspectorDialogAction, inspectorActionGroup)
         self.menuButton.setMenu(inspectorMenu)
+
+        sizePolicy = self.sizePolicy()
+        sizePolicy.setVerticalPolicy(QtWidgets.QSizePolicy.Fixed)
+        self.setSizePolicy(sizePolicy)
 
 
     @QtSlot(InspectorRegItem)

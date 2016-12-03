@@ -5,8 +5,6 @@ TODO version 0.2:
 
     Default outlier percentage op 0.1%?
 
-    Current Inspector window should not be resizeable.
-
     Layout and Margins.
 
     --list inspector command line option that show the available inspector
