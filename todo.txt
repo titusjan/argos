@@ -134,16 +134,7 @@ BUGS:
 
     Table headers in attributes/properties/dimensions are not persistent.
 
-
-
     Set the {path} the plot title, then set the {name} in the plot title. The title is not centered.
-
-    Seems to have the wrong data in hdf-5. Same issue as at KNMI? Fixed in HDF5 1.10?
-            was: size of tuple must match number of fields. (when reading with NetCDF4)
-            also was: Had 'NotImplementedType' object has no attribute 'ndim'  (when reading with H5py mode!), this is fixed onw
-        /argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/engDat.nc/DETECTOR4/swir_settings
-
-        /argos/trop/ql_test_020_minutes-020-021/qlbd4raw.lx.nc/BAND4/ICID_04003_GROUP_00000/INSTRUMENT/housekeeping_data (this one also?)
 
 
 NEXT VERSION:
@@ -174,6 +165,21 @@ SOLVED (WON'T FIX)
     # Exit code 139 segfault (11)
         /argos/icm/S5P_ICM_CA_UVN_20120919T051721_20120919T065655_01890_01_001000_20151002T140000.h5/BAND1_ANALYSIS/GAINS_CCD/gains_ccd_B_group_keys
         # This happens when I read the file with h5py, so not an argos issue.
+
+
+    Seems to have the wrong data in hdf-5. Same issue as at KNMI
+        /argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/engDat.nc/DETECTOR4/swir_settings
+        /argos/trop/ql_test_020_minutes-020-021/qlbd4raw.lx.nc/BAND4/ICID_04003_GROUP_00000/INSTRUMENT/housekeeping_data (this one also?)
+            was: size of tuple must match number of fields. (This was due to numpy 1.11.1, fixed 1.11.2).
+                This was because the length of dtype.descr != .dtype.names because of padding.
+
+            also was: Had 'NotImplementedType' object has no attribute 'ndim'  (when reading with H5py mode!), this is fixed onw
+
+        Crash in numpy 1.11.1
+        Wrong data: 2.6.0 (libhdf5: 1.8.17) h5py
+        Correct data: 2.6.0 (libhdf5: 1.8.17) NCDF
+
+        The wrong data order was probably due to files made in libhdf 1.8 that where read with libhdf 1.10 (e.g. KNMI ICM file)
 
 
 

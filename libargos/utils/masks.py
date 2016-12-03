@@ -117,6 +117,9 @@ class ArrayWithMask(object):
             :param masked_arr: a numpy MaskedArray or numpy array
             :return: ArrayWithMask
         """
+        if isinstance(masked_arr, ArrayWithMask):
+            return masked_arr
+
         check_class(masked_arr, (np.ndarray, ma.MaskedArray))
 
         # A MaskedConstant (i.e. masked) is a special case of MaskedArray. It does not seem to have
