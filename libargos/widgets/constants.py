@@ -36,8 +36,8 @@ COL_SHAPE_WIDTH = 60
 COL_ELEM_TYPE_WIDTH = 60
 
 # Spacing and margin in dock widgets in pixels
-DOCK_SPACING = 2
-DOCK_MARGIN  = 2
+DOCK_SPACING = 10
+DOCK_MARGIN  = 10
 
 # Spacing and margin in central widgets in pixels
 CENTRAL_SPACING = 0

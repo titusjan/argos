@@ -22,17 +22,33 @@ import logging
 from libargos.qt import QtWidgets, QtGui, QtCore, QtSignal, QtSlot, Qt
 from libargos.config.groupcti import MainGroupCti
 from libargos.config.boolcti import BoolCti
-from libargos.repo.baserti import BaseRti
 from libargos.repo.registry import globalRtiRegistry
 from libargos.repo.repotreemodel import RepoTreeModel
 from libargos.widgets.argostreeview import ArgosTreeView
 from libargos.widgets.constants import (LEFT_DOCK_WIDTH, COL_NODE_NAME_WIDTH,
-                                        COL_SHAPE_WIDTH, COL_ELEM_TYPE_WIDTH)
+                                        COL_SHAPE_WIDTH, COL_ELEM_TYPE_WIDTH,
+                                        DOCK_SPACING, DOCK_MARGIN)
 
 logger = logging.getLogger(__name__)
 
 # Qt classes have many ancestors
 #pylint: disable=R0901
+
+class RepoWidget(QtWidgets.QWidget):
+    """ Shows the repository. At the moment only the repository tree view.
+    """
+    def __init__(self, repoTreeModel, collector, parent=None):
+        """ Constructor.
+            :param parent:
+        """
+        super(RepoWidget, self).__init__(parent=parent)
+        self.repoTreeView = RepoTreeView(repoTreeModel, collector, parent=self)
+        self.mainLayout = QtWidgets.QVBoxLayout(self)
+        self.mainLayout.addWidget(self.repoTreeView)
+        self.mainLayout.setSpacing(DOCK_SPACING)
+        self.mainLayout.setContentsMargins(DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN)
+
+
 
 class RepoTreeView(ArgosTreeView):
     """ Tree widget for browsing the data repository.

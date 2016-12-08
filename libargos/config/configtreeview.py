@@ -22,7 +22,7 @@ from __future__ import print_function
 import logging
 from libargos.qt import QtCore, QtWidgets, QtSlot
 from libargos.widgets.argostreeview import ArgosTreeView
-from libargos.widgets.constants import RIGHT_DOCK_WIDTH
+from libargos.widgets.constants import RIGHT_DOCK_WIDTH, DOCK_SPACING, DOCK_MARGIN
 from libargos.config.configitemdelegate import ConfigItemDelegate
 from libargos.config.configtreemodel import ConfigTreeModel
 
@@ -30,6 +30,21 @@ logger = logging.getLogger(__name__)
 
 # Qt classes have many ancestors
 #pylint: disable=R0901
+
+
+class ConfigWidget(QtWidgets.QWidget):
+    """ Shows the configuration. At the moment only the confg tree view.
+    """
+    def __init__(self, configTreeModel, parent=None):
+        """ Constructor.
+            :param parent:
+        """
+        super(ConfigWidget, self).__init__(parent=parent)
+        self.configTreeView = ConfigTreeView(configTreeModel, parent=self)
+        self.mainLayout = QtWidgets.QVBoxLayout(self)
+        self.mainLayout.addWidget(self.configTreeView)
+        self.mainLayout.setSpacing(DOCK_SPACING)
+        self.mainLayout.setContentsMargins(DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN)
 
 
 class ConfigTreeView(ArgosTreeView):

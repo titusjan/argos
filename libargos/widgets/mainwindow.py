@@ -29,7 +29,7 @@ from libargos.collect.collector import Collector
 from libargos.config.abstractcti import ctiDumps, ctiLoads
 from libargos.config.abstractcti import AbstractCti
 from libargos.config.configtreemodel import ConfigTreeModel
-from libargos.config.configtreeview import ConfigTreeView
+from libargos.config.configtreeview import ConfigWidget
 from libargos.info import DEBUGGING, PROJECT_NAME
 from libargos.inspector.abstract import AbstractInspector, UpdateReason
 from libargos.inspector.dialog import OpenInspectorDialog
@@ -40,7 +40,7 @@ from libargos.qt import Qt, QtCore, QtGui, QtWidgets, QtSignal, QtSlot
 from libargos.repo.detailplugins.attr import AttributesPane
 from libargos.repo.detailplugins.dim import DimensionsPane
 from libargos.repo.detailplugins.prop import PropertiesPane
-from libargos.repo.repotreeview import RepoTreeView
+from libargos.repo.repotreeview import RepoWidget
 from libargos.repo.testdata import createArgosTestData
 from libargos.utils.cls import check_class
 from libargos.utils.misc import string_to_identifier
@@ -114,9 +114,9 @@ class MainWindow(QtWidgets.QMainWindow):
         """ Creates the UI widgets.
         """
         self._collector = Collector(self.windowNumber)
-        self.configTreeView = ConfigTreeView(self._configTreeModel)
-        self.repoTreeView = RepoTreeView(self.argosApplication.repo, self.collector)
-        # self._configTreeModel.insertItem(self.repoTreeView.config) # No configurable items yet
+        self.configWidget = ConfigWidget(self._configTreeModel)
+        self.repoWidget = RepoWidget(self.argosApplication.repo, self.collector)
+        # self._configTreeModel.insertItem(self.repoWidget.repoTreeView.config) # No configurable items yet
 
         # Define a central widget that will be the parent of the inspector widget.
         # We don't set the inspector directly as the central widget to retain the size when the
@@ -177,10 +177,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 triggered=createTrigger())
             openAsMenu.addAction(action)
 
-        for action in self.repoTreeView.topLevelItemActionGroup.actions():
+        for action in self.repoWidget.repoTreeView.topLevelItemActionGroup.actions():
             fileMenu.addAction(action)
 
-        for action in self.repoTreeView.currentItemActionGroup.actions():
+        for action in self.repoWidget.repoTreeView.currentItemActionGroup.actions():
             fileMenu.addAction(action)
 
         fileMenu.addSeparator()
@@ -265,20 +265,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dockWidget(self.inspectorSelectionPane, "Current Inspector",
                         area=Qt.LeftDockWidgetArea)
 
-        self.dockWidget(self.repoTreeView, "Data Repository", Qt.LeftDockWidgetArea)
+        self.dockWidget(self.repoWidget, "Data Repository", Qt.LeftDockWidgetArea)
         self.dockWidget(self.collector, "Data Collector", Qt.TopDockWidgetArea)
         # TODO: if the title == "Settings" it won't be added to the view menu.
-        self.dockWidget(self.configTreeView, "Application Settings", Qt.RightDockWidgetArea)
+        self.dockWidget(self.configWidget, "Application Settings", Qt.RightDockWidgetArea)
 
         self.viewMenu.addSeparator()
 
-        propertiesPane = PropertiesPane(self.repoTreeView)
+        propertiesPane = PropertiesPane(self.repoWidget.repoTreeView)
         self.dockDetailPane(propertiesPane, area=Qt.LeftDockWidgetArea)
 
-        attributesPane = AttributesPane(self.repoTreeView)
+        attributesPane = AttributesPane(self.repoWidget.repoTreeView)
         self.dockDetailPane(attributesPane, area=Qt.LeftDockWidgetArea)
 
-        dimensionsPane = DimensionsPane(self.repoTreeView)
+        dimensionsPane = DimensionsPane(self.repoWidget.repoTreeView)
         self.dockDetailPane(dimensionsPane, area=Qt.LeftDockWidgetArea)
 
         # Add am extra separator on mac because OS-X adds an 'Enter Full Screen' item
@@ -537,7 +537,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     logger.debug("Setting non defaults: {}".format(nonDefaults))
                     self.inspector.config.setValuesFromDict(nonDefaults)
                     self._configTreeModel.insertItem(self.inspector.config, oldConfigPosition)
-                    self.configTreeView.expandBranch()
+                    self.configWidget.configTreeView.expandBranch()
                     self.collector.clearAndSetComboBoxes(self.inspector.axesNames())
                     centralLayout.addWidget(self.inspector)
             finally:
@@ -651,11 +651,11 @@ class MainWindow(QtWidgets.QMainWindow):
         for fileName in fileNames:
             rtiClass = rtiRegItem.getClass(tryImport=True) if rtiRegItem else None
             fileRootIndex = self.argosApplication.repo.loadFile(fileName, rtiClass=rtiClass)
-            self.repoTreeView.setExpanded(fileRootIndex, True)
+            self.repoWidget.repoTreeView.setExpanded(fileRootIndex, True)
 
         # Select last opened file
         if fileRootIndex is not None:
-            self.repoTreeView.setCurrentIndex(fileRootIndex)
+            self.repoWidget.repoTreeView.setCurrentIndex(fileRootIndex)
 
 
     def trySelectRtiByPath(self, path):
@@ -665,8 +665,8 @@ class MainWindow(QtWidgets.QMainWindow):
             and (None, None) is returned.
         """
         try:
-            lastItem, lastIndex = self.repoTreeView.expandPath(path)
-            self.repoTreeView.setCurrentIndex(lastIndex)
+            lastItem, lastIndex = self.repoWidget.repoTreeView.expandPath(path)
+            self.repoWidget.repoTreeView.setCurrentIndex(lastIndex)
             return lastItem, lastIndex
         except Exception as ex:
             logger.warn("Unable to select {!r} because: {}".format(path, ex))
@@ -688,8 +688,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.restoreGeometry(settings.value("geometry"))
         self.restoreState(settings.value("state"))
 
-        self.repoTreeView.readViewSettings('repo_tree/header_state', settings)
-        self.configTreeView.readViewSettings('config_tree/header_state', settings)
+        self.repoWidget.repoTreeView.readViewSettings('repo_tree/header_state', settings)
+        self.configWidget.configTreeView.readViewSettings('config_tree/header_state', settings)
 
         #self._configTreeModel.readModelSettings('config_model', settings)
         settings.beginGroup('cfg_inspectors')
@@ -726,8 +726,8 @@ class MainWindow(QtWidgets.QMainWindow):
         finally:
             settings.endGroup()
 
-        self.configTreeView.saveProfile("config_tree/header_state", settings)
-        self.repoTreeView.saveProfile("repo_tree/header_state", settings)
+        self.configWidget.configTreeView.saveProfile("config_tree/header_state", settings)
+        self.repoWidget.repoTreeView.saveProfile("repo_tree/header_state", settings)
 
         settings.setValue("geometry", self.saveGeometry())
         settings.setValue("state", self.saveState())
@@ -754,7 +754,7 @@ class MainWindow(QtWidgets.QMainWindow):
             settings.endGroup()
 
         # Select the current item in the new window.
-        currentItem, _currentIndex = self.repoTreeView.getCurrentItem()
+        currentItem, _currentIndex = self.repoWidget.repoTreeView.getCurrentItem()
         if currentItem:
             newWindow.trySelectRtiByPath(currentItem.nodePath)
 
@@ -822,10 +822,10 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         self.testSelectAllData()
 
-        # logger.debug("Repo icon size: {}".format(self.repoTreeView.iconSize()))
-        # #self.repoTreeView.setIconSize(QtCore.QSize(32, 32))
-        # self.repoTreeView.setIconSize(QtCore.QSize(24, 24))
-        # logger.debug("Repo icon size: {}".format(self.repoTreeView.iconSize()))
+        # logger.debug("Repo icon size: {}".format(self.repoWidget.repoTreeView.iconSize()))
+        # #self.repoWidget.repoTreeView.setIconSize(QtCore.QSize(32, 32))
+        # self.repoWidget.repoTreeView.setIconSize(QtCore.QSize(24, 24))
+        # logger.debug("Repo icon size: {}".format(self.repoWidget.repoTreeView.iconSize()))
         # #self.collector.tree.resizeColumnsToContents(startCol=1)
 
         # from libargos.qt.misc import printChildren
@@ -858,7 +858,7 @@ class MainWindow(QtWidgets.QMainWindow):
             """
             assert index.isValid(), "sanity check"
 
-            repoModel = self.repoTreeView.model()
+            repoModel = self.repoWidget.repoTreeView.model()
             item = repoModel.getItem(index)
             logger.info("Visiting: {!r} ({} children)".
                         format(item.nodePath, repoModel.rowCount(index)))
@@ -868,11 +868,11 @@ class MainWindow(QtWidgets.QMainWindow):
                 logger.warn("Skipping node during testing: {}".format(item.nodePath))
                 return
 
-            self.repoTreeView.setCurrentIndex(index)
+            self.repoWidget.repoTreeView.setCurrentIndex(index)
             QtWidgets.qApp.processEvents() # Cause Qt to update UI
 
             # Expand node to load children.
-            #self.repoTreeView.setExpanded(index, True)
+            #self.repoWidget.repoTreeView.setExpanded(index, True)
             #QtWidgets.qApp.processEvents() # Cause Qt to load children.
 
             for rowNr in range(repoModel.rowCount(index)):
@@ -887,14 +887,14 @@ class MainWindow(QtWidgets.QMainWindow):
             logger.info("Selecting all nodes in: {}".format(rootNode))
 
             nodeItem, nodeIndex = self.trySelectRtiByPath(rootNode)
-            self.repoTreeView.expandBranch(index = nodeIndex, expanded=True) # TODO: why necessary?
+            self.repoWidget.repoTreeView.expandBranch(index = nodeIndex, expanded=True) # TODO: why necessary?
             #QtWidgets.qApp.processEvents()
             visitNodes(nodeIndex)
 
             #
             # try:
             #
-            #     self.repoTreeView.setCurrentIndex(lastIndex)
+            #     self.repoWidget.repoTreeView.setCurrentIndex(lastIndex)
             # except Exception as ex:
             #     logger.error(ex)
             #     if DEBUGGING:

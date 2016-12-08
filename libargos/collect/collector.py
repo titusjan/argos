@@ -27,7 +27,7 @@ from libargos.repo.baserti import BaseRti
 from libargos.qt import Qt, QtWidgets, QtGui, QtCore, QtSignal, QtSlot
 from libargos.utils.cls import check_class, check_is_a_sequence, check_is_an_array, is_an_array
 from libargos.utils.masks import ArrayWithMask
-from libargos.widgets.constants import (TOP_DOCK_HEIGHT)
+from libargos.widgets.constants import TOP_DOCK_HEIGHT, DOCK_SPACING, DOCK_MARGIN
 
 logger = logging.getLogger(__name__)
 
@@ -67,10 +67,10 @@ class Collector(QtWidgets.QWidget):
         self._spinBoxes = []         # Will be set in createSpinBoxes
 
         self.layout = QtWidgets.QHBoxLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
+        self.layout.setSpacing(DOCK_SPACING)
+        self.layout.setContentsMargins(DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN)
         self.buttonLayout = QtWidgets.QVBoxLayout()
-        self.layout.setContentsMargins(2, 0, 2, 0)
+        # self.layout.setContentsMargins(2, 0, 2, 0)
 
         # Add tree
         self.tree = CollectorTree(self)
