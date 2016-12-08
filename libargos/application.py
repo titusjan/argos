@@ -33,6 +33,16 @@ from libargos.widgets.mainwindow import MainWindow, UpdateReason
 logger = logging.getLogger(__name__)
 
 
+def printInspectors():
+    """ Prints a list of inspectors
+    """
+    argosApp = ArgosApplication()
+    argosApp.loadOrInitRegistries()
+    for regItem in argosApp.inspectorRegistry.items:
+        print(regItem.fullName)
+
+
+
 def browse(fileNames=None,
            inspectorFullName=None,
            select=None,
