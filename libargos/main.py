@@ -19,19 +19,17 @@
 """
 from __future__ import print_function
 
-import logging, sys, argparse
+# ----IMPORTANT ----
+# Do not do any imports here that (indirectly) import any dependencies (PyQt, numpy, etc)
+# The browse function is imported by the argos package, which in turn is imported by setup.py.
+# If you import (for instance) numpy here, the setup.py will fail if numpy is not installed.
 
-from PyQt5 import QtWidgets, QtCore
+import logging, sys, argparse
+from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, DEFAULT_PROFILE
 
 logger = logging.getLogger('libargos')
 logging.basicConfig(level='DEBUG', stream=sys.stderr,
                     format='%(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s')
-
-from libargos.application import ArgosApplication
-from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, DEFAULT_PROFILE
-from libargos.repo.testdata import createArgosTestData
-from libargos.qt.misc import ABOUT_QT_BINDINGS
-from libargos.utils.misc import remove_process_serial_number
 
 
 def browse(fileNames=None,
@@ -53,8 +51,10 @@ def browse(fileNames=None,
         :param resetRegistry: if True, the registry will be reset to it standard settings.
         :return:
     """
-    #if DEBUGGING: # TODO temporary
-    #    _gcMon = createGcMonitor()
+    # Imported here so this module can be imported without Qt being installed.
+    from PyQt5 import QtWidgets, QtCore
+    from libargos.application import ArgosApplication
+    from libargos.repo.testdata import createArgosTestData
 
     try:
         QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
@@ -92,10 +92,31 @@ def browse(fileNames=None,
 def printInspectors():
     """ Prints a list of inspectors
     """
+    # Imported here so this module can be imported without Qt being installed.
+    from libargos.application import ArgosApplication
+
     argosApp = ArgosApplication()
     argosApp.loadOrInitRegistries()
     for regItem in argosApp.inspectorRegistry.items:
         print(regItem.fullName)
+
+
+def configBasicLogging(level = 'DEBUG'):
+    """ Setup basic config logging.
+    """
+    fmt = '%(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s'
+    logging.basicConfig(level=level, format=fmt)
+
+
+def remove_process_serial_number(arg_list):
+    """ Creates a copy of a list (typically sys.argv) where the strings that
+        start with '-psn_0_' are removed.
+
+        These are the process serial number used by the OS-X open command
+        to bring applications to the front. They clash with argparse.
+        See: http://hintsforums.macworld.com/showthread.php?t=11978
+    """
+    return [arg for arg in arg_list if not arg.startswith("-psn_0_")]
 
 
 def main():
@@ -143,11 +164,6 @@ def main():
         logger.info("Setting log level to: {}".format(args.log_level.upper()))
     logger.setLevel(args.log_level.upper())
 
-    logger.info('Started {} {}'.format(PROJECT_NAME, VERSION))
-    logger.info("Python version: {}".format(sys.version).replace('\n', ''))
-    #logger.info('Using: {}'.format('PyQt' if USE_PYQT else 'PySide'))
-    logger.info("Using {}".format(ABOUT_QT_BINDINGS))
-
     if DEBUGGING:
         logger.warn("Debugging flag is on!")
 
@@ -158,6 +174,14 @@ def main():
     if args.list_inspectors:
         printInspectors()
         sys.exit(0)
+
+    logger.info('Started {} {}'.format(PROJECT_NAME, VERSION))
+    logger.info("Python version: {}".format(sys.version).replace('\n', ''))
+    #logger.info('Using: {}'.format('PyQt' if USE_PYQT else 'PySide'))
+
+    # Imported here so this module can be imported without Qt being installed.
+    from libargos.qt.misc import ABOUT_QT_BINDINGS
+    logger.info("Using {}".format(ABOUT_QT_BINDINGS))
 
     # Browse will create an ArgosApplication with one MainWindow
     browse(fileNames = args.fileNames,

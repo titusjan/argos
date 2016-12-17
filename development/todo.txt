@@ -20,7 +20,6 @@ TODO version 0.2:
 
     Release:
         Make release candidate.
-            - scripts
             - requirements
             - downloading setuptools
 
@@ -34,6 +33,7 @@ TODO version 0.2:
 
     consider evaluating info.py instead of import libargos.info. To bypass libargos/__init__.py
     and so let setup.py work when pyqt is not installed.
+    Better do the imports inside browse.
 
 TODO version 0.3:
 

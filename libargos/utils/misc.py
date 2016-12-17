@@ -48,19 +48,13 @@ def python_major_version():
     """
     return sys.version_info[0]
 
+
 def python2():
     """ Returns True if we are running python 2
     """
     major_version = sys.version_info[0]
     assert major_version == 2 or major_version == 3, "major_version = {!r}".format(major_version)
     return major_version == 2
-
-
-def configBasicLogging(level = 'DEBUG'):
-    """ Setup basic config logging.
-    """
-    fmt = '%(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s'
-    logging.basicConfig(level=level, format=fmt)
 
 
 def log_dictionary(dictionary, msg='', logger=None, level='debug', item_prefix='  '):
@@ -95,17 +89,6 @@ def log_dictionary(dictionary, msg='', logger=None, level='debug', item_prefix='
     for key, value in sorted(dictionary.items()):
         logger.log(level_nr, "{0}{1:<{2}s} = {3}".format(item_prefix, key, max_key_len, value))
 
-
-
-def remove_process_serial_number(arg_list):
-    """ Creates a copy of a list (typically sys.argv) where the strings that
-        start with '-psn_0_' are removed.
-
-        These are the process serial number used by the OS-X open command
-        to bring applications to the front. They clash with argparse.
-        See: http://hintsforums.macworld.com/showthread.php?t=11978
-    """
-    return [arg for arg in arg_list if not arg.startswith("-psn_0_")]
 
 
 def prepend_point_to_extension(extension):

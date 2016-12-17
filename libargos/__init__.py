@@ -21,7 +21,11 @@
     The only way is up in that respect. It imports a few symbols itself for convenience. This
     allows users, for instance, to call libargos.browse().
 """
+
+# IMPORTANT: do not do any imports here that (indirectly) import any dependencies (PyQt, numpy, etc)
+# The browse function is imported by the argos package, which in turn is imported by setup.py.
+# If you import (for instance) numpy here, the setup.py will fail if numpy is not installed.
+
 from .info import VERSION as __version__
-from .main import browse
-from .utils.misc import configBasicLogging
+from .main import browse, configBasicLogging
 
