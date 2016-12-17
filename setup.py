@@ -16,17 +16,26 @@ else:
     print("Using distutils to import setup. No wheels enabled")
     from distutils.core import setup
 
-
+import sys
 from libargos import info
 
 assert not info.DEBUGGING, "info.DEBUGGING should be False"
+
+if sys.version_info < (2,7) or ((3,0) <= sys.version_info < (3, 4)):
+    sys.stderr.write("{} requires Python 2.7 and higher or 3.4 and higher."
+                     .format(info.PROJECT_NAME))
+    sys.exit(1)
 
 
 readme = open('README.rst').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
-requirements = [
-    # TODO: put package requirements here
+# Argos will technically work without pyqtgraph and h5py, but with very limited functionality.
+install_requires = [
+    "pyqt >= 5",
+    "numpy >= 1.11",
+    "pyqtgraph >= 0.10",
+    "h5py >= 2.6"
 ]
 
 
@@ -41,9 +50,8 @@ setup(
     url=info.PROJECT_URL,
     packages = find_packages(),
     package_data = {'': ['HISTORY.rst'], info.PACKAGE_NAME: ['img/snipicons/*']},
-    #scripts = ['argos'],
     entry_points={'gui_scripts': ['argos = libargos.main:main']},
-    install_requires = requirements,
+    install_requires = install_requires,
     zip_safe = False,
     classifiers = [
         'Development Status :: 4 - Beta',
