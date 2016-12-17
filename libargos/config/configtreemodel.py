@@ -121,7 +121,8 @@ class ConfigTreeModel(BaseTreeModel):
             if column == self.COL_NODE_NAME or column == self.COL_NODE_PATH:
                 return treeItem.nodePath
             elif column == self.COL_VALUE:
-                return treeItem.displayValue
+                # Give Access to exact values. In particular in scientific-notation spin boxes
+                return repr(treeItem.configValue)
             elif column == self.COL_DEF_VALUE:
                 return treeItem.displayDefaultValue
             elif column == self.COL_CTI_TYPE:
