@@ -12,8 +12,5 @@ scriptDir = os.path.dirname(os.path.realpath(__file__))
 parentDir = os.path.realpath(os.path.join(scriptDir, '..'))
 
 sys.path.insert(0, parentDir)
-for p in sys.path:
-    print(p)
-
 from libargos.main import main
 main()
