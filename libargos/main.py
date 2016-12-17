@@ -20,15 +20,82 @@
 from __future__ import print_function
 
 import logging, sys, argparse
+
+from PyQt5 import QtWidgets, QtCore
+
 logger = logging.getLogger('libargos')
 logging.basicConfig(level='DEBUG', stream=sys.stderr,
                     format='%(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s')
 
-from libargos import browse
-from libargos.application import printInspectors
-from libargos.qt.misc import ABOUT_QT_BINDINGS
+from libargos.application import ArgosApplication
 from libargos.info import DEBUGGING, PROJECT_NAME, VERSION, DEFAULT_PROFILE
+from libargos.repo.testdata import createArgosTestData
+from libargos.qt.misc import ABOUT_QT_BINDINGS
 from libargos.utils.misc import remove_process_serial_number
+
+
+def browse(fileNames=None,
+           inspectorFullName=None,
+           select=None,
+           profile=DEFAULT_PROFILE,
+           resetProfile=False,      # TODO: should probably be moved to the main program
+           resetAllProfiles=False,  # TODO: should probably be moved to the main program
+           resetRegistry=False):    # TODO: should probably be moved to the main program
+    """ Opens the main window(s) for the persistent settings of the given profile,
+        and executes the application.
+
+        :param fileNames: List of file names that will be added to the repository
+        :param inspectorFullName: The full path name of the inspector that will be loaded
+        :param select: a path of the repository item that will selected at start up.
+        :param profile: the name of the profile that will be loaded
+        :param resetProfile: if True, the profile will be reset to it standard settings.
+        :param resetAllProfiles: if True, all profiles will be reset to it standard settings.
+        :param resetRegistry: if True, the registry will be reset to it standard settings.
+        :return:
+    """
+    #if DEBUGGING: # TODO temporary
+    #    _gcMon = createGcMonitor()
+
+    try:
+        QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
+    except Exception as ex:
+        logger.debug("AA_UseHighDpiPixmaps not available in PyQt4: {}".format(ex))
+
+    # Create
+    argosApp = ArgosApplication()
+
+    if resetProfile:
+        argosApp.deleteProfile(profile)
+    if resetAllProfiles:
+        argosApp.deleteAllProfiles()
+    if resetRegistry:
+        argosApp.deleteRegistries()
+
+    # Must be called before opening the files so that file formats are auto-detected.
+    argosApp.loadOrInitRegistries()
+
+    # Load data in common repository before windows are created.
+    argosApp.loadFiles(fileNames)
+    if DEBUGGING:
+        argosApp.repo.insertItem(createArgosTestData())
+
+    # Create windows for this profile.
+    argosApp.loadProfile(profile=profile, inspectorFullName=inspectorFullName)
+
+    if select:
+        for mainWindow in argosApp.mainWindows:
+            mainWindow.trySelectRtiByPath(select)
+
+    return argosApp.execute()
+
+
+def printInspectors():
+    """ Prints a list of inspectors
+    """
+    argosApp = ArgosApplication()
+    argosApp.loadOrInitRegistries()
+    for regItem in argosApp.inspectorRegistry.items:
+        print(regItem.fullName)
 
 
 def main():
@@ -103,3 +170,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

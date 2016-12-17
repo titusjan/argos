@@ -37,6 +37,8 @@ TODO version 0.2:
 
 TODO version 0.3:
 
+    Better log config
+
     Look at QSizePolicy::setControlType
 
     Default outlier percentage op 0.1%?
@@ -50,7 +52,7 @@ TODO version 0.3:
     Better PyQtGraph histogram/color bar.
         Submit bug reports on
 
-   	Combine property attribute windows in a tree.
+   	Combine property, dimension and attribute tables dock windows in a tree in a single dockwindow.
    	    Config values.
 
     Table inspector flip Y axis?

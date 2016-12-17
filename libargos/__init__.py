@@ -22,6 +22,6 @@
     allows users, for instance, to call libargos.browse().
 """
 from .info import VERSION as __version__
-from .application import browse
+from main import browse
 from .utils.misc import configBasicLogging
 

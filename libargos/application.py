@@ -17,87 +17,20 @@
 
 """ Version and other info for this program
 """
-import sys, logging, platform
+import logging
+import sys
 
-from libargos.info import DEBUGGING, DEFAULT_PROFILE
+from libargos.info import DEBUGGING
 from libargos.inspector.registry import InspectorRegistry, DEFAULT_INSPECTOR
 from libargos.qt import QtCore, QtWidgets, QtSlot
 from libargos.qt.misc import removeSettingsGroup, handleException, initQApplication
 from libargos.qt.registry import GRP_REGISTRY, nameToIdentifier
-from libargos.repo.repotreemodel import RepoTreeModel
 from libargos.repo.registry import globalRtiRegistry
-from libargos.repo.testdata import createArgosTestData
+from libargos.repo.repotreemodel import RepoTreeModel
 from libargos.utils.misc import string_to_identifier
 from libargos.widgets.mainwindow import MainWindow, UpdateReason
 
 logger = logging.getLogger(__name__)
-
-
-def printInspectors():
-    """ Prints a list of inspectors
-    """
-    argosApp = ArgosApplication()
-    argosApp.loadOrInitRegistries()
-    for regItem in argosApp.inspectorRegistry.items:
-        print(regItem.fullName)
-
-
-
-def browse(fileNames=None,
-           inspectorFullName=None,
-           select=None,
-           profile=DEFAULT_PROFILE,
-           resetProfile=False,      # TODO: should probably be moved to the main program
-           resetAllProfiles=False,  # TODO: should probably be moved to the main program
-           resetRegistry=False):    # TODO: should probably be moved to the main program
-    """ Opens the main window(s) for the persistent settings of the given profile,
-        and executes the application.
-
-        :param fileNames: List of file names that will be added to the repository
-        :param inspectorFullName: The full path name of the inspector that will be loaded
-        :param select: a path of the repository item that will selected at start up.
-        :param profile: the name of the profile that will be loaded
-        :param resetProfile: if True, the profile will be reset to it standard settings.
-        :param resetAllProfiles: if True, all profiles will be reset to it standard settings.
-        :param resetRegistry: if True, the registry will be reset to it standard settings.
-        :return:
-    """
-    #if DEBUGGING: # TODO temporary
-    #    _gcMon = createGcMonitor()
-
-    try:
-        QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
-    except Exception as ex:
-        logger.debug("AA_UseHighDpiPixmaps not available in PyQt4: {}".format(ex))
-
-    # Create
-    argosApp = ArgosApplication()
-
-    if resetProfile:
-        argosApp.deleteProfile(profile)
-    if resetAllProfiles:
-        argosApp.deleteAllProfiles()
-    if resetRegistry:
-        argosApp.deleteRegistries()
-
-    # Must be called before opening the files so that file formats are auto-detected.
-    argosApp.loadOrInitRegistries()
-
-    # Load data in common repository before windows are created.
-    argosApp.loadFiles(fileNames)
-    if DEBUGGING:
-        argosApp.repo.insertItem(createArgosTestData())
-
-    # Create windows for this profile.
-    argosApp.loadProfile(profile=profile, inspectorFullName=inspectorFullName)
-
-    if select:
-        for mainWindow in argosApp.mainWindows:
-            mainWindow.trySelectRtiByPath(select)
-
-
-    return argosApp.execute()
-
 
 
 class ArgosApplication(QtCore.QObject):
