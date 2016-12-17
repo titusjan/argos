@@ -7,20 +7,19 @@ from __future__ import absolute_import
 
 # See also https://packaging.python.org/en/latest/distributing.html
 # TODO: still can't make a wheel even following the instructions in the link below.
-# http://stackoverflow.com/questions/26664102/why-can-i-not-create-a-wheel-in-python
+# http://stackoverflow.com/questions/26664102/why-can-i-not-create-a-wheel-in-pyt
 
-try:
-    from setuptools import setup
-except ImportError:
+
+if 1:
+    from setuptools import setup, find_packages
+else:
     print("Using distutils to import setup. No wheels enabled")
-    assert False, "stopped"
     from distutils.core import setup
 
+
 from libargos import info
-from libargos.qt import USE_PYQT
 
 assert not info.DEBUGGING, "info.DEBUGGING should be False"
-assert USE_PYQT, "USE_PYQT should be True"
 
 
 readme = open('README.rst').read()
@@ -30,30 +29,23 @@ requirements = [
     # TODO: put package requirements here
 ]
 
-test_requirements = [
-    # TODO: put package test requirements here
-]
 
 setup(
-    name=info.REPO_NAME,
-    version=info.VERSION,
-    description=info.SHORT_DESCRIPTION,
-    long_description=readme + '\n\n' + history,
-    author=info.AUTHOR,
-    author_email=info.EMAIL,
+    name = info.REPO_NAME,
+    version = info.VERSION,
+    description = info.SHORT_DESCRIPTION,
+    long_description = readme + '\n\n' + history,
+    author = info.AUTHOR,
+    author_email = info.EMAIL,
+    license = "GPLv3",
     url=info.PROJECT_URL,
-    packages=[
-        info.PACKAGE_NAME
-    ],
-    package_dir={info.PACKAGE_NAME: info.PACKAGE_NAME},
+    packages = find_packages(),
+    package_data = {'': ['HISTORY.rst'], info.PACKAGE_NAME: ['img/snipicons/*']},
     scripts = ['argos'],
-    include_package_data=True,
-    install_requires=requirements,
-    license="GPLv3",
-    zip_safe=False,
-    keywords='NCDF HDF plotting graphs',
-    classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+    install_requires = requirements,
+    zip_safe = False,
+    classifiers = [
+        'Development Status :: 4 - Beta',
         'Environment :: X11 Applications :: Qt',
         'Intended Audience :: Developers',
         'Intended Audience :: End Users/Desktop',
@@ -67,10 +59,12 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Topic :: Software Development',
         'Topic :: Scientific/Engineering',
         'Topic :: Utilities',
     ],
-    test_suite='tests',
-    tests_require=test_requirements
+    keywords = 'NCDF HDF plotting graphs',
+    #test_suite='tests',
+    #tests_require=test_requirements
 )

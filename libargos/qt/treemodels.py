@@ -177,12 +177,12 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         #logger.debug("    Getting row {} from parentItem: {}".format(row, parentItem))
 
         if not (0 <= row < parentItem.nChildren()):
-            # Can happen when deleting the last child. TODO: remove warning?
-            logger.warn("Index row {} invalid for parent item: {}".format(row, parentItem))
+            # Can happen when deleting the last child.
+            #logger.warn("Index row {} invalid for parent item: {}".format(row, parentItem))
             return QtCore.QModelIndex()
 
         if not (0 <= column < self.columnCount()):
-            logger.warn("Index column {} invalid for parent item: {}".format(column, parentItem))
+            #logger.warn("Index column {} invalid for parent item: {}".format(column, parentItem))
             return QtCore.QModelIndex()
 
         childItem = parentItem.child(row)

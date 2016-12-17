@@ -1,3 +1,5 @@
+# Make file taken from cookiecutter. Not al targets may be up to date.
+
 .PHONY: clean-pyc clean-build docs clean
 
 help:
@@ -56,9 +58,9 @@ docs:
 
 release: clean
 	python setup.py sdist upload
-	python setup.py bdist_wheel upload
+	#python setup.py bdist_wheel upload
 
 dist: clean
 	python setup.py sdist
-	python setup.py bdist_wheel
-	ls -l dist
+	#python setup.py bdist_wheel
+	#ls -l dist

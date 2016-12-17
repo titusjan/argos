@@ -1,3 +1,4 @@
+# Temporary files with interesting test data.
 ***
 /argos/gstp-rad/2014-04-29_FEL-350/calib_1050nm/2014-04-29T11_53_38Nothing m2.h5/scan_procedure/procedure
 /argos/mytests/string.hdf5/

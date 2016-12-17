@@ -1,13 +1,8 @@
 
 TODO version 0.2:
 
-    Test by opening all test data.
-
-    Default outlier percentage op 0.1%?
-
-    Layout and Margins.
-
-    --list inspector command line option that show the available inspector
+    Refresh of directories fails.
+    Show both error and description
 
 
     # Check oude laptop
@@ -22,10 +17,25 @@ TODO version 0.2:
 
     Installed plugins dialog doesn't work if scipy is not installed.  (Test under Linux)
 
+    Release:
+        Make release candidate.
+            - scripts
+            - requirements
+            - downloading setuptools
+
+        Rename libargos to argos
+
+        Pylint and TODOs?
+        Test by opening all test data?
+
+
+    # check docs dir.
 
 TODO version 0.3:
 
     Look at QSizePolicy::setControlType
+
+    Default outlier percentage op 0.1%?
 
 	Interaction in IPython
 	QSettings should not use titusjan by default

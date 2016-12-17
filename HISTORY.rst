@@ -5,14 +5,10 @@ History
 
 Current development branch
 
-
-* Range config tree items (CTI) have scientific notation
-* Axis CTIs can have flip and log-mode.
-
-0.2.0-devel (2016-03-29)
+0.2.0-devel (2016-??-??)
 ---------------------
 
-* First useable release.
+* First usable release.
 
 
 0.1.0-devel (2014-11-01)
