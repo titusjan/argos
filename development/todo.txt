@@ -5,6 +5,7 @@ TODO version 0.2:
     Show both error and description
     Specind tiff
     Reset color and histogram range in context menu
+    AssertionError: not all children fetched: <NumpyCompressedFileRti: /argos/mytests/d.npz>
 
     # Check oude laptop
         Pg image 2d plot breaks histogram
@@ -20,9 +21,6 @@ TODO version 0.2:
 
     Release:
         Make release candidate.
-            - requirements
-            - downloading setuptools
-
         Rename libargos to argos
 
         Pylint and TODOs?
@@ -31,9 +29,6 @@ TODO version 0.2:
 
     check docs dir.
 
-    consider evaluating info.py instead of import libargos.info. To bypass libargos/__init__.py
-    and so let setup.py work when pyqt is not installed.
-    Better do the imports inside browse.
 
 TODO version 0.3:
 
