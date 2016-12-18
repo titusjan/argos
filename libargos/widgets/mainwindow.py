@@ -212,16 +212,17 @@ class MainWindow(QtWidgets.QMainWindow):
                                                       self, triggered=self.activateAndRaise,
                                                       checkable=True)
         if self.windowNumber <= 9:
-            self.activateWindowAction.setShortcut(QtGui.QKeySequence("Meta+{}"
+            self.activateWindowAction.setShortcut(QtGui.QKeySequence("Alt+{}"
                                                                      .format(self.windowNumber)))
         ### Help Menu ###
         menuBar.addSeparator()
         helpMenu = menuBar.addMenu("&Help")
         helpMenu.addAction('&About...', self.about)
 
-        helpMenu.addSeparator()
-        helpMenu.addAction("&Test", self.myTest, "Alt+T")
-        helpMenu.addAction("Add Test Data", self.addTestData, "Alt+A")
+        if DEBUGGING:
+            helpMenu.addSeparator()
+            helpMenu.addAction("&Test", self.myTest, "Alt+T")
+            helpMenu.addAction("Add Test Data", self.addTestData, "Alt+A")
 
         ### Context menu ###
 

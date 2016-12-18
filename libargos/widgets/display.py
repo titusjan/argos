@@ -22,7 +22,7 @@ from __future__ import print_function
 import logging
 
 from libargos.qt import Qt, QtGui, QtWidgets
-
+from libargos.widgets.constants import MONO_FONT, FONT_SIZE
 
 logger = logging.getLogger(__name__)
 
@@ -49,9 +49,9 @@ class MessageDisplay(QtWidgets.QWidget):
         self.layout.addWidget(self.titleLabel, stretch=0)
 
         font = QtGui.QFont()
-        font.setFamily('Courier')
+        font.setFamily(MONO_FONT)
         font.setFixedPitch(True)
-        font.setPointSize(13)
+        font.setPointSize(FONT_SIZE)
 
         self.messageLabel = QtWidgets.QLabel(msg)
         self.messageLabel.setFont(font)

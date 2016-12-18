@@ -12,7 +12,7 @@ from libargos.info import PROJECT_NAME, VERSION
 from libargos.qt import QtCore, QtGui, QtWidgets
 from libargos.utils.cls import is_a_string
 from libargos.utils import moduleinfo as mi
-
+from libargos.widgets.constants import MONO_FONT, FONT_SIZE
 
 logger = logging.getLogger(__name__)
 
@@ -40,9 +40,9 @@ class AboutDialog(QtWidgets.QDialog):
         mainLayout.addWidget(progVersionLabel)
 
         font = QtGui.QFont()
-        font.setFamily('Courier')
+        font.setFamily(MONO_FONT)
         font.setFixedPitch(True)
-        font.setPointSize(13)
+        font.setPointSize(FONT_SIZE)
 
         self.editor = QtWidgets.QPlainTextEdit()
         self.editor.setReadOnly(True)

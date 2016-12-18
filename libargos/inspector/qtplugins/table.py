@@ -32,6 +32,7 @@ from libargos.config.qtctis import FontCti, ColorCti
 from libargos.info import DEBUGGING
 from libargos.inspector.abstract import AbstractInspector
 from libargos.qt import Qt, QtCore, QtGui, QtWidgets
+from libargos.widgets.constants import MONO_FONT, FONT_SIZE
 from libargos.utils.cls import check_class, check_is_a_string
 from libargos.utils.cls import to_string, is_an_array
 from libargos.utils.misc import is_quoted
@@ -158,7 +159,7 @@ class TableInspectorCti(MainGroupCti):
                       configValues=['', "' '", "'--'", "'<masked>'", '!r']))
 
         self.fontCti = self.insertChild(FontCti(self.tableInspector, "font",
-                                                defaultData=QtGui.QFont('Courier', 14)))
+                                                defaultData=QtGui.QFont(MONO_FONT, FONT_SIZE)))
 
         self.dataColorCti = self.insertChild(
             ColorCti('text color', QtGui.QColor('#000000')))

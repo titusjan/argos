@@ -17,6 +17,7 @@
 
 """ Constants related to the layout and other widget properties.
 """
+import sys
 from libargos.qt import QtCore
 
 #TREE_ROW_HEIGHT = 20 # pixels
@@ -42,3 +43,12 @@ DOCK_MARGIN  = 10
 # Spacing and margin in central widgets in pixels
 CENTRAL_SPACING = 0
 CENTRAL_MARGIN  = 0
+
+if sys.platform == 'linux':
+    MONO_FONT = 'Monospace'
+    FONT_SIZE = 10
+else:
+    MONO_FONT = 'Courier'
+    FONT_SIZE = 13
+
+

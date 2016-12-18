@@ -26,6 +26,7 @@ from libargos.qt.registrytable import RegistryTableModel, RegistryTableProxyMode
 from libargos.qt.registrytable import QCOLOR_REGULAR, QCOLOR_NOT_IMPORTED, QCOLOR_ERROR
 from libargos.qt import QtCore, QtGui, QtWidgets, Qt, QtSlot
 from libargos.utils.cls import check_class
+from libargos.widgets.constants import MONO_FONT, FONT_SIZE
 
 logger = logging.getLogger(__name__)
 
@@ -101,9 +102,9 @@ class RegistryTab(QtWidgets.QWidget):
 
         # Detail info widget
         font = QtGui.QFont()
-        font.setFamily('Courier')
+        font.setFamily(MONO_FONT)
         font.setFixedPitch(True)
-        font.setPointSize(13)
+        font.setPointSize(FONT_SIZE)
 
         self.editor = QtWidgets.QTextEdit()
         self.editor.setReadOnly(True)

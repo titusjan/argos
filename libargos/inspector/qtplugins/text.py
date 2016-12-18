@@ -25,6 +25,7 @@ from libargos.config.qtctis import FontCti
 from libargos.inspector.abstract import AbstractInspector
 from libargos.qt import QtGui, QtWidgets
 from libargos.utils.cls import to_string, check_class
+from libargos.widgets.constants import MONO_FONT, FONT_SIZE
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +57,7 @@ class TextInspectorCti(MainGroupCti):
                       configValues=['utf-8', 'ascii', 'latin-1', 'windows-1252']))
 
         self.fontCti = self.insertChild(FontCti(self.textInspector.editor, "font",
-                                                defaultData=QtGui.QFont('Courier', 14)))
+                                                defaultData=QtGui.QFont(MONO_FONT, FONT_SIZE)))
 
 
 class TextInspector(AbstractInspector):
