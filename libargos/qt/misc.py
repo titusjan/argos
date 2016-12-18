@@ -18,12 +18,15 @@
 """ Miscellaneous Qt routines.
 """
 from __future__ import division, print_function
-import sys, logging, os, traceback
 
+import logging
+import os
+import sys
+import traceback
+
+from libargos.external.six import PY3
 from libargos import info
-from libargos.utils.six import PY3
 from libargos.utils.cls import environment_var_to_bool
-
 
 logger = logging.getLogger(__name__)
 

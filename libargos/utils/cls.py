@@ -19,13 +19,13 @@
 
 """
 
-import logging, numbers
+import logging
+import numbers
+
 import numpy as np
 import numpy.ma as ma
 
-from libargos.info import DEBUGGING
-from libargos.utils import six
-
+from libargos.external import six
 
 logger = logging.getLogger(__name__)
 

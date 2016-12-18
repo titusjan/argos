@@ -17,23 +17,24 @@
 
 """ Contains TableInspector and TableInspectorModel
 """
-import logging, numbers
+import logging
+import numbers
+
 import numpy as np
 
+from libargos.external import six
 from libargos.collect.collector import FAKE_DIM_NAME
-from libargos.config.groupcti import GroupCti, MainGroupCti
 from libargos.config.boolcti import BoolCti
 from libargos.config.choicecti import ChoiceCti
+from libargos.config.groupcti import GroupCti, MainGroupCti
 from libargos.config.intcti import IntCti
 from libargos.config.qtctis import FontCti, ColorCti
 from libargos.info import DEBUGGING
 from libargos.inspector.abstract import AbstractInspector
-from libargos.utils.cls import check_class, check_is_a_string
-from libargos.utils.misc import is_quoted
-from libargos.utils import six
-
 from libargos.qt import Qt, QtCore, QtGui, QtWidgets
+from libargos.utils.cls import check_class, check_is_a_string
 from libargos.utils.cls import to_string, is_an_array
+from libargos.utils.misc import is_quoted
 
 logger = logging.getLogger(__name__)
 

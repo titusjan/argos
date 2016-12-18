@@ -1,7 +1,6 @@
-
 import logging
 
-from libargos.utils import six
+from libargos.external import six
 from libargos.utils.cls import check_class, check_is_a_string
 
 logger = logging.getLogger(__name__)

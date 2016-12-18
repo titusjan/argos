@@ -154,7 +154,7 @@ def main():
     parser.add_argument('--version', action = 'store_true',
         help="Prints the program version.")
 
-    parser.add_argument('-L', '--log-level', dest='log_level', default='warn',
+    parser.add_argument('-l', '--log-level', dest='log_level', default='warn',
         help="Log level. Only log messages with a level higher or equal than this will be printed."
         "Default: 'warn'", choices=('debug', 'info', 'warn', 'error', 'critical'))
 

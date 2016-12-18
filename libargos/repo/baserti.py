@@ -21,10 +21,10 @@
 import logging
 import os
 
-from libargos.info import program_directory, DEBUGGING
+from libargos.external import six
+from libargos.info import DEBUGGING
 from libargos.qt.treeitems import AbstractLazyLoadTreeItem
 from libargos.repo.iconfactory import RtiIconFactory
-from libargos.utils import six
 from libargos.utils.cls import check_class, is_a_sequence
 
 logger = logging.getLogger(__name__)
