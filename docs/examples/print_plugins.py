@@ -6,10 +6,10 @@ import sys
 # Uncomment the next line to run the example from within the distribution
 # sys.path.append("../../")
 
-import libargos
-from libargos.qt import initQCoreApplication
-from libargos.inspector.registry import InspectorRegistry
-from libargos.repo.registry import RtiRegistry
+import argos
+from argos.qt import initQCoreApplication
+from argos.inspector.registry import InspectorRegistry
+from argos.repo.registry import RtiRegistry
 
 def printReg(name, registry):
     print("{} registry....".format(name))
@@ -31,6 +31,6 @@ def main():
 
 
 if __name__ == "__main__":
-    libargos.configBasicLogging(level='WARN')
+    argos.configBasicLogging(level='WARN')
     main()
 

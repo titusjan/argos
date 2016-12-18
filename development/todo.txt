@@ -21,7 +21,7 @@ TODO version 0.2:
 
     Release:
         Make release candidate.
-        Rename libargos to argos
+        Rename argos to argos
 
         Pylint and TODOs?
         Test by opening all test data?

@@ -5,11 +5,11 @@
 import unittest, logging, sys, copy
 from json import loads, dumps
 
-from libargos import configBasicLogging
-from libargos.qt import QtWidgets
-from libargos.config.abstractcti import ctiDumps, CtiDecoder
-from libargos.config.untypedcti import UntypedCti
-from libargos.config.qtctis import ColorCti
+from argos import configBasicLogging
+from argos.qt import QtWidgets
+from argos.config.abstractcti import ctiDumps, CtiDecoder
+from argos.config.untypedcti import UntypedCti
+from argos.config.qtctis import ColorCti
 
 
 

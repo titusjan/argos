@@ -13,7 +13,7 @@ import unittest
 sys.path.append('..')
 #print(sys.path)
 
-from libargos.qt import QtCore, getQApplicationInstance, USE_PYQT
+from argos.qt import QtCore, getQApplicationInstance, USE_PYQT
 
 
 class TestArgos(unittest.TestCase):

@@ -6,8 +6,8 @@ import unittest, logging, sys
 import numpy as np
 
 from numpy.testing import assert_array_equal
-from libargos import configBasicLogging
-from libargos.repo.memoryrtis import ArrayRti
+from argos import configBasicLogging
+from argos.repo.memoryrtis import ArrayRti
 
 
 

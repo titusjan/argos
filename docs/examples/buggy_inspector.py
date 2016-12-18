@@ -20,12 +20,12 @@
 import logging, os, sys
 
 
-import libargos
-from libargos.qt import initQCoreApplication
-from libargos.config.groupcti import MainGroupCti
-from libargos.inspector.abstract import AbstractInspector
-from libargos.inspector.registry import InspectorRegistry
-from libargos.qt import Qt, QtWidgets
+import argos
+from argos.qt import initQCoreApplication
+from argos.config.groupcti import MainGroupCti
+from argos.inspector.abstract import AbstractInspector
+from argos.inspector.registry import InspectorRegistry
+from argos.qt import Qt, QtWidgets
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +84,7 @@ def persistentRegisterInspector(fullName, fullClassName, pythonPath=''):
 
 
 if __name__ == "__main__":
-    libargos.configBasicLogging(level='DEBUG')
+    argos.configBasicLogging(level='DEBUG')
     initQCoreApplication()
     persistentRegisterInspector('Buggy inspector', 'BuggyInspector')
 

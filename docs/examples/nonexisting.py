@@ -6,12 +6,12 @@ import sys
 # sys.path.append("../../")
 
 import os, logging
-import libargos
-from libargos.qt import initQCoreApplication
-from libargos.repo.registry import RtiRegistry
-from libargos.inspector.registry import InspectorRegistry
+import argos
+from argos.qt import initQCoreApplication
+from argos.repo.registry import RtiRegistry
+from argos.inspector.registry import InspectorRegistry
 
-logger = logging.getLogger('libargos')
+logger = logging.getLogger('argos')
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -55,7 +55,7 @@ def main():
 
 
 if __name__ == "__main__":
-    libargos.configBasicLogging(level='DEBUG')
+    argos.configBasicLogging(level='DEBUG')
     main()
 
 

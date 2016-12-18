@@ -21,8 +21,8 @@
 import logging, os
 
 
-from libargos.qt import QtGui
-from libargos.repo.baserti import (ICONS_DIRECTORY, BaseRti)
+from argos.qt import QtGui
+from argos.repo.baserti import (ICONS_DIRECTORY, BaseRti)
 
 logger = logging.getLogger(__name__)
 

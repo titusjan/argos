@@ -4,8 +4,8 @@
 
 import unittest, logging, sys
 
-from libargos.qt.treemodels import BaseTreeModel
-from libargos.qt.treeitems import BaseTreeItem
+from argos.qt.treemodels import BaseTreeModel
+from argos.qt.treeitems import BaseTreeItem
 
 
 class TestTreeItemGetByPath(unittest.TestCase):

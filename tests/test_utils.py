@@ -8,9 +8,9 @@ Tests functionality from the utils package
 import unittest
 from json import loads
 
-from libargos import configBasicLogging
-from libargos.utils.cls import is_a_string, is_text, is_binary
-from libargos.utils.misc import python2
+from argos import configBasicLogging
+from argos.utils.cls import is_a_string, is_text, is_binary
+from argos.utils.misc import python2
 import numpy as np
 
 

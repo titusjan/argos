@@ -21,11 +21,11 @@ try:
     from setuptools import setup, find_packages
 except ImportError:
     err("Argos requires setuptools for intallation. (https://pythonhosted.org/an_example_pypi_project/setuptools.html)")
-    err("You can download and install it simply with: python libargos/external/ez_setup.py")
+    err("You can download and install it simply with: python argos/external/ez_setup.py")
     sys.exit(1)
 
 
-from libargos import info
+from argos import info
 
 assert not info.DEBUGGING, "info.DEBUGGING must be False to make a release."
 
@@ -75,7 +75,7 @@ setup(
     url=info.PROJECT_URL,
     packages = find_packages(),
     package_data = {'': ['HISTORY.rst'], info.PACKAGE_NAME: ['img/snipicons/*']},
-    entry_points={'gui_scripts': ['argos = libargos.main:main']},
+    entry_points={'gui_scripts': ['argos = argos.main:main']},
     #install_requires = install_requires, # DISABLED. See coments above.
     zip_safe = False,
     classifiers = [
