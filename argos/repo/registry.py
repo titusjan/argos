@@ -151,8 +151,8 @@ class RtiRegistry(ClassRegistry):
             RtiRegItem('NCDF file',
                        'argos.repo.rtiplugins.ncdf.NcdfFileRti',
                        #extensions=['nc', 'nc3', 'nc4']),
-                       #extensions=['nc', 'nc4']),
-                       extensions=[]),
+                       extensions=['nc', 'nc4']),
+                       #extensions=[]),
 
             RtiRegItem('NumPy binary file',
                        'argos.repo.rtiplugins.numpyio.NumpyBinaryFileRti',
@@ -164,7 +164,8 @@ class RtiRegistry(ClassRegistry):
 
             RtiRegItem('NumPy text file',
                        'argos.repo.rtiplugins.numpyio.NumpyTextFileRti',
-                       extensions=['txt', 'text']),
+                       #extensions=['txt', 'text']),
+                       extensions=['dat']),
 
             RtiRegItem('IDL save file',
                        'argos.repo.rtiplugins.scipyio.IdlSaveFileRti',

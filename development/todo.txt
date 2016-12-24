@@ -1,6 +1,52 @@
 
 TODO version 0.2:
 
+Array with ones. 1 show image, 2 show table, 3 show image.
+  File "/Users/kenter/miniconda3/envs/test/lib/python3.5/site-packages/pyqtgraph/graphicsItems/ImageItem.py", line 411, in paint
+    self.render()
+  File "/Users/kenter/miniconda3/envs/test/lib/python3.5/site-packages/pyqtgraph/graphicsItems/ImageItem.py", line 403, in render
+    argb, alpha = fn.makeARGB(image, lut=lut, levels=levels)
+  File "/Users/kenter/miniconda3/envs/test/lib/python3.5/site-packages/pyqtgraph/functions.py", line 965, in makeARGB
+    raise Exception('levels argument is required for float input types')
+
+
+[10:55:27]  Error sending hover exit event:
+
+    |==============================>>
+    |  Traceback (most recent call last):
+    |    File "/Users/kenter/miniconda3/envs/test/bin/argos", line 11, in <module>
+    |      sys.exit(main())
+    |    File "/Users/kenter/miniconda3/envs/test/lib/python3.5/site-packages/argos/main.py", line 193, in main
+    |      resetRegistry=args.reset_registry)
+    |    File "/Users/kenter/miniconda3/envs/test/lib/python3.5/site-packages/argos/main.py", line 89, in browse
+    |      return argosApp.execute()
+    |    File "/Users/kenter/miniconda3/envs/test/lib/python3.5/site-packages/argos/application.py", line 395, in execute
+    |      exitCode = self.qApplication.exec_()
+    |    File "/Users/kenter/miniconda3/envs/test/lib/python3.5/site-packages/argos/widgets/mainwindow.py", line 441, in setAndDrawInspectorById
+    |      self.setInspectorById(identifier)
+    |    File "/Users/kenter/miniconda3/envs/test/lib/python3.5/site-packages/argos/widgets/mainwindow.py", line 522, in setInspectorById
+    |      oldInspector.finalize() # TODO: before removing config
+    |    File "/Users/kenter/miniconda3/envs/test/lib/python3.5/site-packages/argos/inspector/pgplugins/lineplot1d.py", line 155, in finalize
+    |      self.graphicsLayoutWidget.close()
+    |    File "/Users/kenter/miniconda3/envs/test/lib/python3.5/site-packages/pyqtgraph/widgets/GraphicsView.py", line 168, in close
+    |      super(GraphicsView, self).close()
+    |    File "/Users/kenter/miniconda3/envs/test/lib/python3.5/site-packages/pyqtgraph/widgets/GraphicsView.py", line 339, in leaveEvent
+    |      self.scene().leaveEvent(ev)  ## inform scene when mouse leaves
+    |    File "/Users/kenter/miniconda3/envs/test/lib/python3.5/site-packages/pyqtgraph/GraphicsScene/GraphicsScene.py", line 188, in leaveEvent
+    |      self.sendHoverEvents(ev, exitOnly=True)
+    |    File "/Users/kenter/miniconda3/envs/test/lib/python3.5/site-packages/pyqtgraph/GraphicsScene/GraphicsScene.py", line 256, in sendHoverEvents
+    |      debug.printExc("Error sending hover exit event:")
+    |    --- exception caught here ---
+    |    File "/Users/kenter/miniconda3/envs/test/lib/python3.5/site-packages/pyqtgraph/GraphicsScene/GraphicsScene.py", line 254, in sendHoverEvents
+    |      item.hoverEvent(event)
+    |    File "/Users/kenter/miniconda3/envs/test/lib/python3.5/site-packages/pyqtgraph/graphicsItems/PlotItem/PlotItem.py", line 1070, in hoverEvent
+    |      self.updateButtons()
+    |    File "/Users/kenter/miniconda3/envs/test/lib/python3.5/site-packages/pyqtgraph/graphicsItems/PlotItem/PlotItem.py", line 1180, in updateButtons
+    |      self.autoBtn.hide()
+    |  AttributeError: 'NoneType' object has no attribute 'hide'
+    |==============================<<
+
+
     Refresh of directories fails.
     Show both error and description
     Specind tiff
