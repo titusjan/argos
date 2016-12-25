@@ -148,7 +148,7 @@ class RtiRegistry(ClassRegistry):
                        'argos.repo.rtiplugins.scipyio.MatlabFileRti',
                        extensions=['mat']),
 
-            RtiRegItem('NCDF file',
+            RtiRegItem('NetCDF file',
                        'argos.repo.rtiplugins.ncdf.NcdfFileRti',
                        #extensions=['nc', 'nc3', 'nc4']),
                        extensions=['nc', 'nc4']),

@@ -63,8 +63,7 @@ class TextInspectorCti(MainGroupCti):
 class TextInspector(AbstractInspector):
     """ Inspector that contains a QPlainTextEdit that shows one element at the time.
 
-        This is usefull when the data under inspection ia a (large) text.
-        Can optionally reformat the data if it is an XML or JSON string.
+        This is useful when the data under inspection ia a (large) text.
     """
     def __init__(self, collector, parent=None):
 

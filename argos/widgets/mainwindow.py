@@ -148,8 +148,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         fileMenu = menuBar.addMenu("&File")
 
-        action = fileMenu.addAction("&New Window", self.cloneWindow)
-        action.setShortcut(QtGui.QKeySequence("Ctrl+N"))
+        fileMenu.addAction("&New Window", self.cloneWindow, QtGui.QKeySequence("Ctrl+N"))
+        fileMenu.addAction("Close &Window", self.close, QtGui.QKeySequence.Close)
 
         fileMenu.addSeparator()
 
@@ -177,14 +177,15 @@ class MainWindow(QtWidgets.QMainWindow):
                 triggered=createTrigger())
             openAsMenu.addAction(action)
 
-        for action in self.repoWidget.repoTreeView.topLevelItemActionGroup.actions():
-            fileMenu.addAction(action)
+        fileMenu.addSeparator()
 
-        for action in self.repoWidget.repoTreeView.currentItemActionGroup.actions():
-            fileMenu.addAction(action)
+        # for action in self.repoWidget.repoTreeView.topLevelItemActionGroup.actions():
+        #     fileMenu.addAction(action)
+        #
+        # for action in self.repoWidget.repoTreeView.currentItemActionGroup.actions():
+        #     fileMenu.addAction(action)
 
         fileMenu.addSeparator()
-        fileMenu.addAction("Close &Window", self.close, QtGui.QKeySequence.Close)
         fileMenu.addAction("E&xit", self.argosApplication.closeAllWindows, QtGui.QKeySequence.Quit)
 
         ### View Menu ###
