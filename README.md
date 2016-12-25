@@ -6,8 +6,6 @@ plug-in architecture that allows Argos to be extended to read new data formats. 
 plug-ins are included to read HDF-5, NetCDF-4, WAV, numpy binary files and various image formats,
 but a plug-in can be written for any data that can be expressed as a Numpy array.
 
-![argos_screen_shot](docs/screen_shots/argos_gui.png)
-
 ### Installing Argos
 
 Argos works with Python 2.7 or Python 3.4 and higher. If you don't have Python yet, you might
@@ -65,18 +63,21 @@ For a complete list of command line options, run argos with `-h'.
 
 ### Using Argos
 
-The Argos main window consist of a central panel that holds a visualization surrounded by
-smaller windows. The smaller windows can be moved around by dragging them holding their title bar.
-They can be separated from the main window or can be docked at an at another position. Collectively
-they are called the dock windows. You can use the `View` main menu to open and close them.
+The Argos main window consist of a central panel that holds a visualization, and which surrounded
+by smaller windows. The smaller windows can be moved around by dragging them holding their title
+bar. They can be separated from the main window or can be docked at an at another position.
+Collectively they are called the dock windows. You can use the `View` main menu to open and close
+them.
+
+![argos_screen_shot](docs/screen_shots/argos_gui.png)
 
 The main panel is called the (data) Inspector. In the `Inspector` main menu you can select a
 different type: line plot, image plot, table, or text inspector. The current inspector type is
-shown in the `Current inspector` dock window (in the upper left corner in the screen shot below).
-If you want to have more than one inspector open at the same time, you can make a new main window
-in the `File` main menu.
+shown in the `Current inspector` dock window (in the upper left corner in the screen shot). If you
+want to have more than one inspector open at the same time, you can make a new main window in the
+`File` main menu.
 
-#### Selecting Data
+#### Selecting the Data
 
 The `Data Repository` dock window gives the list of files or directories that are available for
 inspection. You can add files by selecting the `Open Files` from the `File` menu and directories
@@ -87,7 +88,7 @@ error for that file, it will get a red triangle as icon (hover over the item to 
 tool-tip with the error message).
 
 Note that the data repository is shared between all open
-windows. That is, opening a file will add them in the `Data Repository` of all windows.
+windows. That is, opening a file will add them in the `Data Repository` tree of all open windows.
 
 The repository is in the form of a tree. Expanding the items in the tree will automatically open
 the underlying files. Collapsing an item will not close the the tree item, which is indicated by
@@ -123,14 +124,15 @@ implies this has only one independent variable (i.e. the X-axis). The data is tw
 only a sub-slice of the dataset can be visualized. There will be a combobox for specifying which
 data dimension will be layed along the X-axis, and a spinbox for selecting the index for the other
 dimension. Below you see the case that the line plot will draw row 360, or in Numpy
-notation: `ColumnAmountO3[360, :]`
+notation: `ColumnAmountO3[360, :]`. By default Argos will put the first array dimension(s) in the
+spinbox(es), and select the fasted changing array dimensions in the combobox(es).
 
 ![collector_1d](docs/screen_shots/collector_1d.png)
 
 Note that the HDF-5 example data from the screenshots can be downloaded
 [here](http://www.hdfeos.org/zoo/index_openGESDISC_Examples.php#OMI) (2.4 MB).
 
-#### Inspecting Data
+#### Inspecting the Data
 
 
 Below the repository window are three dock windows that are layed out on top of each other, and
