@@ -63,7 +63,7 @@ class TextInspectorCti(MainGroupCti):
 class TextInspector(AbstractInspector):
     """ Inspector that contains a QPlainTextEdit that shows one element at the time.
 
-        This is useful when the data under inspection ia a (large) text.
+        This is useful when the data under inspection is a large, multi-line text string.
     """
     def __init__(self, collector, parent=None):
 

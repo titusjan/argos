@@ -46,6 +46,10 @@ Array with ones. 1 show image, 2 show table, 3 show image.
     |  AttributeError: 'NoneType' object has no attribute 'hide'
     |==============================<<
 
+    check deleting in editable combobox.
+
+    As soon as you open a file (e.g. penguins.png) it should update the inspector. It works
+    with `open item`, but not with expanding
 
     Refresh of directories fails.
     Show both error and description
@@ -74,6 +78,11 @@ Array with ones. 1 show image, 2 show table, 3 show image.
 
 
     check docs dir.
+
+	Reset range when a variable with a new unit/abcissa is selected?
+	    Hard to determine the new unit and dimensions.
+	    Change if unit is new or combox dim is new.
+
 
 
 TODO version 0.3:
@@ -151,7 +160,6 @@ THINK:
 	    A google search seems to indicate that it doesn't always work ok (although these days most
 	    issues are ironed out). Futhermore using if __name__ == "__main__" is then problematic.
 
-	Reset range when a variable with a new unit/abcissa is selected?
 
     _drawContents raises an InvalidDataError exception when no valid data is available.
     If we would check for invalid data in AbstractInspector.drawContents, we must call
