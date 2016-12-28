@@ -272,10 +272,13 @@ class ChoiceCtiEditor(AbstractCtiEditor):
                     or (watchedObject == self.comboBox
                         and event.modifiers() == Qt.ControlModifier)):
 
-                    logger.info("Removing item from combobox: {}"
-                                .format(self.comboBox.currentText()))
-                    self.cti.removeValueByIndex(self.comboBox.currentIndex())
-                    self.comboBox.removeItem(self.comboBox.currentIndex())
+                    index = self._comboboxListView.currentIndex()
+                    if index.isValid():
+                        row = index.row()
+                        logger.debug("Removing item {} from the combobox: {}"
+                                     .format(row, self._comboboxListView.model().data(index)))
+                    self.cti.removeValueByIndex(row)
+                    self.comboBox.removeItem(row)
                     return True
 
         # Calling parent event filter, which may filter out other events.

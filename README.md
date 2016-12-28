@@ -187,7 +187,7 @@ will be substituted with the name of the selected item.
 
 Furthermore, PyQtGraph uses HTML for the plot title so you can make fancy titles such as
 `<small>{name} <span style="color:#FF0066">{slices}</span></small>`. This also means that you must
-escape '<', '>' and '&' characters!
+escape the `<`, `>` and `&` characters by using `&lt;`, `&gt;`, `&amp;` instead!
 
 The `x-axis/label` and `x-axis/label` settings can be edited in the same way as the `title`.
 

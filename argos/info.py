@@ -19,11 +19,11 @@
 """
 import os
 
-DEBUGGING = False
+DEBUGGING = True
 
 VERSION = '0.2.0rc3'
 REPO_NAME = "argos"
-SCRIPT_NAME = "argos"
+#SCRIPT_NAME = "argos"
 PACKAGE_NAME = "argos"
 PROJECT_NAME = "Argos"
 DEFAULT_PROFILE = 'Panoptes'

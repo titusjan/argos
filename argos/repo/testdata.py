@@ -108,9 +108,12 @@ def createArgosTestData():
     myDict['ghosts'] = ['Inky', 'Blinky', 'Pinky', 'Clyde']
     myDict['numbers'] = {'int': 5, 'float': -6.6, 'large float': 7e77,
                          '-inf': np.NINF, 'nan': np.nan, 'complex': 8-9j, 'decimal': Decimal(4.444)}
+
     array = np.arange(240, dtype=np.float64).reshape(8, 30).transpose()
     #array[10, 4] = 7e77
     myDict['array'] = array
+
+    myDict['ones'] = np.ones_like(array)
 
     masked_array = ma.arange(2400, dtype=np.float16).reshape(60, 40)
     masked_array[:, 0:7] = ma.masked

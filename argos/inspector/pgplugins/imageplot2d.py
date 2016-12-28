@@ -327,7 +327,7 @@ class PgImagePlot2d(AbstractInspector):
         """ Is called before destruction. Can be used to clean-up resources.
         """
         logger.debug("Finalizing: {}".format(self))
-        self.imagePlotItem.scene().sigMouseMoved.connect(self.mouseMoved)
+        self.imagePlotItem.scene().sigMouseMoved.disconnect(self.mouseMoved)
         self.imagePlotItem.close()
         self.graphicsLayoutWidget.close()
 
