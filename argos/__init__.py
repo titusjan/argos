@@ -27,5 +27,5 @@
 # If you import (for instance) numpy here, the setup.py will fail if numpy is not installed.
 
 from .info import VERSION as __version__
-from .main import browse, configBasicLogging
+#from .main import browse, configBasicLogging
 

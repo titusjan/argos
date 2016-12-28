@@ -301,7 +301,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
 
     # Originally from the editabletreemodel example but added the altItem parameter to force
     # callers to specify request the invisibleRootItem as alternative in case of an invalid index.
-    # TODO: rename to ItemFromIndex to be consisten with QStandardItemModel?
+    # TODO: rename to ItemFromIndex to be consistent with QStandardItemModel?
     def getItem(self, index, altItem=None):
         """ Returns the TreeItem for the given index. Returns the altItem if the index is invalid.
         """
@@ -403,21 +403,22 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         insertedIndex = self.insertItem(newItem, position=childNumber, parentIndex=parentIndex)
         return insertedIndex
 
-
-    def setInvisibleRootItem(self, baseTreeItem=None):
-        """ Will set the invisible root tree item and reset the model.
-            All nodes will collapse because of the model reset.
-
-            If baseTreeItem is None, a single BaseTreeItem will be added. This effectively
-            makes the model empty.
-        """
-        if baseTreeItem is None:
-            baseTreeItem = BaseTreeItem(nodeName=INVISIBLE_ROOT_NAME)
-        check_class(baseTreeItem, BaseTreeItem)
-
-        self.beginResetModel()
-        self._invisibleRootItem = baseTreeItem
-        self.endResetModel()
+    # Seems not to be used anymore...
+    # def setInvisibleRootItem(self, baseTreeItem=None):
+    #     """ Will set the invisible root tree item and reset the model.
+    #         All nodes will collapse because of the model reset.
+    #
+    #         If baseTreeItem is None, a single BaseTreeItem will be added. This effectively
+    #         makes the model empty.
+    #     """
+    #     if baseTreeItem is None:
+    #         baseTreeItem = BaseTreeItem(nodeName=INVISIBLE_ROOT_NAME)
+    #     check_class(baseTreeItem, BaseTreeItem)
+    #
+    #     self.beginResetModel()
+    #     self._invisibleRootItem = baseTreeItem
+    #     self._invisibleRootItem.model = self
+    #     self.endResetModel()
 
 
     def isTopLevelIndex(self, itemIndex):

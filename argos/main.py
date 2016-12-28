@@ -28,7 +28,9 @@ import logging, sys, argparse
 from argos.info import DEBUGGING, PROJECT_NAME, VERSION, DEFAULT_PROFILE
 
 logger = logging.getLogger('argos')
+
 logging.basicConfig(level='DEBUG', stream=sys.stderr,
+                    #format='%(name)35s %(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s')
                     format='%(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s')
 
 
@@ -100,12 +102,12 @@ def printInspectors():
     for regItem in argosApp.inspectorRegistry.items:
         print(regItem.fullName)
 
-
-def configBasicLogging(level = 'DEBUG'):
-    """ Setup basic config logging.
-    """
-    fmt = '%(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s'
-    logging.basicConfig(level=level, format=fmt)
+# TODO: better logging
+# def configBasicLogging(level = 'DEBUG'):
+#     """ Setup basic config logging.
+#     """
+#     fmt = '%(name)40s %(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s'
+#     logging.basicConfig(level=level, format=fmt)
 
 
 def remove_process_serial_number(arg_list):

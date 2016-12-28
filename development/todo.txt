@@ -1,8 +1,6 @@
 
 TODO version 0.2:
 
-    check deleting in editable combobox.
-
     As soon as you open a file (e.g. penguins.png) it should update the inspector. It works
     with `open item`, but not with expanding
 
@@ -25,9 +23,6 @@ TODO version 0.2:
     Installed plugins dialog doesn't work if scipy is not installed.  (Test under Linux)
 
     Release:
-        Make release candidate.
-        Rename argos to argos
-
         Pylint and TODOs?
         Test by opening all test data?
 
@@ -40,6 +35,8 @@ TODO version 0.2:
 
 
     Center main window with --reset
+
+
 
 TODO version 0.3:
 

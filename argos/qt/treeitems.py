@@ -46,7 +46,9 @@ class BaseTreeItem(object):
     @property
     def model(self):
         """ Returns the ConfigTreeModel this item belongs to.
-            If the model is None (not set), it will use and cache the parent's model
+            If the model is None (not set), it will use and cache the parent's model.
+            Therefore make sure that an ancestor node has a reference to the model! Typically by
+            setting the model property of the invisible root item in the model constructor.
         """
         if self._model is None and self.parentItem is not None:
             self._model = self.parentItem.model
@@ -65,11 +67,12 @@ class BaseTreeItem(object):
 #        assert self._model, "Model not set for {}".format(self)
 #        return self._model.indexFromItem(self)
 
-    def emitDataChanged(self):
-        """ Causes the model associated with this item to emit a dataChanged() signal for this item.
-        """
-        assert self._model, "Model not set for {}".format(self)
-        return self._model.itemChanged(self)
+#     Seems to be out of data and not used anymore
+#     def emitDataChanged(self):
+#         """ Causes the model associated with this item to emit a dataChanged() signal for this item.
+#         """
+#         assert self._model, "Model not set for {}".format(self)
+#         return self._model.itemChanged(self)
 
     @property
     def decoration(self):
@@ -242,7 +245,7 @@ class BaseTreeItem(object):
         assert childItem._model is None, "childItem already has a model: {}".format(childItem)
 
         childItem.parentItem = self
-        childItem._model = self.model
+        childItem.model = self.model
         self.childItems.insert(position, childItem)
         return childItem
 
@@ -306,7 +309,7 @@ class AbstractLazyLoadTreeItem(BaseTreeItem):
     def fetchChildren(self):
         """ Fetches children.
 
-            The actual work is done by _fetchAllChildren. Decendant classes should typically
+            The actual work is done by _fetchAllChildren. Descendant classes should typically
             override that method instead of this one.
         """
         assert not self._childrenFetched, "canFetchChildren must be True"

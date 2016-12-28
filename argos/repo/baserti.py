@@ -106,6 +106,11 @@ class BaseRti(AbstractLazyLoadTreeItem):
             self._openResources()
             self._isOpen = True
 
+            if self.model:
+                self.model.sigItemChanged.emit(self)
+            else:
+                logger.warning("Model not set yet: {}".format(self))
+
         except Exception as ex:
             if DEBUGGING:
                 raise
@@ -135,6 +140,12 @@ class BaseRti(AbstractLazyLoadTreeItem):
                 self._isOpen = False
             else:
                 logger.debug("Resources already closed (ignored): {}".format(self))
+
+            if self.model:
+                self.model.sigItemChanged.emit(self)
+            else:
+                logger.warning("Model not set yet: {}".format(self))
+
         except Exception as ex:
             if DEBUGGING:
                 raise

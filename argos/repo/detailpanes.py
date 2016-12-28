@@ -22,7 +22,8 @@ import logging
 from argos.info import DEBUGGING
 from argos.qt import QtSlot, QtCore, QtWidgets
 from argos.qt.togglecolumn import ToggleColumnTableWidget
-from argos.utils.cls import get_class_name
+from argos.repo.baserti import BaseRti
+from argos.utils.cls import get_class_name, check_class
 from argos.widgets.constants import DOCK_SPACING, DOCK_MARGIN, LEFT_DOCK_WIDTH
 from argos.widgets.display import MessageDisplay
 
@@ -45,7 +46,7 @@ class DetailBasePane(QtWidgets.QStackedWidget):
         """
         super(DetailBasePane, self).__init__(parent)
 
-        self._isConntected = False
+        self._isConnected = False
         self._repoTreeView = repoTreeView
 
         self.errorWidget = MessageDisplay()
@@ -68,10 +69,11 @@ class DetailBasePane(QtWidgets.QStackedWidget):
         """
         return cls._label
 
+
     @property
-    def isConntected(self):
+    def isConnected(self):
         "Returns True if this pane is connected to the currentChanged signal of the repoTreeView"
-        return self._isConntected
+        return self._isConnected
 
 
     def sizeHint(self):
@@ -87,36 +89,29 @@ class DetailBasePane(QtWidgets.QStackedWidget):
         """
         logger.debug("dockVisibilityChanged of {!r}: visible={}".format(self, visible))
 
-        selectionModel = self._repoTreeView.selectionModel()
         if visible:
-            selectionModel.currentChanged.connect(self.currentChanged)
-            self._repoTreeView.sigCurrentOpened.connect(self.currentChanged)
-            self._repoTreeView.sigCurrentClosed.connect(self.currentChanged)
-            self._isConntected = True
-            currentIndex = selectionModel.currentIndex()
-            if currentIndex:
-                self.currentChanged(currentIndex)
+            self._repoTreeView.sigRepoItemChanged.connect(self.repoItemChanged)
+            self._isConnected = True
+
+            currentRepoItem, _currentIndex = self._repoTreeView.getCurrentItem()
+            self.repoItemChanged(currentRepoItem)
         else:
             # At start-up the pane be be hidden but the signals are not connected.
             # A disconnect would fail in that case so we test for isConnected == True.
-            if self.isConntected:
-                self._repoTreeView.sigCurrentClosed.disconnect(self.currentChanged)
-                self._repoTreeView.sigCurrentOpened.disconnect(self.currentChanged)
-                selectionModel.currentChanged.disconnect(self.currentChanged)
-            self._isConntected = False
+            if self.isConnected:
+                self._repoTreeView.sigRepoItemChanged.disconnect(self.repoItemChanged)
+
+            self._isConnected = False
             self.errorWidget.setError(msg="Contents disabled", title="Error")
             self.setCurrentIndex(self.ERROR_PAGE_IDX)
 
 
-    @QtSlot(QtCore.QModelIndex)
-    @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
-    def currentChanged(self, currentIndex=None, _previousIndex=None):
+    def repoItemChanged(self, rti):
         """ Updates the content when the current repo tree item changes.
-            _previousIndex is ignored.
+            The rti parameter can be None when no RTI is selected in the repository tree.
         """
-        logger.debug("DetailBasePane.currentChanged()")
-        model = currentIndex.model() if currentIndex is not None else None
-        rti = model.getItem(currentIndex) if model is not None else None
+        check_class(rti, (BaseRti, int), allow_none=True)
+        assert type(rti) != int, "rti: {}".format(rti)
         try:
             self._drawContents(rti)
             self.setCurrentIndex(self.CONTENTS_PAGE_IDX)

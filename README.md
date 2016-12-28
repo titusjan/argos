@@ -35,7 +35,7 @@ their respective website.
 | [netCDF4](http://unidata.github.io/netcdf4-python/)  | NetCDF (v3 and v4)              |
 | [pillow](https://python-pillow.org/)                 | BMP, JPEG, PNG, TIFF, GIF, etc. |
 | [scipy](https://www.scipy.org/)                      | Matlab & IDL save-files. WAV    |
-| [pandas](https://www.pandas.org/)                    | Comma-separated files           |
+| [pandas](http://pandas.pydata.org/)                  | Comma-separated files           |
 
 
 ### Starting Argos
@@ -148,7 +148,7 @@ Below a few of the config settings are explained. It is not a complete list, man
 will be clear from their name. I also urge you to experiment yourself by just setting new values.
 You can always go back by resetting the configuration of the complete inspector with the reset
 button in the dark grey row at the top. Note that some branches are collapsed by default to hide
-the lesser used configuration options. For instance the `auto-range` item can be expanded for
+the infrequently used configuration options. For instance the `auto-range` item can be expanded for
 further tweaking of the auto-range method.
 
 ##### 1D Line Plot Inspector

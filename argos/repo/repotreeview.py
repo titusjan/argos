@@ -22,6 +22,7 @@ import logging
 from argos.qt import QtWidgets, QtGui, QtCore, QtSignal, QtSlot, Qt
 from argos.config.groupcti import MainGroupCti
 from argos.config.boolcti import BoolCti
+from argos.repo.baserti import BaseRti
 from argos.repo.registry import globalRtiRegistry
 from argos.repo.repotreemodel import RepoTreeModel
 from argos.widgets.argostreeview import ArgosTreeView
@@ -56,8 +57,9 @@ class RepoTreeView(ArgosTreeView):
         Currently it supports only selecting one item. That is, the current item is always the
         selected item (see notes in ArgosTreeView documentation for details).
     """
-    sigCurrentOpened = QtSignal(QtCore.QModelIndex)
-    sigCurrentClosed = QtSignal(QtCore.QModelIndex)
+    # sigRepoItemChanged parameter is BaseRti or None when no RTI is selected, or the model is empty
+    # TODO: implement Noneable(BaseRti) type, or something like that?
+    sigRepoItemChanged = QtSignal(object)
 
     def __init__(self, repoTreeModel, collector, parent=None):
         """ Constructor.
@@ -116,14 +118,19 @@ class RepoTreeView(ArgosTreeView):
         self.addAction(self.closeItemAction)
 
         # Connect signals
-        selectionModel = self.selectionModel() # need to store to prevent crash in PySide
+        selectionModel = self.selectionModel() # need to store reference to prevent crash in PySide
+        selectionModel.currentChanged.connect(self.selectionChanged)
 
-        selectionModel.currentChanged.connect(self.updateCurrentItemActions)
-        selectionModel.currentChanged.connect(self.updateCollector)
-        self.sigCurrentOpened.connect(self.updateCurrentItemActions)
-        self.sigCurrentOpened.connect(self.updateCollector)
-        self.sigCurrentClosed.connect(self.updateCurrentItemActions)
-        self.sigCurrentClosed.connect(self.updateCollector)
+        self.model().sigItemChanged.connect(self.repoTreeItemChanged)
+
+
+    def finalize(self):
+        """ Disconnects signals and frees resources
+        """
+        self.model().sigItemChanged.disconnect(self.repoTreeItemChanged)
+
+        selectionModel = self.selectionModel() # need to store to prevent crash in PySide
+        selectionModel.currentChanged.disconnect(self.selectionChanged)
 
 
     def contextMenuEvent(self, event):
@@ -162,19 +169,6 @@ class RepoTreeView(ArgosTreeView):
         return openAsMenu
 
 
-    def finalize(self):
-        """ Disconnects signals and frees resources
-        """
-        self.sigCurrentClosed.disconnect(self.updateCollector)
-        self.sigCurrentClosed.disconnect(self.updateCurrentItemActions)
-        self.sigCurrentOpened.disconnect(self.updateCollector)
-        self.sigCurrentOpened.disconnect(self.updateCurrentItemActions)
-
-        selectionModel = self.selectionModel() # need to store to prevent crash in PySide
-        selectionModel.currentChanged.disconnect(self.updateCollector)
-        selectionModel.currentChanged.disconnect(self.updateCurrentItemActions)
-
-
     @property
     def config(self):
         """ The root config tree item for this widget
@@ -185,7 +179,7 @@ class RepoTreeView(ArgosTreeView):
     def _createConfig(self):
         """ Creates a config tree item (CTI) hierarchy containing default children.
         """
-        # Curently not added to the config tree as there are no configurable items.
+        # Currently not added to the config tree as there are no configurable items.
         rootItem = MainGroupCti('data repository')
         rootItem.insertChild(BoolCti('test checkbox', False)) # Does nothing yet
         return rootItem
@@ -203,26 +197,6 @@ class RepoTreeView(ArgosTreeView):
         return QtCore.QSize(LEFT_DOCK_WIDTH, 450)
 
 
-    @QtSlot(QtCore.QModelIndex)
-    @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
-    def updateCurrentItemActions(self, currentIndex, _previousIndex=None):
-        """ Enables/disables actions when a new item is the current item in the tree view.
-        """
-        logger.debug("updateCurrentItemActions... ")
-
-        # When the model is empty the current index may be invalid.
-        hasCurrent = currentIndex.isValid()
-        self.currentItemActionGroup.setEnabled(hasCurrent)
-
-        isTopLevel = hasCurrent and self.model().isTopLevelIndex(currentIndex) #
-        self.topLevelItemActionGroup.setEnabled(isTopLevel)
-
-        currentItem = self.model().getItem(currentIndex)
-        self.openItemAction.setEnabled(currentItem.hasChildren() and not currentItem.isOpen)
-        self.closeItemAction.setEnabled(currentItem.hasChildren() and currentItem.isOpen)
-
-
-
     @QtSlot()
     def openCurrentItem(self):
         """ Opens the current item in the repository.
@@ -232,10 +206,11 @@ class RepoTreeView(ArgosTreeView):
         if not currentIndex.isValid():
             return
 
-        # Expanding the node will visit the children and thus show the 'open' icons
+        # Expanding the node will call indirectly call RepoTreeModel.fetchMore which will call
+        # BaseRti.fetchChildren, which will call BaseRti.open and thus open the current RTI.
+        # BaseRti.open will emit the self.model.sigItemChanged signal, which is connected to
+        # RepoTreeView.onItemChanged.
         self.expand(currentIndex)
-
-        self.sigCurrentOpened.emit(currentIndex)
 
 
     @QtSlot()
@@ -250,12 +225,14 @@ class RepoTreeView(ArgosTreeView):
 
         # First we remove all the children, this will close them as well.
         self.model().removeAllChildrenAtIndex(currentIndex)
+
+        # Close the current item. BaseRti.close will emit the self.model.sigItemChanged signal,
+        # which is connected to RepoTreeView.onItemChanged.
         currentItem.close()
         self.dataChanged(currentIndex, currentIndex)
         self.collapse(currentIndex) # otherwise the children will be fetched immediately
                                     # Note that this will happen anyway if the item is open in
                                     # in another view (TODO: what to do about this?)
-        self.sigCurrentClosed.emit(currentIndex)
 
 
     # @QtSlot()
@@ -330,25 +307,56 @@ class RepoTreeView(ArgosTreeView):
 
     @QtSlot(QtCore.QModelIndex)
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
-    def updateCollector(self, currentIndex, _previousIndex=None):
-        """ Updates the collector based on the current selection.
-
-            A selector always operates on one collector. Each selector implementation will update
-            the collector in its own way. Therefore the selector maintains a reference to the
-            collector.
-
-            TODO: make Selector classes. For now it's in the RepoTreeView.
+    def selectionChanged(self, currentIndex, _previousIndex=None):
+        """ Enables/disables actions when a new item is the current item in the tree view.
         """
-        # When the model is empty the current index may be invalid.
+        logger.debug("selectionChanged... ")
+        self.currentRepoTreeItemChanged()
+
+
+    def repoTreeItemChanged(self, rti):
+        """ Called when repo tree item has changed (the item itself, not a new selection)
+
+            If the item is the currently selected item, the the collector (inspector) and
+            metadata widgets are updated.
+        """
+        logger.debug("onItemChanged: {}".format(rti))
+        currentItem, _currentIndex = self.getCurrentItem()
+
+        if rti == currentItem:
+            self.currentRepoTreeItemChanged()
+        else:
+            logger.debug("Ignoring changed item as is not the current item: {}".format(rti))
+
+
+    def currentRepoTreeItemChanged(self):
+        """ Called to update the GUI when a repo tree item has changed or a new one was selected.
+        """
+        # When the model is empty the current index may be invalid and the currentItem may be None.
+        currentItem, currentIndex = self.getCurrentItem()
+
         hasCurrent = currentIndex.isValid()
-        if not hasCurrent:
-            return
+        assert hasCurrent == (currentItem is not None), \
+            "If current idex is valid, currentIndex may not be None" # sanity check
 
-        rti = self.model().getItem(currentIndex, None)
-        assert rti is not None, "sanity check failed. No RTI at current item"
+        # Set the item in the collector, will will subsequently update the inspector.
+        if hasCurrent:
+            logger.info("Adding rti to collector: {}".format(currentItem.nodePath))
+            self.collector.setRti(currentItem)
+            #if rti.asArray is not None: # TODO: maybe later, first test how robust it is now
+            #    self.collector.setRti(rti)
 
-        logger.info("Adding rti to collector: {}".format(rti.nodePath))
-        self.collector.setRti(rti)
-        #if rti.asArray is not None: # TODO: maybe later, first test how robust it is now
-        #    self.collector.setRti(rti)
+        # Update context menus in the repo tree
+        self.currentItemActionGroup.setEnabled(hasCurrent)
+        isTopLevel = hasCurrent and self.model().isTopLevelIndex(currentIndex)
+        self.topLevelItemActionGroup.setEnabled(isTopLevel)
+        self.openItemAction.setEnabled(currentItem is not None
+                                       and currentItem.hasChildren()
+                                       and not currentItem.isOpen)
+        self.closeItemAction.setEnabled(currentItem is not None
+                                        and currentItem.hasChildren()
+                                        and currentItem.isOpen)
 
+        # Emit sigRepoItemChanged signal so that, for example, details panes can update.
+        logger.debug("Emitting sigRepoItemChanged: {}".format(currentItem))
+        self.sigRepoItemChanged.emit(currentItem)
