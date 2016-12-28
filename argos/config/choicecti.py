@@ -277,9 +277,9 @@ class ChoiceCtiEditor(AbstractCtiEditor):
                         row = index.row()
                         logger.debug("Removing item {} from the combobox: {}"
                                      .format(row, self._comboboxListView.model().data(index)))
-                    self.cti.removeValueByIndex(row)
-                    self.comboBox.removeItem(row)
-                    return True
+                        self.cti.removeValueByIndex(row)
+                        self.comboBox.removeItem(row)
+                        return True
 
         # Calling parent event filter, which may filter out other events.
         return super(ChoiceCtiEditor, self).eventFilter(watchedObject, event)
