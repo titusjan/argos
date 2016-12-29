@@ -198,31 +198,32 @@ class BaseRti(AbstractLazyLoadTreeItem):
             Opens the tree item first if it's not yet open.
         """
         assert not self._childrenFetched, "canFetchChildren must be True"
-        self.clearException()
-
-        if not self.isOpen:
-            self.open() # Will set self._exception in case of failure
-
-        if not self.isOpen:
-            logger.warn("Opening item failed during fetch (aborted)")
-            self._childrenFetched = True
-            return [] # no need to continue if opening failed.
-
-        childItems = []
         try:
-            childItems = self._fetchAllChildren()
-            assert is_a_sequence(childItems), "ChildItems must be a sequence"
+            self.clearException()
+
+            if not self.isOpen:
+                self.open() # Will set self._exception in case of failure
+
+            if not self.isOpen:
+                logger.warn("Opening item failed during fetch (aborted)")
+                return [] # no need to continue if opening failed.
+
+            childItems = []
+            try:
+                childItems = self._fetchAllChildren()
+                assert is_a_sequence(childItems), "ChildItems must be a sequence"
+
+            except Exception as ex:
+                # This can happen, for example, when a NCDF/HDF5 file contains data types that
+                # are not supported by the Python library that is used to read them.
+                if DEBUGGING:
+                    raise
+                logger.error("Unable fetch tree item children: {}".format(ex))
+                self.setException(ex)
+
+            return childItems
+        finally:
             self._childrenFetched = True
-
-        except Exception as ex:
-            # This can happen, for example, when a NCDF/HDF5 file contains data types that
-            # are not supported by the Python library that is used to read them.
-            if DEBUGGING:
-                raise
-            logger.error("Unable fetch tree item children: {}".format(ex))
-            self.setException(ex)
-
-        return childItems
 
 
     def _fetchAllChildren(self):

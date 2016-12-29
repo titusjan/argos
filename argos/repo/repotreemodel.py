@@ -137,7 +137,7 @@ class RepoTreeModel(BaseTreeModel):
         for childItem in parentItem.fetchChildren():
             self.insertItem(childItem, parentIndex=parentIndex)
 
-        # Check that Rti implementation correctly sets _canFetchChildren
+        # Check that Rti implementation correctly sets canFetchChildren
         assert not parentItem.canFetchChildren(), \
             "not all children fetched: {}".format(parentItem)
 

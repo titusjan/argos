@@ -290,7 +290,7 @@ class AbstractLazyLoadTreeItem(BaseTreeItem):
         """ Constructor
         """
         super(AbstractLazyLoadTreeItem, self).__init__(nodeName=nodeName)
-        self._childrenFetched = False
+        self._childrenFetched = False  # children are fetched or it has been tried to do so.
 
 
     def hasChildren(self):
@@ -301,7 +301,8 @@ class AbstractLazyLoadTreeItem(BaseTreeItem):
 
 
     def canFetchChildren(self):
-        """ Returns True if children can be fetched, and  False if they already have been fetched.
+        """ Returns True if children can be fetched, and False if they already have been fetched.
+            Also returns False if they have been fetched and tried.
         """
         return not self._childrenFetched
 
@@ -313,8 +314,11 @@ class AbstractLazyLoadTreeItem(BaseTreeItem):
             override that method instead of this one.
         """
         assert not self._childrenFetched, "canFetchChildren must be True"
-        childItems = self._fetchAllChildren()
-        self._childrenFetched = True
+        try:
+            childItems = self._fetchAllChildren()
+        finally:
+            self._childrenFetched = True # Set to True, even if tried and failed.
+
         return childItems
 
 
