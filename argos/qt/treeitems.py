@@ -290,21 +290,20 @@ class AbstractLazyLoadTreeItem(BaseTreeItem):
         """ Constructor
         """
         super(AbstractLazyLoadTreeItem, self).__init__(nodeName=nodeName)
-        self._childrenFetched = False  # children are fetched or it has been tried to do so.
+        self._canFetchChildren = True # children not yet fetched (successfully or unsuccessfully)
 
 
     def hasChildren(self):
         """ Returns True if the item has (fetched or unfetched) children
         """
-        #return True
-        return not self._childrenFetched or len(self.childItems) > 0  # TODO: use this?
+        return self._canFetchChildren or len(self.childItems) > 0
 
 
     def canFetchChildren(self):
         """ Returns True if children can be fetched, and False if they already have been fetched.
             Also returns False if they have been fetched and tried.
         """
-        return not self._childrenFetched
+        return self._canFetchChildren
 
 
     def fetchChildren(self):
@@ -313,11 +312,11 @@ class AbstractLazyLoadTreeItem(BaseTreeItem):
             The actual work is done by _fetchAllChildren. Descendant classes should typically
             override that method instead of this one.
         """
-        assert not self._childrenFetched, "canFetchChildren must be True"
+        assert self._canFetchChildren, "canFetchChildren must be True"
         try:
             childItems = self._fetchAllChildren()
         finally:
-            self._childrenFetched = True # Set to True, even if tried and failed.
+            self._canFetchChildren = False # Set to True, even if tried and failed.
 
         return childItems
 
@@ -335,5 +334,7 @@ class AbstractLazyLoadTreeItem(BaseTreeItem):
 
     def removeAllChildren(self):
         """ Removes all children """
-        super(AbstractLazyLoadTreeItem, self).removeAllChildren()
-        self._childrenFetched = False
+        try:
+            super(AbstractLazyLoadTreeItem, self).removeAllChildren()
+        finally:
+            self._canFetchChildren = True

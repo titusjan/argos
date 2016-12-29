@@ -364,7 +364,6 @@ class NcdfVariableRti(BaseRti):
             for fieldName in self._ncVar.dtype.names:
                 childItems.append(NcdfFieldRti(self._ncVar, nodeName=fieldName, fileName=self.fileName))
 
-        self._childrenFetched = True
         return childItems
 
 
@@ -382,7 +381,7 @@ class NcdfGroupRti(BaseRti):
         check_class(ncGroup, Dataset, allow_none=True)
 
         self._ncGroup = ncGroup
-        self._childrenFetched = False
+
 
     @property
     def attributes(self):
@@ -411,7 +410,6 @@ class NcdfGroupRti(BaseRti):
         for varName, ncVar in self._ncGroup.variables.items():
             childItems.append(NcdfVariableRti(ncVar, nodeName=varName, fileName=self.fileName))
 
-        self._childrenFetched = True
         return childItems
 
 

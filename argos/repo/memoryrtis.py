@@ -357,7 +357,6 @@ class ArrayRti(BaseRti):
                 childItem._iconColor = self.iconColor
                 childItems.append(childItem)
 
-        #self._childrenFetched = True # TODO: necessary? (already done in ancestor?)
         return childItems
 
 

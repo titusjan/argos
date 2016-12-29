@@ -439,7 +439,6 @@ class H5pyDatasetRti(BaseRti):
                 childItems.append(H5pyFieldRti(self._h5Dataset, nodeName=fieldName,
                                                fileName=self.fileName))
 
-        self._childrenFetched = True
         return childItems
 
 
@@ -456,7 +455,7 @@ class H5pyGroupRti(BaseRti):
         check_class(h5Group, h5py.Group, allow_none=True)
 
         self._h5Group = h5Group
-        self._childrenFetched = False
+
 
     @property
     def attributes(self):
@@ -492,7 +491,6 @@ class H5pyGroupRti(BaseRti):
                 logger.warn("Ignored {}. It has an unexpected HDF-5 type: {}"
                             .format(childName, type(h5Child)))
 
-        self._childrenFetched = True
         return childItems
 
 

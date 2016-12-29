@@ -197,7 +197,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
         """ Creates child items and returns them.
             Opens the tree item first if it's not yet open.
         """
-        assert not self._childrenFetched, "canFetchChildren must be True"
+        assert self._canFetchChildren, "canFetchChildren must be True"
         try:
             self.clearException()
 
@@ -223,7 +223,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
 
             return childItems
         finally:
-            self._childrenFetched = True
+            self._canFetchChildren = False
 
 
     def _fetchAllChildren(self):
@@ -271,7 +271,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
             return rtiIconFactory.getIcon(rtiIconFactory.ERROR, isOpen=False,
                                           color=rtiIconFactory.COLOR_ERROR)
         else:
-            return rtiIconFactory.getIcon(self.iconGlyph, isOpen=self._childrenFetched,
+            return rtiIconFactory.getIcon(self.iconGlyph, isOpen=not self.canFetchChildren(),
                                           color=self.iconColor)
 
     @property
