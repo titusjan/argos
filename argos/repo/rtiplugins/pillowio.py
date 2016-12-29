@@ -140,13 +140,15 @@ class PillowFileRti(ArrayRti):
         if self._array is None:
             return []
 
-        if self._array.ndim != 3:
+        if self._array.ndim == 2:
+            return ['Y', 'X']
+        elif self._array.ndim == 3:
+            return ['Y', 'X', 'Band']
+        else:
             # Defensive programming: fall back on default names
             msg = "Expected 3D image. Got: {}".format(self._array.ndim)
             if DEBUGGING:
                 raise ValueError(msg)
             logger.warn(msg)
             return super(PillowFileRti, self).dimensionNames
-        else:
-            return ['Y', 'X', 'Band']
 

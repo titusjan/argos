@@ -4,9 +4,6 @@ TODO version 0.2:
     As soon as you open a file (e.g. penguins.png) it should update the inspector. It works
     with `open item`, but not with expanding
 
-    Refresh of directories fails.
-    Show both error and description
-    Specind tiff
     Reset color and histogram range in context menu
     AssertionError: not all children fetched: <NumpyCompressedFileRti: /argos/mytests/d.npz>
 
@@ -39,6 +36,8 @@ TODO version 0.2:
 
 
 TODO version 0.3:
+
+    Show both error and description in plugins dialog.
 
     Better log config
 
