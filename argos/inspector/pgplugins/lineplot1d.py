@@ -32,7 +32,7 @@ from argos.config.boolcti import BoolCti
 from argos.config.choicecti import ChoiceCti
 
 from argos.inspector.abstract import AbstractInspector, InvalidDataError
-from argos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, viewBoxAxisRange,
+from argos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, VALID_AXIS_NUMBERS, viewBoxAxisRange,
                                                  defaultAutoRangeMethods, PgGridCti, PgAxisCti,
                                                  setXYAxesAutoRangeOn, PgAxisLabelCti,
                                                  PgAxisLogModeCti, PgAxisRangeCti,
@@ -93,18 +93,24 @@ class PgLinePlot1dCti(MainGroupCti):
         self.plotDataItemCti = self.insertChild(PgPlotDataItemCti())
         self.probeCti = self.insertChild(BoolCti('show probe', True))
 
-
         # Connect signals
-        self._setAutoRangeOnFn = partial(setXYAxesAutoRangeOn, self,
-                                         self.xAxisRangeCti, self.yAxisRangeCti)
-        self.pgLinePlot1d.plotItem.sigAxisReset.connect(self._setAutoRangeOnFn)
+        self.pgLinePlot1d.plotItem.sigAxisReset.connect(self.setAutoRangeOn)
 
 
     def _closeResources(self):
        """ Disconnects signals.
            Is called by self.finalize when the cti is deleted.
        """
-       self.pgLinePlot1d.plotItem.sigAxisReset.disconnect(self._setAutoRangeOnFn)
+       self.pgLinePlot1d.plotItem.sigAxisReset.disconnect(self.setAutoRangeOn)
+
+
+    @QtSlot(int)
+    def setAutoRangeOn(self, axisNumber):
+        """ Sets the auto-range of the axis on.
+
+            :param axisNumber: 0 (X-axis), 1 (Y-axis), 2, (Both X and Y axes).
+        """
+        setXYAxesAutoRangeOn(self, self.xAxisRangeCti, self.yAxisRangeCti, axisNumber)
 
 
 
@@ -190,7 +196,7 @@ class PgLinePlot1d(AbstractInspector):
             self._clearContents()
             raise InvalidDataError("No data available or it does not contain real numbers")
 
-        # Valid plot data here
+        # -- Valid plot data from here on --
 
         # PyQtGraph doesn't handle masked arrays so we convert the masked values to Nans (missing
         # data values are replaced by NaNs). The PyQtGraph line plot omits the Nans, which is great.

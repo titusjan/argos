@@ -5,7 +5,6 @@ TODO version 0.2:
     with `open item`, but not with expanding
 
     Reset color and histogram range in context menu
-    AssertionError: not all children fetched: <NumpyCompressedFileRti: /argos/mytests/d.npz>
 
     # Check oude laptop
         Pg image 2d plot breaks histogram

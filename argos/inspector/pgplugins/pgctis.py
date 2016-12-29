@@ -46,6 +46,7 @@ logger = logging.getLogger(__name__)
 X_AXIS = pg.ViewBox.XAxis
 Y_AXIS = pg.ViewBox.YAxis
 BOTH_AXES = pg.ViewBox.XYAxes
+VALID_AXIS_NUMBERS = (X_AXIS, Y_AXIS, BOTH_AXES)
 VALID_AXIS_POSITIONS =  ('left', 'right', 'bottom', 'top')
 
 
@@ -151,7 +152,7 @@ def defaultAutoRangeMethods(inspector, intialItems=None):
     return rangeFunctions
 
 
-def setXYAxesAutoRangeOn(commonCti, xAxisRangeCti, yAxisRangeCti, axisNumer):
+def setXYAxesAutoRangeOn(commonCti, xAxisRangeCti, yAxisRangeCti, axisNumber):
     """ Turns on the auto range of an X and Y axis simultaneously.
         It sets the autoRangeCti.data of the xAxisRangeCti and yAxisRangeCti to True.
         After that, it emits the sigItemChanged signal of the commonCti.
@@ -160,15 +161,20 @@ def setXYAxesAutoRangeOn(commonCti, xAxisRangeCti, yAxisRangeCti, axisNumer):
         That is, only one sigItemChanged will be emitted.
 
         This function is necessary because, if one would call PgAxisRangeCti.sigItemChanged
-        separately on the X and Y ases the sigItemChanged signal would be emitted twice. This in
+        separately on the X and Y axes the sigItemChanged signal would be emitted twice. This in
         not only slower, but autoscaling one axis may slightly change the others range, so the
         second call to sigItemChanged may unset the autorange of the first.
+
+        axisNumber must be one of: 0 (X-axis), 1 (Y-axis), 2, (Both X and Y axes).
     """
-    logger.debug("setXYAxesAutoRangeOn, axisNumber: {}".format(axisNumer))
-    if axisNumer == X_AXIS or axisNumer == BOTH_AXES:
+    assert axisNumber in VALID_AXIS_NUMBERS, \
+        "Axis number should be one of {}, got {}".format(VALID_AXIS_NUMBERS, axisNumber)
+
+    logger.debug("setXYAxesAutoRangeOn, axisNumber: {}".format(axisNumber))
+    if axisNumber == X_AXIS or axisNumber == BOTH_AXES:
         xAxisRangeCti.autoRangeCti.data = True
 
-    if axisNumer == Y_AXIS or axisNumer == BOTH_AXES:
+    if axisNumber == Y_AXIS or axisNumber == BOTH_AXES:
         yAxisRangeCti.autoRangeCti.data = True
 
     commonCti.model.sigItemChanged.emit(commonCti)
@@ -304,18 +310,20 @@ class AbstractRangeCti(GroupCti):
         self._forceRefreshAutoRange()
 
 
-    # def setAutoRangeOn(self):
-    #     """ Turns on the auto range checkbox for the equivalent axes
-    #         Emits the sigItemChanged signal so that the inspector may be updated.
-    #     """
-    #     assert False, "not yet tested"
-    #     if self.getRefreshBlocked():
-    #         logger.debug("Set autorange on blocked for {}".format(self.nodeName))
-    #         return
-    #
-    #     if self.autoRangeCti:
-    #         self.autoRangeCti.data = True
-    #     self.model.sigItemChanged.emit(self) # this should typically only be called by other classes.
+    def setAutoRangeOn(self):
+        """ Turns on the auto range checkbox for the equivalent axes
+            Emits the sigItemChanged signal so that the inspector may be updated.
+
+            Use the setXYAxesAutoRangeOn stand-alone function if you want to set the autorange on
+            for both axes of a viewport.
+        """
+        if self.getRefreshBlocked():
+            logger.debug("Set autorange on blocked for {}".format(self.nodeName))
+            return
+
+        if self.autoRangeCti:
+            self.autoRangeCti.data = True
+        self.model.sigItemChanged.emit(self) # this should typically only be called by other classes.
 
 
     def calculateRange(self):

@@ -158,17 +158,21 @@ class PgImagePlot2dCti(MainGroupCti):
         self.yAxisRangeCti = self.yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS))
 
         #### Color scale ####
+
         colorAutoRangeFunctions = defaultAutoRangeMethods(self.pgImagePlot2d)
-        self.insertChild(PgHistLutColorRangeCti(pgImagePlot2d.histLutItem, colorAutoRangeFunctions,
-                                                nodeName="color range"))
+
+        self.histColorRangeCti = self.insertChild(
+            PgHistLutColorRangeCti(pgImagePlot2d.histLutItem, colorAutoRangeFunctions,
+                                   nodeName="color range"))
 
         histViewBox = pgImagePlot2d.histLutItem.vb
         histViewBox.enableAutoRange(Y_AXIS, False)
         rangeFunctions = defaultAutoRangeMethods(self.pgImagePlot2d,
             {PgAxisRangeCti.PYQT_RANGE: partial(viewBoxAxisRange, histViewBox, Y_AXIS)})
-        self.histRangeCti = self.insertChild(PgAxisRangeCti(histViewBox, Y_AXIS,
-                                                            autoRangeFunctions=rangeFunctions,
-                                                            nodeName='histogram range'))
+
+        self.histRangeCti = self.insertChild(
+            PgAxisRangeCti(histViewBox, Y_AXIS, nodeName='histogram range',
+                           autoRangeFunctions=rangeFunctions))
 
         self.insertChild(PgGradientEditorItemCti(self.pgImagePlot2d.histLutItem.gradient))
 
@@ -196,17 +200,9 @@ class PgImagePlot2dCti(MainGroupCti):
             autoRangeFunctions = crossPlotAutoRangeMethods(self.pgImagePlot2d, "vertical")))
 
         # Connect signals
-        self._imageAutoRangeFn = partial(setXYAxesAutoRangeOn, self,
-                                         self.xAxisRangeCti, self.yAxisRangeCti)
-        self.pgImagePlot2d.imagePlotItem.sigAxisReset.connect(self._imageAutoRangeFn)
-
-        self._horCrossPlotAutoRangeFn = partial(setXYAxesAutoRangeOn, self,
-                                                self.xAxisRangeCti, self.horCrossPlotRangeCti)
-        self.pgImagePlot2d.horCrossPlotItem.sigAxisReset.connect(self._horCrossPlotAutoRangeFn)
-
-        self._verCrossPlotAutoRangeFn = partial(setXYAxesAutoRangeOn, self,
-                                                self.verCrossPlotRangeCti, self.yAxisRangeCti)
-        self.pgImagePlot2d.verCrossPlotItem.sigAxisReset.connect(self._verCrossPlotAutoRangeFn)
+        self.pgImagePlot2d.imagePlotItem.sigAxisReset.connect(self.setImagePlotAutoRangeOn)
+        self.pgImagePlot2d.horCrossPlotItem.sigAxisReset.connect(self.setHorCrossPlotAutoRangeOn)
+        self.pgImagePlot2d.verCrossPlotItem.sigAxisReset.connect(self.setVerCrossPlotAutoRangeOn)
 
         # Also update axis auto range tree items when linked axes are resized
         horCrossViewBox = self.pgImagePlot2d.horCrossPlotItem.getViewBox()
@@ -224,10 +220,36 @@ class PgImagePlot2dCti(MainGroupCti):
         horCrossViewBox = self.pgImagePlot2d.horCrossPlotItem.getViewBox()
         horCrossViewBox.sigRangeChangedManually.disconnect(self.xAxisRangeCti.setAutoRangeOff)
 
-        self.pgImagePlot2d.verCrossPlotItem.sigAxisReset.disconnect(self._verCrossPlotAutoRangeFn)
-        self.pgImagePlot2d.horCrossPlotItem.sigAxisReset.disconnect(self._horCrossPlotAutoRangeFn)
-        self.pgImagePlot2d.imagePlotItem.sigAxisReset.disconnect(self._imageAutoRangeFn)
+        self.pgImagePlot2d.verCrossPlotItem.sigAxisReset.disconnect(self.setVerCrossPlotAutoRangeOn)
+        self.pgImagePlot2d.horCrossPlotItem.sigAxisReset.disconnect(self.setHorCrossPlotAutoRangeOn)
+        self.pgImagePlot2d.imagePlotItem.sigAxisReset.disconnect(self.setImagePlotAutoRangeOn)
 
+
+    @QtSlot(int)
+    def setImagePlotAutoRangeOn(self, axisNumber):
+        """ Sets the image plot's auto-range on for the axis with number axisNumber.
+
+            :param axisNumber: 0 (X-axis), 1 (Y-axis), 2, (Both X and Y axes).
+        """
+        setXYAxesAutoRangeOn(self, self.xAxisRangeCti, self.yAxisRangeCti, axisNumber)
+
+
+    @QtSlot(int)
+    def setHorCrossPlotAutoRangeOn(self, axisNumber):
+        """ Sets the horizontal cross-hair plot's auto-range on for the axis with number axisNumber.
+
+            :param axisNumber: 0 (X-axis), 1 (Y-axis), 2, (Both X and Y axes).
+        """
+        setXYAxesAutoRangeOn(self, self.xAxisRangeCti, self.horCrossPlotRangeCti, axisNumber)
+
+
+    @QtSlot(int)
+    def setVerCrossPlotAutoRangeOn(self, axisNumber):
+        """ Sets the vertical cross-hair plot's auto-range on for the axis with number axisNumber.
+
+            :param axisNumber: 0 (X-axis), 1 (Y-axis), 2, (Both X and Y axes).
+        """
+        setXYAxesAutoRangeOn(self, self.verCrossPlotRangeCti, self.yAxisRangeCti, axisNumber)
 
 
 
@@ -417,7 +439,7 @@ class PgImagePlot2d(AbstractInspector):
             self._clearContents()
             raise InvalidDataError("No data available or it does not contain real numbers")
 
-        # Valid plot data from here on.
+        # -- Valid plot data from here on --
 
         # PyQtGraph doesn't handle masked array so we convert the masked values to Nans. Missing
         # data values are replaced by NaNs. The PyQtGraph image plot shows this as the color at the

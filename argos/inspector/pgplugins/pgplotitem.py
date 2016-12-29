@@ -62,8 +62,7 @@ class ArgosPgPlotItem(PlotItem):
 
         The original PyQtGraph menu is disabled. All settings I want can be set using the config
         tree; the other settings I don't want to support. Furthermore a context menu is created
-        that allows the user to rescale the axes. An existing context menu can be given in the
-        contextMenu. In that case the reset axes menu items are added to the existing context menu.
+        that allows the user to rescale the axes.
 
         Autorange is disabled as it is expected that the (viewbox of the) plot item will be
         connected to two PgAxisRangeCti objects that control the (auto)range of the X and Y axes.
@@ -76,7 +75,6 @@ class ArgosPgPlotItem(PlotItem):
 
     def __init__(self,
                  borderPen=DEFAULT_BORDER_PEN,
-                 contextMenu=None,
                  *args, **kwargs):
         """ Constructor.
             :param enableMenu: if True right-click opens a context menu (default=False)

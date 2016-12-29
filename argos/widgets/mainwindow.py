@@ -822,7 +822,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def myTest(self):
         """ Function for small ad-hoc tests
         """
+        logger.info("myTest function called")
         self.testSelectAllData()
+
+        # self.inspector.config.setAutoRangeOn(2)
+        # self.inspector.config.setColorAutoRangeOn()
+        # self.inspector.config.histRangeCti.setAutoRangeOn()
 
         # logger.debug("Repo icon size: {}".format(self.repoWidget.repoTreeView.iconSize()))
         # #self.repoWidget.repoTreeView.setIconSize(QtCore.QSize(32, 32))
