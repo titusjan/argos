@@ -64,6 +64,16 @@ For a complete list of command line options, run argos with `-h'.
 The HDF-5 file that is used in the screenshot and the examples below can be
 downloaded  [here](http://www.hdfeos.org/zoo/index_openGESDISC_Examples.php#OMI) (2.4 MB).
 
+#### Trouble shooting
+
+If you start `argos` and nothing happens, you probably didn't install `PyQt` or `numpy`. You can
+try to start argos as follows to get more information
+
+```
+    %> python -m argos.main
+```
+
+
 ### Using Argos
 
 The Argos main window consists of a central panel that holds a visualization, and of smaller

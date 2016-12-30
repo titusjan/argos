@@ -554,8 +554,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.sigInspectorChanged.emit(self.inspectorRegItem)
 
 
-
-
     def _updateNonDefaultsForInspector(self, inspectorRegItem, inspector):
         """ Store the (non-default) config values for the current inspector in a local dictionary.
             This dictionary is later used to store value for persistence.

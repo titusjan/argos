@@ -36,17 +36,29 @@ COL_NODE_NAME_WIDTH = 170
 COL_SHAPE_WIDTH = 60
 COL_ELEM_TYPE_WIDTH = 60
 
-# Spacing and margin in dock widgets in pixels
-DOCK_SPACING = 10
-DOCK_MARGIN  = 10
 
 # Spacing and margin in central widgets in pixels
 CENTRAL_SPACING = 0
 CENTRAL_MARGIN  = 0
 
+# Spacing and margin in dock widgets in pixels
+if sys.platform == 'darwin': # OS-X
+    DOCK_SPACING = 10
+    DOCK_MARGIN  = 10
+else:
+    DOCK_SPACING = 5
+    DOCK_MARGIN  = 5
+
+
 if sys.platform == 'linux':
     MONO_FONT = 'Monospace'
     FONT_SIZE = 10
+elif sys.platform == 'win32' or sys.platform == 'cygwin':
+    MONO_FONT = 'Courier'
+    FONT_SIZE = 10
+elif sys.platform == 'darwin':
+    MONO_FONT = 'Courier'
+    FONT_SIZE = 13
 else:
     MONO_FONT = 'Courier'
     FONT_SIZE = 13

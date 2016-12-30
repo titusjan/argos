@@ -1,10 +1,6 @@
 
 TODO version 0.2:
 
-    As soon as you open a file (e.g. penguins.png) it should update the inspector. It works
-    with `open item`, but not with expanding
-
-    Reset color and histogram range in context menu
 
     # Check oude laptop
         Pg image 2d plot breaks histogram
@@ -25,18 +21,18 @@ TODO version 0.2:
 
     check docs dir.
 
-	Reset range when a variable with a new unit/abcissa is selected?
-	    Hard to determine the new unit and dimensions.
-	    Change if unit is new or combox dim is new.
-
-
     Center main window with --reset
 
 TODO version 0.3:
 
-
+	Reset range when a variable with a new unit/abcissa is selected?
+	    Hard to determine the new unit and dimensions.
+	    Change if unit is new or combox dim is new.
+	    Keep collector state (comboboxes, when the dimensions of the new RTI are the same as of the old)
 
     Show both error and description in plugins dialog.
+
+    Reset color and histogram range in context menu
 
     Better log config
 
