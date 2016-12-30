@@ -582,12 +582,12 @@ class MainWindow(QtWidgets.QMainWindow):
         pluginsDialog.exec_()
 
 
-    @QtSlot()
-    def collectorContentsChanged(self):
+    @QtSlot(str)
+    def collectorContentsChanged(self, reason):
         """ Slot that updates the UI whenever the contents of the collector has changed.
         """
         logger.debug("collectorContentsChanged()")
-        self.drawInspectorContents(reason=UpdateReason.COLLECTOR_CHANGED)
+        self.drawInspectorContents(reason=reason)
 
 
     @QtSlot(AbstractCti)

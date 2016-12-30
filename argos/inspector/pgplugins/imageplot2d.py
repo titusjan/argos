@@ -29,7 +29,7 @@ from argos.info import DEBUGGING
 from argos.config.boolcti import BoolCti, BoolGroupCti
 from argos.config.choicecti import ChoiceCti
 from argos.config.groupcti import MainGroupCti
-from argos.inspector.abstract import AbstractInspector, InvalidDataError
+from argos.inspector.abstract import AbstractInspector, InvalidDataError, UpdateReason
 from argos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES, viewBoxAxisRange,
                                                  defaultAutoRangeMethods, PgAxisLabelCti,
                                                  PgAxisCti, PgAxisFlipCti, PgAspectRatioCti,
@@ -399,8 +399,8 @@ class PgImagePlot2d(AbstractInspector):
     def _drawContents(self, reason=None, initiator=None):
         """ Draws the plot contents from the sliced array of the collected repo tree item.
 
-            The reason and initiator parameters are ignored.
-            See AbstractInspector.updateContents for their description.
+            The reason parameter is used to determine if the axes will be reset (the initiator
+            parameter is ignored). See AbstractInspector.updateContents for their description.
         """
         self.crossPlotRow = None # reset because the sliced array shape may change
         self.crossPlotCol = None # idem dito
@@ -458,6 +458,16 @@ class PgImagePlot2d(AbstractInspector):
         # print the actual value.
         imageArray = replaceMaskedValueWithFloat(imageArray, np.isinf(self.slicedArray.data),
                                                  np.nan, copyOnReplace=True)
+
+        # Reset the axes ranges (via the config)
+        if (reason == UpdateReason.RTI_CHANGED or
+            reason == UpdateReason.COLLECTOR_COMBO_BOX):
+            self.config.xAxisRangeCti.autoRangeCti.data = True
+            self.config.yAxisRangeCti.autoRangeCti.data = True
+            self.config.histColorRangeCti.autoRangeCti.data = True
+            self.config.histRangeCti.autoRangeCti.data = True
+            self.config.horCrossPlotRangeCti.autoRangeCti.data = True
+            self.config.verCrossPlotRangeCti.autoRangeCti.data = True
 
         # PyQtGraph uses the following dimension order: T, X, Y, Color.
         # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0}

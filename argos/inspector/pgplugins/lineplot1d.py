@@ -31,12 +31,11 @@ from argos.config.groupcti import MainGroupCti
 from argos.config.boolcti import BoolCti
 from argos.config.choicecti import ChoiceCti
 
-from argos.inspector.abstract import AbstractInspector, InvalidDataError
-from argos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, VALID_AXIS_NUMBERS, viewBoxAxisRange,
-                                                 defaultAutoRangeMethods, PgGridCti, PgAxisCti,
-                                                 setXYAxesAutoRangeOn, PgAxisLabelCti,
-                                                 PgAxisLogModeCti, PgAxisRangeCti,
-                                                 PgPlotDataItemCti)
+from argos.inspector.abstract import AbstractInspector, InvalidDataError, UpdateReason
+from argos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, viewBoxAxisRange,
+                                              defaultAutoRangeMethods, PgGridCti, PgAxisCti,
+                                              setXYAxesAutoRangeOn, PgAxisLabelCti,
+                                              PgAxisLogModeCti, PgAxisRangeCti, PgPlotDataItemCti)
 from argos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from argos.utils.cls import (array_has_real_numbers, check_class, fill_values_to_nan,
                                 is_an_array, check_is_an_array, to_string)
@@ -187,8 +186,8 @@ class PgLinePlot1d(AbstractInspector):
     def _drawContents(self, reason=None, initiator=None):
         """ Draws the plot contents from the sliced array of the collected repo tree item.
 
-            The reason and initiator parameters are ignored.
-            See AbstractInspector.updateContents for their description.
+            The reason parameter is used to determine if the axes will be reset (the initiator
+            parameter is ignored). See AbstractInspector.updateContents for their description.
         """
         self.slicedArray = self.collector.getSlicedArray()
 
@@ -203,6 +202,15 @@ class PgLinePlot1d(AbstractInspector):
         self.slicedArray.replaceMaskedValueWithNan()  # will convert data to float if int
 
         self.plotItem.clear()
+
+        # Reset the axes ranges (via the config)
+        if (reason == UpdateReason.RTI_CHANGED or
+            reason == UpdateReason.COLLECTOR_COMBO_BOX):
+
+            # self.config.yAxisRangeCti.setAutoRangeOn() doesn't work as refreshBlocked is True
+            # TODO: can refreshBlocked maybe only block the signals to prevent loops?
+            self.config.xAxisRangeCti.autoRangeCti.data = True
+            self.config.yAxisRangeCti.autoRangeCti.data = True
 
         self.titleLabel.setText(self.configValue('title').format(**self.collector.rtiInfo))
 

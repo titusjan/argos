@@ -21,7 +21,7 @@ import logging
 from argos.config.groupcti import MainGroupCti
 from argos.info import DEBUGGING
 from argos.qt import QtWidgets, QtSlot
-from argos.utils.cls import type_name
+from argos.utils.cls import type_name, check_class
 from argos.widgets.constants import DOCK_SPACING, DOCK_MARGIN
 from argos.widgets.display import MessageDisplay
 
@@ -36,11 +36,33 @@ class InvalidDataError(Exception):
 
 
 class UpdateReason(object):
-    """ Enumeration class that gives the reason for updating the inspector contents. """
-    NEW_MAIN_WINDOW = "new main window"
-    INSPECTOR_CHANGED = "inspector changed"
-    COLLECTOR_CHANGED = "collector changed"
-    CONFIG_CHANGED = "config changed"
+    """ Enumeration class that contains the reason for updating the inspector contents.
+    """
+    NEW_MAIN_WINDOW     = "new main window"
+    INSPECTOR_CHANGED   = "inspector changed"
+    RTI_CHANGED         = "repo tree item changed"
+    COLLECTOR_COMBO_BOX = "collector combobox changed"
+    COLLECTOR_SPIN_BOX  = "collector spinbox changed"
+    CONFIG_CHANGED      = "config changed"
+
+    __VALID_REASONS = (NEW_MAIN_WINDOW, INSPECTOR_CHANGED, RTI_CHANGED,
+                       COLLECTOR_COMBO_BOX, COLLECTOR_SPIN_BOX, CONFIG_CHANGED)
+
+
+    @classmethod
+    def validReasons(cls):
+        """ Returns a tuple with all valid reasond
+        """
+        return cls.__VALID_REASONS
+
+
+    @classmethod
+    def checkValid(cls, reason):
+        """ Raises ValueError if the reason is not one of the valid enumerations
+        """
+        if reason not in cls.__VALID_REASONS:
+            raise ValueError("reason must be one of {}, got {}".format(cls.__VALID_REASONS, reason))
+
 
 
 class AbstractInspector(QtWidgets.QStackedWidget):
@@ -160,6 +182,7 @@ class AbstractInspector(QtWidgets.QStackedWidget):
             reason. At the moment the initiator is only implemented for the "config changed" reason. In
             this case the initiator will be the Config Tree Item (CTI that has changed).
         """
+        UpdateReason.checkValid(reason)
         logger.debug("---- Inspector updateContents, reason: {}, initiator: {}"
                      .format(reason, initiator))
         logger.debug("Inspector: {}".format(self))
@@ -204,7 +227,7 @@ class AbstractInspector(QtWidgets.QStackedWidget):
             Descendants should override _drawContents and not worry about exceptions;
             the updateContents will show the error page if an exception is raised.
 
-            See updateContents for the reason and initiator parameters.
+            See the updateContents() docstring for the reason and initiator parameters.
         """
         raise NotImplementedError()
 

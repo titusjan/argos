@@ -32,9 +32,9 @@ TODO version 0.2:
 
     Center main window with --reset
 
-
-
 TODO version 0.3:
+
+
 
     Show both error and description in plugins dialog.
 
@@ -62,7 +62,6 @@ TODO version 0.3:
 
     TextView inspector
         XML pretty print.
-
 
     Use valid_range attributes to determine the color range (crossPlotAutoRangeMethods) (or set them in the mask?)
         /argos/hdf-eos/DeepBlue-SeaWiFS-1.0_L3_20100101_v002-20110527T191319Z.h5/viewing_zenith_angle

@@ -23,8 +23,9 @@ import numpy as np
 import numpy.ma as ma
 
 from argos.collect.collectortree import CollectorTree, CollectorSpinBox
-from argos.repo.baserti import BaseRti
+from argos.inspector.abstract import UpdateReason
 from argos.qt import Qt, QtWidgets, QtGui, QtCore, QtSignal, QtSlot
+from argos.repo.baserti import BaseRti
 from argos.utils.cls import check_class, check_is_a_sequence, check_is_an_array, is_an_array
 from argos.utils.masks import ArrayWithMask
 from argos.widgets.constants import TOP_DOCK_HEIGHT, DOCK_SPACING, DOCK_MARGIN
@@ -47,7 +48,7 @@ class Collector(QtWidgets.QWidget):
         The CollectorTree only stores the VisItems, the intelligence is located in the Collector
         itself.
     """
-    sigContentsChanged = QtSignal()
+    sigContentsChanged = QtSignal(str) # one of the UpdateReason values.
 
     def __init__(self, windowNumber):
         """ Constructor
@@ -177,7 +178,7 @@ class Collector(QtWidgets.QWidget):
 
 
     def clearAndSetComboBoxes(self, axesNames):
-        """ Removes all VisItems before setting the new degree.
+        """ Removes all comboboxes.
         """
         logger.debug("Collector clearAndSetComboBoxes: {}".format(axesNames))
         check_is_a_sequence(axesNames)
@@ -255,7 +256,7 @@ class Collector(QtWidgets.QWidget):
 
         logger.debug("{} sigContentsChanged signal (_updateWidgets)"
                       .format("Blocked" if self.signalsBlocked() else "Emitting"))
-        self.sigContentsChanged.emit()
+        self.sigContentsChanged.emit(UpdateReason.RTI_CHANGED)
 
 
     def _createComboBoxes(self, row):
@@ -457,7 +458,7 @@ class Collector(QtWidgets.QWidget):
 
         logger.debug("{} sigContentsChanged signal (comboBox)"
                       .format("Blocked" if self.signalsBlocked() else "Emitting"))
-        self.sigContentsChanged.emit()
+        self.sigContentsChanged.emit(UpdateReason.COLLECTOR_COMBO_BOX)
 
 
     @QtSlot(int)
@@ -473,7 +474,7 @@ class Collector(QtWidgets.QWidget):
 
         logger.debug("{} sigContentsChanged signal (spinBox)"
                       .format("Blocked" if self.signalsBlocked() else "Emitting"))
-        self.sigContentsChanged.emit()
+        self.sigContentsChanged.emit(UpdateReason.COLLECTOR_SPIN_BOX)
 
 
     def getSlicedArray(self, copy=True):
