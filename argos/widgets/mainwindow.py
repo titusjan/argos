@@ -92,6 +92,11 @@ class MainWindow(QtWidgets.QMainWindow):
         #self.setDocumentMode(True) # Look of tabs as Safari on OS-X (disabled, ugly)
         self.resize(1300, 700)  # Assumes minimal resolution of 1366 x 768
 
+        # Move window to the center of the screen
+        desktopRect = QtWidgets.QApplication.desktop().availableGeometry(self)
+        center = desktopRect.center()
+        self.move(center.x() - self.width () * 0.5, center.y() - self.height() * 0.5)
+        
         self.__setupViews()
         self.__setupMenus()
         self.__setupDockWidgets()
@@ -721,7 +726,7 @@ class MainWindow(QtWidgets.QMainWindow):
         try:
             for key, nonDefaults in self._inspectorsNonDefaults.items():
                 if nonDefaults:
-                    settings.setValue(key, ctiDumps(nonDefaults)) # TODO: do we need JSON?
+                    settings.setValue(key, ctiDumps(nonDefaults))
                     logger.debug("Writing non defaults for {}: {}".format(key, nonDefaults))
         finally:
             settings.endGroup()
