@@ -118,9 +118,6 @@ class RepoTreeView(ArgosTreeView):
         self.addAction(self.closeItemAction)
 
         # Connect signals
-        selectionModel = self.selectionModel() # need to store reference to prevent crash in PySide
-        selectionModel.currentChanged.connect(self.selectionChanged)
-
         self.model().sigItemChanged.connect(self.repoTreeItemChanged)
 
 
@@ -128,9 +125,6 @@ class RepoTreeView(ArgosTreeView):
         """ Disconnects signals and frees resources
         """
         self.model().sigItemChanged.disconnect(self.repoTreeItemChanged)
-
-        selectionModel = self.selectionModel() # need to store to prevent crash in PySide
-        selectionModel.currentChanged.disconnect(self.selectionChanged)
 
 
     def contextMenuEvent(self, event):
@@ -307,10 +301,9 @@ class RepoTreeView(ArgosTreeView):
 
     @QtSlot(QtCore.QModelIndex)
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
-    def selectionChanged(self, currentIndex, _previousIndex=None):
+    def currentChanged(self, currentIndex, _previousIndex=None):
         """ Enables/disables actions when a new item is the current item in the tree view.
         """
-        logger.debug("selectionChanged... ")
         self.currentRepoTreeItemChanged()
 
 

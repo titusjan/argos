@@ -787,7 +787,7 @@ class MainWindow(QtWidgets.QMainWindow):
             logger.debug("Window activated: {}".format(self.windowNumber))
             self.activateWindowAction.setChecked(True)
 
-        return super().event(ev);
+        return super(MainWindow, self).event(ev);
 
 
     def closeEvent(self, event):

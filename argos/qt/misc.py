@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 # that can vary (Python 2 & 3, Windows & Linux & OS-X, etc) so I don't want to support even more
 # combinations. I keep PyQt4 and PySide working as long as it is practical but I don't do extensive
 # testing. If you encounter issues with PyQt4/PySide please report them and I'll see what I can do.
-# Note that pyside does currenlty not work in combination with Python3!
+# Note that pyside does currently not work in combination with Python3!
 
 
 USE_QTPY = environment_var_to_bool(os.environ.get('ARGOS_USE_QTPY', False))

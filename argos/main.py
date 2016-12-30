@@ -54,7 +54,7 @@ def browse(fileNames=None,
         :return:
     """
     # Imported here so this module can be imported without Qt being installed.
-    from PyQt5 import QtWidgets, QtCore
+    from argos.qt import QtWidgets, QtCore
     from argos.application import ArgosApplication
     from argos.repo.testdata import createArgosTestData
 

@@ -48,7 +48,7 @@ class ArgosApplication(QtCore.QObject):
                 programming IHMO as it is easy to miss errors. I strongly recommend that you set
                 the setExceptHook to True.
         """
-        super().__init__()
+        super(ArgosApplication, self).__init__()
 
         # Call initQtWidgetsApplicationInstance() so that the users can call argos.browse without
         # having to call it themselves.
