@@ -118,6 +118,9 @@ class RepoTreeView(ArgosTreeView):
         self.addAction(self.closeItemAction)
 
         # Connect signals
+        selectionModel = self.selectionModel() # need to store reference to prevent crash in PySide
+        selectionModel.currentChanged.connect(self.currentItemChanged)
+
         self.model().sigItemChanged.connect(self.repoTreeItemChanged)
 
 
@@ -125,6 +128,9 @@ class RepoTreeView(ArgosTreeView):
         """ Disconnects signals and frees resources
         """
         self.model().sigItemChanged.disconnect(self.repoTreeItemChanged)
+
+        selectionModel = self.selectionModel() # need to store reference to prevent crash in PySide
+        selectionModel.currentChanged.disconnect(self.currentItemChanged)
 
 
     def contextMenuEvent(self, event):
@@ -301,8 +307,12 @@ class RepoTreeView(ArgosTreeView):
 
     @QtSlot(QtCore.QModelIndex)
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
-    def currentChanged(self, currentIndex, _previousIndex=None):
+    def currentItemChanged(self, currentIndex, _previousIndex=None):
         """ Enables/disables actions when a new item is the current item in the tree view.
+
+            Is not called currentChanged as this would override an existing method. We want to
+            connect this to the currentChanged signal at the end of the constructor, which would
+            then not be possible.
         """
         self.currentRepoTreeItemChanged()
 
