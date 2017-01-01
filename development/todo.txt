@@ -1,29 +1,46 @@
 
 TODO version 0.2:
 
+    RTI: <NcdfVariableRti: /argos/occ/ql_test_020_minutes-020-021/qlbd2eps.lx.nc/BAND2/ICID_04003_GROUP_00000/INSTRUMENT/instrument_settings>
+    ValueError: size of tuple must match number of fields.
 
-    # Check oude laptop
-        Pg image 2d plot breaks histogram
-            /argos/OMI-Aura_L3-OMDOAO3e_2010m0602_v003-2011m1109t115919.he5/HDFEOS/GRIDS/ColumnAmountO3/Data Fields/TerrainHeight
-
-        /users/titusjan/data/trop_lx/pre_env/2014_08_27t19_27_53_short_test_orbit/proc_000_raw
-        PyQtGraph line plot KeyError: 'attribute units has unsupported datatype'
-
-        image plot of /argos/occ/bg_corr_nominals/report.detector1.nc/DETECTOR1/illum shows a black box (autolevels.
-        /Users/titusjan/Data/argos/occ/bg_corr_nominals/report.detector1.nc
-
-    Installed plugins dialog doesn't work if scipy is not installed.  (Test under Linux)
 
     Release:
         Pylint and TODOs?
         Test by opening all test data?
 
+2016-12-31 01:24:35,104             mainwindow.py:616  : DEBUG  : -------- Drawing inspector of window: 2D Image Plot #0 | Argos-Panoptes --------
+2016-12-31 01:24:35,104               abstract.py:187  : DEBUG  : ---- Inspector updateContents, reason: repo tree item changed, initiator: None
+2016-12-31 01:24:35,104               abstract.py:188  : DEBUG  : Inspector: <argos.inspector.pgplugins.imageplot2d.PgImagePlot2d object at 0x11ec12af8>
+2016-12-31 01:24:35,104               abstract.py:189  : DEBUG  : RTI: <NcdfVariableRti: /argos/occ/bg_corr_nominals/report.detector2.nc/settings>
+2016-12-31 01:24:35,104        configtreemodel.py:230  : DEBUG  : Setting refreshBlocked from False to True
+2016-12-31 01:24:35,104              collector.py:512  : DEBUG  : Array slice list: []
+2016-12-31 01:24:35,165              collector.py:551  : DEBUG  : slicedArray.shape: ()
+2016-12-31 01:24:35,166              collector.py:552  : DEBUG  : Transposing dimensions: [0 1]
+2016-12-31 01:24:35,166        configtreemodel.py:230  : DEBUG  : Setting refreshBlocked from True to False
+2016-12-31 01:24:35,232                   misc.py:192  : CRITICAL: Bug: uncaught ValueError
+Traceback (most recent call last):
+  File "/Users/titusjan/Programming/python/argos/argos/widgets/mainwindow.py", line 593, in collectorContentsChanged
+    self.drawInspectorContents(reason=reason)
+  File "/Users/titusjan/Programming/python/argos/argos/widgets/mainwindow.py", line 618, in drawInspectorContents
+    self.inspector.updateContents(reason=reason, initiator=origin)
+  File "/Users/titusjan/Programming/python/argos/argos/inspector/abstract.py", line 195, in updateContents
+    self._drawContents(reason=reason, initiator=initiator)
+  File "/Users/titusjan/Programming/python/argos/argos/inspector/pgplugins/imageplot2d.py", line 436, in _drawContents
+    self.slicedArray = self.collector.getSlicedArray()
+  File "/Users/titusjan/Programming/python/argos/argos/collect/collector.py", line 553, in getSlicedArray
+    awm = awm.transpose(permutations)
+  File "/Users/titusjan/Programming/python/argos/argos/utils/masks.py", line 190, in transpose
+    tdata = np.transpose(self.data, *args, **kwargs)
+  File "/opt/local/Library/Frameworks/Python.framework/Versions/3.4/lib/python3.4/site-packages/numpy/core/fromnumeric.py", line 557, in transpose
+    return transpose(axes)
+ValueError: axes don't match array
+2016-12-31 01:24:35,233                   misc.py:194  : INFO   : Quitting application with exit code 1
 
-    check docs dir.
-
-    Center main window with --reset
 
 TODO version 0.3:
+
+    Installed plugins dialog doesn't work if scipy is not installed.  (Test under Linux)
 
 	Reset range when a variable with a new unit/abcissa is selected?
 	    Hard to determine the new unit and dimensions.
