@@ -3,7 +3,7 @@ Argos
 ===============================
 
 
-Argos Panoptes data inspector. (Work in progress.)
+Argos Panoptes data inspector.
 
 Requires: PyQtGraph (http://www.pyqtgraph.org/).
 

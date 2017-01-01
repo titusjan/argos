@@ -21,13 +21,13 @@ import os
 
 DEBUGGING = False
 
-VERSION = '0.2.0rc4'
+VERSION = '0.2.0'
 REPO_NAME = "argos"
 #SCRIPT_NAME = "argos"
 PACKAGE_NAME = "argos"
 PROJECT_NAME = "Argos"
 DEFAULT_PROFILE = 'Panoptes'
-SHORT_DESCRIPTION = "Argos Panoptes HDF/NCDF/array data inspector."
+SHORT_DESCRIPTION = "Argos Panoptes HDF/NCDF/scientific data viewer."
 PROJECT_URL = "https://github.com/titusjan/argos"
 AUTHOR = "Pepijn Kenter"
 EMAIL = "titusjan@gmail.com"
