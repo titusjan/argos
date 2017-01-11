@@ -225,7 +225,6 @@ class PgImagePlot2dCti(MainGroupCti):
         self.pgImagePlot2d.imagePlotItem.sigAxisReset.disconnect(self.setImagePlotAutoRangeOn)
 
 
-    @QtSlot(int)
     def setImagePlotAutoRangeOn(self, axisNumber):
         """ Sets the image plot's auto-range on for the axis with number axisNumber.
 
@@ -234,7 +233,6 @@ class PgImagePlot2dCti(MainGroupCti):
         setXYAxesAutoRangeOn(self, self.xAxisRangeCti, self.yAxisRangeCti, axisNumber)
 
 
-    @QtSlot(int)
     def setHorCrossPlotAutoRangeOn(self, axisNumber):
         """ Sets the horizontal cross-hair plot's auto-range on for the axis with number axisNumber.
 
@@ -243,7 +241,6 @@ class PgImagePlot2dCti(MainGroupCti):
         setXYAxesAutoRangeOn(self, self.xAxisRangeCti, self.horCrossPlotRangeCti, axisNumber)
 
 
-    @QtSlot(int)
     def setVerCrossPlotAutoRangeOn(self, axisNumber):
         """ Sets the vertical cross-hair plot's auto-range on for the axis with number axisNumber.
 

@@ -3,7 +3,14 @@
 History
 -------
 
-Current development branch
+
+0.2.1 (2017-01-12)
+---------------------
+
+* Fix: in PyQt 5.7 the slot decorator wouldn't connect anymore if the class didn't derive
+  from QObject.
+
+
 
 0.2.0 (2017-01-01)
 ---------------------
