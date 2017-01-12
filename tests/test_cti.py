@@ -5,8 +5,7 @@
 import unittest, logging, sys, copy
 from json import loads, dumps
 
-from argos import configBasicLogging
-from argos.qt import QtWidgets
+from argos.qt import QtWidgets, QtGui
 from argos.config.abstractcti import ctiDumps, CtiDecoder
 from argos.config.untypedcti import UntypedCti
 from argos.config.qtctis import ColorCti
@@ -139,10 +138,3 @@ class TestSimpleCtis(unittest.TestCase):
         print("ctiIn {}".format(ctiIn.__dict__))
         print("ctiOut {}".format(ctiOut.__dict__))
         self.assertEqual(ctiIn, ctiOut)
-
-
-if __name__ == '__main__':
-    configBasicLogging(level='DEBUG')
-    unittest.main()
-
-

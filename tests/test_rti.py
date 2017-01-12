@@ -6,7 +6,6 @@ import unittest, logging, sys
 import numpy as np
 
 from numpy.testing import assert_array_equal
-from argos import configBasicLogging
 from argos.repo.memoryrtis import ArrayRti
 
 
@@ -37,11 +36,3 @@ class TestUntypedCtis(unittest.TestCase):
 
         slices = tuple([slice(2), slice(1)])
         assert_array_equal(self.rti[slices], self.arr[slices])
-
-
-
-if __name__ == '__main__':
-    configBasicLogging(level='DEBUG')
-    unittest.main()
-
-
