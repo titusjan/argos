@@ -103,7 +103,6 @@ class PgLinePlot1dCti(MainGroupCti):
        self.pgLinePlot1d.plotItem.sigAxisReset.disconnect(self.setAutoRangeOn)
 
 
-    @QtSlot(int)
     def setAutoRangeOn(self, axisNumber):
         """ Sets the auto-range of the axis on.
 

@@ -92,7 +92,7 @@ class RtiRegistry(ClassRegistry):
 
         # TODO: type checking
         if extension in self._extensionMap:
-            logger.warn("Overriding extension {!r}: old={}, new={}"
+            logger.info("Overriding extension {!r}: old={}, new={}"
                         .format(extension, self._extensionMap[extension], rtiRegItem))
         self._extensionMap[extension] = rtiRegItem
 
