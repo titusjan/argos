@@ -134,8 +134,7 @@ def main():
                 E.g. 'Qt/Table'""")
 
     parser.add_argument('--list-inspectors', dest='list_inspectors', action = 'store_true',
-        help="""Prints a list of available inspectors for the -i option""")
-
+        help="""Prints a list of available inspectors for the -i option, and exits.""")
 
     parser.add_argument('-s', '--select', dest='selectPath',
         help="""Full path name of a repository tree item that will be selected at start-up.
@@ -153,13 +152,17 @@ def main():
     parser.add_argument('--reset-registry', dest='reset_registry', action = 'store_true',
         help="If set, the registry will be reset to contain only the default plugins.")
 
-    parser.add_argument('--version', action = 'store_true',
-        help="Prints the program version.")
+
+    parser.add_argument('-d', '--debugging-mode', dest='debugging', action = 'store_true',
+        help="Run Argos in debugging mode. Useful during development.")
 
     parser.add_argument('-l', '--log-level', dest='log_level', default='warning',
         help="Log level. Only log messages with a level higher or equal than this will be printed. "
              "Default: 'warning'",
         choices=('debug', 'info', 'warning', 'error', 'critical'))
+
+    parser.add_argument('--version', action = 'store_true',
+        help="Prints the program version and exits")
 
     args = parser.parse_args(remove_process_serial_number(sys.argv[1:]))
 
@@ -185,6 +188,11 @@ def main():
     # Imported here so this module can be imported without Qt being installed.
     from argos.qt.misc import ABOUT_QT_BINDINGS
     logger.info("Using {}".format(ABOUT_QT_BINDINGS))
+
+    # The DEBUGGING 'constant' is set before the arguments are parsed by argparse.
+    # Sanity check for consistency.
+    assert args.debugging == DEBUGGING, ("Inconsistent debugging mode. {} != {}"
+                                         .format(args.debugging, DEBUGGING))
 
     # Browse will create an ArgosApplication with one MainWindow
     browse(fileNames = args.fileNames,

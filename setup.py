@@ -59,8 +59,8 @@ install_requires = [
     "PyQt5 >= 5.6.0", # Don't know which version is minimal
     "numpy >= 1.11",
     # Argos will technically work without pyqtgraph and h5py, but with very limited functionality.
-    "pyqtgraph >= 0.10",
-    "h5py >= 2.6"
+    # "pyqtgraph >= 0.10",
+    # "h5py >= 2.6"
 ]
 
 

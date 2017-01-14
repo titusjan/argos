@@ -8,7 +8,7 @@ from __future__ import division
 
 import logging
 
-from argos.info import PROJECT_NAME, VERSION
+from argos.info import PROJECT_NAME, VERSION, DEBUGGING
 from argos.qt import QtCore, QtGui, QtWidgets
 from argos.utils.cls import is_a_string
 from argos.utils import moduleinfo as mi
@@ -35,7 +35,8 @@ class AboutDialog(QtWidgets.QDialog):
         self.setLayout(mainLayout)
 
         progVersionLabel = QtWidgets.QLabel()
-        progVersionLabel.setText("{} {}".format(PROJECT_NAME, VERSION))
+        progVersionLabel.setText("{} {}{}".format(PROJECT_NAME, VERSION,
+                                                  ' (debugging-mode)' if DEBUGGING else ''))
         progVersionLabel.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         mainLayout.addWidget(progVersionLabel)
 
@@ -92,6 +93,8 @@ class AboutDialog(QtWidgets.QDialog):
         self._addModuleInfo(mi.PillowInfo())
         self._addModuleInfo(mi.H5pyModuleInfo())
         self._addModuleInfo(mi.NetCDF4ModuleInfo())
+
+        self._addModuleInfo(mi.ArgosModuleInfo())
 
         self.progressLabel.setText("")
         logger.debug("Finished adding dependency info to the AboutDialog")

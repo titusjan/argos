@@ -17,9 +17,10 @@
 
 """ Version and other info for this program
 """
-import os
+import os, sys
 
-DEBUGGING = True
+# We bypass the argparse mechanism in main.py because this import is executed before main.main()
+DEBUGGING = ('-d' in sys.argv or '--debug' in sys.argv)
 
 VERSION = '0.3.0-devel'
 REPO_NAME = "argos"

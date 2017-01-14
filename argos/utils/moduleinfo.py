@@ -11,6 +11,8 @@ import logging
 
 from abc import ABCMeta, abstractproperty
 
+from argos.info import DEBUGGING
+
 logger = logging.getLogger(__name__)
 
 NOT_IMPLEMENTED_ERR_MSG = "You must override this abstract property/method."
@@ -155,6 +157,16 @@ class ImportedModuleInfo(ReadOnlyModuleInfo):
 #################
 # Special cases #
 #################
+
+
+class ArgosModuleInfo(ImportedModuleInfo):
+
+    def __init__(self):
+
+        super(ArgosModuleInfo, self).__init__('argos')
+        if self.module:
+            self._verboseVersion = ('{}{}'
+                                    .format(self._version, ' (debugging-mode)' if DEBUGGING else ''))
 
 
 class H5pyModuleInfo(ImportedModuleInfo):
