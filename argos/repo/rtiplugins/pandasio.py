@@ -329,7 +329,7 @@ class PandasPanelRti(AbstractPandasNDFrameRti):
 
 
 class PandasCsvFileRti(PandasDataFrameRti):
-    """ Reads a comma-separated file (CVS) into a Pandas DataFrame.
+    """ Reads a comma-separated file (CSV) into a Pandas DataFrame.
     """
     _defaultIconGlyph = RtiIconFactory.FILE
     _defaultIconColor = ICON_COLOR_PANDAS
