@@ -1,8 +1,7 @@
 
-TODO version 0.2:
 
 
-
+/argos/Mini Scanner Output/acceptance7.h5/samples/re
 TODO version 0.3:
 
     Installed plugins dialog doesn't work if scipy is not installed.  (Test under Linux)
@@ -14,7 +13,7 @@ TODO version 0.3:
 
     Show both error and description in plugins dialog.
 
-    Reset color and histogram range in context menu
+    Reset color and histogram range in context menu of 2D image plot
 
     Better log config
 
@@ -58,6 +57,8 @@ Test:
 	Memory leaks?
 
 TODO Long term or nice to have:
+
+    Downsample large slices (e.g. read a 300 MB wav file into a table or lineplot.)
 
     nested arrays (/argos/idl-sav-files/qds_dd.sav/qds_dd/OCCURRENCES) (need to read first element)
 	confirm on error when editing cell

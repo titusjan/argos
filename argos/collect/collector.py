@@ -45,7 +45,7 @@ class Collector(QtWidgets.QWidget):
     """ Widget for collecting the selected data.
         Consists of a tree to collect the VisItems, plus some buttons to add or remove then.
 
-        The CollectorTree only stores the VisItems, the intelligence is located in the Collector
+        The CollectorTree only stores the items, the intelligence is located in the Collector
         itself.
     """
     sigContentsChanged = QtSignal(str) # one of the UpdateReason values.
@@ -61,7 +61,7 @@ class Collector(QtWidgets.QWidget):
 
         self._signalsBlocked = False
         self.COL_FIRST_COMBO = 1     # Column that contains the first (left most) combobox
-        self.AXIS_POST_FIX = "-axis" # Added to the axis label to give the combox labels.
+        self.AXIS_POST_FIX = "-axis" # Added to the axis label to give the combobox labels.
         self._axisNames = []         # Axis names. Correspond to the independent variables
         self._fullAxisNames = []       # Will be set in clearAndSetComboBoxes
         self._comboBoxes = []        # Will be set in clearAndSetComboBoxes
@@ -168,7 +168,7 @@ class Collector(QtWidgets.QWidget):
 
 
     def clear(self):
-        """ Removes all VisItems
+        """ Removes all widgets
         """
         model = self.tree.model()
         # Don't use model.clear(). it will delete the column sizes
