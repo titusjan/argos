@@ -1,0 +1,16 @@
+name: ARGOS
+channels:
+  - defaults
+dependencies:
+  - python=3.5
+  - numpy
+  - pyqt
+  - h5py
+  - netcdf4
+  - pillow
+  - scipy
+  - pandas
+  - pip
+  - pip:
+    - pyqtgraph
+    - argos
