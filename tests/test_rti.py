@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 
 
-import unittest, logging, sys
+import unittest
 import numpy as np
 
 from numpy.testing import assert_array_equal
-from argos import configBasicLogging
 from argos.repo.memoryrtis import ArrayRti
 
 
@@ -41,7 +40,6 @@ class TestUntypedCtis(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    configBasicLogging(level='DEBUG')
     unittest.main()
 
 
