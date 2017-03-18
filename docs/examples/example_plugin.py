@@ -22,8 +22,11 @@ import logging, os
 
 
 from argos.qt import QtGui
-from argos.repo.baserti import (ICONS_DIRECTORY, BaseRti)
+from argos.repo.baserti import BaseRti
+from argos.repo.iconfactory import RtiIconFactory
 
+
+ICONS_DIRECTORY = RtiIconFactory.ICONS_DIRECTORY
 logger = logging.getLogger(__name__)
 
 

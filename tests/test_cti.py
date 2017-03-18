@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 
-import unittest, logging, sys, copy
+import unittest, copy
 from json import loads, dumps
 
-from argos import configBasicLogging
-from argos.qt import QtWidgets
+
+from argos.qt import QtWidgets, QtGui
 from argos.config.abstractcti import ctiDumps, CtiDecoder
 from argos.config.untypedcti import UntypedCti
 from argos.config.qtctis import ColorCti
@@ -142,7 +142,6 @@ class TestSimpleCtis(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    configBasicLogging(level='DEBUG')
     unittest.main()
 
 

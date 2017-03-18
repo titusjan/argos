@@ -10,10 +10,8 @@ Tests for `argos` module.
 import sys
 import unittest
 
-sys.path.append('..')
-#print(sys.path)
-
-from argos.qt import QtCore, getQApplicationInstance, USE_PYQT
+from argos.qt import QtCore
+from argos.qt.misc import initQCoreApplication as getQApplicationInstance
 
 
 class TestArgos(unittest.TestCase):
@@ -60,6 +58,5 @@ class TestArgos(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    print ('Using: {}'.format('PyQt' if USE_PYQT else 'PySide'))
     unittest.main()
 
