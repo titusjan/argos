@@ -165,13 +165,14 @@ further tweaking of the auto-range method.
 
 ##### 1D Line Plot Inspector
 
-The `1D Line Plot` inspector contains a line plot widget. You can use the left mouse button to pan,
+The `1D Line Plot` inspector contains a line plot widget. It uses [PyQtGraph](http://pyqtgraph.org/)
+as the underlying plot engine. Just as in PyQtGraph you can use the left mouse button to pan,
 and the mouse wheel to zoom in and out. If you drag while your mouse cursor in above the X or Y
 axis, panning will be only in that direction. Similarly zooming with the mouse wheel will will only
 zoom on that axis. The right mouse button will bring up a context menu with choices to reset one,
 or both, axes to their default range (i.e. setting the axis auto-range on).
 
-If the axis auto-range mode is on the axis range is calculated from the plot data. By default this
+If the axis auto-range mode is on, the axis range is calculated from the plot data. By default this
 is delegated to PyQtGraph, but by setting the `y-axis/range/autorange/method` option, you can let
 the auto-range method discard a percentage of the outliers.
 
@@ -200,7 +201,7 @@ Furthermore, PyQtGraph uses HTML for the plot title so you can make fancy titles
 `<small>{name} <span style="color:#FF0066">{slices}</span></small>`. This also means that you must
 escape the `<`, `>` and `&` characters by using `&lt;`, `&gt;`, `&amp;` instead!
 
-The `x-axis/label` and `x-axis/label` settings can be edited in the same way as the `title`.
+The `x-axis/label` and `y-axis/label` settings can be edited in the same way as the `title`.
 
 The editable comboboxes will remember entered values. If you want to remove an item from a
 combobox, highlight it in and then press delete. You can also press CTRL-delete while you are
@@ -249,16 +250,16 @@ fields of are combined in a single cell as follows: `(field1, field2, ...)`.
 You can change how the data in the cells is formatted with the config options under the
 `format specifier` branch. Which setting is used depends on your data type: the `integers` format
 setting is used if the data in the cell is an integer, `other numbers` is used for floating point,
-rational, or complex numbers, and any data that is not a string or a number is formatted with the
+rational, or complex numbers; and any data that is not a string or a number is formatted with the
 `other types` format code. For instance, setting the `other numbers` to `.2e` will display all
-floating point data in scientific notation with three digits behind the decimal point.
+floating point data in scientific notation with two digits behind the decimal point.
 
-The format codes must be a _format_spec_ from the new-style Python formatting. Take a look at the
-[Format Specification Mini-Language](https://docs.python.org/3/library/string.html#format-specification-mini-language)
-from the Python documentation to see what's possible. You can think of them as new-style formatting
-codes, but without the braces and the colon. If you want to use a complete format string, i.e.
-_with_ the braces and the colon, you must put your format string between quotes. For example, using
-`'hello {:.2e}'` will prepend "hello" to the data values.
+The format codes must be a `format_spec` from the new-style Python formatting. You can think of 
+them as new-style formatting codes, but without the braces and the colon. If you want to use a 
+complete format string, i.e. _with_ the braces and the colon, you must put your format string 
+between quotes. For example, using `'hello {:.2e}'` will prepend "hello" to the data values. Take 
+a look at the [Format Specification Mini-Language](https://docs.python.org/3/library/string.html#format-specification-mini-language)
+from the Python documentation to see what's possible. 
 
 ##### Text Inspector
 
@@ -273,15 +274,16 @@ text inspector.
 
 #### Viewing Metadata
 
-Below the repository window are three dock windows that are layed out on top of each other, and
-which can be brought to front by clicking their respective tab. They are for displaying meta data of
-the item that is currently selected in the data repository (not the one in the data collector).
+Below the repository window (in the lower left corner of the screen shot) are three dock windows 
+that are layed out on top of each other, and which can be brought to front by clicking their 
+respective tab. They are for displaying meta data of the item that is currently selected in the 
+data repository (note: not the item in the data collector).
 
 The `Dimensions` dock window lists the dimension names and sizes of arrays. The `Attributes` window lists
 the HDF or NetCDF attributes of a group or dataset/variable. Other file formats may contain similar
 meta data, which is then also displayed here.
 
-The `Properties` window contains a list of properties, such as the shape and element-type, of the
+The `Properties` window contains a list of properties, such as the shape and element-type of the
 selected item. In contrast to the `Attributes` this list is fixed, all repo items always have the
 same list of properties (although their contents may be empty). These properties, by the way, can
 be added as columns in the data repository. By default only the `name` property is shown;
