@@ -72,9 +72,9 @@ Ready to contribute? Here's how to set up `argos` for local development.
     $ cd argos/
     $ python setup.py develop
 
-4. Create a branch for local development::
+4. Create a branch for local development. Please base it on de devel branch ::
 
-    $ git checkout -b name-of-your-bugfix-or-feature
+    $ git checkout -b name-of-your-bugfix-or-feature devel
 
    Now you can make your changes locally.
 
