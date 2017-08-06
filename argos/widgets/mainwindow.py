@@ -96,7 +96,7 @@ class MainWindow(QtWidgets.QMainWindow):
         desktopRect = QtWidgets.QApplication.desktop().availableGeometry(self)
         center = desktopRect.center()
         self.move(center.x() - self.width () * 0.5, center.y() - self.height() * 0.5)
-        
+
         self.__setupViews()
         self.__setupMenus()
         self.__setupDockWidgets()
@@ -112,7 +112,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.collector.sigContentsChanged.disconnect(self.collectorContentsChanged)
         self._configTreeModel.sigItemChanged.disconnect(self.configContentsChanged)
         self.sigInspectorChanged.disconnect(self.inspectorSelectionPane.updateFromInspectorRegItem)
-        self.customContextMenuRequested.disconnect(self.showContextMenu)
 
 
     def __setupViews(self):
@@ -230,12 +229,6 @@ class MainWindow(QtWidgets.QMainWindow):
             helpMenu.addAction("&Test", self.myTest, "Alt+T")
             helpMenu.addAction("Add Test Data", self.addTestData, "Alt+A")
 
-        ### Context menu ###
-
-        # Note that the dock-widgets have a Qt.PreventContextMenu context menu policy.
-        # Therefor the context menu is only shown in the center widget.
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self.showContextMenu)
 
 
     def __createInspectorActionGroup(self, parent):
@@ -362,15 +355,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.windowMenu.addAction(action)
 
 
-    def showContextMenu(self, pos):
-        """ Shows the context menu at position pos.
-        """
-        contextMenu = QtWidgets.QMenu()
-        addInspectorActionsToMenu(contextMenu, self.execInspectorDialogAction,
-                                  self.inspectorActionGroup)
-        contextMenu.exec_(self.mapToGlobal(pos))
-
-
     def dockWidget(self, widget, title, area):
         """ Adds a widget as a docked widget.
             Returns the added dockWidget
@@ -380,9 +364,6 @@ class MainWindow(QtWidgets.QMainWindow):
         dockWidget = QtWidgets.QDockWidget(title, parent=self)
         dockWidget.setObjectName("dock_" + string_to_identifier(title))
         dockWidget.setWidget(widget)
-
-        # Prevent parent context menu (with e.g. 'set inspector" option) to be displayed.
-        dockWidget.setContextMenuPolicy(Qt.PreventContextMenu)
 
         self.addDockWidget(area, dockWidget)
         self.viewMenu.addAction(dockWidget.toggleViewAction())

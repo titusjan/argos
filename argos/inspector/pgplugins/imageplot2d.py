@@ -199,10 +199,14 @@ class PgImagePlot2dCti(MainGroupCti):
             self.pgImagePlot2d.verCrossPlotItem.getViewBox(), X_AXIS, nodeName="data range",
             autoRangeFunctions = crossPlotAutoRangeMethods(self.pgImagePlot2d, "vertical")))
 
-        # Connect signals
-        self.pgImagePlot2d.imagePlotItem.sigAxisReset.connect(self.setImagePlotAutoRangeOn)
-        self.pgImagePlot2d.horCrossPlotItem.sigAxisReset.connect(self.setHorCrossPlotAutoRangeOn)
-        self.pgImagePlot2d.verCrossPlotItem.sigAxisReset.connect(self.setVerCrossPlotAutoRangeOn)
+        # Connect signals.
+        # Use a queued connect to schedule the reset after current events have been processed.
+        self.pgImagePlot2d.imagePlotItem.sigAxisReset.connect(self.setImagePlotAutoRangeOn,
+                                                              type=Qt.QueuedConnection)
+        self.pgImagePlot2d.horCrossPlotItem.sigAxisReset.connect(self.setHorCrossPlotAutoRangeOn,
+                                                                 type=Qt.QueuedConnection)
+        self.pgImagePlot2d.verCrossPlotItem.sigAxisReset.connect(self.setVerCrossPlotAutoRangeOn,
+                                                                 type=Qt.QueuedConnection)
 
         # Also update axis auto range tree items when linked axes are resized
         horCrossViewBox = self.pgImagePlot2d.horCrossPlotItem.getViewBox()

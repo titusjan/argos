@@ -46,19 +46,11 @@ VALID_AXES_NUMBERS = (X_AXIS, Y_AXIS, BOTH_AXES)
 DEFAULT_BORDER_PEN = pg.mkPen("#000000", width=1)
 
 
-def middleMouseClickEvent(argosPgPlotItem, axisNumber, mouseClickEvent):
-    """ Emits sigAxisReset when the middle mouse button is clicked on an axis of the the plot item.
-    """
-    if mouseClickEvent.button() == QtCore.Qt.MiddleButton:
-        mouseClickEvent.accept()
-        argosPgPlotItem.emitResetAxisSignal(axisNumber)
-
-
-
 class ArgosPgPlotItem(PlotItem):
-    """ Wrapper arround pyqtgraph.graphicsItems.PlotItem
+    """ Wrapper around pyqtgraph.graphicsItems.PlotItem
+
         Overrides the autoBtnClicked method.
-        Middle mouse click
+        Middle mouse click resets the axis.
 
         The original PyQtGraph menu is disabled. All settings I want can be set using the config
         tree; the other settings I don't want to support. Furthermore a context menu is created
@@ -71,35 +63,39 @@ class ArgosPgPlotItem(PlotItem):
 
         Sets the cursor to a cross if it's inside the viewbox.
     """
+
+    # Use a QueuedConnection to connect to sigAxisReset so that the reset is scheduled after all
+    # current events have been processed. Otherwise the mouseReleaseEvent may look for a
+    # PlotCurveItem that is no longer present after the reset, which results in a RuntimeError:
+    # wrapped C/C++ object of type PlotCurveItem has been deleted.
     sigAxisReset = QtSignal(int)
 
     def __init__(self,
                  borderPen=DEFAULT_BORDER_PEN,
                  *args, **kwargs):
         """ Constructor.
-            :param enableMenu: if True right-click opens a context menu (default=False)
+
             :param borderPen: pen for drawing the viewBox border. Default black and width of 1.
         """
         super(ArgosPgPlotItem, self).__init__(*args, **kwargs)
+
+        self.setMenuEnabled(False) # TODO: remove
 
         viewBox = self.getViewBox()
         viewBox.border = borderPen
         viewBox.setCursor(Qt.CrossCursor)
         viewBox.disableAutoRange(BOTH_AXES)
-        viewBox.mouseClickEvent = partial(middleMouseClickEvent, self, BOTH_AXES)
+        viewBox.mouseClickEvent = lambda ev: self._axesMouseClickEvent(ev, BOTH_AXES)
 
         # Add mouseClickEvent event handlers to the X and Y axis. This allows for resetting
         # the scale of each axes separately by middle mouse clicking the axis.
         for xAxisItem in (self.getAxis('bottom'), self.getAxis('top')):
-            xAxisItem.mouseClickEvent = partial(middleMouseClickEvent, self, X_AXIS)
+            xAxisItem.mouseClickEvent = lambda ev: self._axesMouseClickEvent(ev, X_AXIS)
             xAxisItem.setCursor(Qt.SizeHorCursor)
 
         for yAxisItem in (self.getAxis('left'), self.getAxis('right')):
-            yAxisItem.mouseClickEvent = partial(middleMouseClickEvent, self, Y_AXIS)
+            yAxisItem.mouseClickEvent = lambda ev: self._axesMouseClickEvent(ev, Y_AXIS)
             yAxisItem.setCursor(Qt.SizeVerCursor)
-
-        # Context menu with actions to reset the zoom.
-        #self.setContextMenuPolicy(Qt.ActionsContextMenu)
 
         self.resetAxesAction = QtWidgets.QAction("Reset Axes", self,
                                  triggered = lambda: self.emitResetAxisSignal(BOTH_AXES),
@@ -125,17 +121,35 @@ class ArgosPgPlotItem(PlotItem):
         super(ArgosPgPlotItem, self).close()
 
 
-    def contextMenuEvent(self, event):
-        """ Shows the context menu at the cursor position
+    def _axesMouseClickEvent(self, mouseClickEvent, axisNumber):
+        """ Handles the mouse clicks events when clicked on the axes or in the central viewbox
 
-            We need to take the event-based approach because ArgosPgPlotItem does derives from
-            QGraphicsWidget, and not from QWidget, and therefore doesn't have the
-            customContextMenuRequested signal.
+            :param mouseClickEvent: pyqtgraph.GraphicsScene.mouseEvents.MouseClickEvent
+            :param axisNumber: the axis (X=0, Y=1, both=2)
+
+            Emits sigAxisReset when the middle mouse button is clicked.
         """
-        contextMenu = QtWidgets.QMenu()
-        for action in self.actions():
-            contextMenu.addAction(action)
-        contextMenu.exec_(event.screenPos())
+        if mouseClickEvent.button() == QtCore.Qt.MiddleButton:
+            mouseClickEvent.accept()
+            self.emitResetAxisSignal(axisNumber)
+
+
+    def mouseClickEvent(self, mouseClickEvent):
+        """ Handles (PyQtGraph) mouse click events.
+
+            Opens the context menu if a right mouse button was clicked.
+
+            :param mouseClickEvent: pyqtgraph.GraphicsScene.mouseEvents.MouseClickEvent
+        """
+        if mouseClickEvent.button() == QtCore.Qt.RightButton:
+            contextMenu = QtWidgets.QMenu()
+            for action in self.actions():
+                contextMenu.addAction(action)
+
+            screenPos = mouseClickEvent.screenPos() # Screenpos is a QPointF, convert to QPoint.
+            screenX = round(screenPos.x())
+            screenY = round(screenPos.y())
+            contextMenu.exec_(QtCore.QPoint(screenX, screenY))
 
 
     def autoBtnClicked(self):

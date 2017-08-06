@@ -92,8 +92,14 @@ class PgLinePlot1dCti(MainGroupCti):
         self.plotDataItemCti = self.insertChild(PgPlotDataItemCti())
         self.probeCti = self.insertChild(BoolCti('show probe', True))
 
-        # Connect signals
-        self.pgLinePlot1d.plotItem.sigAxisReset.connect(self.setAutoRangeOn)
+        # Connect signals.
+
+        # We need a QueuedConnection here so that the axis reset is scheduled after all current
+        # events have been processed. Otherwise the mouseReleaseEvent may look for a PlotCurveItem
+        # that is no longer present after the reset, which results in a RuntimeError: wrapped C/C++
+        # object of type PlotCurveItem has been deleted.
+        self.pgLinePlot1d.plotItem.sigAxisReset.connect(self.setAutoRangeOn,
+                                                        type=QtCore.Qt.QueuedConnection)
 
 
     def _closeResources(self):
