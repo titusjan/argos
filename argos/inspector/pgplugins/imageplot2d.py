@@ -176,6 +176,8 @@ class PgImagePlot2dCti(MainGroupCti):
 
         self.insertChild(PgGradientEditorItemCti(self.pgImagePlot2d.histLutItem.gradient))
 
+        self.zoomModeCti = self.insertChild(BoolCti('rectangle zoom mode', False))
+
         # Probe and cross-hair plots
         self.probeCti = self.insertChild(BoolCti('show probe', True))
 
@@ -475,6 +477,13 @@ class PgImagePlot2d(AbstractInspector):
         # doesn't seem to do anything.
         imageArray = imageArray.transpose()
         self.imageItem.setImage(imageArray, autoLevels=False)
+
+        self.imagePlotItem.setRectangleZoomOn(self.config.zoomModeCti.configValue)
+
+        # Always use pan mode in the cross plots. Rectangle zoom is akward there and it's nice to
+        # still be able to pan.
+        #self.horCrossPlotItem.setRectangleZoomOn(self.config.zoomModeCti.configValue)
+        #self.verCrossPlotItem.setRectangleZoomOn(self.config.zoomModeCti.configValue)
 
         self.horCrossPlotItem.invertX(self.config.xFlippedCti.configValue)
         self.verCrossPlotItem.invertY(self.config.yFlippedCti.configValue)

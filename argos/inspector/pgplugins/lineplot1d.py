@@ -90,6 +90,7 @@ class PgLinePlot1dCti(MainGroupCti):
         #### Pen ####
 
         self.plotDataItemCti = self.insertChild(PgPlotDataItemCti())
+        self.zoomModeCti = self.insertChild(BoolCti('rectangle zoom mode', False))
         self.probeCti = self.insertChild(BoolCti('show probe', True))
 
         # Connect signals.
@@ -239,6 +240,8 @@ class PgLinePlot1d(AbstractInspector):
             self.probeDataItem.setSymbolSize(10)
         else:
             self.probeLabel.setVisible(False)
+
+        self.plotItem.setRectangleZoomOn(self.config.zoomModeCti.configValue)
 
         # Update the config tree from the (possibly) new state of the PgLinePlot1d inspector,
         # e.g. the axis range may have changed while drawing.

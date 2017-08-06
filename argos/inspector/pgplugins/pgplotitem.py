@@ -79,7 +79,8 @@ class ArgosPgPlotItem(PlotItem):
         """
         super(ArgosPgPlotItem, self).__init__(*args, **kwargs)
 
-        self.setMenuEnabled(False) # TODO: remove
+        self.setMenuEnabled(False)
+        #pg.setConfigOption('leftButtonPan', False)
 
         viewBox = self.getViewBox()
         viewBox.border = borderPen
@@ -181,3 +182,17 @@ class ArgosPgPlotItem(PlotItem):
         logger.debug("Emitting sigAxisReset({}) for {!r}".format(axisNumber, self))
         self.sigAxisReset.emit(axisNumber)
 
+
+    def setRectangleZoomOn(self, boolean):
+        """ Turns on rectangle zoom mode.
+
+            In rectangle zoom mode, the left mouse drag draws a rectangle, which defines the new
+            view limits. In panning mode (the default), a left mouse drag will pan the scene.
+
+            :param boolean: if True plotting is set to 'rect'
+        """
+        viewbox = self.getViewBox()
+        if boolean:
+            viewbox.setMouseMode(pg.ViewBox.RectMode)
+        else:
+            viewbox.setMouseMode(pg.ViewBox.PanMode)
