@@ -154,6 +154,18 @@ def createArgosTestData():
 
     mappingRti = MappingRti(myDict, nodeName="myDict")
 
+    # New axis at the beginning and end.
+    mappingRti.insertChild(SyntheticArrayRti(
+        'newaxis heading 2D', fun=lambda: makeConcentricCircles()[np.newaxis, np.newaxis, ...]))
+    mappingRti.insertChild(SyntheticArrayRti(
+        'newaxis trailing 2D', fun=lambda: makeConcentricCircles()[..., np.newaxis, np.newaxis]))
+
+    mappingRti.insertChild(SyntheticArrayRti(
+        'newaxis heading 1D', fun=lambda: makeConcentricCircles()[50,:][np.newaxis, np.newaxis, :]))
+
+    mappingRti.insertChild(SyntheticArrayRti(
+        'newaxis trailing 1D', fun=lambda: makeConcentricCircles()[50,:][:, np.newaxis, np.newaxis]))
+
     # Synthetic images for testing color maps.
     colorMapRti = mappingRti.insertChild(MappingRti({}, nodeName="test color maps"))
     colorMapRti.insertChild(SyntheticArrayRti('concentric circles', fun=makeConcentricCircles))
@@ -161,6 +173,7 @@ def createArgosTestData():
     colorMapRti.insertChild(SyntheticArrayRti('arctan2', fun=makeArcTan2))
     colorMapRti.insertChild(SyntheticArrayRti('spiral', fun=makeSpiral))
     colorMapRti.insertChild(SyntheticArrayRti('sine product', fun=makeSineProduct))
+
 
     addPandasTestData(mappingRti)
 

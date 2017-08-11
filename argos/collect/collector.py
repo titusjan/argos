@@ -315,7 +315,12 @@ class Collector(QtWidgets.QWidget):
             for dimNr in range(nDims):
                 comboBox.addItem(self._rti.dimensionNames[dimNr], userData=dimNr)
 
-            # Set combobox current index
+            comboBox.setEnabled(True)
+            #comboBox.adjustSize() # necessary?
+
+        # Set comboboxes current index
+        for comboBoxNr, comboBox in enumerate(self._comboBoxes):
+
             if nDims >= nCombos:
                 # We set the nth combo-box index to the last item - n. This because the
                 # NetCDF-CF conventions have the preferred dimension order of T, Z, Y, X.
@@ -324,7 +329,7 @@ class Collector(QtWidgets.QWidget):
             else:
                 # If there are less dimensions in the RTI than the inspector can show, we fill
                 # the comboboxes starting at the leftmost and set the remaining comboboxes to the
-                # fake dimension. This means that a table inspector fill have one column and many
+                # fake dimension. This means that a table inspector will have one column and many
                 # rows, which is the most convenient.
                 curIdx = comboBoxNr + 1 if comboBoxNr < nDims else 0
 
@@ -332,8 +337,6 @@ class Collector(QtWidgets.QWidget):
                 "curIdx should be <= {}, got {}".format(nDims + 1, curIdx)
 
             comboBox.setCurrentIndex(curIdx)
-            comboBox.setEnabled(True)
-            #comboBox.adjustSize() # necessary?
 
 
     # def getComboBoxDimensionName(self, comboBoxNr):
