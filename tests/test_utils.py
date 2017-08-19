@@ -6,9 +6,7 @@ Tests functionality from the utils package
 """
 
 import unittest
-from json import loads
 
-from argos import configBasicLogging
 from argos.utils.cls import is_a_string, is_text, is_binary
 from argos.utils.misc import python2
 import numpy as np
@@ -108,7 +106,6 @@ class TestStringTypeDetection(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    configBasicLogging(level='DEBUG')
     unittest.main()
 
 

@@ -25,7 +25,7 @@ def registerRtis():
     registry.loadOrInitSettings()
 
 
-    registry.registerRti('Python File', 'test_plugin.TestFileRti', extensions=['.py'],
+    registry.registerRti('Python File', 'example_plugin.TestFileRti', extensions=['.py'],
                          pythonPath=SCRIPT_DIR)
     registry.registerRti('SVG File', 'does_not_exist.svg.SvgFile', extensions=['.svg'])
     registry.saveSettings()

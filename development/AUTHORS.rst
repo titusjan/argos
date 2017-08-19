@@ -7,7 +7,9 @@ Development Lead
 
 * Pepijn Kenter <titusjan@gmail.com>
 
+
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Christoph Buchner (https://github.com/bilderbuchi)
+* Thomas Grainger (https://github.com/graingert)
