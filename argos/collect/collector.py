@@ -318,25 +318,40 @@ class Collector(QtWidgets.QWidget):
             comboBox.setEnabled(True)
             #comboBox.adjustSize() # necessary?
 
-        # Set comboboxes current index
-        for comboBoxNr, comboBox in enumerate(self._comboBoxes):
+        # Set combo-boxes current index
+        if nDims >= nCombos:
+            # If there are more dimensions in the RTI than the inspector can show, we use the
+            # last couple of RTI dimensions. This because the NetCDF-CF conventions have the
+            # preferred dimension order of T, Z, Y, X. On top of that, dimensions with length <= 1
+            # are skipped if possible (see Github issue #9).
 
-            if nDims >= nCombos:
-                # We set the nth combo-box index to the last item - n. This because the
-                # NetCDF-CF conventions have the preferred dimension order of T, Z, Y, X.
-                # The +1 below is from the fake dimension.
-                curIdx = nDims + 1 - nCombos + comboBoxNr
-            else:
-                # If there are less dimensions in the RTI than the inspector can show, we fill
-                # the comboboxes starting at the leftmost and set the remaining comboboxes to the
-                # fake dimension. This means that a table inspector will have one column and many
-                # rows, which is the most convenient.
+            curDim = nDims
+
+            for comboBoxNr, comboBox in reversed(list(enumerate(self._comboBoxes))):
+                while(True):
+                    curDim -= 1
+                    if curDim <= comboBoxNr or self.rti.arrayShape[curDim] > 1:
+                        break
+
+                curIdx = curDim + 1 # because of the fake dim
+                assert 0 <= curIdx <= nDims + 1, \
+                    "curIdx should be <= {}, got {}".format(nDims + 1, curIdx)
+
+                comboBox.setCurrentIndex(curIdx)
+        else:
+            # If there are less dimensions in the RTI than the inspector can show, we fill
+            # the combo-boxes starting at the leftmost and set the remaining comboboxes to the
+            # fake dimension. This means that a table inspector will have one column and many
+            # rows, which is the most convenient.
+
+            for comboBoxNr, comboBox in enumerate(self._comboBoxes):
                 curIdx = comboBoxNr + 1 if comboBoxNr < nDims else 0
 
-            assert 0 <= curIdx <= nDims + 1, \
-                "curIdx should be <= {}, got {}".format(nDims + 1, curIdx)
+                assert 0 <= curIdx <= nDims + 1, \
+                    "curIdx should be <= {}, got {}".format(nDims + 1, curIdx)
 
-            comboBox.setCurrentIndex(curIdx)
+                comboBox.setCurrentIndex(curIdx)
+
 
 
     # def getComboBoxDimensionName(self, comboBoxNr):

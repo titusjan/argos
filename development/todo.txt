@@ -2,7 +2,20 @@
 
 
 /argos/Mini Scanner Output/acceptance7.h5/samples/re
-TODO version 0.3:
+TODO short term:
+
+    What if the H5 only has a dimension label?
+
+    Empty (Null) datasets and attributes
+    http://docs.h5py.org/en/latest/high/dataset.html#creating-and-reading-empty-or-null-datasets-and-attributes
+
+    HDF5 dataset with dimensions of size 0
+
+    Exporter to PNG
+
+    Old numpy support.
+
+    Histogram / statistics inspector.
 
     Installed plugins dialog doesn't work if scipy is not installed.  (Test under Linux)
 
@@ -11,9 +24,13 @@ TODO version 0.3:
 	    Change if unit is new or combox dim is new.
 	    Keep collector state (comboboxes, when the dimensions of the new RTI are the same as of the old)
 
+    Better plugin management.
     Show both error and description in plugins dialog.
 
-    Reset color and histogram range in context menu of 2D image plot
+    Reset color and histogram range in context menu of 2D image plot.
+
+
+TODO mid term:
 
     Better log config
 
@@ -24,6 +41,10 @@ TODO version 0.3:
 	Interaction in IPython
 	QSettings should not use titusjan by default
 	(auto)refresh
+
+TODO long term:
+
+    Drag and drop from file manager.
 
     Matplotlib inspector
 

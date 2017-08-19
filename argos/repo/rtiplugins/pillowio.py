@@ -82,7 +82,7 @@ class PillowFileRti(ArrayRti):
 
 
     def _openResources(self):
-        """ Uses  open the underlying file
+        """ Reads the image and attributes from the underlying file
         """
         with Image.open(self._fileName) as image:
             self._array = np.asarray(image)
