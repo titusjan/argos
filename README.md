@@ -165,13 +165,16 @@ further tweaking of the auto-range method.
 
 ##### 1D Line Plot Inspector
 
-The `1D Line Plot` inspector contains a single line plot. You can move (pan) the plot by dragging it
-while holding the left mouse button. Dragging with the right mouse buttong zooms in or out. If you 
-drag while your mouse cursor is above the X or Y axis, panning and zooming will be only done in that 
-direction. Zooming can also be done by scrolling your mouse-wheel while the cursor is above the 
-plot or axes. In addition, you can employ a rectangle zoom mode by checking the 
-`rectangle zoom mode` checkbox in the the settings pane. In this mode dragging with the left button 
-will draw a rectangle, which will subsequently be used as the new plot range. 
+The `1D Line Plot` inspector contains a single line plot, which uses 
+[PyQtGraph](http://www.pyqtgraph.org/) the underlying plot engine.
+ 
+You can move (pan) the plot by dragging it while holding the left mouse button. Dragging with the 
+right mouse buttong zooms in or out. If you drag while your mouse cursor is above the X or Y axis, 
+panning and zooming will be only done in that direction. Zooming can also be done by scrolling your 
+mouse-wheel while the cursor is above the plot or axes. In addition, you can employ a rectangle 
+zoom mode by checking the `rectangle zoom mode` checkbox in the the settings pane. In this mode 
+dragging with the left button will draw a rectangle, which will subsequently be used as the new 
+plot range. 
 
 To reset the plot range you can click the middle mouse button anywhere on the plot (or one of the 
 axes). You can also reset it by clicking the small button labeled 'A' in the lower left corner of 
