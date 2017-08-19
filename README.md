@@ -165,21 +165,27 @@ further tweaking of the auto-range method.
 
 ##### 1D Line Plot Inspector
 
-The `1D Line Plot` inspector contains a line plot widget. You can use the left mouse button to pan,
-and the mouse wheel to zoom in and out. If you drag while your mouse cursor in above the X or Y
-axis, panning will be only in that direction. Similarly zooming with the mouse wheel will will only
-zoom on that axis. The right mouse button will bring up a context menu with choices to reset one,
-or both, axes to their default range (i.e. setting the axis auto-range on).
+The `1D Line Plot` inspector contains a single line plot. You can move (pan) the plot by dragging it
+while holding the left mouse button. Dragging with the right mouse buttong zooms in or out. If you 
+drag while your mouse cursor is above the X or Y axis, panning and zooming will be only done in that 
+direction. Zooming can also be done by scrolling your mouse-wheel while the cursor is above the 
+plot or axes. In addition, you can employ a rectangle zoom mode by checking the 
+`rectangle zoom mode` checkbox in the the settings pane. In this mode dragging with the left button 
+will draw a rectangle, which will subsequently be used as the new plot range. 
 
-If the axis auto-range mode is on the axis range is calculated from the plot data. By default this
-is delegated to PyQtGraph, but by setting the `y-axis/range/autorange/method` option, you can let
-the auto-range method discard a percentage of the outliers.
+To reset the plot range you can click the middle mouse button anywhere on the plot (or one of the 
+axes). You can also reset it by clicking the small button labeled 'A' in the lower left corner of 
+the figure. Finally, right clicking on the plot will pop up a context menu from which the plot 
+range can also be reset. 
 
-If the axis auto-range mode is off, you can set the axis range manually in the `range/min` and
+If the axis auto-range mode is on, the axis' range is calculated from the data. By default this is 
+delegated to PyQtGraph, but by setting the `y-axis/range/autorange/method` option, you can let the 
+auto-range method discard a percentage of the outliers. 
+
+If the axis auto-range mode is off, you can set the axis' range manually in the `range/min` and
 `range/max` options. The range will remain fixed if you select a new slice with the spinbox.
 Autorange will be turned off as soon as you zoom or pan the data. You can turn it on again in the
-`...-axis/range/autorange` option, the inspector context menu, or by clicking the small button
-labeled 'A' in the lower left corner of the figure.
+`range/autorange` option, or by resetting the axis' plot range as described above.
 
 The plot title can be modified with the `title` config option via an editable combobox widget. You
 can enter any title you want but be aware that the title may be incorrect as soon as you pick a
@@ -213,8 +219,11 @@ line width other than 1.0, so if you have large plots you might want to turn it 
 
 ##### 2D Image Plot Inspector
 
-The axes configuration items of the 2D image plot work in the same manner as for the 1D line plot.
-Next to that, the image plot has a `color range` that determines the minumum and maxiumum
+This inspector shows an image plot and optional cross-hair line plots that show cross sections of 
+the data at the cursor (see screen shot).
+
+Panning, zooming and setting the plot titles work in the same manner as for the 1D Line Plot 
+inspector. Next to that, the image plot has a `color range` that determines the minimum and maximum
 values of the color scale. The color range too can be in auto-range mode, or can be set
 manually. On the left side of the plot, you can see the color range visualized as the blue
 rectangle between the color bar and the values. You can drag the rectangle to shift the
