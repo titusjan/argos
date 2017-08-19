@@ -281,6 +281,10 @@ class PgImagePlot2d(AbstractInspector):
         self.imagePlotItem.addItem(self.imageItem)
 
         self.histLutItem = HistogramLUTItem() # what about GradientLegend?
+        self.histLutItem.region.setBrush("#FF006632")
+        for line in self.histLutItem.region.lines:
+            line.setPen(color=("#FF0066"))
+
         self.histLutItem.setImageItem(self.imageItem)
         self.histLutItem.vb.setMenuEnabled(False)
         self.histLutItem.setHistogramRange(0, 100) # Disables autoscaling
