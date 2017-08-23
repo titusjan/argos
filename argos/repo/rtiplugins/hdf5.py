@@ -477,7 +477,8 @@ class H5pyGroupRti(BaseRti):
                 childItems.append(H5pyGroupRti(h5Child, nodeName=childName,
                                                fileName=self.fileName))
             elif isinstance(h5Child, h5py.Dataset):
-                if len(h5Child.shape) == 0:
+                # The shape can be None in case of Null datasets.
+                if h5Child.shape is None or len(h5Child.shape) == 0:
                     childItems.append(H5pyScalarRti(h5Child, nodeName=childName,
                                                     fileName=self.fileName))
                 else:

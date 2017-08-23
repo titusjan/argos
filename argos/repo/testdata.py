@@ -106,6 +106,7 @@ def createArgosTestData():
     myDict['name'] = 'Pac Man'
     myDict['age'] = 34
     myDict['ghosts'] = ['Inky', 'Blinky', 'Pinky', 'Clyde']
+    myDict['none'] = None
     myDict['numbers'] = {'int': 5, 'float': -6.6, 'large float': 7e77,
                          '-inf': np.NINF, 'nan': np.nan, 'complex': 8-9j, 'decimal': Decimal(4.444)}
 
