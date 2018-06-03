@@ -143,6 +143,40 @@ USE CASES:
 BUGS:
 
 
+(argos) ~> python -c "import netCDF4"
+    Traceback (most recent call last):
+      File "<string>", line 1, in <module>
+      File "/Users/kenter/miniconda3/envs/argos/lib/python3.5/site-packages/netCDF4/__init__.py", line 3, in <module>
+        from ._netCDF4 import *
+    ImportError: dlopen(/Users/kenter/miniconda3/envs/argos/lib/python3.5/site-packages/netCDF4/_netCDF4.cpython-35m-darwin.so, 2): Library not loaded: @rpath/libmfhdf.0.dylib
+      Referenced from: /Users/kenter/miniconda3/envs/argos/lib/libnetcdf.11.dylib
+      Reason: image not found
+ Was fixed by conda update all.
+
+        hdf4:           4.2.11-0         --> 4.2.12-1
+        libpng:         1.6.27-0         --> 1.6.30-1
+        mkl:            2017.0.1-0       --> 2017.0.3-0
+        openssl:        1.0.2k-1         --> 1.0.2l-0
+        prompt_toolkit: 1.0.14-py35_0    --> 1.0.15-py35_0
+        python:         3.5.3-1          --> 3.5.4-0
+        qt:             5.6.2-0          --> 5.6.2-2
+        setuptools:     27.2.0-py35_0    --> 36.4.0-py35_1
+        xz:             5.2.2-1          --> 5.2.3-0
+        zlib:           1.2.8-3          --> 1.2.11-0
+
+
+Zero sized array in.
+/Users/kenter/work/spec-ind/data/tata/TATA scan3/TATA_scan1_x124_y019_2500.h5 /rawData/timestamp
+Gives error in image plot:
+      File "/Users/kenter/prog/external/argos/argos/inspector/pgplugins/pghistlutitem.py", line 199, in imageChanged
+        histRange = (np.nanmin(img), np.nanmax(img))
+      File "/Users/kenter/miniconda3/envs/argos/lib/python3.5/site-packages/numpy/lib/nanfunctions.py", line 240, in nanmin
+        res = np.fmin.reduce(a, axis=axis, out=out, **kwargs)
+    ValueError: zero-size array to reduction operation fmin which has no identity
+    Perhaps fix win new color range.
+
+
+
 
 
 

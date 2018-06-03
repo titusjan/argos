@@ -98,6 +98,12 @@ def makeSineProduct():
     return np.sin(xx) * np.sin(yy) + np.sin(3*xx) * np.sin(3*yy)
 
 
+def makeUniformNoise():
+    """ Uniform noise between 0 and 1
+    """
+    return np.random.uniform(0.0, 1.0, size=(400, 300))
+
+
 def createArgosTestData():
     """ Makes various test data sets for debugging
     """
@@ -174,6 +180,7 @@ def createArgosTestData():
     colorMapRti.insertChild(SyntheticArrayRti('arctan2', fun=makeArcTan2))
     colorMapRti.insertChild(SyntheticArrayRti('spiral', fun=makeSpiral))
     colorMapRti.insertChild(SyntheticArrayRti('sine product', fun=makeSineProduct))
+    colorMapRti.insertChild(SyntheticArrayRti('uniform noise', fun=makeUniformNoise))
 
 
     addPandasTestData(mappingRti)
