@@ -30,36 +30,27 @@ from argos.config.boolcti import BoolCti, BoolGroupCti
 from argos.config.choicecti import ChoiceCti
 from argos.config.groupcti import MainGroupCti
 from argos.inspector.abstract import AbstractInspector, InvalidDataError, UpdateReason
-from argos.inspector.pgplugins.pgctis import (
-    X_AXIS, Y_AXIS, BOTH_AXES, viewBoxAxisRange, defaultAutoRangeMethods, PgAxisLabelCti,
-    PgAxisCti, PgAxisFlipCti, PgAspectRatioCti, PgAxisRangeCti, PgHistLutColorRangeCti, PgGridCti,
-    PgGradientEditorItemCti, setXYAxesAutoRangeOn, PgPlotDataItemCti)
+from argos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES, viewBoxAxisRange,
+                                                 defaultAutoRangeMethods, PgAxisLabelCti,
+                                                 PgAxisCti, PgAxisFlipCti, PgAspectRatioCti,
+                                                 PgAxisRangeCti, PgHistLutColorRangeCti, PgGridCti,
+                                                 PgGradientEditorItemCti, setXYAxesAutoRangeOn,
+                                                 PgPlotDataItemCti)
 from argos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
-#from argos.qt import Qt, QtCore, QtGui, QtSlot
-
-from pyqtgraph.Qt import QtCore, QtGui
-
-from argos.qt import Qt, QtSlot
-
-
-
+from argos.inspector.pgplugins.pghistlutitem import HistogramLUTItem
+from argos.qt import Qt, QtCore, QtGui, QtSlot
 from argos.utils.cls import array_has_real_numbers, check_class, is_an_array, to_string
 from argos.utils.masks import replaceMaskedValueWithFloat, maskedNanPercentile, ArrayWithMask
-
-from pgcolorbar.colorlegend import ColorLegendItem
 
 logger = logging.getLogger(__name__)
 
 ROW_TITLE,    COL_TITLE    = 0, 0  # colspan = 3
-ROW_COLOR,    COL_COLOR    = 1, 1  # rowspan = 2
-#ROW_HOR_LINE, COL_HOR_LINE = 1, 0
-ROW_IMAGE,    COL_IMAGE    = 2, 0
-#ROW_VER_LINE, COL_VER_LINE = 2, 2
+ROW_COLOR,    COL_COLOR    = 1, 0  # rowspan = 2
+ROW_HOR_LINE, COL_HOR_LINE = 1, 1
+ROW_IMAGE,    COL_IMAGE    = 2, 1
+ROW_VER_LINE, COL_VER_LINE = 2, 2
 ROW_PROBE,    COL_PROBE    = 3, 0  # colspan = 2
 
-
-assert pg.getConfigOption('imageAxisOrder') == 'col-major', \
-    pg.getConfigOption('imageAxisOrder')
 
 
 def calcPgImagePlot2dDataRange(pgImagePlot2d, percentage, crossPlot):
@@ -170,20 +161,20 @@ class PgImagePlot2dCti(MainGroupCti):
 
         colorAutoRangeFunctions = defaultAutoRangeMethods(self.pgImagePlot2d)
 
-        # self.histColorRangeCti = self.insertChild(
-        #     PgHistLutColorRangeCti(pgImagePlot2d.histLutItem, colorAutoRangeFunctions,
-        #                            nodeName="color range"))
+        self.histColorRangeCti = self.insertChild(
+            PgHistLutColorRangeCti(pgImagePlot2d.histLutItem, colorAutoRangeFunctions,
+                                   nodeName="color range"))
 
-        # histViewBox = pgImagePlot2d.histLutItem.vb
-        # histViewBox.enableAutoRange(Y_AXIS, False)
-        # rangeFunctions = defaultAutoRangeMethods(self.pgImagePlot2d,
-        #     {PgAxisRangeCti.PYQT_RANGE: partial(viewBoxAxisRange, histViewBox, Y_AXIS)})
-        #
-        # self.histRangeCti = self.insertChild(
-        #     PgAxisRangeCti(histViewBox, Y_AXIS, nodeName='histogram range',
-        #                    autoRangeFunctions=rangeFunctions))
+        histViewBox = pgImagePlot2d.histLutItem.vb
+        histViewBox.enableAutoRange(Y_AXIS, False)
+        rangeFunctions = defaultAutoRangeMethods(self.pgImagePlot2d,
+            {PgAxisRangeCti.PYQT_RANGE: partial(viewBoxAxisRange, histViewBox, Y_AXIS)})
 
-        # self.insertChild(PgGradientEditorItemCti(self.pgImagePlot2d.histLutItem.gradient))
+        self.histRangeCti = self.insertChild(
+            PgAxisRangeCti(histViewBox, Y_AXIS, nodeName='histogram range',
+                           autoRangeFunctions=rangeFunctions))
+
+        self.insertChild(PgGradientEditorItemCti(self.pgImagePlot2d.histLutItem.gradient))
 
         self.zoomModeCti = self.insertChild(BoolCti('rectangle zoom mode', False))
 
@@ -289,35 +280,14 @@ class PgImagePlot2d(AbstractInspector):
         self.imageItem = pg.ImageItem()
         self.imagePlotItem.addItem(self.imageItem)
 
-        # self.histLutItem = HistogramLUTItem() # what about GradientLegend?
-        # self.histLutItem.region.setBrush("#FF006632")
-        # for line in self.histLutItem.region.lines:
-        #     line.setPen(color=("#FF0066"))
-        #
-        # self.histLutItem.setImageItem(self.imageItem)
-        # self.histLutItem.vb.setMenuEnabled(False)
-        # self.histLutItem.setHistogramRange(0, 100) # Disables autoscaling
-        # TODO: better lut
-        #cmap = pg.ColorMap([0, 0.25, 0.75, 1], [[0, 0, 0, 255], [255, 0, 0, 255],
-                            # [255, 255, 0, 255], [255, 255, 255, 255]])
-        #lut = cmap.getLookupTable()
+        self.histLutItem = HistogramLUTItem() # what about GradientLegend?
+        self.histLutItem.region.setBrush("#FF006632")
+        for line in self.histLutItem.region.lines:
+            line.setPen(color=("#FF0066"))
 
-        #lut = np.array(list(reversed(
-        # [(237,248,251), (178,226,226), (102,194,164), (35,139,69), (0, 0, 0)])))
-
-        #lut = np.array([(237,248,251), (178,226,226), (102,194,164), (35,139,69), (0, 0, 0)])
-        lut = np.array([(237,248,251), (178,226,226), (102,194,164), (35,139,69), (0, 0, 0)])
-        lut = np.flipud(lut)
-
-        # Duplicate last item because the pyqtgraph.makeARGB function has a wrong default scale. It
-        # should be equal to the length of the LUT, but it's set to len(lut)-1. We therefore add a
-        # fake LUT entry.
-        extendedLut = np.append(lut, [lut[-1, :]], axis=0)
-        self.imageItem.setLookupTable(extendedLut)
-        #self.imageItem.setLookupTable(lut)
-
-
-        self.colorLegendItem = ColorLegendItem(lut, self.imageItem)
+        self.histLutItem.setImageItem(self.imageItem)
+        self.histLutItem.vb.setMenuEnabled(False)
+        self.histLutItem.setHistogramRange(0, 100) # Disables autoscaling
 
         # Probe and cross hair plots
         self.crossPlotRow = None # the row coordinate of the cross hair. None if no cross hair.
@@ -359,7 +329,7 @@ class PgImagePlot2d(AbstractInspector):
         self.contentsLayout.addWidget(self.graphicsLayoutWidget)
 
         self.graphicsLayoutWidget.addItem(self.titleLabel, ROW_TITLE, COL_TITLE, colspan=3)
-        self.graphicsLayoutWidget.addItem(self.colorLegendItem, ROW_COLOR, COL_COLOR, rowspan=2)
+        self.graphicsLayoutWidget.addItem(self.histLutItem, ROW_COLOR, COL_COLOR, rowspan=2)
         self.graphicsLayoutWidget.addItem(self.imagePlotItem, ROW_IMAGE, COL_IMAGE)
         self.graphicsLayoutWidget.addItem(self.probeLabel, ROW_PROBE, COL_PROBE, colspan=3)
 
@@ -368,10 +338,10 @@ class PgImagePlot2d(AbstractInspector):
         gridLayout.setVerticalSpacing(10)
         #gridLayout.setRowSpacing(ROW_PROBE, 40)
 
-        #gridLayout.setRowStretchFactor(ROW_HOR_LINE, 1)
+        gridLayout.setRowStretchFactor(ROW_HOR_LINE, 1)
         gridLayout.setRowStretchFactor(ROW_IMAGE, 2)
         gridLayout.setColumnStretchFactor(COL_IMAGE, 2)
-        #gridLayout.setColumnStretchFactor(COL_VER_LINE, 1)
+        gridLayout.setColumnStretchFactor(COL_VER_LINE, 1)
 
         # Configuration tree
         self._config = PgImagePlot2dCti(pgImagePlot2d=self, nodeName='2D image plot')
@@ -418,9 +388,8 @@ class PgImagePlot2d(AbstractInspector):
 
         # Set the histogram range and levels to finite values to prevent futher errors if this
         # function was called after an exception in self.drawContents
-        #self.histLutItem.setHistogramRange(0, 100)
-        #self.histLutItem.setLevels(0, 100)
-        self.colorLegendItem.setLevels((0, 10))
+        self.histLutItem.setHistogramRange(0, 100)
+        self.histLutItem.setLevels(0, 100)
 
         self.crossPlotRow, self.crossPlotCol = None, None
 
@@ -444,32 +413,32 @@ class PgImagePlot2d(AbstractInspector):
         self.crossPlotCol = None # idem dito
 
         gridLayout = self.graphicsLayoutWidget.ci.layout # A QGraphicsGridLayout
-        #
-        # if self.config.horCrossPlotCti.configValue:
-        #     gridLayout.setRowStretchFactor(ROW_HOR_LINE, 1)
-        #     if not self.horPlotAdded:
-        #         self.graphicsLayoutWidget.addItem(self.horCrossPlotItem, ROW_HOR_LINE, COL_HOR_LINE)
-        #         self.horPlotAdded = True
-        #         gridLayout.activate()
-        # else:
-        #     gridLayout.setRowStretchFactor(ROW_HOR_LINE, 0)
-        #     if self.horPlotAdded:
-        #         self.graphicsLayoutWidget.removeItem(self.horCrossPlotItem)
-        #         self.horPlotAdded = False
-        #         gridLayout.activate()
-        #
-        # if self.config.verCrossPlotCti.configValue:
-        #     gridLayout.setColumnStretchFactor(COL_VER_LINE, 1)
-        #     if not self.verPlotAdded:
-        #         self.graphicsLayoutWidget.addItem(self.verCrossPlotItem, ROW_VER_LINE, COL_VER_LINE)
-        #         self.verPlotAdded = True
-        #         gridLayout.activate()
-        # else:
-        #     gridLayout.setColumnStretchFactor(COL_VER_LINE, 0)
-        #     if self.verPlotAdded:
-        #         self.graphicsLayoutWidget.removeItem(self.verCrossPlotItem)
-        #         self.verPlotAdded = False
-        #         gridLayout.activate()
+
+        if self.config.horCrossPlotCti.configValue:
+            gridLayout.setRowStretchFactor(ROW_HOR_LINE, 1)
+            if not self.horPlotAdded:
+                self.graphicsLayoutWidget.addItem(self.horCrossPlotItem, ROW_HOR_LINE, COL_HOR_LINE)
+                self.horPlotAdded = True
+                gridLayout.activate()
+        else:
+            gridLayout.setRowStretchFactor(ROW_HOR_LINE, 0)
+            if self.horPlotAdded:
+                self.graphicsLayoutWidget.removeItem(self.horCrossPlotItem)
+                self.horPlotAdded = False
+                gridLayout.activate()
+
+        if self.config.verCrossPlotCti.configValue:
+            gridLayout.setColumnStretchFactor(COL_VER_LINE, 1)
+            if not self.verPlotAdded:
+                self.graphicsLayoutWidget.addItem(self.verCrossPlotItem, ROW_VER_LINE, COL_VER_LINE)
+                self.verPlotAdded = True
+                gridLayout.activate()
+        else:
+            gridLayout.setColumnStretchFactor(COL_VER_LINE, 0)
+            if self.verPlotAdded:
+                self.graphicsLayoutWidget.removeItem(self.verCrossPlotItem)
+                self.verPlotAdded = False
+                gridLayout.activate()
 
         self.slicedArray = self.collector.getSlicedArray()
 
@@ -502,15 +471,15 @@ class PgImagePlot2d(AbstractInspector):
             reason == UpdateReason.COLLECTOR_COMBO_BOX):
             self.config.xAxisRangeCti.autoRangeCti.data = True
             self.config.yAxisRangeCti.autoRangeCti.data = True
-            #self.config.histColorRangeCti.autoRangeCti.data = True
-            #self.config.histRangeCti.autoRangeCti.data = True
+            self.config.histColorRangeCti.autoRangeCti.data = True
+            self.config.histRangeCti.autoRangeCti.data = True
             self.config.horCrossPlotRangeCti.autoRangeCti.data = True
             self.config.verCrossPlotRangeCti.autoRangeCti.data = True
 
         # PyQtGraph uses the following dimension order: T, X, Y, Color.
         # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0}
         # doesn't seem to do anything.
-        #imageArray = imageArray.transpose()   # TODO:  enable
+        imageArray = imageArray.transpose()
         self.imageItem.setImage(imageArray, autoLevels=False)
 
         self.imagePlotItem.setRectangleZoomOn(self.config.zoomModeCti.configValue)
@@ -608,8 +577,7 @@ class PgImagePlot2d(AbstractInspector):
 
                         if show_data_point:
                             crossPoint90 = pg.PlotDataItem(symbolPen=self.crossPen)
-                            crossPoint90.setSymbolBrush(QtGui.QBrush(
-                                    self.config.crossPenCti.penColor))
+                            crossPoint90.setSymbolBrush(QtGui.QBrush(self.config.crossPenCti.penColor))
                             crossPoint90.setSymbolSize(10)
                             crossPoint90.setData((col,), (rowData[col],))
                             self.horCrossPlotItem.addItem(crossPoint90, ignoreBounds=True)
