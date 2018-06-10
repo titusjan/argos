@@ -35,13 +35,7 @@ from argos.inspector.pgplugins.pgctis import (
     PgAxisCti, PgAxisFlipCti, PgAspectRatioCti, PgAxisRangeCti, PgHistLutColorRangeCti, PgGridCti,
     PgGradientEditorItemCti, setXYAxesAutoRangeOn, PgPlotDataItemCti)
 from argos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
-#from argos.qt import Qt, QtCore, QtGui, QtSlot
-
-from pyqtgraph.Qt import QtCore, QtGui
-
-from argos.qt import Qt, QtSlot
-
-
+from argos.qt import Qt, QtCore, QtGui, QtSlot
 
 from argos.utils.cls import array_has_real_numbers, check_class, is_an_array, to_string
 from argos.utils.masks import replaceMaskedValueWithFloat, maskedNanPercentile, ArrayWithMask
@@ -51,15 +45,12 @@ from pgcolorbar.colorlegend import ColorLegendItem
 logger = logging.getLogger(__name__)
 
 ROW_TITLE,    COL_TITLE    = 0, 0  # colspan = 3
-ROW_COLOR,    COL_COLOR    = 1, 1  # rowspan = 2
-#ROW_HOR_LINE, COL_HOR_LINE = 1, 0
+ROW_COLOR,    COL_COLOR    = 1, 2  # rowspan = 2
+ROW_HOR_LINE, COL_HOR_LINE = 1, 0
 ROW_IMAGE,    COL_IMAGE    = 2, 0
-#ROW_VER_LINE, COL_VER_LINE = 2, 2
+ROW_VER_LINE, COL_VER_LINE = 2, 1
 ROW_PROBE,    COL_PROBE    = 3, 0  # colspan = 2
 
-
-assert pg.getConfigOption('imageAxisOrder') == 'col-major', \
-    pg.getConfigOption('imageAxisOrder')
 
 
 def calcPgImagePlot2dDataRange(pgImagePlot2d, percentage, crossPlot):
@@ -368,10 +359,10 @@ class PgImagePlot2d(AbstractInspector):
         gridLayout.setVerticalSpacing(10)
         #gridLayout.setRowSpacing(ROW_PROBE, 40)
 
-        #gridLayout.setRowStretchFactor(ROW_HOR_LINE, 1)
+        gridLayout.setRowStretchFactor(ROW_HOR_LINE, 1)
         gridLayout.setRowStretchFactor(ROW_IMAGE, 2)
         gridLayout.setColumnStretchFactor(COL_IMAGE, 2)
-        #gridLayout.setColumnStretchFactor(COL_VER_LINE, 1)
+        gridLayout.setColumnStretchFactor(COL_VER_LINE, 1)
 
         # Configuration tree
         self._config = PgImagePlot2dCti(pgImagePlot2d=self, nodeName='2D image plot')
@@ -444,32 +435,32 @@ class PgImagePlot2d(AbstractInspector):
         self.crossPlotCol = None # idem dito
 
         gridLayout = self.graphicsLayoutWidget.ci.layout # A QGraphicsGridLayout
-        #
-        # if self.config.horCrossPlotCti.configValue:
-        #     gridLayout.setRowStretchFactor(ROW_HOR_LINE, 1)
-        #     if not self.horPlotAdded:
-        #         self.graphicsLayoutWidget.addItem(self.horCrossPlotItem, ROW_HOR_LINE, COL_HOR_LINE)
-        #         self.horPlotAdded = True
-        #         gridLayout.activate()
-        # else:
-        #     gridLayout.setRowStretchFactor(ROW_HOR_LINE, 0)
-        #     if self.horPlotAdded:
-        #         self.graphicsLayoutWidget.removeItem(self.horCrossPlotItem)
-        #         self.horPlotAdded = False
-        #         gridLayout.activate()
-        #
-        # if self.config.verCrossPlotCti.configValue:
-        #     gridLayout.setColumnStretchFactor(COL_VER_LINE, 1)
-        #     if not self.verPlotAdded:
-        #         self.graphicsLayoutWidget.addItem(self.verCrossPlotItem, ROW_VER_LINE, COL_VER_LINE)
-        #         self.verPlotAdded = True
-        #         gridLayout.activate()
-        # else:
-        #     gridLayout.setColumnStretchFactor(COL_VER_LINE, 0)
-        #     if self.verPlotAdded:
-        #         self.graphicsLayoutWidget.removeItem(self.verCrossPlotItem)
-        #         self.verPlotAdded = False
-        #         gridLayout.activate()
+
+        if self.config.horCrossPlotCti.configValue:
+            gridLayout.setRowStretchFactor(ROW_HOR_LINE, 1)
+            if not self.horPlotAdded:
+                self.graphicsLayoutWidget.addItem(self.horCrossPlotItem, ROW_HOR_LINE, COL_HOR_LINE)
+                self.horPlotAdded = True
+                gridLayout.activate()
+        else:
+            gridLayout.setRowStretchFactor(ROW_HOR_LINE, 0)
+            if self.horPlotAdded:
+                self.graphicsLayoutWidget.removeItem(self.horCrossPlotItem)
+                self.horPlotAdded = False
+                gridLayout.activate()
+
+        if self.config.verCrossPlotCti.configValue:
+            gridLayout.setColumnStretchFactor(COL_VER_LINE, 1)
+            if not self.verPlotAdded:
+                self.graphicsLayoutWidget.addItem(self.verCrossPlotItem, ROW_VER_LINE, COL_VER_LINE)
+                self.verPlotAdded = True
+                gridLayout.activate()
+        else:
+            gridLayout.setColumnStretchFactor(COL_VER_LINE, 0)
+            if self.verPlotAdded:
+                self.graphicsLayoutWidget.removeItem(self.verCrossPlotItem)
+                self.verPlotAdded = False
+                gridLayout.activate()
 
         self.slicedArray = self.collector.getSlicedArray()
 
@@ -510,7 +501,7 @@ class PgImagePlot2d(AbstractInspector):
         # PyQtGraph uses the following dimension order: T, X, Y, Color.
         # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0}
         # doesn't seem to do anything.
-        #imageArray = imageArray.transpose()   # TODO:  enable
+        imageArray = imageArray.transpose()
         self.imageItem.setImage(imageArray, autoLevels=False)
 
         self.imagePlotItem.setRectangleZoomOn(self.config.zoomModeCti.configValue)
