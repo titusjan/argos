@@ -41,6 +41,8 @@ from argos.utils.masks import maskedNanPercentile
 
 from pyqtgraph.graphicsItems.GradientEditorItem import Gradients as GRADIENTS
 
+from pgcolorbar.colorlegend import ColorLegendItem
+
 logger = logging.getLogger(__name__)
 
 X_AXIS = pg.ViewBox.XAxis
@@ -186,7 +188,8 @@ class AbstractRangeCti(GroupCti):
 
         Is an abstract class. Descendants must override getTargetRange and setTargetRange
     """
-    def __init__(self, autoRangeFunctions=None, nodeName='range', expanded=False):
+    def __init__(self, autoRangeFunctions=None, nodeName='range',
+                 expanded=False, paddingDefault=-1):
         """ Constructor.
             The target axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
 
@@ -195,6 +198,9 @@ class AbstractRangeCti(GroupCti):
             If autoRangeFunctions is None, there will be no auto-range child CTI.
             If autoRangeFunctions has one element there will be an auto-range child without a method
             child CTI (the function from the autoRangeMethods dictionary will be the default).
+
+            :param int paddingDefault: default padding value. Use -1 for 'dynamic' padding, which
+                is the PyQtGraph padding algorithm.
         """
         super(AbstractRangeCti, self).__init__(nodeName, expanded=expanded)
 
@@ -211,7 +217,8 @@ class AbstractRangeCti(GroupCti):
                 self.methodCti = ChoiceCti("method", configValues=list(autoRangeFunctions.keys()))
                 self.autoRangeCti.insertChild(self.methodCti)
 
-            self.paddingCti = IntCti("padding", -1, suffix="%", specialValueText="dynamic",
+            self.paddingCti = IntCti("padding", paddingDefault,
+                                     suffix="%", specialValueText="dynamic",
                                      minValue=-1, maxValue=1000, stepSize=1)
             self.autoRangeCti.insertChild(self.paddingCti)
 
@@ -352,7 +359,7 @@ class AbstractRangeCti(GroupCti):
         targetRange = self.calculateRange()
         #logger.debug("axisRange: {}, padding={}".format(targetRange, padding))
         if not np.all(np.isfinite(targetRange)):
-            logger.warn("New target range is not finite. Plot range not updated")
+            logger.warning("New target range is not finite. Plot range not updated")
             return
 
         self.setTargetRange(targetRange, padding=padding)
@@ -490,6 +497,51 @@ class PgHistLutColorRangeCti(AbstractRangeCti):
 
 
 
+class PgColorLegendCti(AbstractRangeCti):
+    """ Configuration tree item is linked to the HistogramLUTItem range.
+    """
+    def __init__(self, legend, autoRangeFunctions=None, nodeName='color range', expanded=True):
+        """ Constructor.
+            The target axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
+
+            If given, autoRangeFunctions must be a (label to function) dictionary that will be used
+            to populate the (auto range) method ChoiceCti. If not give, the there will not be
+            a method choice and the autorange implemented by PyQtGraph will be used.
+        """
+        super(PgColorLegendCti, self).__init__(
+            autoRangeFunctions=autoRangeFunctions, nodeName=nodeName, expanded=True,
+            paddingDefault=0)
+        check_class(legend, ColorLegendItem)
+        self.legend = legend
+
+        self.paddingCti.defaultData = 0
+        # Connect signals
+        self.legend.sigLevelsChanged.connect(self.setAutoRangeOff)
+        self.legend.sigLevelsChanged.connect(self.refreshMinMax)
+
+
+    def _closeResources(self):
+        """ Disconnects signals.
+            Is called by self.finalize when the cti is deleted.
+        """
+        self.legend.sigLevelsChanged.disconnect(self.setAutoRangeOff)
+        self.legend.sigLevelsChanged.disconnect(self.refreshMinMax)
+
+
+    def getTargetRange(self):
+        """ Gets the (color) range of the HistogramLUTItem
+        """
+        return self.legend.getLevels()
+
+
+    def setTargetRange(self, targetRange, padding=None):
+        """ Sets the (color) range of the HistogramLUTItem
+        """
+        self.legend.setLevels(targetRange, padding=padding)
+
+
+
+
 class PgGradientEditorItemCti(ChoiceCti):
     """ Lets the user select one of the standard color scales in a GradientEditorItem
     """
@@ -510,6 +562,8 @@ class PgGradientEditorItemCti(ChoiceCti):
         """ Applies the configuration to its target axis
         """
         self.gradientEditorItem.loadPreset(self.configValue)
+
+
 
 
 

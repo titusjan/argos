@@ -32,8 +32,8 @@ from argos.config.groupcti import MainGroupCti
 from argos.inspector.abstract import AbstractInspector, InvalidDataError, UpdateReason
 from argos.inspector.pgplugins.pgctis import (
     X_AXIS, Y_AXIS, BOTH_AXES, viewBoxAxisRange, defaultAutoRangeMethods, PgAxisLabelCti,
-    PgAxisCti, PgAxisFlipCti, PgAspectRatioCti, PgAxisRangeCti, PgHistLutColorRangeCti, PgGridCti,
-    PgGradientEditorItemCti, setXYAxesAutoRangeOn, PgPlotDataItemCti)
+    PgAxisCti, PgAxisFlipCti, PgAspectRatioCti, PgAxisRangeCti, PgColorLegendCti, PgGridCti,
+    setXYAxesAutoRangeOn, PgPlotDataItemCti)
 from argos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from argos.qt import Qt, QtCore, QtGui, QtSlot
 
@@ -160,6 +160,10 @@ class PgImagePlot2dCti(MainGroupCti):
         #### Color scale ####
 
         colorAutoRangeFunctions = defaultAutoRangeMethods(self.pgImagePlot2d)
+
+        self.colorLegendCti = self.insertChild(
+            PgColorLegendCti(pgImagePlot2d.colorLegendItem, colorAutoRangeFunctions,
+                             nodeName="color range"))
 
         # self.histColorRangeCti = self.insertChild(
         #     PgHistLutColorRangeCti(pgImagePlot2d.histLutItem, colorAutoRangeFunctions,
