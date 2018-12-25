@@ -1,0 +1,16 @@
+# Use this file to create an Anoconda environment with:
+# %> conda env create -f environment.yml [-n better_name]
+
+name: argos
+dependencies:
+  - python >= 3.4
+  - numpy
+  - pyqt
+  - h5py
+  - netcdf4
+  - pillow
+  - scipy
+  - pandas
+  - pip
+  - pip:
+    - pyqtgraph >= 0.10.0
