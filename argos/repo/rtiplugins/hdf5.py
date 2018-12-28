@@ -47,19 +47,24 @@ def dimNamesFromDataset(h5Dataset):
     for dimNr, dimScales in enumerate(h5Dataset.dims):
         if len(dimScales) == 0:
             dimNames.append('Dim{}'.format(dimNr))
-        elif len(dimScales) == 1:
+        else:
             dimScaleLabel, dimScaleDataset = dimScales.items()[0]
             path = dimScaleDataset.name
             if path:
-                dimNames.append(os.path.basename(path))
+                dimName = os.path.basename(path)
             elif dimScaleLabel: # This could potentially be long so it's our second choice
-                dimNames.append(dimScaleLabel)
+                dimName = dimScaleLabel
             else:
-                dimNames.append('Dim{}'.format(dimNr))
-        else:
-            # TODO: multiple scales for this dimension. What to do?
-            logger.warn("More than one dimension scale found: {!r}".format(dimScales))
-            dimNames.append('Dim{}'.format(dimNr)) # For now, just number them
+                dimName = 'Dim{}'.format(dimNr)
+
+            if len(dimScales) > 1:
+                logger.debug("More than one dimension scale found, using the first {}"
+                             .format(dimName))
+
+            dimNames.append(dimName)
+        # else:
+        #     # TODO: multiple scales for this dimension. What to do?
+        #     dimNames.append('Dim{}'.format(dimNr)) # For now, just number them
 
     return dimNames
 
