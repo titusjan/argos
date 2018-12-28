@@ -37,7 +37,7 @@ class PandasIndexRti(BaseRti):
     """ Contains a Pandas undex.
     """
     _defaultIconGlyph = RtiIconFactory.DIMENSION
-    _defaultIconColor = RtiIconFactory.COLOR_MEMORY
+    _defaultIconColor = ICON_COLOR_PANDAS
 
     def __init__(self, index=None, nodeName='', fileName='',
                  iconColor=_defaultIconColor):
@@ -119,7 +119,7 @@ class AbstractPandasNDFrameRti(BaseRti):
     # a higher-dimensional NDFrame, so the Field glyph, does not apply (fields have the same nr
     # of dimensions as their parents).
     _defaultIconGlyph = RtiIconFactory.ARRAY
-    _defaultIconColor = RtiIconFactory.COLOR_MEMORY
+    _defaultIconColor = ICON_COLOR_PANDAS
 
     def __init__(self, ndFrame=None, nodeName='', fileName='', standAlone=True,
                  iconColor=_defaultIconColor):
@@ -341,6 +341,7 @@ class PandasCsvFileRti(PandasDataFrameRti):
                                                iconColor=PandasCsvFileRti._defaultIconColor,
                                                standAlone=True)
         self._checkFileExists()
+        self._ndFrame = None
 
 
     def hasChildren(self):
@@ -350,7 +351,7 @@ class PandasCsvFileRti(PandasDataFrameRti):
 
 
     def _openResources(self):
-        """ Uses numpy.loadtxt to open the underlying file
+        """ Uses pandas.read_cs to open the underlying file
         """
         self._ndFrame = pd.read_csv(self._fileName)
 
@@ -359,4 +360,60 @@ class PandasCsvFileRti(PandasDataFrameRti):
         """ Closes the underlying resources
         """
         self._ndFrame = None
+
+
+
+class PandasHdfFileRti(BaseRti):
+    """ Repository Tree Item (RTI) that contains Pandas data stored as HDF-5.
+    """
+    _defaultIconGlyph = RtiIconFactory.FILE
+    _defaultIconColor = ICON_COLOR_PANDAS
+
+    def __init__(self, nodeName, fileName=''):
+        """ Constructor
+        """
+        super(PandasHdfFileRti, self).__init__(nodeName=nodeName, fileName=fileName)
+
+        self._store = None
+
+
+    def _openResources(self):
+        """ Uses pandas HDFStore to open the underlying file
+            https://pandas.pydata.org/pandas-docs/stable/io.html#io-hdf5
+        """
+        self._store = pd.HDFStore(self._fileName)
+
+
+    def _closeResources(self):
+        """ Closes the underlying resources
+        """
+        self._store = None
+
+
+    def _fetchAllChildren(self):
+        """ Fetches all sub groups and variables that this group contains.
+        """
+        assert self._store is not None, "dataset undefined (file not opened?)"
+        assert self.canFetchChildren(), "canFetchChildren must be True"
+
+        childItems = []
+        for key in self._store.keys():
+            if key.startswith('/'):
+                logger.debug("Removing leading slash from key {}".format(key))
+                key = key[1:]
+            logger.debug("Getting object from HdfStore: {}".format(key))
+            obj = self._store.get(key)
+
+            if isinstance(obj, pd.Series):
+                childItem = PandasSeriesRti(obj, nodeName=key, fileName=self.fileName)
+            elif isinstance(obj, pd.DataFrame):
+                childItem = PandasDataFrameRti(obj, nodeName=key, fileName=self.fileName)
+            elif isinstance(obj, pd.Panel):
+                childItem = PandasPanelRti(obj, nodeName=key, fileName=self.fileName)
+            else:
+                logger.warning("Unexpteded child type: {}".type(obj))
+                childItem = BaseRti(nodeName=key, fileName=self.fileName)
+
+            childItems.append(childItem)
+        return childItems
 

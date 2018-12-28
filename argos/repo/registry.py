@@ -175,6 +175,10 @@ class RtiRegistry(ClassRegistry):
                        'argos.repo.rtiplugins.pandasio.PandasCsvFileRti',
                         extensions=['csv']),
 
+            RtiRegItem('Pandas HDF file',
+                       'argos.repo.rtiplugins.pandasio.PandasHdfFileRti',
+                        extensions=[]),
+
             RtiRegItem('Pillow image',
                        'argos.repo.rtiplugins.pillowio.PillowFileRti',
                         extensions=['bmp', 'eps', 'im', 'gif', 'jpg', 'jpeg', 'msp', 'pcx',
