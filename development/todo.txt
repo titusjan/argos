@@ -105,6 +105,8 @@ TODO Long term or nice to have:
 	Register plugins without having to restart (merge ClassRegistry and RegistryTableModel).
 	http://pythonhosted.org/setuptools/setuptools.html#dynamic-discovery-of-services-and-plugins
 
+    Look at Qt::ItemIsAutoTristate and Qt::ItemIsUserTristate
+
 THINK:
 	relative imports? What's the use except for easy relocation of packeges?
 	    A google search seems to indicate that it doesn't always work ok (although these days most

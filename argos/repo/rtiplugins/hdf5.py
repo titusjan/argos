@@ -376,10 +376,15 @@ class H5pyDatasetRti(BaseRti):
     def iconGlyph(self):
         """ Shows an Array icon for regular datasets but a dimension icon for dimension scales
         """
-        if self._h5Dataset.attrs.get('CLASS', None) == b'DIMENSION_SCALE':
-            return RtiIconFactory.DIMENSION
-        else:
+        try:
+            if self._h5Dataset.attrs.get('CLASS', None) == b'DIMENSION_SCALE':
+                return RtiIconFactory.DIMENSION
+            else:
+                return RtiIconFactory.ARRAY
+        except OSError as ex:
+            logger.warning("Unable to read 'CLASS' attribute. Assuming regular dataset".format(ex))
             return RtiIconFactory.ARRAY
+
 
 
     def hasChildren(self):
