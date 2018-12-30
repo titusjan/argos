@@ -151,7 +151,7 @@ class ColorCti(AbstractCti):
 
 
 class ColorCtiEditor(AbstractCtiEditor):
-    """ A CtiEditor which contains a QCombobox for editing ColorCti objects.
+    """ A CtiEditor which contains a QLineEdit for editing ColorCti objects.
     """
     def __init__(self, cti, delegate, parent=None):
         """ See the AbstractCtiEditor for more info on the parameters
