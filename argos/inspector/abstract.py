@@ -24,6 +24,7 @@ from argos.qt import QtWidgets, QtSlot
 from argos.utils.cls import type_name, check_class
 from argos.widgets.constants import DOCK_SPACING, DOCK_MARGIN
 from argos.widgets.display import MessageDisplay
+from argos.widgets.misc import BasePanel
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +96,7 @@ class AbstractInspector(QtWidgets.QStackedWidget):
         self.errorWidget = MessageDisplay()
         self.addWidget(self.errorWidget)
 
-        self.contentsWidget = QtWidgets.QWidget()
+        self.contentsWidget = BasePanel()
         self.addWidget(self.contentsWidget)
 
         self.contentsLayout = QtWidgets.QBoxLayout(QtWidgets.QBoxLayout.TopToBottom)

@@ -23,16 +23,16 @@ import logging
 from argos.qt import QtCore, QtWidgets, QtSlot
 from argos.widgets.argostreeview import ArgosTreeView
 from argos.widgets.constants import RIGHT_DOCK_WIDTH, DOCK_SPACING, DOCK_MARGIN
+from argos.widgets.misc import BasePanel
 from argos.config.configitemdelegate import ConfigItemDelegate
 from argos.config.configtreemodel import ConfigTreeModel
-
 logger = logging.getLogger(__name__)
 
 # Qt classes have many ancestors
 #pylint: disable=R0901
 
 
-class ConfigWidget(QtWidgets.QWidget):
+class ConfigWidget(BasePanel):
     """ Shows the configuration. At the moment only the confg tree view.
     """
     def __init__(self, configTreeModel, parent=None):

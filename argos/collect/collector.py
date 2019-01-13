@@ -29,6 +29,7 @@ from argos.repo.baserti import BaseRti
 from argos.utils.cls import check_class, check_is_a_sequence, check_is_an_array, is_an_array
 from argos.utils.masks import ArrayWithMask
 from argos.widgets.constants import TOP_DOCK_HEIGHT, DOCK_SPACING, DOCK_MARGIN
+from argos.widgets.misc import BasePanel
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ FAKE_DIM_OFFSET = 1000  # Fake dimensions start here (so all arrays must have a 
 
 
 
-class Collector(QtWidgets.QWidget):
+class Collector(BasePanel):
     """ Widget for collecting the selected data.
         Consists of a tree to collect the VisItems, plus some buttons to add or remove then.
 

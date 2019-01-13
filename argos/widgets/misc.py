@@ -61,7 +61,9 @@ class BasePanel(QtWidgets.QFrame):
 
         Define shape
     """
-    self.setFrameShape(QtWidgets.QFrame.StyledPanel)
-    self.setFrameShadow(QtWidgets.QFrame.Sunken)
+    def __init__(self, **kwargs):
+        super(BasePanel, self).__init__(**kwargs)
+        #self.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        #self.setFrameShadow(QtWidgets.QFrame.Sunken)
 
 

@@ -23,6 +23,7 @@ from argos.qt import QtGui, QtWidgets, QtSlot
 from argos.utils.cls import to_string
 
 from argos.inspector.registry import InspectorRegItem
+from argos.widgets.misc import BasePanel
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ def addInspectorActionsToMenu(inspectorMenu, execInspectorDialogAction, inspecto
     return inspectorMenu
 
 
-class InspectorSelectionPane(QtWidgets.QFrame):
+class InspectorSelectionPane(BasePanel):
     """ Shows the attributes of the selected repo tree item
     """
     def __init__(self, execInspectorDialogAction, inspectorActionGroup, parent=None):

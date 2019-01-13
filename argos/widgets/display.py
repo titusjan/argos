@@ -23,6 +23,7 @@ import logging
 
 from argos.qt import Qt, QtGui, QtWidgets
 from argos.widgets.constants import MONO_FONT, FONT_SIZE
+from argos.widgets.misc import BasePanel
 
 logger = logging.getLogger(__name__)
 
@@ -32,12 +33,12 @@ logger = logging.getLogger(__name__)
 # pylint: disable=R0901, R0902, R0904, W0201
 
 
-class MessageDisplay(QtWidgets.QWidget):
+class MessageDisplay(BasePanel):
     """ Widget that shows a label and title.
         Consists of a title label and a larger message label for details.
     """
     def __init__(self, parent=None, msg="", title="Error"):
-        super(MessageDisplay, self).__init__(parent)
+        super(MessageDisplay, self).__init__(parent=parent)
 
         self.layout = QtWidgets.QVBoxLayout()
         self.setLayout(self.layout)
