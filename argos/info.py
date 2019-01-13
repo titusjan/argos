@@ -41,8 +41,16 @@ def program_directory():
     """
     return os.path.abspath(os.path.dirname(__file__))
 
+
+def resource_directory():
+    """ Returns directory with resources (images, style sheets, etc)
+    """
+    return os.path.join(program_directory(), 'img/')
+
+
+
 def icons_directory():
-    """ Returns the program directory where this program is installed
+    """ Returns the icons directory
     """
     return os.path.join(program_directory(), 'img/snipicons')
 

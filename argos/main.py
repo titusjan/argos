@@ -24,8 +24,10 @@ from __future__ import print_function
 # The browse function is imported by the argos package, which in turn is imported by setup.py.
 # If you import (for instance) numpy here, the setup.py will fail if numpy is not installed.
 
-import logging, sys, argparse
-from argos.info import DEBUGGING, PROJECT_NAME, VERSION, DEFAULT_PROFILE
+import logging, sys, argparse, os.path
+from argos.info import DEBUGGING, PROJECT_NAME, VERSION, DEFAULT_PROFILE, resource_directory
+
+from argos.widgets.misc import setApplicationQtStyle, setApplicationStyleSheet
 
 logger = logging.getLogger('argos')
 
@@ -37,6 +39,8 @@ logging.basicConfig(level='DEBUG', stream=sys.stderr,
 def browse(fileNames=None,
            inspectorFullName=None,
            select=None,
+           qtStyle=None,
+           styleSheet=None,
            profile=DEFAULT_PROFILE,
            resetProfile=False,      # TODO: should probably be moved to the main program
            resetAllProfiles=False,  # TODO: should probably be moved to the main program
@@ -47,6 +51,8 @@ def browse(fileNames=None,
         :param fileNames: List of file names that will be added to the repository
         :param inspectorFullName: The full path name of the inspector that will be loaded
         :param select: a path of the repository item that will selected at start up.
+        :param qtStyle: name of qtStyle (E.g. fusion).
+        :param styleSheet: a path to an optional Qt Cascading Style Sheet.
         :param profile: the name of the profile that will be loaded
         :param resetProfile: if True, the profile will be reset to it standard settings.
         :param resetAllProfiles: if True, all profiles will be reset to it standard settings.
@@ -65,6 +71,24 @@ def browse(fileNames=None,
 
     # Create
     argosApp = ArgosApplication()
+
+
+    if qtStyle:
+        setApplicationQtStyle(qtStyle)
+
+    if not styleSheet:
+        styleSheet = os.path.join(resource_directory(), "argos.css")
+        logger.debug("Using default style sheet: {}".format(styleSheet))
+    else:
+        styleSheet = os.path.abspath(styleSheet)
+
+    if not os.path.exists(styleSheet):
+        msg = "Stylesheet not found: {}".format(styleSheet)
+        print(msg, file=sys.stderr)
+        logger.warning(msg)
+        #sys.exit(2)
+    setApplicationStyleSheet(styleSheet)
+
 
     if resetProfile:
         argosApp.deleteProfile(profile)
@@ -140,6 +164,10 @@ def main():
         help="""Full path name of a repository tree item that will be selected at start-up.
                 E.g. 'file/var/fieldname'""")
 
+    parser.add_argument('--qt-style', dest='qtStyle', help='Qt style. E.g.: fusion')
+
+    parser.add_argument('--qss', dest='styleSheet', help='Name of Qt Style Sheet file')
+
     parser.add_argument('-p', '--profile', dest='profile', default=DEFAULT_PROFILE,
         help="Can be used to have different persistent settings for different use cases.")
 
@@ -151,7 +179,6 @@ def main():
 
     parser.add_argument('--reset-registry', dest='reset_registry', action = 'store_true',
         help="If set, the registry will be reset to contain only the default plugins.")
-
 
     parser.add_argument('-d', '--debugging-mode', dest='debugging', action = 'store_true',
         help="Run Argos in debugging mode. Useful during development.")
@@ -198,6 +225,8 @@ def main():
     browse(fileNames = args.fileNames,
            inspectorFullName=args.inspector,
            select=args.selectPath,
+           qtStyle=args.qtStyle,
+           styleSheet=args.styleSheet,
            profile=args.profile,
            resetProfile=args.reset_profile,
            resetAllProfiles=args.reset_all_profiles,

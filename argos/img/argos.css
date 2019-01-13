@@ -1,0 +1,32 @@
+/* Qt Cascading Style Sheet (qss) */
+
+
+/*
+QFrame {
+    border: 1px solid black;
+}*/
+
+
+QDockWidget::title {
+    background: palette(Mid);
+    color: white;
+    /*border: 1px solid black;*/
+}
+
+QDockWidget::title:hover {
+    background: red;
+    color: yellow;
+}
+
+QMainWindow::separator {
+    background: palette(Midlight);
+}
+
+QMainWindow::separator:hover {
+    background: palette(Mid);
+}
+/*
+DockWidgetTitleBar {
+    background: yellow;
+    border: 1px solid black;
+}*/
