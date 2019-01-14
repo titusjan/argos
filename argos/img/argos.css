@@ -1,22 +1,22 @@
 /* Qt Cascading Style Sheet (qss) */
 
 
-/*
-BasePanel {
-    border: 1px solid black;
-}*/
-
-/*
 QDockWidget::title {
     background: palette(Mid);
-    color: white;
-    /*border: 1px solid black;* /
+    color: pallete(WindowText);
+    text-align: center;
 }
 
+/*
 QDockWidget::title:hover {
     background: red;
+    border: 1px solid red;
     color: yellow;
 }*/
+
+BasePanel {
+    padding: 5px;
+}
 
 
 QMainWindow::separator {

@@ -18,7 +18,7 @@
 """ Constants related to the layout and other widget properties.
 """
 import sys
-from argos.qt import QtCore
+from argos.qt import QtCore, QtWidgets
 
 #TREE_ROW_HEIGHT = 20 # pixels
 TREE_CELL_SIZE_HINT = QtCore.QSize(100, 20)
@@ -41,14 +41,10 @@ COL_ELEM_TYPE_WIDTH = 60
 CENTRAL_SPACING = 0
 CENTRAL_MARGIN  = 0
 
-# Spacing and margin in dock widgets in pixels
-if sys.platform == 'darwin': # OS-X
-    DOCK_SPACING = 10
-    DOCK_MARGIN  = 10
-else:
-    DOCK_SPACING = 5
-    DOCK_MARGIN  = 5
+# Spacing and margin in dock widgets in pixels. Is now set in style sheet padding.
 
+DOCK_SPACING = 0
+DOCK_MARGIN  = 0
 
 if sys.platform == 'linux':
     MONO_FONT = 'Monospace'

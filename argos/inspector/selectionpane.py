@@ -19,11 +19,11 @@
 """
 import logging
 
-from argos.qt import QtGui, QtWidgets, QtSlot
-from argos.utils.cls import to_string
+from argos.qt import QtWidgets, QtSlot
 
 from argos.inspector.registry import InspectorRegItem
 from argos.widgets.misc import BasePanel
+from argos.widgets.constants import DOCK_MARGIN, DOCK_SPACING
 
 logger = logging.getLogger(__name__)
 
@@ -53,14 +53,17 @@ class InspectorSelectionPane(BasePanel):
         super(InspectorSelectionPane, self).__init__(parent=parent)
 
         #self.setFrameShape(QtWidgets.QFrame.Box)
-        self.layout = QtWidgets.QHBoxLayout()
-        self.setLayout(self.layout)
+        self.mainLayout = QtWidgets.QHBoxLayout()
+        self.mainLayout.setSpacing(DOCK_SPACING)
+        self.mainLayout.setContentsMargins(DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN)
+        self.setLayout(self.mainLayout)
+
 
         # self.label = QtWidgets.QLabel("Current inspector")
         # self.layout.addWidget(self.label)
 
         self.menuButton = QtWidgets.QPushButton("No inspector")
-        self.layout.addWidget(self.menuButton)
+        self.mainLayout.addWidget(self.menuButton)
 
         inspectorMenu = QtWidgets.QMenu("Change Inspector", parent=self.menuButton)
         addInspectorActionsToMenu(inspectorMenu, execInspectorDialogAction, inspectorActionGroup)
