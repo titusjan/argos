@@ -2,29 +2,38 @@
 
 
 /*
-QFrame {
+BasePanel {
     border: 1px solid black;
 }*/
 
-
+/*
 QDockWidget::title {
     background: palette(Mid);
     color: white;
-    /*border: 1px solid black;*/
+    /*border: 1px solid black;* /
 }
 
 QDockWidget::title:hover {
     background: red;
     color: yellow;
+}*/
+
+
+QMainWindow::separator {
+    background: black;
+    width: 1px;
+    height: 1px;
 }
 
+
+/*
 QMainWindow::separator {
     background: palette(Midlight);
 }
 
 QMainWindow::separator:hover {
     background: palette(Mid);
-}
+}*/
 /*
 DockWidgetTitleBar {
     background: yellow;
