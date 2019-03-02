@@ -18,6 +18,7 @@
 from __future__ import division, print_function
 
 import logging
+import warnings
 
 import numpy as np
 import numpy.ma as ma
@@ -183,6 +184,7 @@ def createArgosTestData():
     colorMapRti.insertChild(SyntheticArrayRti('uniform noise', fun=makeUniformNoise))
 
 
+    warnings.simplefilter(action='ignore', category=FutureWarning)
     addPandasTestData(mappingRti)
 
     return mappingRti

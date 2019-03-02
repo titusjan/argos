@@ -1,9 +1,14 @@
-/* Qt Cascading Style Sheet (qss) */
+/* Qt Cascading Style Sheet (qss)
+
+
+    background: palette(Mid);  # Old value of the QDockWidget
+
+*/
 
 
 QDockWidget::title {
-    background: palette(Mid);
-    color: pallete(WindowText);
+    background: #B8B8B8;
+    color: pallete(Link);
     text-align: center;
 }
 
@@ -25,6 +30,9 @@ QMainWindow::separator {
     height: 1px;
 }
 
+ToggleColumnTableWidget::item {
+    margin: 3px;
+}
 
 /*
 QMainWindow::separator {

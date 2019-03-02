@@ -4,6 +4,8 @@
 /argos/Mini Scanner Output/acceptance7.h5/samples/re
 TODO short term:
 
+    Fixed font size in tables so that windows10 with two monitors works.
+
     What if the H5 only has a dimension label?
 
     Empty (Null) datasets and attributes
@@ -14,8 +16,6 @@ TODO short term:
     Exporter to PNG
 
     Old numpy support.
-
-    Histogram / statistics inspector.
 
     Installed plugins dialog doesn't work if scipy is not installed.  (Test under Linux)
 
@@ -31,6 +31,8 @@ TODO short term:
 
 
 TODO mid term:
+
+    Histogram / statistics inspector.
 
     Better log config
 
@@ -308,6 +310,9 @@ DATA & LIBS:
 
     # HDF-EOS
     http://www.hdfeos.org/zoo/index_openGESDISC_Examples.php#MERRA
+
+    # NASA GES
+    https://disc.gsfc.nasa.gov/datasets?project=OCO
 
     # Grib
     http://mirador.gsfc.nasa.gov/cgi-bin/mirador/granlist.pl?page=1&location=(-90,-180),(90,180)&dataSet=NLDAS_FOR0125_H&version=001&allversion=001&startTime=2005-08-03T00:00:01Z&endTime=2005-08-03T23:59:59Z&keyword=NLDAS_FOR0125_H&prodpg=http://disc.gsfc.nasa.gov/datacollection/NLDAS_FOR0125_H_V001.html&longname=NLDAS%20Forcing%20Data%20L4%20Hourly%200.125%20x%200.125%20degree%20V001&CGISESSID=18bd3c7fb47ceeb1e5c1e9f8139efd0c
