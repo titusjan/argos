@@ -738,7 +738,10 @@ class PgAxisCti(GroupCti):
 
 class PgPlotDataItemCti(GroupCti):
     """ Configuration tree item for a PyQtGraph plot data item.
-        It allows for configuraing a line style, color and symbols.
+        It allows for configuring a line style, color and symbols.
+
+        Note that using a line width > 1 in comination with anti-aliassing may be slow.
+        See https://github.com/pyqtgraph/pyqtgraph/issues/533
     """
     def __init__(self, nodeName="pen",  defaultData=None, expanded=True):
         """ Constructor.

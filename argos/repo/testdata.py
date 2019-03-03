@@ -183,9 +183,10 @@ def createArgosTestData():
     colorMapRti.insertChild(SyntheticArrayRti('sine product', fun=makeSineProduct))
     colorMapRti.insertChild(SyntheticArrayRti('uniform noise', fun=makeUniformNoise))
 
-
-    warnings.simplefilter(action='ignore', category=FutureWarning)
-    addPandasTestData(mappingRti)
+    with warnings.catch_warnings():
+        # Ignore future warnins about Panel
+        warnings.simplefilter(action='ignore', category=FutureWarning)
+        addPandasTestData(mappingRti)
 
     return mappingRti
 

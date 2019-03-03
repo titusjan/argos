@@ -433,7 +433,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if regItem and not regItem.successfullyImported:
             msg = "Unable to import {} inspector.\n{}".format(regItem.identifier, regItem.exception)
             QtWidgets.QMessageBox.warning(self, "Warning", msg)
-            logger.warn(msg)
+            logger.warning(msg)
 
         self.drawInspectorContents(reason=UpdateReason.INSPECTOR_CHANGED)
 

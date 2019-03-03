@@ -30,6 +30,7 @@ from argos.config.boolcti import BoolCti, BoolGroupCti
 from argos.config.choicecti import ChoiceCti
 from argos.config.groupcti import MainGroupCti
 from argos.inspector.abstract import AbstractInspector, InvalidDataError, UpdateReason
+from argos.inspector.pgplugins.colorbar import ArgosColorLegendItem
 from argos.inspector.pgplugins.pgctis import (
     X_AXIS, Y_AXIS, BOTH_AXES, viewBoxAxisRange, defaultAutoRangeMethods, PgAxisLabelCti,
     PgAxisCti, PgAxisFlipCti, PgAspectRatioCti, PgAxisRangeCti, PgColorLegendCti, PgGridCti,
@@ -39,8 +40,6 @@ from argos.qt import Qt, QtCore, QtGui, QtSlot
 
 from argos.utils.cls import array_has_real_numbers, check_class, is_an_array, to_string
 from argos.utils.masks import replaceMaskedValueWithFloat, maskedNanPercentile, ArrayWithMask
-
-from pgcolorbar.colorlegend import ColorLegendItem
 
 logger = logging.getLogger(__name__)
 
@@ -311,7 +310,7 @@ class PgImagePlot2d(AbstractInspector):
         self.imageItem.setLookupTable(lut)
         #self.imageItem.setLookupTable(lut)
 
-        self.colorLegendItem = ColorLegendItem(self.imageItem)
+        self.colorLegendItem = ArgosColorLegendItem(self.imageItem)
 
         # Probe and cross hair plots
         self.crossPlotRow = None # the row coordinate of the cross hair. None if no cross hair.
@@ -407,6 +406,11 @@ class PgImagePlot2d(AbstractInspector):
 
         # Don't clear the imagePlotItem, the imageItem is only added in the constructor.
         self.imageItem.clear()
+        if hasattr(self.imageItem, '_wasIntegerData'):
+            del self.imageItem._wasIntegerData
+        #self.colorLegendItem.setLevels((0, 10))
+        self.colorLegendItem.onImageChanged()  # Clears histogram
+
         self.imagePlotItem.setLabel('left', '')
         self.imagePlotItem.setLabel('bottom', '')
 
@@ -414,7 +418,6 @@ class PgImagePlot2d(AbstractInspector):
         # function was called after an exception in self.drawContents
         #self.histLutItem.setHistogramRange(0, 100)
         #self.histLutItem.setLevels(0, 100)
-        self.colorLegendItem.setLevels((0, 10))
 
         self.crossPlotRow, self.crossPlotCol = None, None
 
@@ -506,6 +509,10 @@ class PgImagePlot2d(AbstractInspector):
         # doesn't seem to do anything.
         imageArray = imageArray.transpose()
         self.imageItem.setImage(imageArray, autoLevels=False)
+
+        # Set the _wasIntegerData to True if the original data type was a signed or unsigned. This
+        # allows the ArgosColorLegendItem to make histogram bins as if it were an integer
+        self.imageItem._wasIntegerData = self.slicedArray.data.dtype.kind in 'ui'
 
         self.imagePlotItem.setRectangleZoomOn(self.config.zoomModeCti.configValue)
 
