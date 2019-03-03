@@ -82,6 +82,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._configTreeModel = ConfigTreeModel()
         self._inspectorsNonDefaults = {}  # non-default values for all used plugins
 
+        self.setDockNestingEnabled(False)
         self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
         self.setCorner(Qt.TopRightCorner, Qt.TopDockWidgetArea)

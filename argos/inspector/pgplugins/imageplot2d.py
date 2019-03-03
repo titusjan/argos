@@ -304,15 +304,14 @@ class PgImagePlot2d(AbstractInspector):
         lut = np.array([(237,248,251), (178,226,226), (102,194,164), (35,139,69), (0, 0, 0)])
         lut = np.flipud(lut)
 
-        # Duplicate last item because the pyqtgraph.makeARGB function has a wrong default scale. It
-        # should be equal to the length of the LUT, but it's set to len(lut)-1. We therefore add a
-        # fake LUT entry.
-        extendedLut = np.append(lut, [lut[-1, :]], axis=0)
-        self.imageItem.setLookupTable(extendedLut)
+        # # Duplicate last item because the pyqtgraph.makeARGB function has a wrong default scale. It
+        # # should be equal to the length of the LUT, but it's set to len(lut)-1. We therefore add a
+        # # fake LUT entry.
+        # extendedLut = np.append(lut, [lut[-1, :]], axis=0)
+        self.imageItem.setLookupTable(lut)
         #self.imageItem.setLookupTable(lut)
 
-
-        self.colorLegendItem = ColorLegendItem(lut, self.imageItem)
+        self.colorLegendItem = ColorLegendItem(self.imageItem)
 
         # Probe and cross hair plots
         self.crossPlotRow = None # the row coordinate of the cross hair. None if no cross hair.
@@ -483,7 +482,7 @@ class PgImagePlot2d(AbstractInspector):
         imageArray = replaceMaskedValueWithFloat(self.slicedArray.data, self.slicedArray.mask,
                                                  np.nan, copyOnReplace=True)
 
-        # Replace infinite value with Nans because PyQtGraph fails on them. WNote that the CTIs of
+        # Replace infinite value with Nans because PyQtGraph fails on them. Note that the CTIs of
         # the cross plots (e.g. horCrossPlotRangeCti) are still connected to self.slicedArray, so
         # if the cross section consists of only infs, they may not able to update the autorange.
         # A warning is issued in that case.
