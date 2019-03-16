@@ -500,7 +500,7 @@ class MappingRti(BaseRti):
         """ Adds a child item for each item
         """
         childItems = []
-        logger.debug("{!r} _fetchAllChildren {!r}".format(self, self.fileName))
+        logger.debug("_fetchAllChildren of {!r}:  {!r}".format(self, self.fileName))
 
         if self.hasChildren():
             for key, value in sorted(self._dictionary.items()):

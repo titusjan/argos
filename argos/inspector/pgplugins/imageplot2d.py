@@ -508,11 +508,11 @@ class PgImagePlot2d(AbstractInspector):
         # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0}
         # doesn't seem to do anything.
         imageArray = imageArray.transpose()
-        self.imageItem.setImage(imageArray, autoLevels=False)
 
         # Set the _wasIntegerData to True if the original data type was a signed or unsigned. This
         # allows the ArgosColorLegendItem to make histogram bins as if it were an integer
         self.imageItem._wasIntegerData = self.slicedArray.data.dtype.kind in 'ui'
+        self.imageItem.setImage(imageArray, autoLevels=False)  # Do after _wasIntegerData is set!
 
         self.imagePlotItem.setRectangleZoomOn(self.config.zoomModeCti.configValue)
 

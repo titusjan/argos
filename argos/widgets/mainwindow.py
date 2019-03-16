@@ -22,6 +22,9 @@
 
 from __future__ import absolute_import, division, print_function
 
+import cProfile
+import os.path
+import pstats
 import sys
 from functools import partial
 
@@ -30,7 +33,7 @@ from argos.config.abstractcti import ctiDumps, ctiLoads
 from argos.config.abstractcti import AbstractCti
 from argos.config.configtreemodel import ConfigTreeModel
 from argos.config.configtreeview import ConfigWidget
-from argos.info import DEBUGGING, PROJECT_NAME
+from argos.info import DEBUGGING, PROJECT_NAME, PROFILING
 from argos.inspector.abstract import AbstractInspector, UpdateReason
 from argos.inspector.dialog import OpenInspectorDialog
 from argos.inspector.registry import InspectorRegItem
@@ -42,7 +45,7 @@ from argos.repo.detailplugins.dim import DimensionsPane
 from argos.repo.detailplugins.prop import PropertiesPane
 from argos.repo.repotreeview import RepoWidget
 from argos.repo.testdata import createArgosTestData
-from argos.utils.cls import check_class
+from argos.utils.cls import check_class, check_is_a_sequence
 from argos.utils.misc import string_to_identifier
 from argos.widgets.aboutdialog import AboutDialog
 from argos.widgets.constants import CENTRAL_MARGIN, CENTRAL_SPACING
@@ -72,6 +75,13 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__()
         self._windowNumber = MainWindow.__numInstances # Used only for debugging
         MainWindow.__numInstances += 1
+
+        if PROFILING:
+            # Profiler that measures the drawing of the inspectors.
+            self._profFileName = "inspectors.prof"
+
+            logger.warning("Profiling is on for {}. This may cost a bit of CPU time.")
+            self._profiler = cProfile.Profile()
 
         self._collector = None
         self._inspector = None
@@ -113,6 +123,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.collector.sigContentsChanged.disconnect(self.collectorContentsChanged)
         self._configTreeModel.sigItemChanged.disconnect(self.configContentsChanged)
         self.sigInspectorChanged.disconnect(self.inspectorSelectionPane.updateFromInspectorRegItem)
+
+        if PROFILING:
+            logger.info("Saving profiling information to {}"
+                        .format(os.path.abspath(self._profFileName)))
+            profStats = pstats.Stats(self._profiler)
+            profStats.dump_stats(self._profFileName)
+
 
 
     def __setupViews(self):
@@ -225,10 +242,10 @@ class MainWindow(QtWidgets.QMainWindow):
         helpMenu = menuBar.addMenu("&Help")
         helpMenu.addAction('&About...', self.about)
 
-        if DEBUGGING:
+        if 1 or DEBUGGING:
             helpMenu.addSeparator()
-            helpMenu.addAction("&Test", self.myTest, "Alt+T")
-            helpMenu.addAction("Add Test Data", self.addTestData, "Alt+A")
+            helpMenu.addAction("&Test", self.myTest, "Meta+T")
+            helpMenu.addAction("Add Test Data", self.addTestData, "Meta+A")
 
 
 
@@ -597,7 +614,13 @@ class MainWindow(QtWidgets.QMainWindow):
         logger.debug("")
         logger.debug("-------- Drawing inspector of window: {} --------".format(self.windowTitle()))
         if self.inspector:
+            if PROFILING:
+                self._profiler.enable()
+
             self.inspector.updateContents(reason=reason, initiator=origin)
+
+            if PROFILING:
+                self._profiler.disable()
         else:
             logger.debug("No inspector selected")
         logger.debug("Finished draw inspector.\n")
@@ -645,6 +668,19 @@ class MainWindow(QtWidgets.QMainWindow):
             self.repoWidget.repoTreeView.setCurrentIndex(fileRootIndex)
 
 
+    def selectRtiByPath(self, path):
+        """ Selects a repository tree item given a path, expanding nodes if along the way if needed.
+
+            Returns (item, index) if the path was selected successfully, else raises an IndexError.
+        """
+        lastItem, lastIndex = self.repoWidget.repoTreeView.expandPath(path)
+        self.repoWidget.repoTreeView.setCurrentIndex(lastIndex)
+        if lastItem.nodePath != path:
+            raise IndexError("Path not found: {!r} (partialPath={!r})", path, lastItem.nodePath)
+        return lastItem, lastIndex
+
+
+
     def trySelectRtiByPath(self, path):
         """ Selects a repository tree item given a path, expanding nodes if along the way if needed.
 
@@ -656,7 +692,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.repoWidget.repoTreeView.setCurrentIndex(lastIndex)
             return lastItem, lastIndex
         except Exception as ex:
-            logger.warn("Unable to select {!r} because: {}".format(path, ex))
+            logger.warning("Unable to select {!r} because: {}".format(path, ex))
             if DEBUGGING:
                 raise
             return None, None
@@ -841,9 +877,26 @@ class MainWindow(QtWidgets.QMainWindow):
     def testSelectAllData(self):
         """ Selects all nodes in a subtree for all inspectors
         """
+        # Subtrees that will be visited. At the moment only data on my development PC.
+        #rootNodes = ['/argos/icm/S5P_ICM_CA_UVN_20120919T051721_20120919T065655_01890_01_001000_20151002T140000.h5']
+        #rootNodes = ['/argos/martin', '/argos/images', '/argos/Mini Scanner Output', '/myDict']
+
+        rootNodes = ['/argos/martin', '/argos/images', '/myDict']
+        #rootNodes = ['/myDict']
+
         # Skip nodes that give known, unfixable errors.
-        skipPaths = ['/myDict/numbers/-inf', '/myDict/numbers/nan',
-                     '/myDict/numbers/large float'] # in 2D image plot
+        skipPaths = [
+            '/myDict/numbers/-inf', '/myDict/numbers/nan', '/myDict/age', '/myDict/numbers/int',
+            '/myDict/numbers/large float', # These give errors in 2D image plot
+            '/myDict/structured_arr4', # gives ValueError: Unable to transform (63, 63) to dtype [('r', '|u1'), ('', '|V1'), ('b', '|u1')]
+            '/argos/Mini Scanner Output/multiple_dimension_scales.h5/samples_raw', # TODO:
+            '/argos/images/peter_karpov'
+        ]
+
+        # Add myDict if not yet present
+        nodeItem, nodeIndex = self.trySelectRtiByPath('/myDict')
+        if nodeItem is None:
+            self.addTestData()
 
         def visitNodes(index):
             """ Visits all the nodes recursively.
@@ -857,7 +910,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             # Select index
             if item.nodePath in skipPaths:
-                logger.warn("Skipping node during testing: {}".format(item.nodePath))
+                logger.warning("Skipping node during testing: {}".format(item.nodePath))
                 return
 
             self.repoWidget.repoTreeView.setCurrentIndex(index)
@@ -871,24 +924,27 @@ class MainWindow(QtWidgets.QMainWindow):
                 childIndex = repoModel.index(rowNr, 0, parentIndex=index)
                 visitNodes(childIndex)
 
-        # Actual boddy
-        rootNodes = ['/myDict']
-        #rootNodes = ['/argos/icm/S5P_ICM_CA_UVN_20120919T051721_20120919T065655_01890_01_001000_20151002T140000.h5']
+
+        # Actual body
+        logger.info("-------------- Running Tests ----------------")
+
+        logger.info("Visiting all nodes below: {}".format(rootNodes))
+        check_is_a_sequence(rootNodes) # prevent accidental iteration over strings.
+
+        prevRootNode = None
 
         for rootNode in rootNodes:
-            logger.info("Selecting all nodes in: {}".format(rootNode))
+            logger.debug("Testing root node: {!r}".format(rootNode))
 
-            nodeItem, nodeIndex = self.trySelectRtiByPath(rootNode)
+            nodeItem, nodeIndex = self.selectRtiByPath(rootNode)
+            assert nodeItem is not None, "Test data not found, rootNode: {}".format(rootNode)
+            assert nodeIndex
+
+            if prevRootNode is not None:
+                logger.debug("Closing: {}".format(prevRootNode.nodePath))
+                prevRootNode.close()
+
             self.repoWidget.repoTreeView.expandBranch(index = nodeIndex, expanded=True) # TODO: why necessary?
-            #QtWidgets.qApp.processEvents()
             visitNodes(nodeIndex)
 
-            #
-            # try:
-            #
-            #     self.repoWidget.repoTreeView.setCurrentIndex(lastIndex)
-            # except Exception as ex:
-            #     logger.error(ex)
-            #     if DEBUGGING:
-            #         raise
-
+        logger.info("-------------- Tests Done ----------------")

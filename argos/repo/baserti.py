@@ -97,7 +97,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
         self.clearException()
         try:
             if self._isOpen:
-                logger.warn("Resources already open. Closing them first before opening.")
+                logger.warning("Resources already open. Closing them first before opening.")
                 self._closeResources()
                 self._isOpen = False
 

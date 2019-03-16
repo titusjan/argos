@@ -19,6 +19,8 @@ DATA & LIBS:
 
 	http://www.virtualobservatory.org/use/
 
+	https://arrow.apache.org/  A cross-language development platform for in-memory data
+
 	# NOAA
 	http://www.ngdc.noaa.gov/mgg/topo/gltiles.html
 

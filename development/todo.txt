@@ -4,7 +4,7 @@
 /argos/Mini Scanner Output/acceptance7.h5/samples/re
 TODO short term:
 
-    Fixed font size in tables so that windows10 with two monitors works.
+    Fixed font size in tables so that windows10 with two monitors works. (setFixedPitch)
 
     What if the H5 only has a dimension label?
 
