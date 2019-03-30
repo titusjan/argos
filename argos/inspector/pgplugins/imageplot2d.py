@@ -39,7 +39,7 @@ from argos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from argos.qt import Qt, QtCore, QtGui, QtSlot
 
 from argos.utils.cls import array_has_real_numbers, check_class, is_an_array, to_string
-from argos.utils.masks import replaceMaskedValueWithFloat, maskedNanPercentile, ArrayWithMask
+from argos.utils.masks import replaceMaskedValueWithFloat, nanPercentileOfSubsampledArrayWithMask, ArrayWithMask
 
 logger = logging.getLogger(__name__)
 
@@ -52,17 +52,19 @@ ROW_PROBE,    COL_PROBE    = 3, 0  # colspan = 2
 
 
 
-def calcPgImagePlot2dDataRange(pgImagePlot2d, percentage, crossPlot):
+def calcPgImagePlot2dDataRange(pgImagePlot2d, percentage, crossPlot, subsample):
     """ Calculates the range from the inspectors' sliced array. Discards percentage of the minimum
         and percentage of the maximum values of the inspector.slicedArray
 
         :param pgImagePlot2d: the range methods will work on (the sliced array) of this inspector.
-        :param percentage: percentage that will be discarded.
-        :param crossPlot: if None, the range will be calculated from the entire sliced array,
+        :param float percentage: percentage that will be discarded.
+        :param bool crossPlot: if None, the range will be calculated from the entire sliced array,
             if "horizontal" or "vertical" the range will be calculated from the data under the
             horizontal or vertical cross hairs.
             If the cursor is outside the image, there is no valid data under the cross-hair and
             the range will be determined from the sliced array as a fall back.
+        :param bool subsample: if True, the image will be subsampled (to 200 by 200) before
+            calculating the range. This to improve performance by large images.
     """
     check_class(pgImagePlot2d.slicedArray, ArrayWithMask) # sanity check
 
@@ -71,20 +73,20 @@ def calcPgImagePlot2dDataRange(pgImagePlot2d, percentage, crossPlot):
 
     elif crossPlot == 'horizontal':
         if pgImagePlot2d.crossPlotRow is not None:
-            array = pgImagePlot2d.slicedArray.asMaskedArray()[pgImagePlot2d.crossPlotRow, :]
+            array = pgImagePlot2d.slicedArray[pgImagePlot2d.crossPlotRow, :]
         else:
             array = pgImagePlot2d.slicedArray # fall back on complete sliced array
 
     elif crossPlot == 'vertical':
         if pgImagePlot2d.crossPlotCol is not None:
-            array = pgImagePlot2d.slicedArray.asMaskedArray()[:, pgImagePlot2d.crossPlotCol]
+            array = pgImagePlot2d.slicedArray[:, pgImagePlot2d.crossPlotCol]
         else:
             array = pgImagePlot2d.slicedArray # fall back on complete sliced array
     else:
         raise ValueError("crossPlot must be: None, 'horizontal' or 'vertical', got: {}"
                          .format(crossPlot))
 
-    return maskedNanPercentile(array, (percentage, 100-percentage) )
+    return nanPercentileOfSubsampledArrayWithMask(array, (percentage, 100 - percentage), subsample)
 
 
 def crossPlotAutoRangeMethods(pgImagePlot2d, crossPlot, intialItems=None):
@@ -528,8 +530,7 @@ class PgImagePlot2d(AbstractInspector):
 
         self.titleLabel.setText(self.configValue('title').format(**self.collector.rtiInfo))
 
-        # Update the config tree from the (possibly) new state of the PgImagePlot2d inspector,
-        # e.g. the axis range or color range may have changed while drawing.
+        # self.config.logBranch()
         self.config.updateTarget()
 
 
@@ -567,7 +568,7 @@ class PgImagePlot2d(AbstractInspector):
 
                     self.crossPlotRow, self.crossPlotCol = row, col
                     index = tuple([row, col])
-                    valueStr = to_string(self.slicedArray[index],
+                    valueStr = to_string(self.slicedArray.data[index],
                                          masked=self.slicedArray.maskAt(index),
                                          maskFormat='&lt;masked&gt;')
                     txt = "pos = ({:d}, {:d}), value = {}".format(row, col, valueStr)

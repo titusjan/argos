@@ -26,6 +26,7 @@ import cProfile
 import os.path
 import pstats
 import sys
+import time
 from functools import partial
 
 from argos.collect.collector import Collector
@@ -49,7 +50,9 @@ from argos.utils.cls import check_class, check_is_a_sequence
 from argos.utils.misc import string_to_identifier
 from argos.widgets.aboutdialog import AboutDialog
 from argos.widgets.constants import CENTRAL_MARGIN, CENTRAL_SPACING
+from argos.widgets.misc import processEvents
 from argos.widgets.pluginsdialog import PluginsDialog
+
 import logging
 
 
@@ -76,6 +79,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._windowNumber = MainWindow.__numInstances # Used only for debugging
         MainWindow.__numInstances += 1
 
+        self.__nodesVisited = 0 # during testing
         if PROFILING:
             # Profiler that measures the drawing of the inspectors.
             self._profFileName = "inspectors.prof"
@@ -898,10 +902,13 @@ class MainWindow(QtWidgets.QMainWindow):
         if nodeItem is None:
             self.addTestData()
 
+        self.__nodesVisited = 0
+
         def visitNodes(index):
             """ Visits all the nodes recursively.
             """
             assert index.isValid(), "sanity check"
+            self.__nodesVisited += 1
 
             repoModel = self.repoWidget.repoTreeView.model()
             item = repoModel.getItem(index)
@@ -914,7 +921,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 return
 
             self.repoWidget.repoTreeView.setCurrentIndex(index)
-            QtWidgets.qApp.processEvents() # Cause Qt to update UI
+            processEvents() # Cause Qt to update UI
 
             # Expand node to load children.
             #self.repoWidget.repoTreeView.setExpanded(index, True)
@@ -927,6 +934,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Actual body
         logger.info("-------------- Running Tests ----------------")
+        timeAtStart = time.perf_counter()
 
         logger.info("Visiting all nodes below: {}".format(rootNodes))
         check_is_a_sequence(rootNodes) # prevent accidental iteration over strings.
@@ -947,4 +955,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.repoWidget.repoTreeView.expandBranch(index = nodeIndex, expanded=True) # TODO: why necessary?
             visitNodes(nodeIndex)
 
+        timeAtEnd = time.perf_counter()
+        duration = timeAtEnd - timeAtStart
+        logger.info("Visited {} nodes in {:.1f} seconds ({:.1f} nodes/second)"
+                    .format(self.__nodesVisited, duration, self.__nodesVisited/duration))
         logger.info("-------------- Tests Done ----------------")

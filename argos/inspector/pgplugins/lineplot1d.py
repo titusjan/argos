@@ -82,8 +82,7 @@ class PgLinePlot1dCti(MainGroupCti):
                                          "{name}", "{path}", "{raw-unit}"]))
         self.yLogCti = self.yAxisCti.insertChild(PgAxisLogModeCti(plotItem, Y_AXIS))
 
-        rangeFunctions = defaultAutoRangeMethods(self.pgLinePlot1d,
-            {PgAxisRangeCti.PYQT_RANGE: partial(viewBoxAxisRange, viewBox, Y_AXIS)})
+        rangeFunctions = defaultAutoRangeMethods(self.pgLinePlot1d)
         self.yAxisRangeCti = self.yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS,
                                                                       rangeFunctions))
 
@@ -243,8 +242,6 @@ class PgLinePlot1d(AbstractInspector):
 
         self.plotItem.setRectangleZoomOn(self.config.zoomModeCti.configValue)
 
-        # Update the config tree from the (possibly) new state of the PgLinePlot1d inspector,
-        # e.g. the axis range may have changed while drawing.
         self.config.updateTarget()
 
 

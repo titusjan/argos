@@ -27,6 +27,12 @@ from argos.qt import QtWidgets
 logger = logging.getLogger(__name__)
 
 
+def processEvents():
+    """ Processes all pending events for the calling thread until there are no more events to
+        process.
+    """
+    QtWidgets.QApplication.instance().processEvents()
+
 
 def setApplicationQtStyle(styleName):
     """ Sets the Qt style (e.g. to 'fusion')

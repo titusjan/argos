@@ -37,7 +37,7 @@ from argos.config.untypedcti import UntypedCti
 from argos.inspector.pgplugins.pghistlutitem import HistogramLUTItem
 from argos.qt import QtGui, QtWidgets
 from argos.utils.cls import check_class
-from argos.utils.masks import maskedNanPercentile
+from argos.utils.masks import nanPercentileOfSubsampledArrayWithMask
 
 from pyqtgraph.graphicsItems.GradientEditorItem import Gradients as GRADIENTS
 
@@ -128,7 +128,7 @@ def viewBoxAxisRange(viewBox, axisNumber):
         raise AssertionError("No children bbox. Plot range not updated.")
 
 
-def inspectorDataRange(inspector, percentage):
+def inspectorDataRange(inspector, percentage, subsample):
     """ Calculates the range from the inspectors' sliced array. Discards percentage of the minimum
         and percentage of the maximum values of the inspector.slicedArray
 
@@ -136,8 +136,10 @@ def inspectorDataRange(inspector, percentage):
         The first parameter is an inspector, it's not an array, because we would then have to
         regenerate the range function every time sliced array of an inspector changes.
     """
-    logger.debug("Discarding {}% from id: {}".format(percentage, id(inspector.slicedArray)))
-    return maskedNanPercentile(inspector.slicedArray, (percentage, 100-percentage) )
+    logger.debug("Discarding {}% from id: 0x{:08x}".format(percentage, id(inspector.slicedArray)))
+
+    return nanPercentileOfSubsampledArrayWithMask(
+        inspector.slicedArray, (percentage, 100-percentage), subsample)
 
 
 def defaultAutoRangeMethods(inspector, intialItems=None):
@@ -207,6 +209,7 @@ class AbstractRangeCti(GroupCti):
         self._rangeFunctions = {}
         self.autoRangeCti = None
         self.methodCti = None
+        self.subsampleCti = None
         self.paddingCti = None
 
         if autoRangeFunctions is not None:
@@ -216,6 +219,9 @@ class AbstractRangeCti(GroupCti):
             if len(autoRangeFunctions) > 1:
                 self.methodCti = ChoiceCti("method", configValues=list(autoRangeFunctions.keys()))
                 self.autoRangeCti.insertChild(self.methodCti)
+
+                self.subsampleCti = BoolCti("subsample", True)
+                self.autoRangeCti.insertChild(self.subsampleCti)
 
             self.paddingCti = IntCti("padding", paddingDefault,
                                      suffix="%", specialValueText="dynamic",
@@ -342,7 +348,11 @@ class AbstractRangeCti(GroupCti):
             return (self.rangeMinCti.data, self.rangeMaxCti.data)
         else:
             rangeFunction = self._rangeFunctions[self.autoRangeMethod]
-            return rangeFunction()
+
+            if self.subsampleCti is None:
+                return rangeFunction()
+            else:
+                return rangeFunction(self.subsampleCti.configValue)
 
 
     def _updateTargetFromNode(self):

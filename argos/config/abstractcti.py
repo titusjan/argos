@@ -101,7 +101,7 @@ class AbstractCti(BaseTreeItem):
         string of the full path leading from the root node to the current node. For instance, the
         path may be '/scale/x', the nodeName in that case is 'x'.
 
-        CTIs are used to store a certain configuration value. It can be queried by the value
+        CTIs are used to store a certain configuration value. It can be queried by the configValue
         property. The type of this value differs between descendants of AbstractCti, but a sub class
         should always return the same type. For example, the ColorCti.value always returns a
         QColor object. The displayValue returns the string representation for use in the tables;
@@ -362,6 +362,17 @@ class AbstractCti(BaseTreeItem):
         """
         pass
 
+
+    def logBranch(self, indent=0, level=logging.DEBUG):
+        """ Logs the item and all descendants, one line per child
+        """
+        line = "{} ({})".format(self, self.configValue)
+        if 0:
+            print(indent * "    " + line)
+        else:
+            logger.log(level, indent * "    " + line)
+        for childItems in self.childItems:
+            childItems.logBranch(indent + 1, level=level)
 
 
     #################

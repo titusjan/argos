@@ -107,7 +107,7 @@ class ArrayWithMask(object):
         """
         if is_an_array(self.mask) and self.mask.shape != self.data.shape:
             raise ConsistencyError("Shape mismatch mask={}, data={}"
-                                   .format(self.mask.shape != self.data.shape))
+                                   .format(self.mask.shape, self.data.shape))
 
 
     @classmethod
@@ -173,12 +173,11 @@ class ArrayWithMask(object):
         return self.data.dtype
 
 
-    def __getitem__(self, index):
+    def __getitem__(self, index) -> 'ArrayWithMask':
         """ Called when using the awm with an index (e.g. rti[0]).
-
-            Convenience method, applies the index of the data.
         """
-        return self.data[index]
+        newMask = self.mask if isinstance(self.mask, bool) else self.maskIndex()[index]
+        return ArrayWithMask(self.data[index], newMask, fill_value=self.fill_value)
 
 
     def transpose(self, *args, **kwargs):
@@ -270,10 +269,55 @@ def replaceMaskedValueWithFloat(data, mask, replacementValue, copyOnReplace=True
         return replaceMaskedValue(data, mask, replacementValue, copyOnReplace=copyOnReplace)
 
 
+def nanPercentileOfSubsampledArrayWithMask(arrayWithMask, percentiles, subsample, *args, **kwargs):
+    """ Sub samples the array and then calls maskedNanPercentile on this.
 
-def maskedNanPercentile(maskedArray, percentiles, *args, **kwargs):
-    """ Calculates np.nanpercentile on the non-masked values
+        If subsample is False, no sub sampling is done and it just calls maskedNanPercentile
     """
+    check_class(subsample, bool)
+    check_class(arrayWithMask, ArrayWithMask)
+
+    maskedArray = arrayWithMask.asMaskedArray()
+
+    if subsample:
+        maskedArray = _subsampleArray(maskedArray)
+
+    return _maskedNanPercentile(maskedArray, percentiles, *args, **kwargs)
+
+
+
+def _subsampleArray(array: np.ndarray, targetNumElements=40000):
+    """ Sub samples an array or masked array.
+
+        It samples the array down equally along all dimensions so that is has less than 40000
+        elements. The 40000 is 200 by 200 for a 2D array, which was taken from the histogram
+        subsampling of PyQtGraph. It works well but other values may work as well.
+
+        If the array is already smaller than 40000 elements, no subsampling will be done.
+    """
+    check_class(array, np.ndarray)
+    # logger.debug("_subsampleArray: {}, shape={}, dtype={}"
+    #              .format(type(array), array.shape, array.dtype))
+    oldShape = array.shape
+    numDims = len(oldShape)
+
+    targetDimSize = targetNumElements ** (1/numDims)
+    steps = [max(1, int(np.ceil(shp / targetDimSize))) for shp in oldShape]
+
+    slices = tuple(slice(None, None, step) for step in steps)
+
+    result = array[slices]
+    # logger.debug("Subsampling array shapes {} -> {}".format(oldShape, result.shape))
+    return result
+
+
+
+def _maskedNanPercentile(maskedArray: ma.masked_array, percentiles, *args, **kwargs):
+    """ Calculates np.nanpercentile on the non-masked values
+
+        The *args and **kwargs are passed on to np.nanpercentile
+    """
+    check_class(maskedArray, ma.masked_array)
 
     #https://docs.scipy.org/doc/numpy/reference/maskedarray.generic.html#accessing-the-data
     awm = ArrayWithMask.createFromMaskedArray(maskedArray)
