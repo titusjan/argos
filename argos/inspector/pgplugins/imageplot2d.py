@@ -139,23 +139,28 @@ class PgImagePlot2dCti(MainGroupCti):
         imagePlotItem = self.pgImagePlot2d.imagePlotItem
         viewBox = imagePlotItem.getViewBox()
 
-        self.insertChild(ChoiceCti('title', 0, editable=True,
-                                   configValues=["{base-name} -- {name} {slices}",
-                                                 "{name} {slices}", "{path} {slices}"]))
+        self.insertChild(
+            ChoiceCti('title', 0, editable=True,
+                      configValues=["{base-name} -- {name} {slices}",
+                                    "{name} {slices}", "{path} {slices}"]))
+
         #### Axes ####
+
         self.aspectLockedCti = self.insertChild(PgAspectRatioCti(viewBox))
 
         self.xAxisCti = self.insertChild(PgAxisCti('x-axis'))
-        #xAxisCti.insertChild(PgAxisShowCti(imagePlotItem, 'bottom')) # disabled, seems broken
-        self.xAxisCti.insertChild(PgAxisLabelCti(imagePlotItem, 'bottom', self.pgImagePlot2d.collector,
-            defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{x-dim} [index]"]))
+        self.xAxisCti.insertChild(
+            PgAxisLabelCti(imagePlotItem, 'bottom', self.pgImagePlot2d.collector,
+                           defaultData=1,
+                           configValues=[PgAxisLabelCti.NO_LABEL, "{x-dim} [index]"]))
         self.xFlippedCti = self.xAxisCti.insertChild(PgAxisFlipCti(viewBox, X_AXIS))
         self.xAxisRangeCti = self.xAxisCti.insertChild(PgAxisRangeCti(viewBox, X_AXIS))
 
         self.yAxisCti = self.insertChild(PgAxisCti('y-axis'))
-        #yAxisCti.insertChild(PgAxisShowCti(imagePlotItem, 'left'))  # disabled, seems broken
-        self.yAxisCti.insertChild(PgAxisLabelCti(imagePlotItem, 'left', self.pgImagePlot2d.collector,
-            defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{y-dim} [index]"]))
+        self.yAxisCti.insertChild(
+            PgAxisLabelCti(imagePlotItem, 'left', self.pgImagePlot2d.collector,
+                           defaultData=1,
+                           configValues=[PgAxisLabelCti.NO_LABEL, "{y-dim} [index]"]))
         self.yFlippedCti = self.yAxisCti.insertChild(PgAxisFlipCti(viewBox, Y_AXIS))
         self.yAxisRangeCti = self.yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS))
 
@@ -167,45 +172,32 @@ class PgImagePlot2dCti(MainGroupCti):
             PgColorLegendCti(pgImagePlot2d.colorLegendItem, colorAutoRangeFunctions,
                              nodeName="color range"))
 
-        # self.histColorRangeCti = self.insertChild(
-        #     PgHistLutColorRangeCti(pgImagePlot2d.histLutItem, colorAutoRangeFunctions,
-        #                            nodeName="color range"))
-
-        # histViewBox = pgImagePlot2d.histLutItem.vb
-        # histViewBox.enableAutoRange(Y_AXIS, False)
-        # rangeFunctions = defaultAutoRangeMethods(self.pgImagePlot2d,
-        #     {PgAxisRangeCti.PYQT_RANGE: partial(viewBoxAxisRange, histViewBox, Y_AXIS)})
-        #
-        # self.histRangeCti = self.insertChild(
-        #     PgAxisRangeCti(histViewBox, Y_AXIS, nodeName='histogram range',
-        #                    autoRangeFunctions=rangeFunctions))
-
-        # self.insertChild(PgGradientEditorItemCti(self.pgImagePlot2d.histLutItem.gradient))
-
         self.zoomModeCti = self.insertChild(BoolCti('rectangle zoom mode', False))
 
-        # Probe and cross-hair plots
+        ### Probe and cross-hair plots ###
+
         self.probeCti = self.insertChild(BoolCti('show probe', True))
-
-        self.crossPlotGroupCti = self.insertChild(BoolGroupCti('cross-hair',  expanded=False))
-
+        self.crossPlotGroupCti = self.insertChild(BoolGroupCti('cross-hair', expanded=False))
         self.crossPenCti = self.crossPlotGroupCti.insertChild(PgPlotDataItemCti(expanded=False))
-        #self.crossLinesCti = self.crossPlotGroupCti.insertChild(PgPlotDataItemCti('cross pen',
-        #                                                                          expanded=False))
 
-        self.horCrossPlotCti = self.crossPlotGroupCti.insertChild(BoolCti('horizontal', False,
-                                                                          expanded=False))
+        self.horCrossPlotCti = self.crossPlotGroupCti.insertChild(
+            BoolCti('horizontal', False, expanded=False))
+
         self.horCrossPlotCti.insertChild(PgGridCti(pgImagePlot2d.horCrossPlotItem))
-        self.horCrossPlotRangeCti = self.horCrossPlotCti.insertChild(PgAxisRangeCti(
-            self.pgImagePlot2d.horCrossPlotItem.getViewBox(), Y_AXIS, nodeName="data range",
-            autoRangeFunctions = crossPlotAutoRangeMethods(self.pgImagePlot2d, "horizontal")))
+        self.horCrossPlotRangeCti = self.horCrossPlotCti.insertChild(
+            PgAxisRangeCti(
+                self.pgImagePlot2d.horCrossPlotItem.getViewBox(), Y_AXIS, nodeName="data range",
+                autoRangeFunctions=crossPlotAutoRangeMethods(self.pgImagePlot2d, "horizontal")))
 
-        self.verCrossPlotCti = self.crossPlotGroupCti.insertChild(BoolCti('vertical', False,
-                                                                          expanded=False))
+        self.verCrossPlotCti = self.crossPlotGroupCti.insertChild(
+            BoolCti('vertical', False, expanded=False))
         self.verCrossPlotCti.insertChild(PgGridCti(pgImagePlot2d.verCrossPlotItem))
-        self.verCrossPlotRangeCti = self.verCrossPlotCti.insertChild(PgAxisRangeCti(
-            self.pgImagePlot2d.verCrossPlotItem.getViewBox(), X_AXIS, nodeName="data range",
-            autoRangeFunctions = crossPlotAutoRangeMethods(self.pgImagePlot2d, "vertical")))
+        self.verCrossPlotRangeCti = self.verCrossPlotCti.insertChild(
+            PgAxisRangeCti(
+                self.pgImagePlot2d.verCrossPlotItem.getViewBox(), X_AXIS, nodeName="data range",
+                autoRangeFunctions=crossPlotAutoRangeMethods(self.pgImagePlot2d, "vertical")))
+
+
 
         # Connect signals.
         # Use a queued connect to schedule the reset after current events have been processed.
