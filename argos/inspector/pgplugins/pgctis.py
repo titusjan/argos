@@ -50,7 +50,7 @@ Y_AXIS = pg.ViewBox.YAxis
 BOTH_AXES = pg.ViewBox.XYAxes
 VALID_AXIS_NUMBERS = (X_AXIS, Y_AXIS, BOTH_AXES)
 VALID_AXIS_POSITIONS =  ('left', 'right', 'bottom', 'top')
-
+NO_LABEL_STR = '-- none --'
 
 
 class ViewBoxDebugCti(GroupCti):
@@ -553,23 +553,57 @@ class PgColorLegendCti(AbstractRangeCti):
         self.legend.setLevels(targetRange, padding=padding)
 
 
+
+class PgColorLegendLabelCti(ChoiceCti):
+    """ Configuration tree item that is linked to the axis label of a color legend .
+    """
+    def __init__(self, colorLegendItem, collector,
+                 nodeName='label', defaultData=0, configValues=None):
+        """ Constructor
+            :param colorLegendItem PgColorLegendLabelCti:
+            :param collector: needed to get the collector.rtiInfo
+            :param nodeName: the node name of this config tree item (default = label
+            :param defaultData:
+            :param configValues:
+        """
+        super(PgColorLegendLabelCti, self).__init__(
+            nodeName, editable=True, defaultData=defaultData, configValues=configValues)
+
+        check_class(colorLegendItem, ColorLegendItem)
+        self.colorLegendItem = colorLegendItem
+        self.collector = collector
+
+
+    def _updateTargetFromNode(self):
+        """ Applies the configuration to the target axis it monitors.
+            The axis label will be set to the configValue. If the configValue equals
+            NO_LABEL_STR, the label will be hidden.
+        """
+        if self.configValue == NO_LABEL_STR:
+            self.colorLegendItem.setLabel(None)
+        else:
+            rtiInfo = self.collector.rtiInfo
+            self.colorLegendItem.setLabel(self.configValue.format(**rtiInfo))
+
+
+
 class PgShowHistCti(BoolCti):
     """ BoolCti that shows/hides the histogram of a color bar.
     """
-    def __init__(self, legend, nodeName='show histogram', defaultData=True):
+    def __init__(self, colorLegendItem, nodeName='show histogram', defaultData=True):
         """ Constructor.
             The target axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
         """
         super(PgShowHistCti, self).__init__(nodeName, defaultData=defaultData)
 
-        check_class(legend, ColorLegendItem)
-        self.legend = legend
+        check_class(colorLegendItem, ColorLegendItem)
+        self.colorLegendItem = colorLegendItem
 
 
     def _updateTargetFromNode(self):
         """ Applies the configuration to its target axis
         """
-        self.legend.showHistogram(self.configValue)
+        self.colorLegendItem.showHistogram(self.configValue)
 
 
 
@@ -593,8 +627,6 @@ class PgGradientEditorItemCti(ChoiceCti):
         """ Applies the configuration to its target axis
         """
         self.gradientEditorItem.loadPreset(self.configValue)
-
-
 
 
 
@@ -647,15 +679,13 @@ class PgAxisFlipCti(BoolCti):
 class PgAxisLabelCti(ChoiceCti):
     """ Configuration tree item that is linked to the axis label.
     """
-    NO_LABEL = '-- none --'
-
     def __init__(self, plotItem, axisPosition, collector,
                  nodeName='label', defaultData=0, configValues=None):
         """ Constructor
             :param plotItem:
             :param axisPosition: 'left', 'right', 'bottom', 'top'
             :param collector: needed to get the collector.rtiInfo
-            :param nodeName: the nod name of this config tree item (default = label
+            :param nodeName: the node name of this config tree item (default = label
             :param defaultData:
             :param configValues:
         """
@@ -671,11 +701,11 @@ class PgAxisLabelCti(ChoiceCti):
     def _updateTargetFromNode(self):
         """ Applies the configuration to the target axis it monitors.
             The axis label will be set to the configValue. If the configValue equals
-             PgAxisLabelCti.NO_LABEL, the label will be hidden.
+             NO_LABEL_STR, the label will be hidden.
         """
         rtiInfo = self.collector.rtiInfo
         self.plotItem.setLabel(self.axisPosition, self.configValue.format(**rtiInfo))
-        self.plotItem.showLabel(self.axisPosition, self.configValue != self.NO_LABEL)
+        self.plotItem.showLabel(self.axisPosition, self.configValue != NO_LABEL_STR)
 
 
 

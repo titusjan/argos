@@ -32,9 +32,9 @@ from argos.config.groupcti import MainGroupCti
 from argos.inspector.abstract import AbstractInspector, InvalidDataError, UpdateReason
 from argos.inspector.pgplugins.colorbar import ArgosColorLegendItem
 from argos.inspector.pgplugins.pgctis import (
-    X_AXIS, Y_AXIS, BOTH_AXES, defaultAutoRangeMethods, PgAxisLabelCti,
+    X_AXIS, Y_AXIS, BOTH_AXES, NO_LABEL_STR, defaultAutoRangeMethods, PgAxisLabelCti,
     PgAxisCti, PgAxisFlipCti, PgAspectRatioCti, PgAxisRangeCti,
-    PgColorLegendCti, PgShowHistCti, PgGridCti,
+    PgColorLegendCti, PgColorLegendLabelCti, PgShowHistCti, PgGridCti,
     setXYAxesAutoRangeOn, PgPlotDataItemCti)
 from argos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from argos.qt import Qt, QtCore, QtGui, QtSlot
@@ -153,7 +153,7 @@ class PgImagePlot2dCti(MainGroupCti):
         self.xAxisCti.insertChild(
             PgAxisLabelCti(imagePlotItem, 'bottom', self.pgImagePlot2d.collector,
                            defaultData=1,
-                           configValues=[PgAxisLabelCti.NO_LABEL, "{x-dim} [index]"]))
+                           configValues=[NO_LABEL_STR, "{x-dim} [index]"]))
         self.xFlippedCti = self.xAxisCti.insertChild(PgAxisFlipCti(viewBox, X_AXIS))
         self.xAxisRangeCti = self.xAxisCti.insertChild(PgAxisRangeCti(viewBox, X_AXIS))
 
@@ -161,7 +161,7 @@ class PgImagePlot2dCti(MainGroupCti):
         self.yAxisCti.insertChild(
             PgAxisLabelCti(imagePlotItem, 'left', self.pgImagePlot2d.collector,
                            defaultData=1,
-                           configValues=[PgAxisLabelCti.NO_LABEL, "{y-dim} [index]"]))
+                           configValues=[NO_LABEL_STR, "{y-dim} [index]"]))
         self.yFlippedCti = self.yAxisCti.insertChild(
             PgAxisFlipCti(viewBox, Y_AXIS, defaultData=True))
         self.yAxisRangeCti = self.yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS))
@@ -170,10 +170,14 @@ class PgImagePlot2dCti(MainGroupCti):
 
         self.colorCti = self.insertChild(PgAxisCti('color scale'))
 
-        colorAutoRangeFunctions = defaultAutoRangeMethods(self.pgImagePlot2d)
+        self.colorCti.insertChild(PgColorLegendLabelCti(
+            pgImagePlot2d.colorLegendItem, self.pgImagePlot2d.collector, defaultData=1,
+            configValues=[NO_LABEL_STR, "{name} {unit}", "{path} {unit}",
+                          "{name}", "{path}", "{raw-unit}"]))
 
         self.showHistCti = self.colorCti.insertChild(PgShowHistCti(pgImagePlot2d.colorLegendItem))
 
+        colorAutoRangeFunctions = defaultAutoRangeMethods(self.pgImagePlot2d)
         self.colorLegendCti = self.colorCti.insertChild(
             PgColorLegendCti(pgImagePlot2d.colorLegendItem, colorAutoRangeFunctions,
                              nodeName="range"))

@@ -30,7 +30,7 @@ from argos.config.boolcti import BoolCti, BoolGroupCti
 from argos.config.choicecti import ChoiceCti
 from argos.config.groupcti import MainGroupCti
 from argos.inspector.abstract import AbstractInspector, InvalidDataError, UpdateReason
-from argos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES, viewBoxAxisRange,
+from argos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES, NO_LABEL_STR,
                                                  defaultAutoRangeMethods, PgAxisLabelCti,
                                                  PgAxisCti, PgAxisFlipCti, PgAspectRatioCti,
                                                  PgAxisRangeCti, PgHistLutColorRangeCti, PgGridCti,
@@ -146,14 +146,14 @@ class PgImagePlot2dCti(MainGroupCti):
         self.xAxisCti = self.insertChild(PgAxisCti('x-axis'))
         #xAxisCti.insertChild(PgAxisShowCti(imagePlotItem, 'bottom')) # disabled, seems broken
         self.xAxisCti.insertChild(PgAxisLabelCti(imagePlotItem, 'bottom', self.pgImagePlot2d.collector,
-            defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{x-dim} [index]"]))
+            defaultData=1, configValues=[NO_LABEL_STR, "{x-dim} [index]"]))
         self.xFlippedCti = self.xAxisCti.insertChild(PgAxisFlipCti(viewBox, X_AXIS))
         self.xAxisRangeCti = self.xAxisCti.insertChild(PgAxisRangeCti(viewBox, X_AXIS))
 
         self.yAxisCti = self.insertChild(PgAxisCti('y-axis'))
         #yAxisCti.insertChild(PgAxisShowCti(imagePlotItem, 'left'))  # disabled, seems broken
         self.yAxisCti.insertChild(PgAxisLabelCti(imagePlotItem, 'left', self.pgImagePlot2d.collector,
-            defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{y-dim} [index]"]))
+            defaultData=1, configValues=[NO_LABEL_STR, "{y-dim} [index]"]))
         self.yFlippedCti = self.yAxisCti.insertChild(PgAxisFlipCti(viewBox, Y_AXIS))
         self.yAxisRangeCti = self.yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS))
 

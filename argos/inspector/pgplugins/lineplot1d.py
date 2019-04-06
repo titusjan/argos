@@ -32,7 +32,7 @@ from argos.config.boolcti import BoolCti
 from argos.config.choicecti import ChoiceCti
 
 from argos.inspector.abstract import AbstractInspector, InvalidDataError, UpdateReason
-from argos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, viewBoxAxisRange,
+from argos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, NO_LABEL_STR,
                                               defaultAutoRangeMethods, PgGridCti, PgAxisCti,
                                               setXYAxesAutoRangeOn, PgAxisLabelCti,
                                               PgAxisLogModeCti, PgAxisRangeCti, PgPlotDataItemCti)
@@ -71,14 +71,14 @@ class PgLinePlot1dCti(MainGroupCti):
 
         self.xAxisCti = self.insertChild(PgAxisCti('x-axis'))
         self.xAxisCti.insertChild(PgAxisLabelCti(plotItem, 'bottom', self.pgLinePlot1d.collector,
-            defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{x-dim} [index]"]))
+            defaultData=1, configValues=[NO_LABEL_STR, "{x-dim} [index]"]))
         # No logarithmic X-Axis as long as abcissa is not yet implemented.
         #xAxisCti.insertChild(PgAxisLogModeCti(imagePlotItem, X_AXIS))
         self.xAxisRangeCti = self.xAxisCti.insertChild(PgAxisRangeCti(viewBox, X_AXIS))
 
         self.yAxisCti = self.insertChild(PgAxisCti('y-axis'))
         self.yAxisCti.insertChild(PgAxisLabelCti(plotItem, 'left', self.pgLinePlot1d.collector,
-            defaultData=1, configValues=[PgAxisLabelCti.NO_LABEL, "{name} {unit}", "{path} {unit}",
+            defaultData=1, configValues=[NO_LABEL_STR, "{name} {unit}", "{path} {unit}",
                                          "{name}", "{path}", "{raw-unit}"]))
         self.yLogCti = self.yAxisCti.insertChild(PgAxisLogModeCti(plotItem, Y_AXIS))
 

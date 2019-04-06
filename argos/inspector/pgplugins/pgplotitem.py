@@ -28,14 +28,7 @@ from argos.qt import Qt, QtCore, QtWidgets, QtSignal
 
 logger = logging.getLogger(__name__)
 
-USE_SIMPLE_PLOT = False
-
-if USE_SIMPLE_PLOT:
-    # An experimental simplification of PlotItem. Not included in the distribution
-    logger.warn("Using SimplePlotItem as PlotItem")
-    from pyqtgraph.graphicsItems.PlotItem.simpleplotitem import SimplePlotItem as PlotItem
-else:
-    from pyqtgraph.graphicsItems.PlotItem import PlotItem
+from pyqtgraph.graphicsItems.PlotItem import PlotItem
 
 
 X_AXIS = pg.ViewBox.XAxis
