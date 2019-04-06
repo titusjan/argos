@@ -33,7 +33,8 @@ from argos.inspector.abstract import AbstractInspector, InvalidDataError, Update
 from argos.inspector.pgplugins.colorbar import ArgosColorLegendItem
 from argos.inspector.pgplugins.pgctis import (
     X_AXIS, Y_AXIS, BOTH_AXES, defaultAutoRangeMethods, PgAxisLabelCti,
-    PgAxisCti, PgAxisFlipCti, PgAspectRatioCti, PgAxisRangeCti, PgColorLegendCti, PgGridCti,
+    PgAxisCti, PgAxisFlipCti, PgAspectRatioCti, PgAxisRangeCti,
+    PgColorLegendCti, PgShowHistCti, PgGridCti,
     setXYAxesAutoRangeOn, PgPlotDataItemCti)
 from argos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from argos.qt import Qt, QtCore, QtGui, QtSlot
@@ -161,16 +162,21 @@ class PgImagePlot2dCti(MainGroupCti):
             PgAxisLabelCti(imagePlotItem, 'left', self.pgImagePlot2d.collector,
                            defaultData=1,
                            configValues=[PgAxisLabelCti.NO_LABEL, "{y-dim} [index]"]))
-        self.yFlippedCti = self.yAxisCti.insertChild(PgAxisFlipCti(viewBox, Y_AXIS))
+        self.yFlippedCti = self.yAxisCti.insertChild(
+            PgAxisFlipCti(viewBox, Y_AXIS, defaultData=True))
         self.yAxisRangeCti = self.yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS))
 
         #### Color scale ####
 
+        self.colorCti = self.insertChild(PgAxisCti('color scale'))
+
         colorAutoRangeFunctions = defaultAutoRangeMethods(self.pgImagePlot2d)
 
-        self.colorLegendCti = self.insertChild(
+        self.showHistCti = self.colorCti.insertChild(PgShowHistCti(pgImagePlot2d.colorLegendItem))
+
+        self.colorLegendCti = self.colorCti.insertChild(
             PgColorLegendCti(pgImagePlot2d.colorLegendItem, colorAutoRangeFunctions,
-                             nodeName="color range"))
+                             nodeName="range"))
 
         self.zoomModeCti = self.insertChild(BoolCti('rectangle zoom mode', False))
 
@@ -196,8 +202,6 @@ class PgImagePlot2dCti(MainGroupCti):
             PgAxisRangeCti(
                 self.pgImagePlot2d.verCrossPlotItem.getViewBox(), X_AXIS, nodeName="data range",
                 autoRangeFunctions=crossPlotAutoRangeMethods(self.pgImagePlot2d, "vertical")))
-
-
 
         # Connect signals.
         # Use a queued connect to schedule the reset after current events have been processed.

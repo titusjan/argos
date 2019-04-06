@@ -465,6 +465,8 @@ class PgAxisRangeCti(AbstractRangeCti):
 
 class PgHistLutColorRangeCti(AbstractRangeCti):
     """ Configuration tree item is linked to the HistogramLUTItem range.
+
+        Used in the old imageplot2d.py
     """
     def __init__(self, histLutItem, autoRangeFunctions=None, nodeName='color range', expanded=True):
         """ Constructor.
@@ -519,8 +521,9 @@ class PgColorLegendCti(AbstractRangeCti):
             a method choice and the autorange implemented by PyQtGraph will be used.
         """
         super(PgColorLegendCti, self).__init__(
-            autoRangeFunctions=autoRangeFunctions, nodeName=nodeName, expanded=True,
-            paddingDefault=0)
+            autoRangeFunctions=autoRangeFunctions, nodeName=nodeName,
+            expanded=True, paddingDefault=0)
+
         check_class(legend, ColorLegendItem)
         self.legend = legend
 
@@ -549,6 +552,24 @@ class PgColorLegendCti(AbstractRangeCti):
         """
         self.legend.setLevels(targetRange, padding=padding)
 
+
+class PgShowHistCti(BoolCti):
+    """ BoolCti that shows/hides the histogram of a color bar.
+    """
+    def __init__(self, legend, nodeName='show histogram', defaultData=True):
+        """ Constructor.
+            The target axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
+        """
+        super(PgShowHistCti, self).__init__(nodeName, defaultData=defaultData)
+
+        check_class(legend, ColorLegendItem)
+        self.legend = legend
+
+
+    def _updateTargetFromNode(self):
+        """ Applies the configuration to its target axis
+        """
+        self.legend.showHistogram(self.configValue)
 
 
 
