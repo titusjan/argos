@@ -21,7 +21,7 @@ import os, sys
 
 # We bypass the argparse mechanism in main.py because this import is executed before main.main()
 DEBUGGING = ('-d' in sys.argv or '--debug' in sys.argv)
-PROFILING = True or DEBUGGING
+PROFILING = False# and DEBUGGING
 
 VERSION = '0.3.0-devel'
 REPO_NAME = "argos"

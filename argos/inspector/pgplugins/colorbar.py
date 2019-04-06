@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 class ArgosColorLegendItem(ColorLegendItem):
     """ Wrapper around pgcolorbar.colorlegend.ColorLegendItem.
 
-        Supresses the FutureWarning of PyQtGraph in
+        Suppresses the FutureWarning of PyQtGraph in
         Overrides the _imageItemHasIntegerData method.
         Middle mouse click resets the axis.
     """

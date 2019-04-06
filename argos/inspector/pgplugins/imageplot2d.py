@@ -32,14 +32,15 @@ from argos.config.groupcti import MainGroupCti
 from argos.inspector.abstract import AbstractInspector, InvalidDataError, UpdateReason
 from argos.inspector.pgplugins.colorbar import ArgosColorLegendItem
 from argos.inspector.pgplugins.pgctis import (
-    X_AXIS, Y_AXIS, BOTH_AXES, viewBoxAxisRange, defaultAutoRangeMethods, PgAxisLabelCti,
+    X_AXIS, Y_AXIS, BOTH_AXES, defaultAutoRangeMethods, PgAxisLabelCti,
     PgAxisCti, PgAxisFlipCti, PgAspectRatioCti, PgAxisRangeCti, PgColorLegendCti, PgGridCti,
     setXYAxesAutoRangeOn, PgPlotDataItemCti)
 from argos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from argos.qt import Qt, QtCore, QtGui, QtSlot
 
 from argos.utils.cls import array_has_real_numbers, check_class, is_an_array, to_string
-from argos.utils.masks import replaceMaskedValueWithFloat, nanPercentileOfSubsampledArrayWithMask, ArrayWithMask
+from argos.utils.masks import (ArrayWithMask, replaceMaskedValueWithFloat,
+                               nanPercentileOfSubsampledArrayWithMask)
 
 logger = logging.getLogger(__name__)
 
@@ -309,8 +310,7 @@ class PgImagePlot2d(AbstractInspector):
         # # should be equal to the length of the LUT, but it's set to len(lut)-1. We therefore add a
         # # fake LUT entry.
         # extendedLut = np.append(lut, [lut[-1, :]], axis=0)
-        self.imageItem.setLookupTable(lut)
-        #self.imageItem.setLookupTable(lut)
+        self.imageItem.setLookupTable(lut.astype(np.uint8))
 
         self.colorLegendItem = ArgosColorLegendItem(self.imageItem)
 
@@ -381,6 +381,7 @@ class PgImagePlot2d(AbstractInspector):
         """ Is called before destruction. Can be used to clean-up resources.
         """
         logger.debug("Finalizing: {}".format(self))
+        self.colorLegendItem.finalize()
         self.imagePlotItem.scene().sigMouseMoved.disconnect(self.mouseMoved)
         self.imagePlotItem.close()
         self.graphicsLayoutWidget.close()
