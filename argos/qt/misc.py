@@ -291,3 +291,19 @@ def widgetSubCheckBoxRect(widget, option):
     style = widget.style()
     return style.subElementRect(QtWidgets.QStyle.SE_ViewItemCheckIndicator, opt, widget)
 
+
+
+def setWidgetSizePolicy(widget, horPolicy=None, verPolicy=None):
+    """ Sets the size policy of a widget.
+    """
+    sizePolicy = widget.sizePolicy()
+
+    if horPolicy is not None:
+        sizePolicy.setHorizontalPolicy(horPolicy)
+
+    if verPolicy is not None:
+        sizePolicy.setVerticalPolicy(verPolicy)
+
+    widget.setSizePolicy(sizePolicy)
+    return sizePolicy
+

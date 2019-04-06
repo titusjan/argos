@@ -21,6 +21,7 @@ import logging, math, sys
 
 from argos.config.abstractcti import AbstractCti, AbstractCtiEditor
 from argos.qt import QtWidgets, QtSlot
+from argos.qt.misc import setWidgetSizePolicy
 from argos.qt.scientificspinbox import ScientificDoubleSpinBox
 
 logger = logging.getLogger(__name__)
@@ -114,6 +115,7 @@ class FloatCtiEditor(AbstractCtiEditor):
 
         spinBox = QtWidgets.QDoubleSpinBox(parent)
         spinBox.setKeyboardTracking(False)
+        setWidgetSizePolicy(spinBox, QtWidgets.QSizePolicy.Expanding, None)
 
         if cti.minValue is None:
             spinBox.setMinimum(-sys.float_info.max)
@@ -271,6 +273,7 @@ class SnFloatCtiEditor(AbstractCtiEditor):
 
         spinBox = ScientificDoubleSpinBox(precision=precision, parent=parent)
         spinBox.setKeyboardTracking(False)
+        setWidgetSizePolicy(spinBox, QtWidgets.QSizePolicy.Expanding, None)
 
         if cti.minValue is None:
             spinBox.setMinimum(-sys.float_info.max)

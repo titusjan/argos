@@ -21,6 +21,7 @@ import logging
 import numpy as np
 
 from argos.config.abstractcti import AbstractCti, AbstractCtiEditor
+from argos.qt.misc import setWidgetSizePolicy
 from argos.qt import QtWidgets, QtSlot
 
 logger = logging.getLogger(__name__)
@@ -95,6 +96,7 @@ class IntCtiEditor(AbstractCtiEditor):
 
         spinBox = QtWidgets.QSpinBox(parent)
         spinBox.setKeyboardTracking(False)
+        setWidgetSizePolicy(spinBox, QtWidgets.QSizePolicy.Expanding, None)
 
         if cti.minValue is None:
             spinBox.setMinimum(np.iinfo('i').min)

@@ -21,6 +21,7 @@ import logging, copy
 
 from argos.config.abstractcti import AbstractCti, AbstractCtiEditor
 from argos.qt import  Qt, QtCore, QtWidgets, QtSlot
+from argos.qt.misc import setWidgetSizePolicy
 from argos.utils.cls import check_class
 from argos.utils.misc import NOT_SPECIFIED
 
@@ -198,6 +199,8 @@ class ChoiceCtiEditor(AbstractCtiEditor):
         comboBox = QtWidgets.QComboBox()
         comboBox.setEditable(cti.editable)
         comboBox.setInsertPolicy(cti.insertPolicy)
+        setWidgetSizePolicy(comboBox, QtWidgets.QSizePolicy.Expanding, None)
+
         if cti.completer is not NOT_SPECIFIED:
             comboBox.setCompleter(cti.completer if cti.completer else None)
 
