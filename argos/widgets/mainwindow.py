@@ -34,7 +34,7 @@ from argos.config.abstractcti import ctiDumps, ctiLoads
 from argos.config.abstractcti import AbstractCti
 from argos.config.configtreemodel import ConfigTreeModel
 from argos.config.configtreeview import ConfigWidget
-from argos.info import DEBUGGING, PROJECT_NAME, PROFILING
+from argos.info import DEBUGGING, TESTING, PROJECT_NAME, PROFILING
 from argos.inspector.abstract import AbstractInspector, UpdateReason
 from argos.inspector.dialog import OpenInspectorDialog
 from argos.inspector.registry import InspectorRegItem
@@ -247,9 +247,11 @@ class MainWindow(QtWidgets.QMainWindow):
         helpMenu = menuBar.addMenu("&Help")
         helpMenu.addAction('&About...', self.about)
 
-        if 1 or DEBUGGING:
+        if TESTING or DEBUGGING:
             helpMenu.addSeparator()
-            helpMenu.addAction("&Test", self.myTest, "Meta+T")
+            helpMenu.addAction("&My Test", self.myTest, "Meta+T")
+            helpMenu.addAction("&Test Walk", self.testWalkCurrentNode, "Meta+W")
+            helpMenu.addAction("&Extensive Test Walk", self.testWalk, "Meta+E")
             helpMenu.addAction("Add Test Data", self.addTestData, "Meta+A")
 
 
@@ -849,54 +851,44 @@ class MainWindow(QtWidgets.QMainWindow):
         """ Function for small ad-hoc tests
         """
         logger.info("myTest function called")
-        self.testSelectAllData()
-
-        # self.inspector.config.setAutoRangeOn(2)
-        # self.inspector.config.setColorAutoRangeOn()
-        # self.inspector.config.histRangeCti.setAutoRangeOn()
-
-        # logger.debug("Repo icon size: {}".format(self.repoWidget.repoTreeView.iconSize()))
-        # #self.repoWidget.repoTreeView.setIconSize(QtCore.QSize(32, 32))
-        # self.repoWidget.repoTreeView.setIconSize(QtCore.QSize(24, 24))
-        # logger.debug("Repo icon size: {}".format(self.repoWidget.repoTreeView.iconSize()))
-        # #self.collector.tree.resizeColumnsToContents(startCol=1)
-
-        # from argos.qt.misc import printChildren
-        # printChildren(self.centralWidget())
-        # print()
-        # print()
-        #
-        #
-        # self.argosApplication.raiseAllWindows()
-        # import gc
-        # from argos.qt import printAllWidgets
-        # printAllWidgets(self._argosApplication._qApplication, ofType=MainWindow)
-        # print("forcing garbage collection")
-        # gc.collect()
-        # printAllWidgets(self._argosApplication._qApplication, ofType=MainWindow)
-
-        #for item in self.argosApplication.inspectorRegistry.items:
-        #    logger.debug("item: {}".format(item))
 
 
-    def testSelectAllData(self):
-        """ Selects all nodes in a subtree for all inspectors
+    def testWalkCurrentNode(self):
+        """ Will visit all nodes below the currently selected node
         """
-        # Subtrees that will be visited. At the moment only data on my development PC.
-        #rootNodes = ['/argos/icm/S5P_ICM_CA_UVN_20120919T051721_20120919T065655_01890_01_001000_20151002T140000.h5']
-        #rootNodes = ['/argos/martin', '/argos/images', '/argos/Mini Scanner Output', '/myDict']
+        curItem, _curIdx = self.repoWidget.repoTreeView.getCurrentItem()
+        logger.info("CurrentItem: {}".format(curItem.nodePath))
+        self.testWalk(rootNodes=[curItem.nodePath])
 
-        rootNodes = ['/argos/martin', '/argos/images', '/myDict']
-        #rootNodes = ['/myDict']
 
-        # Skip nodes that give known, unfixable errors.
-        skipPaths = [
-            '/myDict/numbers/-inf', '/myDict/numbers/nan', '/myDict/age', '/myDict/numbers/int',
-            '/myDict/numbers/large float', # These give errors in 2D image plot
-            '/myDict/structured_arr4', # gives ValueError: Unable to transform (63, 63) to dtype [('r', '|u1'), ('', '|V1'), ('b', '|u1')]
-            '/argos/Mini Scanner Output/multiple_dimension_scales.h5/samples_raw', # TODO:
-            '/argos/images/peter_karpov'
-        ]
+    def testWalk(self, rootNodes=None):
+        """ Will visit a list of (hard coded) preselected nodes.
+        """
+        if rootNodes is None:
+
+            # Subtrees that will be visited. At the moment only data on my development PC.
+            #rootNodes = ['/argos/icm/S5P_ICM_CA_UVN_20120919T051721_20120919T065655_01890_01_001000_20151002T140000.h5']
+            #rootNodes = ['/argos/martin', '/argos/images', '/argos/Mini Scanner Output', '/myDict']
+            #rootNodes = ['/argos/martin', '/argos/images', '/myDict']
+            #rootNodes = ['/myDict']
+
+            #/argos/trop/S5P_NRTI_L2__AER_LH_20150821T201929_20150821T202429_45862_01_000000_20170506T003521.nc/PRODUCT/dim_surface_albedo
+            #/argos/trop/2015_03_16T16_32_16_MonA/after_dccorr_l1bavg/trl1brb8g.lx.nc/BAND8/ICID_30683_GROUP_00001/OBSERVATIONS/measurement_flags
+            #/argos/trop/2015_03_16T16_32_16_MonA/after_dccorr_l1bavg/trl1brb8g.lx.nc/BAND8/ICID_30683_GROUP_00001/INSTRUMENT/instrument_configuration
+
+            rootNodes = ['/argos/trop/2015_03_16T16_32_16_MonA/after_dccorr_l1bavg/trl1brb8g.lx.nc/BAND8/ICID_30683_GROUP_00001']
+
+            # Skip nodes that give known, unfixable errors.
+            skipPaths = [
+                '/myDict/numbers/-inf', '/myDict/numbers/nan', '/myDict/age', '/myDict/numbers/int',
+                '/myDict/numbers/large float', # These give errors in 2D image plot
+                '/myDict/structured_arr4', # gives ValueError: Unable to transform (63, 63) to dtype [('r', '|u1'), ('', '|V1'), ('b', '|u1')]
+                '/argos/Mini Scanner Output/multiple_dimension_scales.h5/samples_raw', # TODO:
+                '/argos/images/peter_karpov',
+                '/argos/trop/2015_03_16T16_32_16_MonA/after_dccorr_l1bavg/trl1brb8g.lx.nc/BAND8/ICID_30683_GROUP_00001/INSTRUMENT/'
+            ]
+        else:
+            skipPaths = []
 
         # Add myDict if not yet present
         nodeItem, nodeIndex = self.trySelectRtiByPath('/myDict')

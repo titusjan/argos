@@ -40,6 +40,7 @@ TODO short term:
 
     Flip Y image Y-axis by default.
 
+
 TODO mid term:
 
     Histogram / statistics inspector.
@@ -53,6 +54,11 @@ TODO mid term:
 	Interaction in IPython
 	QSettings should not use titusjan by default
 	(auto)refresh
+
+    Consider getting rid of fake dimensions in getSlicedArray because it fails with masked arrays with fill values.
+        /argos/trop/2015_03_16T16_32_16_MonA/after_dccorr_l1bavg/trl1brb8g.lx.nc/BAND8/
+            ICID_30683_GROUP_00001/INSTRUMENT/housekeeping_data
+        The less we do there, the less chance an error occurs.
 
 TODO long term:
 

@@ -505,10 +505,11 @@ class Collector(BasePanel):
                 the the slicedArray in your inspector! Note that this function calls transpose,
                 which can still make a copy of the array for certain permutations.
 
-            :return: Numpy masked array with the same number of dimension as the number of
+            :return: ArrayWithMask array with the same number of dimension as the number of
                 comboboxes (this can be zero!).
 
                 Returns None if no slice can be made (i.e. the RTI is not sliceable).
+            :rtype ArrayWithMask:
         """
         #logger.debug("getSlicedArray() called")
 
@@ -551,6 +552,8 @@ class Collector(BasePanel):
             slicedArray = ma.MaskedArray(slicedArray)
 
         # Add fake dimensions of length 1 so that result.ndim will equal the number of combo boxes
+        # TODO: Perhaps get rid of this because it fails with masked arrays with fill values.
+        # The less we do here, the less chance an error occurs. See development/todo.txt
         for dimNr in range(slicedArray.ndim, self.maxCombos):
             #logger.debug("Adding fake dimension: {}".format(dimNr))
             slicedArray = ma.expand_dims(slicedArray, dimNr)
