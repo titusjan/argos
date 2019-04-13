@@ -57,11 +57,11 @@ class ArgosPgPlotItem(PlotItem):
         Sets the cursor to a cross if it's inside the viewbox.
     """
 
-    # Use a QueuedConnection to connect to sigAxisReset so that the reset is scheduled after all
+    # Use a QueuedConnection to connect to sigResetAxis so that the reset is scheduled after all
     # current events have been processed. Otherwise the mouseReleaseEvent may look for a
     # PlotCurveItem that is no longer present after the reset, which results in a RuntimeError:
     # wrapped C/C++ object of type PlotCurveItem has been deleted.
-    sigAxisReset = QtSignal(int)
+    sigResetAxis = QtSignal(int)
 
     def __init__(self,
                  borderPen=DEFAULT_BORDER_PEN,
@@ -122,7 +122,7 @@ class ArgosPgPlotItem(PlotItem):
             :param mouseClickEvent: pyqtgraph.GraphicsScene.mouseEvents.MouseClickEvent
             :param axisNumber: the axis (X=0, Y=1, both=2)
 
-            Emits sigAxisReset when the middle mouse button is clicked.
+            Emits sigResetAxis when the middle mouse button is clicked.
         """
         if mouseClickEvent.button() == QtCore.Qt.MiddleButton:
             mouseClickEvent.accept()
@@ -175,8 +175,8 @@ class ArgosPgPlotItem(PlotItem):
             else:
                 logger.warning(msg)
 
-        logger.debug("Emitting sigAxisReset({}) for {!r}".format(axisNumber, self))
-        self.sigAxisReset.emit(axisNumber)
+        logger.debug("Emitting sigResetAxis({}) for {!r}".format(axisNumber, self))
+        self.sigResetAxis.emit(axisNumber)
 
 
     def setRectangleZoomOn(self, boolean):

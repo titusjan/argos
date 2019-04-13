@@ -98,7 +98,7 @@ class PgLinePlot1dCti(MainGroupCti):
         # events have been processed. Otherwise the mouseReleaseEvent may look for a PlotCurveItem
         # that is no longer present after the reset, which results in a RuntimeError: wrapped C/C++
         # object of type PlotCurveItem has been deleted.
-        self.pgLinePlot1d.plotItem.sigAxisReset.connect(self.setAutoRangeOn,
+        self.pgLinePlot1d.plotItem.sigResetAxis.connect(self.setAutoRangeOn,
                                                         type=QtCore.Qt.QueuedConnection)
 
 
@@ -106,7 +106,7 @@ class PgLinePlot1dCti(MainGroupCti):
        """ Disconnects signals.
            Is called by self.finalize when the cti is deleted.
        """
-       self.pgLinePlot1d.plotItem.sigAxisReset.disconnect(self.setAutoRangeOn)
+       self.pgLinePlot1d.plotItem.sigResetAxis.disconnect(self.setAutoRangeOn)
 
 
     def setAutoRangeOn(self, axisNumber):

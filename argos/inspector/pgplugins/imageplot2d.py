@@ -212,11 +212,11 @@ class PgImagePlot2dCti(MainGroupCti):
         # Use a queued connect to schedule the reset after current events have been processed.
         self.pgImagePlot2d.colorLegendItem.sigResetColorScale.connect(
             self.colorLegendCti.setAutoRangeOn, type=Qt.QueuedConnection)
-        self.pgImagePlot2d.imagePlotItem.sigAxisReset.connect(
+        self.pgImagePlot2d.imagePlotItem.sigResetAxis.connect(
             self.setImagePlotAutoRangeOn, type=Qt.QueuedConnection)
-        self.pgImagePlot2d.horCrossPlotItem.sigAxisReset.connect(
+        self.pgImagePlot2d.horCrossPlotItem.sigResetAxis.connect(
             self.setHorCrossPlotAutoRangeOn, type=Qt.QueuedConnection)
-        self.pgImagePlot2d.verCrossPlotItem.sigAxisReset.connect(
+        self.pgImagePlot2d.verCrossPlotItem.sigResetAxis.connect(
             self.setVerCrossPlotAutoRangeOn, type=Qt.QueuedConnection)
 
         # Also update axis auto range tree items when linked axes are resized
@@ -238,9 +238,9 @@ class PgImagePlot2dCti(MainGroupCti):
         horCrossViewBox = self.pgImagePlot2d.horCrossPlotItem.getViewBox()
         horCrossViewBox.sigRangeChangedManually.disconnect(self.xAxisRangeCti.setAutoRangeOff)
 
-        self.pgImagePlot2d.verCrossPlotItem.sigAxisReset.disconnect(self.setVerCrossPlotAutoRangeOn)
-        self.pgImagePlot2d.horCrossPlotItem.sigAxisReset.disconnect(self.setHorCrossPlotAutoRangeOn)
-        self.pgImagePlot2d.imagePlotItem.sigAxisReset.disconnect(self.setImagePlotAutoRangeOn)
+        self.pgImagePlot2d.verCrossPlotItem.sigResetAxis.disconnect(self.setVerCrossPlotAutoRangeOn)
+        self.pgImagePlot2d.horCrossPlotItem.sigResetAxis.disconnect(self.setHorCrossPlotAutoRangeOn)
+        self.pgImagePlot2d.imagePlotItem.sigResetAxis.disconnect(self.setImagePlotAutoRangeOn)
 
 
     def setImagePlotAutoRangeOn(self, axisNumber):
