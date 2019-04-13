@@ -208,13 +208,16 @@ class PgImagePlot2dCti(MainGroupCti):
                 autoRangeFunctions=crossPlotAutoRangeMethods(self.pgImagePlot2d, "vertical")))
 
         # Connect signals.
+
         # Use a queued connect to schedule the reset after current events have been processed.
-        self.pgImagePlot2d.imagePlotItem.sigAxisReset.connect(self.setImagePlotAutoRangeOn,
-                                                              type=Qt.QueuedConnection)
-        self.pgImagePlot2d.horCrossPlotItem.sigAxisReset.connect(self.setHorCrossPlotAutoRangeOn,
-                                                                 type=Qt.QueuedConnection)
-        self.pgImagePlot2d.verCrossPlotItem.sigAxisReset.connect(self.setVerCrossPlotAutoRangeOn,
-                                                                 type=Qt.QueuedConnection)
+        self.pgImagePlot2d.colorLegendItem.sigResetColorScale.connect(
+            self.colorLegendCti.setAutoRangeOn, type=Qt.QueuedConnection)
+        self.pgImagePlot2d.imagePlotItem.sigAxisReset.connect(
+            self.setImagePlotAutoRangeOn, type=Qt.QueuedConnection)
+        self.pgImagePlot2d.horCrossPlotItem.sigAxisReset.connect(
+            self.setHorCrossPlotAutoRangeOn, type=Qt.QueuedConnection)
+        self.pgImagePlot2d.verCrossPlotItem.sigAxisReset.connect(
+            self.setVerCrossPlotAutoRangeOn, type=Qt.QueuedConnection)
 
         # Also update axis auto range tree items when linked axes are resized
         horCrossViewBox = self.pgImagePlot2d.horCrossPlotItem.getViewBox()
@@ -227,6 +230,9 @@ class PgImagePlot2dCti(MainGroupCti):
         """ Disconnects signals.
             Is called by self.finalize when the cti is deleted.
         """
+        self.pgImagePlot2d.colorLegendItem.sigResetColorScale.disconnect(
+            self.colorLegendCti.setAutoRangeOn)
+
         verCrossViewBox = self.pgImagePlot2d.verCrossPlotItem.getViewBox()
         verCrossViewBox.sigRangeChangedManually.disconnect(self.yAxisRangeCti.setAutoRangeOff)
         horCrossViewBox = self.pgImagePlot2d.horCrossPlotItem.getViewBox()

@@ -93,18 +93,19 @@ class ArgosPgPlotItem(PlotItem):
 
         self.resetAxesAction = QtWidgets.QAction("Reset Axes", self,
                                  triggered = lambda: self.emitResetAxisSignal(BOTH_AXES),
-                                 statusTip = "Resets the zoom factor of the X-axis and Y-axis")
+                                 toolTip = "Resets the zoom factor of the X-axis and Y-axis")
         self.addAction(self.resetAxesAction)
 
         self.resetXAxisAction = QtWidgets.QAction("Reset X-axis", self,
                                  triggered = lambda: self.emitResetAxisSignal(X_AXIS),
-                                 statusTip = "Resets the zoom factor of the X-axis")
+                                 toolTip = "Resets the zoom factor of the X-axis")
         self.addAction(self.resetXAxisAction)
 
         self.resetYAxisAction = QtWidgets.QAction("Reset Y-axis", self,
                                  triggered = lambda: self.emitResetAxisSignal(Y_AXIS),
-                                 statusTip = "Resets the zoom factor of the Y-axis")
+                                 toolTip = "Resets the zoom factor of the Y-axis")
         self.addAction(self.resetYAxisAction)
+
 
 
     def close(self):
@@ -131,7 +132,9 @@ class ArgosPgPlotItem(PlotItem):
     def mouseClickEvent(self, mouseClickEvent):
         """ Handles (PyQtGraph) mouse click events.
 
-            Opens the context menu if a right mouse button was clicked.
+            Opens the context menu if a right mouse button was clicked. (We can't simply use
+            setContextMenuPolicy(Qt.ActionsContextMenu because the PlotItem class does not derive
+            from QWidget).
 
             :param mouseClickEvent: pyqtgraph.GraphicsScene.mouseEvents.MouseClickEvent
         """
@@ -170,7 +173,7 @@ class ArgosPgPlotItem(PlotItem):
             if DEBUGGING:
                 raise ValueError(msg)
             else:
-                logger.warn(msg)
+                logger.warning(msg)
 
         logger.debug("Emitting sigAxisReset({}) for {!r}".format(axisNumber, self))
         self.sigAxisReset.emit(axisNumber)
