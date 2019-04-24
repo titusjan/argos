@@ -27,17 +27,24 @@ import pyqtgraph as pg
 # http://docs.python-guide.org/en/latest/writing/gotchas/#late-binding-closures
 from functools import partial
 from collections import OrderedDict
+
+from cmlib import CmLibModel, ColorSelectionWidget, CmLibBrowserDialog, ColorMap
+
 from argos.config.groupcti import GroupCti
+from argos.config.abstractcti import AbstractCti, AbstractCtiEditor
 from argos.config.boolcti import BoolCti, BoolGroupCti
 from argos.config.choicecti import ChoiceCti
 from argos.config.intcti import IntCti
 from argos.config.floatcti import SnFloatCti, FloatCti
 from argos.config.qtctis import PenCti, ColorCti, createPenStyleCti, createPenWidthCti
 from argos.config.untypedcti import UntypedCti
+from argos.inspector.pgplugins.colorbar import ArgosColorLegendItem
 from argos.inspector.pgplugins.pghistlutitem import HistogramLUTItem
-from argos.qt import QtGui, QtWidgets
+from argos.qt import QtCore, QtGui, QtWidgets, QtSlot
+from argos.qt.misc import setWidgetSizePolicy
 from argos.utils.cls import check_class
 from argos.utils.masks import nanPercentileOfSubsampledArrayWithMask
+
 
 from pyqtgraph.graphicsItems.GradientEditorItem import Gradients as GRADIENTS
 
@@ -609,6 +616,8 @@ class PgShowHistCti(BoolCti):
 
 class PgGradientEditorItemCti(ChoiceCti):
     """ Lets the user select one of the standard color scales in a GradientEditorItem
+
+        Is not used in the new PgImagePlot2d, only in the one in old_imageplot2d.py.
     """
     def __init__(self, gradientEditorItem, nodeName="color scale", defaultData=-1):
         """ Constructor.
@@ -624,7 +633,7 @@ class PgGradientEditorItemCti(ChoiceCti):
 
 
     def _updateTargetFromNode(self):
-        """ Applies the configuration to its target axis
+        """ Applies the configuration to its target widget
         """
         self.gradientEditorItem.loadPreset(self.configValue)
 
@@ -732,6 +741,7 @@ class PgAxisShowCti(BoolCti):
         """
         logger.debug("showAxis: {}, {}".format(self.axisPosition, self.configValue))
         self.plotItem.showAxis(self.axisPosition, show=self.configValue) # Seems not to work
+
 
 
 class PgAxisLogModeCti(BoolCti):
@@ -864,4 +874,108 @@ class PgPlotDataItemCti(GroupCti):
                                        symbol=symbolShape, symbolSize=symbolSize,
                                        symbolPen=symbolPen, symbolBrush=symbolBrush)
         return plotDataItem
+
+
+
+class PgColorMapCti(AbstractCti):
+    """ Lets the user select one of color maps of the color map library
+    """
+    def __init__(self, colorLegendItem, cmLibModel, nodeName="color map", defaultData=None):
+        """ Constructor.
+
+            Stores a color map as data.
+
+            :param defaultData: the default index in the combobox that is used for editing
+        """
+        check_class(colorLegendItem, ArgosColorLegendItem)
+        check_class(cmLibModel, CmLibModel)
+        self.colorLegendItem = colorLegendItem
+        self.cmLibModel = cmLibModel
+        super(PgColorMapCti, self).__init__(nodeName, defaultData)
+
+
+    def _enforceDataType(self, data):
+        """ Converts to int so that this CTI always stores that type.
+        """
+        if isinstance(data, ColorMap):
+            return data
+        else:
+            return self.cmLibModel.getColorMapByKey(data)
+
+
+    @property
+    def configValue(self):
+        """ The currently selected configValue
+
+            :rtype: ColorMap
+        """
+        return self.data
+
+
+    def _updateTargetFromNode(self):
+        """ Applies the configuration to its target axis.
+            Sets the image item's lookup table to the LUT of the selected color map.
+        """
+        if self.data is None:
+            logger.warning("No color table selected. Using grey values.")
+            lut = np.array([(0, 0, 0), (255, 255, 255)], dtype=np.uint8)
+        else:
+            lut = self.data.rgb_uint8_array
+
+        self.colorLegendItem.setLut(lut)
+
+
+    def createEditor(self, delegate, parent, option):
+        """ Creates a ChoiceCtiEditor.
+            For the parameters see the AbstractCti constructor documentation.
+        """
+        return PgColorMapCtiEditor(self, delegate, parent=parent)
+
+
+
+class PgColorMapCtiEditor(AbstractCtiEditor):
+    """ A CtiEditor which contains a QCombobox for editing ChoiceCti objects.
+    """
+    def __init__(self, cti, delegate, parent=None):
+        """ See the AbstractCtiEditor for more info on the parameters
+        """
+        super(PgColorMapCtiEditor, self).__init__(cti, delegate, parent=parent)
+
+        selectionWidget = ColorSelectionWidget(self.cti.cmLibModel)
+        setWidgetSizePolicy(selectionWidget, QtWidgets.QSizePolicy.Expanding, None)
+
+        selectionWidget.sigColorMapChanged.connect(self.onColorMapChanged)
+        self.selectionWidget = self.addSubEditor(selectionWidget, isFocusProxy=True)
+        self.comboBox = self.selectionWidget.comboBox
+
+
+    def finalize(self):
+        """ Is called when the editor is closed. Disconnect signals.
+        """
+        self.selectionWidget.sigColorMapChanged.disconnect(self.onColorMapChanged)
+        super(PgColorMapCtiEditor, self).finalize()
+
+
+    def setData(self, data):
+        """ Provides the main editor widget with a data to manipulate.
+        """
+        if data is None:
+            logger.warning("No color map to select")
+        else:
+            self.selectionWidget.setColorMapByKey(data.key)
+
+
+    def getData(self):
+        """ Gets data from the editor widget.
+        """
+        return self.selectionWidget.getCurrentColorMap()
+
+
+    @QtSlot(ColorMap)
+    def onColorMapChanged(self, index):
+        """ Is called when the user chooses an item in the combo box. The item's index is passed.
+            Note that this signal is sent even when the choice is not changed.
+        """
+        logger.debug("onColorMapChanged")
+        self.delegate.commitData.emit(self)
 

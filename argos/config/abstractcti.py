@@ -109,7 +109,7 @@ class AbstractCti(BaseTreeItem):
 
         The underlying data is usually stored in that type as well but this is not necessarily so.
         A ChoiceCti, which represents a combo box, stores a list of choices and an index that is
-        actual choice made by the user. ChoiceCti.data contains the index while
+        the actual choice made by the user. ChoiceCti.data contains the index while
         ChoiceCti.configValue returns: choices[index]. Note that the constructor expects the data
         as input parameter. The constructor calls the _enforceDataType method to convert the data
         to the correct type.

@@ -62,6 +62,7 @@ DATA & LIBS:
     http://www.gris.uni-tuebingen.de/edu/areas/scivis/volren/datasets/datasets.html
     http://www.gris.uni-tuebingen.de/edu/areas/scivis/volren/datasets/new.html
     http://yt-project.org/doc/index.html
+    https://datascience.dsscale.org/data/
 
     # USGC/NASA
     http://nsidc.org/data/modis/index.html

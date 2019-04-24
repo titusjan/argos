@@ -19,12 +19,16 @@
 """
 from __future__ import division, print_function
 
+import os
 import logging, math
 import numpy as np
 import pyqtgraph as pg
 
 from functools import partial
 from collections import OrderedDict
+
+from cmlib import CmLib, CmLibModel
+
 from argos.info import DEBUGGING
 from argos.config.boolcti import BoolCti, BoolGroupCti
 from argos.config.choicecti import ChoiceCti
@@ -33,8 +37,8 @@ from argos.inspector.abstract import AbstractInspector, InvalidDataError, Update
 from argos.inspector.pgplugins.colorbar import ArgosColorLegendItem
 from argos.inspector.pgplugins.pgctis import (
     X_AXIS, Y_AXIS, BOTH_AXES, NO_LABEL_STR, defaultAutoRangeMethods, PgAxisLabelCti,
-    PgAxisCti, PgAxisFlipCti, PgAspectRatioCti, PgAxisRangeCti,
-    PgColorLegendCti, PgColorLegendLabelCti, PgShowHistCti, PgGridCti,
+    PgAxisCti, PgAxisFlipCti, PgAspectRatioCti, PgAxisRangeCti, PgGridCti,
+    PgColorMapCti, PgColorLegendCti, PgColorLegendLabelCti, PgShowHistCti,
     setXYAxesAutoRangeOn, PgPlotDataItemCti)
 from argos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from argos.qt import Qt, QtCore, QtGui, QtSlot
@@ -52,6 +56,31 @@ ROW_IMAGE,    COL_IMAGE    = 2, 0
 ROW_VER_LINE, COL_VER_LINE = 2, 1
 ROW_PROBE,    COL_PROBE    = 3, 0  # colspan = 2
 
+# Color lib
+def loadCmLib(cmDataDir):
+    """ Loads Color Map Library
+    """
+    logger.info("Importing color map library")
+    CM_DATA_DIR = os.path.abspath(cmDataDir)
+
+    cmLib = CmLib()
+    cmLib.load_catalog(os.path.join(CM_DATA_DIR, 'CET'))
+    cmLib.load_catalog(os.path.join(CM_DATA_DIR, 'MatPlotLib'))
+    cmLib.load_catalog(os.path.join(CM_DATA_DIR, 'SciColMaps'))
+
+    logger.debug("Number of color maps: {}".format(len(cmLib.color_maps)))
+
+    # Set some random favorites to test the favorite checkbox
+
+    for colorMap in cmLib.color_maps:
+        if colorMap.key in ['SciColMaps/Oleron', 'CET/CET-CBL1', 'MatPlotLib/Cubehelix']:
+            colorMap.meta_data.favorite = True
+
+    return cmLib
+
+
+# TODO: actual, relative path
+_CM_LIB = loadCmLib("/Users/kenter/prog/py/cmlib/cmlib/data")
 
 
 def calcPgImagePlot2dDataRange(pgImagePlot2d, percentage, crossPlot, subsample):
@@ -169,6 +198,9 @@ class PgImagePlot2dCti(MainGroupCti):
         #### Color scale ####
 
         self.colorCti = self.insertChild(PgAxisCti('color scale'))
+
+        self.colorCti.insertChild(PgColorMapCti(
+            self.pgImagePlot2d.colorLegendItem, self.pgImagePlot2d.cmLibModel))
 
         self.colorCti.insertChild(PgColorLegendLabelCti(
             pgImagePlot2d.colorLegendItem, self.pgImagePlot2d.collector, defaultData=1,
@@ -291,6 +323,9 @@ class PgImagePlot2d(AbstractInspector):
 
         self.imageItem = pg.ImageItem()
         self.imagePlotItem.addItem(self.imageItem)
+
+        # Color map library
+        self.cmLibModel = CmLibModel(_CM_LIB)
 
         # self.histLutItem = HistogramLUTItem() # what about GradientLegend?
         # self.histLutItem.region.setBrush("#FF006632")

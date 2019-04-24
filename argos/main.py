@@ -198,7 +198,7 @@ def main():
     logger.setLevel(args.log_level.upper())
 
     if DEBUGGING:
-        logger.warn("Debugging flag is on!")
+        logger.warning("Debugging flag is on!")
 
     if args.version:
         print(about_str)
