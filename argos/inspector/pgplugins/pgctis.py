@@ -28,7 +28,7 @@ import pyqtgraph as pg
 from functools import partial
 from collections import OrderedDict
 
-from cmlib import CmLibModel, ColorSelectionWidget, CmLibBrowserDialog, ColorMap
+from cmlib import CmLibModel, ColorSelectionWidget, ColorMap, makeColorBarPixmap
 
 from argos.config.groupcti import GroupCti
 from argos.config.abstractcti import AbstractCti, AbstractCtiEditor
@@ -923,6 +923,48 @@ class PgColorMapCti(AbstractCti):
             lut = self.data.rgb_uint8_array
 
         self.colorLegendItem.setLut(lut)
+
+
+    def _dataToString(self, data):
+        """ Conversion function used to convert the (default)data to the display value.
+        """
+        return "" if data is None else data.meta_data.pretty_name
+
+
+    @property
+    def decoration(self):
+        """ Returns a pixmap of the color map to show as icon
+        """
+        return makeColorBarPixmap(self.data,
+                                  width=self.cmLibModel.iconBarWidth * 0.65,
+                                  height=self.cmLibModel.iconBarHeight * 0.65,
+                                  drawBorder=self.cmLibModel.drawIconBarBorder)
+
+
+    def _nodeGetNonDefaultsDict(self):
+        """ Retrieves this nodes` values as a dictionary to be used for persistence.
+            Non-recursive auxiliary function for getNonDefaultsDict
+        """
+        dct = {}
+
+        dct['favorites'] = \
+            [cm.key for cm in self.cmLibModel.cmLib.color_maps if cm.meta_data.favorite]
+
+        if self.data != self.defaultData:
+            dct['data'] = self.data.key
+        return dct
+
+
+    def _nodeSetValuesFromDict(self, dct):
+        """ Sets values from a dictionary in the current node.
+            Non-recursive auxiliary function for setValuesFromDict
+        """
+        if 'favorites' in dct:
+            for cm in self.cmLibModel.cmLib.color_maps:
+                cm.meta_data.favorite = cm.key in dct['favorites']
+
+        if 'data' in dct:
+            self.data = self.cmLibModel.getColorMapByKey(dct['data'])
 
 
     def createEditor(self, delegate, parent, option):
