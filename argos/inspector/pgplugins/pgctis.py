@@ -29,6 +29,7 @@ from functools import partial
 from collections import OrderedDict
 
 from cmlib import CmLibModel, ColorSelectionWidget, ColorMap, makeColorBarPixmap
+from cmlib import CmMetaData, CatalogMetaData
 
 from argos.config.groupcti import GroupCti
 from argos.config.abstractcti import AbstractCti, AbstractCtiEditor
@@ -891,13 +892,23 @@ class PgColorMapCti(AbstractCti):
         check_class(cmLibModel, CmLibModel)
         self.colorLegendItem = colorLegendItem
         self.cmLibModel = cmLibModel
+
+        # grey scale color map for when no color map is selected.
+        lutRgba = np.outer(np.arange(256, dtype=np.uint8), np.array([1, 1, 1, 1], dtype=np.uint8))
+        lutRgba[:,3] = 255
+        self.greyScaleColorMap = ColorMap(CmMetaData("-- none --"), CatalogMetaData("Argos"))
+        self.greyScaleColorMap.set_rgba_uint8_array(lutRgba)
+
         super(PgColorMapCti, self).__init__(nodeName, defaultData)
+
 
 
     def _enforceDataType(self, data):
         """ Converts to int so that this CTI always stores that type.
         """
-        if isinstance(data, ColorMap):
+        if data is None:
+            return self.greyScaleColorMap
+        elif isinstance(data, ColorMap):
             return data
         else:
             return self.cmLibModel.getColorMapByKey(data)
@@ -916,13 +927,7 @@ class PgColorMapCti(AbstractCti):
         """ Applies the configuration to its target axis.
             Sets the image item's lookup table to the LUT of the selected color map.
         """
-        if self.data is None:
-            logger.warning("No color table selected. Using grey values.")
-            lut = np.array([(0, 0, 0), (255, 255, 255)], dtype=np.uint8)
-        else:
-            lut = self.data.rgb_uint8_array
-
-        self.colorLegendItem.setLut(lut)
+        self.colorLegendItem.setLut(self.data.rgb_uint8_array)
 
 
     def _dataToString(self, data):
@@ -935,10 +940,11 @@ class PgColorMapCti(AbstractCti):
     def decoration(self):
         """ Returns a pixmap of the color map to show as icon
         """
-        return makeColorBarPixmap(self.data,
-                                  width=self.cmLibModel.iconBarWidth * 0.65,
-                                  height=self.cmLibModel.iconBarHeight * 0.65,
-                                  drawBorder=self.cmLibModel.drawIconBarBorder)
+        return makeColorBarPixmap(
+            self.data,
+            width=self.cmLibModel.iconBarWidth * 0.65,
+            height=self.cmLibModel.iconBarHeight * 0.65,
+            drawBorder=self.cmLibModel.drawIconBarBorder)
 
 
     def _nodeGetNonDefaultsDict(self):
@@ -994,6 +1000,7 @@ class PgColorMapCtiEditor(AbstractCtiEditor):
     def finalize(self):
         """ Is called when the editor is closed. Disconnect signals.
         """
+        logger.debug("PgColorMapCtiEditor.finalize")
         self.selectionWidget.sigColorMapChanged.disconnect(self.onColorMapChanged)
         super(PgColorMapCtiEditor, self).finalize()
 
