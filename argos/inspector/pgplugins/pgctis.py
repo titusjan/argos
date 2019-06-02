@@ -902,7 +902,6 @@ class PgColorMapCti(AbstractCti):
         super(PgColorMapCti, self).__init__(nodeName, defaultData)
 
 
-
     def _enforceDataType(self, data):
         """ Converts to int so that this CTI always stores that type.
         """
@@ -992,6 +991,7 @@ class PgColorMapCtiEditor(AbstractCtiEditor):
         selectionWidget = ColorSelectionWidget(self.cti.cmLibModel)
         setWidgetSizePolicy(selectionWidget, QtWidgets.QSizePolicy.Expanding, None)
 
+        selectionWidget.sigColorMapHighlighted.connect(self.onColorMapHighlighted)
         selectionWidget.sigColorMapChanged.connect(self.onColorMapChanged)
         self.selectionWidget = self.addSubEditor(selectionWidget, isFocusProxy=True)
         self.comboBox = self.selectionWidget.comboBox
@@ -1002,6 +1002,7 @@ class PgColorMapCtiEditor(AbstractCtiEditor):
         """
         logger.debug("PgColorMapCtiEditor.finalize")
         self.selectionWidget.sigColorMapChanged.disconnect(self.onColorMapChanged)
+        self.selectionWidget.sigColorMapHighlighted.disconnect(self.onColorMapHighlighted)
         super(PgColorMapCtiEditor, self).finalize()
 
 
@@ -1018,6 +1019,18 @@ class PgColorMapCtiEditor(AbstractCtiEditor):
         """ Gets data from the editor widget.
         """
         return self.selectionWidget.getCurrentColorMap()
+
+
+    @QtSlot(ColorMap)
+    def onColorMapHighlighted(self, colorMap):
+        """ Is called when the user highlights an item in the combo box or dialog.
+
+            The item's index is passed.
+            Note that this signal is sent even when the choice is not changed.
+        """
+        logger.debug("onColorMapHighlighted({})".format(colorMap))
+        self.cti.data = colorMap
+        self.cti.updateTarget()
 
 
     @QtSlot(ColorMap)
