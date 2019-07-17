@@ -4,6 +4,16 @@
 /argos/Mini Scanner Output/acceptance7.h5/samples/re
 TODO short term:
 
+    close files on collapse.
+
+    -o/--open so that files after this command line option are opened.
+        Can probably replace the -s option
+        What happens if files occur twice when opening them?
+
+    argos --help on Windows (Beast) doesn't seem to give output)
+
+    cross hair in the middle of the pixel
+
     Fixed font size in tables so that windows10 with two monitors works. (setFixedPitch)
 
     What if the H5 only has a dimension label?

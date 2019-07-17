@@ -28,7 +28,7 @@ import pyqtgraph as pg
 from functools import partial
 from collections import OrderedDict
 
-from cmlib import CmLibModel, ColorSelectionWidget, ColorMap, makeColorBarPixmap
+from cmlib import ColorSelectionWidget, ColorMap, makeColorBarPixmap
 from cmlib import CmMetaData, CatalogMetaData
 
 from argos.config.groupcti import GroupCti
@@ -43,6 +43,7 @@ from argos.inspector.pgplugins.colorbar import ArgosColorLegendItem
 from argos.inspector.pgplugins.pghistlutitem import HistogramLUTItem
 from argos.qt import QtCore, QtGui, QtWidgets, QtSlot
 from argos.qt.misc import setWidgetSizePolicy
+from argos.repo.colors import CmLibModelSingleton
 from argos.utils.cls import check_class
 from argos.utils.masks import nanPercentileOfSubsampledArrayWithMask
 
@@ -889,9 +890,9 @@ class PgColorMapCti(AbstractCti):
             :param defaultData: the default index in the combobox that is used for editing
         """
         check_class(colorLegendItem, ArgosColorLegendItem)
-        check_class(cmLibModel, CmLibModel)
+        #check_class(cmLibModel, CmLibModelSingleton)
         self.colorLegendItem = colorLegendItem
-        self.cmLibModel = cmLibModel
+        self.cmLibModel = CmLibModelSingleton.instance()
 
         # grey scale color map for when no color map is selected.
         lutRgba = np.outer(np.arange(256, dtype=np.uint8), np.array([1, 1, 1, 1], dtype=np.uint8))

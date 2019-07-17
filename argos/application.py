@@ -18,6 +18,7 @@
 """ Version and other info for this program
 """
 import logging
+import os.path
 import sys
 
 from argos.info import DEBUGGING
@@ -25,6 +26,7 @@ from argos.inspector.registry import InspectorRegistry, DEFAULT_INSPECTOR
 from argos.qt import QtCore, QtWidgets, QtSlot
 from argos.qt.misc import removeSettingsGroup, handleException, initQApplication
 from argos.qt.registry import GRP_REGISTRY, nameToIdentifier
+from argos.repo.colors import CmLibSingleton
 from argos.repo.registry import globalRtiRegistry
 from argos.repo.repotreemodel import RepoTreeModel
 from argos.utils.misc import string_to_identifier
@@ -220,6 +222,11 @@ class ArgosApplication(QtCore.QObject):
         # Instantiate windows from groups
         settings.beginGroup(profGroupName)
         try:
+            cmLib = CmLibSingleton().instance()
+            favorites = [colorMap.key for colorMap in cmLib.color_maps
+                         if colorMap.meta_data.favorite]
+            settings.setValue('cmfavorites', ','.join(favorites))
+
             for windowGroupName in settings.childGroups():
                 if windowGroupName.startswith('window'):
                     settings.beginGroup(windowGroupName)
@@ -238,7 +245,7 @@ class ArgosApplication(QtCore.QObject):
                 try:
                     win = self.addNewMainWindow(inspectorFullName=inspectorFullName)
                 except KeyError:
-                    logger.warn("No inspector found with ID: {}".format(inspectorFullName))
+                    logger.warning("No inspector found with ID: {}".format(inspectorFullName))
             else:
                 for win in windows:
                     win.raise_()
@@ -262,6 +269,11 @@ class ArgosApplication(QtCore.QObject):
         profGroupName = self.profileGroupName()
         settings.remove(profGroupName) # start with a clean slate
 
+        cmLib = CmLibSingleton().instance()
+        favKeys = settings.value('cmfavorites', '').split(',')
+        for colorMap in cmLib.color_maps:
+            colorMap.meta_data.favorite = colorMap.key in favKeys
+
         assert self.mainWindows, "no main windows found"
         for winNr, mainWindow in enumerate(self.mainWindows):
             settings.beginGroup(self.windowGroupName(winNr))
@@ -278,7 +290,7 @@ class ArgosApplication(QtCore.QObject):
             self.saveProfile()
         except Exception as ex:
             # Continue, even if saving the settings fails.
-            logger.warn(ex)
+            logger.warning(ex)
             if DEBUGGING:
                 raise
         finally:

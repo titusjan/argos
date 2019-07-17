@@ -443,3 +443,69 @@ def import_symbol(full_symbol_name):
         raise ImportError("full_symbol_name should contain a module")
     else:
         assert False, "Bug: parts should have 1 or elements: {}".format(parts)
+
+
+
+
+# TODO: when Python 2 support is dropped use metaclass. The problem in Py2 is that if obj is a
+# singleton metaclass, type(obj) will return type.
+#   https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
+
+
+
+class SingletonMixin(object):
+    """ Mixin to ensure the class is a singleton.
+
+        The instance method is thread-safe but the returned object not! You still have to implement
+        your own locking for that.
+    """
+    __singletons = {}
+
+    def __init__(self, **kwargs):
+        super(SingletonMixin, self).__init__(**kwargs)
+
+        cls = type(self)
+        logger.debug("Creating singleton: {} (awaiting lock)".format(cls))
+        cls._checkNotYetPresent()
+        SingletonMixin.__singletons[cls] = self
+
+
+    @classmethod
+    def instance(cls, **kwargs):
+        """ Returns the singleton's instance.
+        """
+        if cls in SingletonMixin.__singletons:
+            return SingletonMixin.__singletons[cls]
+        else:
+            return cls(**kwargs)
+
+
+    @classmethod
+    def _checkNotYetPresent(cls):
+        """ Checks that the newClass is not yet present in the singleton
+
+            Also check that no descendants are present. This is typically due to bugs.
+        """
+        assert cls not in SingletonMixin.__singletons, "Constructor called twice: {}".format(cls)
+
+        for existingClass in SingletonMixin.__singletons.keys():
+            assert not issubclass(cls, existingClass), \
+                "Sub type of {} already present: {}".format(cls, existingClass)
+
+            assert not issubclass(existingClass, cls), \
+                "Ancestor of {} already present: {}".format(cls, existingClass)
+
+
+
+
+if __name__ == "__main__":
+
+    class MyClass(SingletonMixin):
+        pass
+
+    myClass = MyClass.instance()
+    print(myClass)
+    myClass2 = MyClass.instance()
+    print(myClass2)
+    myClass3 = MyClass.instance()
+    print(myClass3)

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Miscelleneous functions and classes using Qt
+""" Miscellaneous functions and classes using Qt
 """
 from __future__ import print_function
 
