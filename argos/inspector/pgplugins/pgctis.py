@@ -882,7 +882,7 @@ class PgPlotDataItemCti(GroupCti):
 class PgColorMapCti(AbstractCti):
     """ Lets the user select one of color maps of the color map library
     """
-    def __init__(self, colorLegendItem, cmLibModel, nodeName="color map", defaultData=None):
+    def __init__(self, colorLegendItem, nodeName="color map", defaultData=None, expanded=False):
         """ Constructor.
 
             Stores a color map as data.
@@ -890,7 +890,6 @@ class PgColorMapCti(AbstractCti):
             :param defaultData: the default index in the combobox that is used for editing
         """
         check_class(colorLegendItem, ArgosColorLegendItem)
-        #check_class(cmLibModel, CmLibModelSingleton)
         self.colorLegendItem = colorLegendItem
         self.cmLibModel = CmLibModelSingleton.instance()
 
@@ -900,7 +899,10 @@ class PgColorMapCti(AbstractCti):
         self.greyScaleColorMap = ColorMap(CmMetaData("-- none --"), CatalogMetaData("Argos"))
         self.greyScaleColorMap.set_rgba_uint8_array(lutRgba)
 
-        super(PgColorMapCti, self).__init__(nodeName, defaultData)
+        super(PgColorMapCti, self).__init__(nodeName, defaultData, expanded=expanded)
+
+        self.reverseCti = self.insertChild(BoolCti("reversed", False))
+
 
 
     def _enforceDataType(self, data):
@@ -927,7 +929,10 @@ class PgColorMapCti(AbstractCti):
         """ Applies the configuration to its target axis.
             Sets the image item's lookup table to the LUT of the selected color map.
         """
-        self.colorLegendItem.setLut(self.data.rgb_uint8_array)
+        lut = self.data.rgb_uint8_array
+        if self.reverseCti.configValue:
+            lut = np.flipud(lut)
+        self.colorLegendItem.setLut(lut)
 
 
     def _dataToString(self, data):

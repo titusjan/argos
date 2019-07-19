@@ -173,8 +173,7 @@ class PgImagePlot2dCti(MainGroupCti):
 
         self.colorCti = self.insertChild(PgAxisCti('color scale'))
 
-        self.colorCti.insertChild(PgColorMapCti(
-            self.pgImagePlot2d.colorLegendItem, None)) #self.pgImagePlot2d.cmLibModel))
+        self.colorCti.insertChild(PgColorMapCti(self.pgImagePlot2d.colorLegendItem))
 
         self.colorCti.insertChild(PgColorLegendLabelCti(
             pgImagePlot2d.colorLegendItem, self.pgImagePlot2d.collector, defaultData=1,
@@ -297,35 +296,6 @@ class PgImagePlot2d(AbstractInspector):
 
         self.imageItem = pg.ImageItem()
         self.imagePlotItem.addItem(self.imageItem)
-
-        # Color map library
-        #self.cmLibModel = CmLibModel(_CM_LIB)
-
-        # self.histLutItem = HistogramLUTItem() # what about GradientLegend?
-        # self.histLutItem.region.setBrush("#FF006632")
-        # for line in self.histLutItem.region.lines:
-        #     line.setPen(color=("#FF0066"))
-        #
-        # self.histLutItem.setImageItem(self.imageItem)
-        # self.histLutItem.vb.setMenuEnabled(False)
-        # self.histLutItem.setHistogramRange(0, 100) # Disables autoscaling
-        # TODO: better lut
-        #cmap = pg.ColorMap([0, 0.25, 0.75, 1], [[0, 0, 0, 255], [255, 0, 0, 255],
-                            # [255, 255, 0, 255], [255, 255, 255, 255]])
-        #lut = cmap.getLookupTable()
-
-        #lut = np.array(list(reversed(
-        # [(237,248,251), (178,226,226), (102,194,164), (35,139,69), (0, 0, 0)])))
-
-        #lut = np.array([(237,248,251), (178,226,226), (102,194,164), (35,139,69), (0, 0, 0)])
-        lut = np.array([(237,248,251), (178,226,226), (102,194,164), (35,139,69), (0, 0, 0)])
-        lut = np.flipud(lut)
-
-        # # Duplicate last item because the pyqtgraph.makeARGB function has a wrong default scale. It
-        # # should be equal to the length of the LUT, but it's set to len(lut)-1. We therefore add a
-        # # fake LUT entry.
-        # extendedLut = np.append(lut, [lut[-1, :]], axis=0)
-        self.imageItem.setLookupTable(lut.astype(np.uint8))
 
         self.colorLegendItem = ArgosColorLegendItem(self.imageItem)
 
