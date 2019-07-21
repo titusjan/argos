@@ -882,6 +882,8 @@ class PgPlotDataItemCti(GroupCti):
 class PgColorMapCti(AbstractCti):
     """ Lets the user select one of color maps of the color map library
     """
+    SUB_SAMPLING_OFF = 1
+
     def __init__(self, colorLegendItem, nodeName="color map", defaultData=None, expanded=False):
         """ Constructor.
 
@@ -901,8 +903,13 @@ class PgColorMapCti(AbstractCti):
 
         super(PgColorMapCti, self).__init__(nodeName, defaultData, expanded=expanded)
 
-        self.reverseCti = self.insertChild(BoolCti("reversed", False))
+        self.reverseCti = self.insertChild(
+            BoolCti("reversed", False))
 
+        self.subSampleCti = self.insertChild(
+            IntCti("sub sample", self.SUB_SAMPLING_OFF, specialValueText="off",
+                   minValue=self.SUB_SAMPLING_OFF, maxValue=64, stepSize=1)
+        )
 
 
     def _enforceDataType(self, data):
@@ -930,8 +937,16 @@ class PgColorMapCti(AbstractCti):
             Sets the image item's lookup table to the LUT of the selected color map.
         """
         lut = self.data.rgb_uint8_array
+
+        targetSize = self.subSampleCti.configValue
+        if targetSize > self.SUB_SAMPLING_OFF:
+            sourceSize, _ = lut.shape
+            subIdx = np.round(np.linspace(0, sourceSize-1, targetSize)).astype(np.uint)
+            lut = lut[subIdx, :]
+
         if self.reverseCti.configValue:
             lut = np.flipud(lut)
+
         self.colorLegendItem.setLut(lut)
 
 

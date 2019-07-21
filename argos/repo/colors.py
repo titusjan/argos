@@ -46,6 +46,9 @@ class CmLibModelSingleton(CmLibModel, SingletonMixin):
         cmDataDir = os.path.abspath("/Users/kenter/prog/py/cmlib/cmlib/data")
         logger.info("Importing color map library from: {}".format(cmDataDir))
 
+        # Don't import from Color Brewer since those are already included in MatPlotLib.
+        # With sub-sampling the color maps similar maps can be achived as the Color Brewer maps.
+        #self.cmLib.load_catalog(os.path.join(cmDataDir, 'ColorBrewer2'))
         self.cmLib.load_catalog(os.path.join(cmDataDir, 'CET'))
         self.cmLib.load_catalog(os.path.join(cmDataDir, 'MatPlotLib'))
         self.cmLib.load_catalog(os.path.join(cmDataDir, 'SciColMaps'))
