@@ -26,7 +26,7 @@ from argos.inspector.registry import InspectorRegistry, DEFAULT_INSPECTOR
 from argos.qt import QtCore, QtWidgets, QtSlot
 from argos.qt.misc import removeSettingsGroup, handleException, initQApplication
 from argos.qt.registry import GRP_REGISTRY, nameToIdentifier
-from argos.repo.colors import CmLibSingleton
+from argos.repo.colors import CmLibSingleton, DEF_FAV_COLOR_MAPS
 from argos.repo.registry import globalRtiRegistry
 from argos.repo.repotreemodel import RepoTreeModel
 from argos.utils.misc import string_to_identifier
@@ -222,10 +222,13 @@ class ArgosApplication(QtCore.QObject):
         # Instantiate windows from groups
         settings.beginGroup(profGroupName)
         try:
-            cmLib = CmLibSingleton().instance()
-            favorites = [colorMap.key for colorMap in cmLib.color_maps
-                         if colorMap.meta_data.favorite]
-            settings.setValue('cmfavorites', ','.join(favorites))
+            cmLib = CmLibSingleton.instance()
+            if not cmLib.color_maps:
+                logger.warning("No color maps loaded yet. Favorites will be empty.")
+
+            favKeys = settings.value('cmfavorites', DEF_FAV_COLOR_MAPS).split(',')
+            for colorMap in cmLib.color_maps:
+                colorMap.meta_data.favorite = colorMap.key in favKeys
 
             for windowGroupName in settings.childGroups():
                 if windowGroupName.startswith('window'):
@@ -269,10 +272,15 @@ class ArgosApplication(QtCore.QObject):
         profGroupName = self.profileGroupName()
         settings.remove(profGroupName) # start with a clean slate
 
-        cmLib = CmLibSingleton().instance()
-        favKeys = settings.value('cmfavorites', '').split(',')
-        for colorMap in cmLib.color_maps:
-            colorMap.meta_data.favorite = colorMap.key in favKeys
+        settings.beginGroup(profGroupName)
+        try:
+            cmLib = CmLibSingleton.instance()
+            favorites = [colorMap.key for colorMap in cmLib.color_maps
+                         if colorMap.meta_data.favorite]
+            logger.debug("cmfavorites: {}".format(favorites))
+            settings.setValue('cmfavorites', ','.join(favorites))
+        finally:
+            settings.endGroup()
 
         assert self.mainWindows, "no main windows found"
         for winNr, mainWindow in enumerate(self.mainWindows):

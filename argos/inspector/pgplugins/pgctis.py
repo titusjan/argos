@@ -43,7 +43,7 @@ from argos.inspector.pgplugins.colorbar import ArgosColorLegendItem
 from argos.inspector.pgplugins.pghistlutitem import HistogramLUTItem
 from argos.qt import QtCore, QtGui, QtWidgets, QtSlot
 from argos.qt.misc import setWidgetSizePolicy
-from argos.repo.colors import CmLibModelSingleton
+from argos.repo.colors import CmLibModelSingleton, DEFAULT_COLOR_MAP
 from argos.utils.cls import check_class
 from argos.utils.masks import nanPercentileOfSubsampledArrayWithMask
 
@@ -884,7 +884,8 @@ class PgColorMapCti(AbstractCti):
     """
     SUB_SAMPLING_OFF = 1
 
-    def __init__(self, colorLegendItem, nodeName="color map", defaultData=None, expanded=False):
+    def __init__(self, colorLegendItem,
+                 nodeName="color map", defaultData=DEFAULT_COLOR_MAP, expanded=False):
         """ Constructor.
 
             Stores a color map as data.
@@ -973,9 +974,6 @@ class PgColorMapCti(AbstractCti):
         """
         dct = {}
 
-        dct['favorites'] = \
-            [cm.key for cm in self.cmLibModel.cmLib.color_maps if cm.meta_data.favorite]
-
         if self.data != self.defaultData:
             dct['data'] = self.data.key
         return dct
@@ -985,10 +983,6 @@ class PgColorMapCti(AbstractCti):
         """ Sets values from a dictionary in the current node.
             Non-recursive auxiliary function for setValuesFromDict
         """
-        if 'favorites' in dct:
-            for cm in self.cmLibModel.cmLib.color_maps:
-                cm.meta_data.favorite = cm.key in dct['favorites']
-
         if 'data' in dct:
             self.data = self.cmLibModel.getColorMapByKey(dct['data'])
 

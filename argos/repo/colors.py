@@ -22,12 +22,22 @@ from __future__ import print_function
 import logging
 import os.path
 
+from os import listdir
+
 from cmlib import CmLib, CmLibModel
 
 from argos.utils.cls import SingletonMixin
 
 logger = logging.getLogger(__name__)
 
+# The color maps that are favorites then the program is started for the first time or reset.
+DEF_FAV_COLOR_MAPS = ','.join([
+    'SciColMaps/Oleron', 'SciColMaps/Nuuk', 'SciColMaps/Acton', 'CET/CET-CBL2', 'MatPlotLib/Gray', 
+    'CET/CET-C2', 'CET/CET-R2', 'MatPlotLib/BrBG', 'MatPlotLib/Tab20', 'MatPlotLib/Inferno',
+    'MatPlotLib/Tab10', 'MatPlotLib/Cubehelix', 'MatPlotLib/Viridis', 'MatPlotLib/Coolwarm'])
+
+DEFAULT_COLOR_MAP = "MatPlotLib/Viridis"
+assert DEFAULT_COLOR_MAP in DEF_FAV_COLOR_MAPS, "Default color map not in default favorites."
 
 
 class CmLibSingleton(CmLib, SingletonMixin):
@@ -35,12 +45,7 @@ class CmLibSingleton(CmLib, SingletonMixin):
     def __init__(self, **kwargs):
         super(CmLibSingleton, self).__init__(**kwargs)
 
-
-
-class CmLibModelSingleton(CmLibModel, SingletonMixin):
-
-    def __init__(self, **kwargs):
-        super(CmLibModelSingleton, self).__init__(CmLibSingleton.instance(), **kwargs)
+        logger.debug("CmLib singleton: {}".format(self))
 
         # TODO: actual, relative path
         cmDataDir = os.path.abspath("/Users/kenter/prog/py/cmlib/cmlib/data")
@@ -48,13 +53,23 @@ class CmLibModelSingleton(CmLibModel, SingletonMixin):
 
         # Don't import from Color Brewer since those are already included in MatPlotLib.
         # With sub-sampling the color maps similar maps can be achived as the Color Brewer maps.
-        #self.cmLib.load_catalog(os.path.join(cmDataDir, 'ColorBrewer2'))
-        self.cmLib.load_catalog(os.path.join(cmDataDir, 'CET'))
-        self.cmLib.load_catalog(os.path.join(cmDataDir, 'MatPlotLib'))
-        self.cmLib.load_catalog(os.path.join(cmDataDir, 'SciColMaps'))
+        excludeList = ['ColorBrewer2']
+        for path in listdir(cmDataDir):
+            if path in excludeList:
+                logger.debug("Not importing catalogue from exlude list: {}".format(excludeList))
+                continue
 
-        logger.debug("Number of color maps: {}".format(len(self.cmLib.color_maps)))
+            fullPath = os.path.join(cmDataDir, path)
+            if os.path.isdir(fullPath):
+                self.load_catalog(fullPath)
+
+        logger.debug("Number of color maps: {}".format(len(self.color_maps)))
 
         # Set some random favorites to test the favorite checkbox
 
+
+class CmLibModelSingleton(CmLibModel, SingletonMixin):
+
+    def __init__(self, **kwargs):
+        super(CmLibModelSingleton, self).__init__(CmLibSingleton.instance(), **kwargs)
 
