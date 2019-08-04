@@ -416,6 +416,7 @@ def get_full_class_name(obj):
 # Importing #
 #############
 
+# TODO: use importlib.import_module?
 def import_symbol(full_symbol_name):
     """ Imports a symbol (e.g. class, variable, etc) from a dot separated name.
         Can be used to create a class whose type is only known at run-time.

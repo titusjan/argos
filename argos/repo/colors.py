@@ -24,7 +24,7 @@ import os.path
 
 from os import listdir
 
-from cmlib import CmLib, CmLibModel
+from argos.external.cmlib import CmLib, CmLibModel
 
 from argos.utils.cls import SingletonMixin
 
@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 # The color maps that are favorites then the program is started for the first time or reset.
 DEF_FAV_COLOR_MAPS = ','.join([
-    'SciColMaps/Oleron', 'SciColMaps/Nuuk', 'SciColMaps/Acton', 'CET/CET-CBL2', 'MatPlotLib/Gray', 
+    'SciColMaps/Oleron', 'SciColMaps/Nuuk', 'SciColMaps/Acton', 'CET/CET-CBL2', 'MatPlotLib/Gray',
     'CET/CET-C2', 'CET/CET-R2', 'MatPlotLib/BrBG', 'MatPlotLib/Tab20', 'MatPlotLib/Inferno',
     'MatPlotLib/Tab10', 'MatPlotLib/Cubehelix', 'MatPlotLib/Viridis', 'MatPlotLib/Coolwarm'])
 
