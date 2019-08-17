@@ -17,6 +17,15 @@ logger = logging.getLogger(__name__)
 
 NOT_IMPLEMENTED_ERR_MSG = "You must override this abstract property/method."
 
+
+def versionStrToTuple(versionStr):
+    """ Converts a version string to tuple
+
+        E.g. 'x.y.z' to (x, y, x)
+    """
+    return tuple([int(i) for i in versionStr.split('.')])
+
+
 class AbstractModuleInfo(object):
     """ Interface for the ModuleInfo classes
     """
@@ -208,7 +217,7 @@ class QtModuleInfo(ImportedModuleInfo):
                                            versionAttribute='PYQT_VERSION', pathAttribute=None)
 
         self._verboseVersion = qtmisc.PYQT_VERSION + " ("
-        if qtmisc.QT_API:
-            self._verboseVersion += "api {}, qtpy: {}, ".format(qtmisc.QT_API, qtmisc.QTPY_VERSION)
+        # if qtmisc.QT_API_NAME:
+        #     self._verboseVersion += "api {}, qtpy: {}, ".format(qtmisc.QT_API)
         self._verboseVersion += "Qt: {})".format(qtmisc.QT_VERSION)
 

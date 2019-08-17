@@ -25,6 +25,8 @@ import numpy.ma as ma
 
 from decimal import Decimal
 from argos.repo.memoryrtis import MappingRti, SyntheticArrayRti
+from argos.utils.moduleinfo import versionStrToTuple
+
 
 logger = logging.getLogger(__name__)
 
@@ -197,10 +199,12 @@ def addPandasTestData(rti):
     try:
         import pandas as pd
         from argos.repo.rtiplugins.pandasio import (PandasSeriesRti, PandasDataFrameRti,
-                                                       PandasPanelRti)
+                                                    PandasPanelRti)
     except ImportError as ex:
         logger.warning("No pandas test data created: {}".format(ex))
         return
+
+    versionInfo = versionStrToTuple(pd.__version__)
 
     pandsRti = rti.insertChild(MappingRti({}, nodeName="pandas"))
 
@@ -215,12 +219,12 @@ def addPandasTestData(rti):
 
     pandsRti.insertChild(PandasDataFrameRti(df, 'df'))
 
-
-    panel = pd.Panel(np.random.randn(2, 5, 4), items=['Item1', 'Item2'],
-                     major_axis=pd.date_range('1/1/2000', periods=5),
-                     minor_axis=['A', 'B', 'C', 'D'])
-    pandsRti.insertChild(PandasPanelRti(panel, 'panel'))
-
+    if versionInfo < (0, 25, 0):
+        # Panels are depricated and completely removed from Pandas 0.25.0
+        panel = pd.Panel(np.random.randn(2, 5, 4), items=['Item1', 'Item2'],
+                         major_axis=pd.date_range('1/1/2000', periods=5),
+                         minor_axis=['A', 'B', 'C', 'D'])
+        pandsRti.insertChild(PandasPanelRti(panel, 'panel'))
 
     # Multi index
     arrays = [['bar', 'bar', 'baz', 'baz', 'foo', 'foo', 'qux', 'qux'],

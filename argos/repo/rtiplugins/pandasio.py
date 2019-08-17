@@ -287,6 +287,10 @@ class PandasDataFrameRti(AbstractPandasNDFrameRti):
 
 class PandasPanelRti(AbstractPandasNDFrameRti):
     """ Contains a Pandas Panel
+
+        Panel is deprecated and has been fully removed in Pandas 0.25.0.
+        For N-D labeled data structures, please use xarray. See
+        https://pandas.pydata.org/pandas-docs/version/0.25/whatsnew/v0.25.0.html
     """
     @property
     def _isStructured(self):
