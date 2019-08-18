@@ -19,15 +19,16 @@
 
     The default plugins are created (on registry reset) by InspectorRegistry.getDefaultItems()
 """
-try:
-    import pyqtgraph as pg
-except Exception as ex:
-    raise ImportError("PyQtGraph 0.10.0 or higher required")
-
-
 import logging
 
 logger = logging.getLogger(__name__)
+
+try:
+    import pyqtgraph as pg
+except Exception as ex:
+    logger.exception(ex)
+    raise ImportError("PyQtGraph 0.10.0 or higher required")
+
 
 logger.debug("Imported PyQtGraph: {}".format(pg.__version__))
 

@@ -403,8 +403,9 @@ class ArgosApplication(QtCore.QObject):
         """ Quits the application (called when the last window is closed)
         """
         logger.debug("ArgosApplication.quit called")
-        assert len(self.mainWindows) == 0, \
-            "Bug: still {} windows present at application quit!".format(len(self.mainWindows))
+        if len(self.mainWindows) > 0:
+            logger.warning("Still {} windows present at application quit!"
+                           .format(len(self.mainWindows)))
         self.qApplication.quit()
 
 

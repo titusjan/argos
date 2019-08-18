@@ -20,5 +20,5 @@
 """
 # Import commonly used function into the package name space for convenience.
 
-from argos.qt.misc import Qt, QtCore, QtGui, QtWidgets, QtSvg, QtSignal, QtSlot
+from argos.qt.bindings import Qt, QtCore, QtGui, QtWidgets, QtSvg, QtSignal, QtSlot
 from argos.qt.misc import initQApplication, initQCoreApplication

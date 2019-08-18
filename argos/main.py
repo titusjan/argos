@@ -213,8 +213,8 @@ def main():
     #logger.info('Using: {}'.format('PyQt' if USE_PYQT else 'PySide'))
 
     # Imported here so this module can be imported without Qt being installed.
-    from argos.qt.misc import ABOUT_QT_BINDINGS
-    logger.info("Using {}".format(ABOUT_QT_BINDINGS))
+    from argos.qt.bindings import QT_API_NAME
+    logger.info("Using {} Python Qt bindings".format(QT_API_NAME))
 
     # The DEBUGGING 'constant' is set before the arguments are parsed by argparse.
     # Sanity check for consistency.
