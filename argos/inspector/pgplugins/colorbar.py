@@ -54,7 +54,7 @@ class ArgosColorLegendItem(ColorLegendItem):
     def __init__(self, *args, **kwargs):
         """ Constructor
         """
-        super().__init__(*args, **kwargs)
+        super(ArgosColorLegendItem, self).__init__(*args, **kwargs)
         self.resetColorScaleAction = QtWidgets.QAction("Reset Color Range", self)
         self.resetColorScaleAction.triggered.connect(self.emitResetColorScaleSignal)
         self.resetColorScaleAction.setToolTip("Reset the range of the color scale.")
@@ -74,7 +74,7 @@ class ArgosColorLegendItem(ColorLegendItem):
         if hasattr(imageItem, '_wasIntegerData'):
             return imageItem._wasIntegerData
         else:
-            return super()._imageItemHasIntegerData(imageItem)
+            return super(ArgosColorLegendItem, self)._imageItemHasIntegerData(imageItem)
 
 
     def _updateHistogram(self):
@@ -84,7 +84,7 @@ class ArgosColorLegendItem(ColorLegendItem):
         """
         with warnings.catch_warnings():
             warnings.simplefilter(action='ignore', category=FutureWarning)
-            super()._updateHistogram()
+            super(ArgosColorLegendItem, self)._updateHistogram()
 
 
     def emitResetColorScaleSignal(self):
@@ -120,5 +120,5 @@ class ArgosColorLegendItem(ColorLegendItem):
             contextMenu.exec_(QtCore.QPoint(screenX, screenY))
 
         else:
-            super().mouseClickEvent(mouseClickEvent)
+            super(ArgosColorLegendItem, self).mouseClickEvent(mouseClickEvent)
 

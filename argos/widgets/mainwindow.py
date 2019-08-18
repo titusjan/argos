@@ -250,7 +250,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if TESTING or DEBUGGING:
             helpMenu.addSeparator()
             helpMenu.addAction("&My Test", self.myTest, "Meta+T")
-            helpMenu.addAction("&Test Walk", self.testWalkCurrentNode, "Meta+W")
+            helpMenu.addAction("&Test Walk Current", self.testWalkCurrentNode, "Meta+W")
             helpMenu.addAction("&Extensive Test Walk", self.testWalk, "Meta+E")
             helpMenu.addAction("Add Test Data", self.addTestData, "Meta+A")
 
@@ -869,14 +869,14 @@ class MainWindow(QtWidgets.QMainWindow):
             # Subtrees that will be visited. At the moment only data on my development PC.
             #rootNodes = ['/argos/icm/S5P_ICM_CA_UVN_20120919T051721_20120919T065655_01890_01_001000_20151002T140000.h5']
             #rootNodes = ['/argos/martin', '/argos/images', '/argos/Mini Scanner Output', '/myDict']
-            #rootNodes = ['/argos/martin', '/argos/images', '/myDict']
+            rootNodes = ['/argos/martin', '/argos/images', '/myDict']
             #rootNodes = ['/myDict']
 
             #/argos/trop/S5P_NRTI_L2__AER_LH_20150821T201929_20150821T202429_45862_01_000000_20170506T003521.nc/PRODUCT/dim_surface_albedo
             #/argos/trop/2015_03_16T16_32_16_MonA/after_dccorr_l1bavg/trl1brb8g.lx.nc/BAND8/ICID_30683_GROUP_00001/OBSERVATIONS/measurement_flags
             #/argos/trop/2015_03_16T16_32_16_MonA/after_dccorr_l1bavg/trl1brb8g.lx.nc/BAND8/ICID_30683_GROUP_00001/INSTRUMENT/instrument_configuration
 
-            rootNodes = ['/argos/trop/2015_03_16T16_32_16_MonA/after_dccorr_l1bavg/trl1brb8g.lx.nc/BAND8/ICID_30683_GROUP_00001']
+            #rootNodes = ['/argos/trop/2015_03_16T16_32_16_MonA/after_dccorr_l1bavg/trl1brb8g.lx.nc/BAND8/ICID_30683_GROUP_00001']
 
             # Skip nodes that give known, unfixable errors.
             skipPaths = [
@@ -927,7 +927,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Actual body
         logger.info("-------------- Running Tests ----------------")
-        timeAtStart = time.perf_counter()
+        try:
+            timeAtStart = time.perf_counter()
+        except AttributeError:
+            timeAtStart = 0.0 # Python 2.7
 
         logger.info("Visiting all nodes below: {}".format(rootNodes))
         check_is_a_sequence(rootNodes) # prevent accidental iteration over strings.
@@ -948,7 +951,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.repoWidget.repoTreeView.expandBranch(index = nodeIndex, expanded=True) # TODO: why necessary?
             visitNodes(nodeIndex)
 
-        timeAtEnd = time.perf_counter()
+        try:
+            timeAtEnd = time.perf_counter()
+        except AttributeError:
+            timeAtEnd = 1.0 # Python 2.7
+
         duration = timeAtEnd - timeAtStart
         logger.info("Visited {} nodes in {:.1f} seconds ({:.1f} nodes/second)"
                     .format(self.__nodesVisited, duration, self.__nodesVisited/duration))

@@ -212,12 +212,12 @@ class PillowInfo(ImportedModuleInfo):
 class QtModuleInfo(ImportedModuleInfo):
 
     def __init__(self):
-        import argos.qt.misc as qtmisc
-        super(QtModuleInfo, self).__init__(name=qtmisc.QT_API_NAME, module=qtmisc,
+        import argos.qt.bindings as qtbind
+        super(QtModuleInfo, self).__init__(name=qtbind.QT_API_NAME, module=qtbind,
                                            versionAttribute='PYQT_VERSION', pathAttribute=None)
 
-        self._verboseVersion = qtmisc.PYQT_VERSION + " ("
+        self._verboseVersion = qtbind.PYQT_VERSION + " ("
         # if qtmisc.QT_API_NAME:
         #     self._verboseVersion += "api {}, qtpy: {}, ".format(qtmisc.QT_API)
-        self._verboseVersion += "Qt: {})".format(qtmisc.QT_VERSION)
+        self._verboseVersion += "Qt: {})".format(qtbind.QT_VERSION)
 

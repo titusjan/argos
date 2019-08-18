@@ -19,7 +19,7 @@
 Class for storing values and a mask. Masked arrays would have been a good solution but
 unfortunately they are very buggy.
 """
-
+from __future__ import division, print_function
 import logging
 
 import numpy as np
@@ -173,7 +173,7 @@ class ArrayWithMask(object):
         return self.data.dtype
 
 
-    def __getitem__(self, index) -> 'ArrayWithMask':
+    def __getitem__(self, index):
         """ Called when using the awm with an index (e.g. rti[0]).
         """
         newMask = self.mask if isinstance(self.mask, bool) else self.maskIndex()[index]
@@ -286,7 +286,7 @@ def nanPercentileOfSubsampledArrayWithMask(arrayWithMask, percentiles, subsample
 
 
 
-def _subsampleArray(array: np.ndarray, targetNumElements=40000):
+def _subsampleArray(array, targetNumElements=40000):
     """ Sub samples an array or masked array.
 
         It samples the array down equally along all dimensions so that is has less than 40000
@@ -312,7 +312,7 @@ def _subsampleArray(array: np.ndarray, targetNumElements=40000):
 
 
 
-def _maskedNanPercentile(maskedArray: ma.masked_array, percentiles, *args, **kwargs):
+def _maskedNanPercentile(maskedArray, percentiles, *args, **kwargs):
     """ Calculates np.nanpercentile on the non-masked values
 
         The *args and **kwargs are passed on to np.nanpercentile

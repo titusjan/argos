@@ -908,7 +908,7 @@ class PgColorMapCti(AbstractCti):
             BoolCti("reversed", False))
 
         self.subSampleCti = self.insertChild(
-            IntCti("sub sample", self.SUB_SAMPLING_OFF, specialValueText="off",
+            IntCti("subsample", self.SUB_SAMPLING_OFF, specialValueText="off",
                    minValue=self.SUB_SAMPLING_OFF, maxValue=64, stepSize=1)
         )
 
