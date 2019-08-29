@@ -194,8 +194,10 @@ class RtiIconFactory(object):
                 svg = svg.replace(oldColor, color)
 
         # From http://stackoverflow.com/questions/15123544/change-the-color-of-an-svg-in-qt
-        qByteArray = QtCore.QByteArray()
-        qByteArray.append(svg)
+        qByteArray = QtCore.QByteArray(svg.encode('utf-8'))
+        # qByteArray = QtCore.QByteArray() # the old PyQt way
+        # qByteArray.append(svg)
+
         svgRenderer = QtSvg.QSvgRenderer(qByteArray)
         icon = QtGui.QIcon()
         for size in self.renderSizes:
