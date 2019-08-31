@@ -161,21 +161,6 @@ class AbstractCti(BaseTreeItem):
         pass
 
 
-    def __eq__(self, other):
-        """ Returns true if self == other.
-        """
-        result = (type(self) == type(other) and
-                  self.nodeName == other.nodeName and
-                  self.data == other.data and
-                  self.defaultData == other.defaultData and
-                  self.childItems == other.childItems)
-        return result
-
-    def __ne__(self, other):
-        """ Returns true if self != other.
-        """
-        return not self.__eq__(other)
-
     @property
     def debugInfo(self):
         """ Returns the string with debugging information
