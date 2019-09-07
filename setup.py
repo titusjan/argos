@@ -37,6 +37,13 @@ if sys.version_info < (2,7) or ((3,0) <= sys.version_info < (3, 4)):
 readme = open('README.rst').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
+# Don't add PyQt for two reasons. First users may use PySide2 (although at the moment PySide is
+# not yet working). Second, users may use Anaconda to install PyQt. Anaconda uses a different
+# package name (pyqt) than pip (PyQt5) and the tools can't detect correctly if PyQt has been
+# installed. This leads to trouble. See
+# ...
+# ...
+
 # From http://setuptools.readthedocs.io/en/latest/setuptools.html?highlight=install_requires#declaring-dependencies
 # Using the install_requires option has three effects:
 #  1) When your project is installed, either by using EasyInstall, setup.py install, or
@@ -54,9 +61,12 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 # google didn't help. I don't know how to resolve these errors, so to save myself a lot of headaches
 # I disabled automatic dependency installation.
 
-# Declaring depdencies. DISABLED, see comment above.
+Is that still true. Test this?
+
+# Declaring dependencies.
 install_requires = [
-    "PyQt5 >= 5.6.0", # Don't know which version is minimal
+    #"PyQt5 >= 5.6.0", # Don't require PyQt. See comment above
+    "cmlib",
     "numpy >= 1.11",
     # Argos will technically work without pyqtgraph and h5py, but with very limited functionality.
     # "pyqtgraph >= 0.10",
@@ -76,7 +86,7 @@ setup(
     packages = find_packages(),
     package_data = {'': ['HISTORY.rst'], info.PACKAGE_NAME: ['img/snipicons/*']},
     entry_points={'gui_scripts': ['argos = argos.main:main']},
-    #install_requires = install_requires, # DISABLED. See coments above.
+    install_requires = install_requires,
     zip_safe = False,
     classifiers = [
         'Development Status :: 4 - Beta',

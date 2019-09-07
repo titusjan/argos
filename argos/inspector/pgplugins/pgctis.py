@@ -28,8 +28,8 @@ import pyqtgraph as pg
 from functools import partial
 from collections import OrderedDict
 
-from argos.external.cmlib import ColorSelectionWidget, ColorMap, makeColorBarPixmap
-from argos.external.cmlib import CmMetaData, CatalogMetaData
+from cmlib import ColorSelectionWidget, ColorMap, makeColorBarPixmap
+from cmlib import CmMetaData, CatalogMetaData
 
 from argos.config.groupcti import GroupCti
 from argos.config.abstractcti import AbstractCti, AbstractCtiEditor

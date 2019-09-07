@@ -27,7 +27,7 @@ import pyqtgraph as pg
 from functools import partial
 from collections import OrderedDict
 
-from argos.external.cmlib import CmLibModel
+from cmlib import CmLibModel
 
 from argos.info import DEBUGGING
 from argos.config.boolcti import BoolCti, BoolGroupCti

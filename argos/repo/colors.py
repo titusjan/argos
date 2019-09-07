@@ -24,7 +24,7 @@ import os.path
 
 from os import listdir
 
-from argos.external.cmlib import CmLib, CmLibModel
+from cmlib import CmLib, CmLibModel
 
 from argos.utils.cls import SingletonMixin
 

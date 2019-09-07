@@ -10,9 +10,11 @@
     combinations. It is expected to work though. If you encounter issues with PySide2 please report
     them and I'll see what I can do.
 """
+import logging
 import os
 import sys
 
+logger = logging.getLogger(__name__)
 
 API_PYSIDE2 = 'pyside2'
 API_PYQT5 = 'pyqt5'
@@ -39,7 +41,8 @@ if QT_API_NAME is None:
 if QT_API_NAME is None:
     try:
         import PyQt5
-    except ModuleNotFoundError:
+    except ModuleNotFoundError as ex:
+        logger.debug("Tried but failed to import PyQt5: {}".format(ex))
         pass
     else:
         QT_API_NAME = API_PYQT5
@@ -47,8 +50,8 @@ if QT_API_NAME is None:
 if QT_API_NAME is None:
     try:
         import PySide2
-    except ModuleNotFoundError:
-        pass
+    except ModuleNotFoundError as ex:
+        logger.debug("Tried but failed to import PySide2: {}".format(ex))
     else:
         QT_API_NAME = API_PYSIDE2
 
@@ -74,6 +77,8 @@ elif QT_API_NAME == API_PYSIDE2:
 
 else:
 
-    raise ValueError("Unknown Qt API {!r}. Should be one of: {}".format(QT_API_NAME, ALL_API))
+    raise RuntimeError(
+        "Unable to import one of the Qt bindings: {}. The specified binding "
+        "(QT_API environment variable) is: {!r})".format(ALL_API, QT_API_NAME))
 
 

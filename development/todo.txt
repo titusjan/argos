@@ -1,8 +1,16 @@
 
+Argos philosophy:
+    -   Argos is a reader, not a writer.
+        It opens all files read-only. No modification will ever be performed on a data file.
+    -   Argos is single threaded to keep it simple.
+    -   Argos shall remain a stand-alone tool and not become a part of other projects such as
+        IPython or Spyder.
 
 
 /argos/Mini Scanner Output/acceptance7.h5/samples/re
 TODO short term:
+
+    display order in /Users/kenter/OneDrive - SPECTRAL Industries/Data/2019-09-01_avantes-ir_wls_et_scan/03_et_scan_avantes
 
     close files on collapse.
 

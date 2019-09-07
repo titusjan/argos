@@ -1,4 +1,4 @@
-# Use this file to create an Anoconda environment with:
+# Use this file to create an Anaconda environment with:
 # %> conda env create -f environment.yml [-n better_name]
 
 name: argos
