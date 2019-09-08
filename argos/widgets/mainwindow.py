@@ -134,7 +134,8 @@ class MainWindow(QtWidgets.QMainWindow):
             profStats = pstats.Stats(self._profiler)
             profStats.dump_stats(self._profFileName)
 
-        self.inspector.finalize()
+        if self.inspector: # Can be None if inspector couldn't load, e.g. PyQtGraph not installed.
+            self.inspector.finalize()
 
 
     def __setupViews(self):

@@ -27,8 +27,6 @@ except ImportError:
 
 from argos import info
 
-assert not info.DEBUGGING, "info.DEBUGGING must be False to make a release."
-
 if sys.version_info < (2,7) or ((3,0) <= sys.version_info < (3, 4)):
     err("Arogs requires Python 2.7 and higher or 3.4 and higher.")
     sys.exit(1)
@@ -84,7 +82,7 @@ setup(
     license = "GPLv3",
     url=info.PROJECT_URL,
     packages = find_packages(),
-    package_data = {'': ['HISTORY.rst'], info.PACKAGE_NAME: ['img/snipicons/*']},
+    package_data = {'': ['HISTORY.rst'], info.PACKAGE_NAME: ['img/argos.css', 'img/snipicons/*']},
     entry_points={'gui_scripts': ['argos = argos.main:main']},
     install_requires = install_requires,
     zip_safe = False,

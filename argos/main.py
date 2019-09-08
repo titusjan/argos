@@ -193,9 +193,10 @@ def main():
 
     args = parser.parse_args(remove_process_serial_number(sys.argv[1:]))
 
+    rootLogger = logging.getLogger()
     if DEBUGGING:
         logger.info("Setting log level to: {}".format(args.log_level.upper()))
-    logger.setLevel(args.log_level.upper())
+    rootLogger.setLevel(args.log_level.upper())
 
     if DEBUGGING:
         logger.warning("Debugging flag is on!")
