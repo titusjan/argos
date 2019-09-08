@@ -24,7 +24,7 @@ import os.path
 
 from os import listdir
 
-from cmlib import CmLib, CmLibModel
+from cmlib import CmLib, CmLibModel, DATA_DIR
 
 from argos.utils.cls import SingletonMixin
 
@@ -47,8 +47,7 @@ class CmLibSingleton(CmLib, SingletonMixin):
 
         logger.debug("CmLib singleton: {}".format(self))
 
-        # TODO: actual, relative path
-        cmDataDir = os.path.abspath("/Users/kenter/prog/py/cmlib/cmlib/data")
+        cmDataDir = DATA_DIR
         logger.info("Importing color map library from: {}".format(cmDataDir))
 
         # Don't import from Color Brewer since those are already included in MatPlotLib.

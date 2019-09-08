@@ -47,6 +47,10 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 # installed. This leads to trouble. See:
 #   https://www.anaconda.com/using-pip-in-a-conda-environment/
 #   https://github.com/ContinuumIO/anaconda-issues/issues/1554
+#
+# In Debian pip will ignored installed system packages (e.g. use --ignore-installed).
+# To override this use: export PIP_IGNORE_INSTALLED=0
+# See https://github.com/pypa/pip/issues/4222
 
 install_requires = [
     #"PyQt5 >= 5.6.0", # Don't require PyQt. See comment above
