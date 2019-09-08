@@ -14,3 +14,4 @@ dependencies:
   - pip
   - pip:
     - pyqtgraph >= 0.10.0
+    - cmlib
