@@ -86,7 +86,7 @@ class AboutDialog(QtWidgets.QDialog):
         self._addModuleInfo(mi.PythonModuleInfo())
         self._addModuleInfo(mi.QtModuleInfo())
 
-        modules = ['numpy', 'scipy', 'pandas', 'pyqtgraph']
+        modules = ['numpy', 'scipy', 'pandas', 'pyqtgraph', 'pgcolorbar', 'cmlib']
         for module in modules:
             self._addModuleInfo(module)
 
