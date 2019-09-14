@@ -38,7 +38,7 @@ def setApplicationQtStyle(styleName):
     """ Sets the Qt style (e.g. to 'fusion')
     """
     qApp = QtWidgets.QApplication.instance()
-    logger.debug("Set Qt style to: {}".format(styleName))
+    logger.debug("Setting Qt style to: {}".format(styleName))
     qApp.setStyle(QtWidgets.QStyleFactory.create(styleName))
     if qApp.style().objectName().lower() != styleName.lower():
         logger.warning(

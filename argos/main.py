@@ -24,7 +24,7 @@ from __future__ import print_function
 # The browse function is imported by the argos package, which in turn is imported by setup.py.
 # If you import (for instance) numpy here, the setup.py will fail if numpy is not installed.
 
-import logging, sys, argparse, os.path
+import logging, sys, argparse, os, os.path
 from argos.info import DEBUGGING, PROJECT_NAME, VERSION, DEFAULT_PROFILE, resource_directory
 
 from argos.widgets.misc import setApplicationQtStyle, setApplicationStyleSheet
@@ -74,13 +74,12 @@ def browse(fileNames=None,
 
 
     if qtStyle:
-        setApplicationQtStyle(qtStyle)
-
-    if not styleSheet:
-        styleSheet = os.path.join(resource_directory(), "argos.css")
-        logger.debug("Using default style sheet: {}".format(styleSheet))
-    else:
-        styleSheet = os.path.abspath(styleSheet)
+        availableStyles = QtWidgets.QStyleFactory.keys()
+        if  qtStyle not in availableStyles:
+            logger.warning("Qt style '{}' is not available on this computer. Use one of: {}"
+                           .format(qtStyle, availableStyles))
+        else:
+            setApplicationQtStyle(qtStyle)
 
     if not os.path.exists(styleSheet):
         msg = "Stylesheet not found: {}".format(styleSheet)
@@ -166,7 +165,8 @@ def main():
 
     parser.add_argument('--qt-style', dest='qtStyle', help='Qt style. E.g.: fusion')
 
-    parser.add_argument('--qss', dest='styleSheet', help='Name of Qt Style Sheet file')
+    parser.add_argument('--qss', dest='styleSheet',
+                        help='Name of Qt Style Sheet file. If not set a default will be used.')
 
     parser.add_argument('-p', '--profile', dest='profile', default=DEFAULT_PROFILE,
         help="Can be used to have different persistent settings for different use cases.")
@@ -222,12 +222,22 @@ def main():
     assert args.debugging == DEBUGGING, ("Inconsistent debugging mode. {} != {}"
                                          .format(args.debugging, DEBUGGING))
 
+    qtStyle = args.qtStyle if args.qtStyle else os.environ.get("QT_STYLE_OVERRIDE", 'Fusion')
+    styleSheet = args.styleSheet if args.styleSheet else os.environ.get("ARGOS_STYLE_SHEET", '')
+
+    if not styleSheet:
+        styleSheet = os.path.join(resource_directory(), "argos.css")
+        logger.debug("Using default style sheet: {}".format(styleSheet))
+    else:
+        styleSheet = os.path.abspath(styleSheet)
+
+
     # Browse will create an ArgosApplication with one MainWindow
     browse(fileNames = args.fileNames,
            inspectorFullName=args.inspector,
            select=args.selectPath,
-           qtStyle=args.qtStyle,
-           styleSheet=args.styleSheet,
+           qtStyle=qtStyle,
+           styleSheet=styleSheet,
            profile=args.profile,
            resetProfile=args.reset_profile,
            resetAllProfiles=args.reset_all_profiles,

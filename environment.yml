@@ -15,3 +15,4 @@ dependencies:
   - pip:
     - pyqtgraph >= 0.10.0
     - cmlib
+    - pgcolorbar
