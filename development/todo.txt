@@ -10,7 +10,7 @@ Argos philosophy:
 
 TODO short term:
 
-    minimal width in data collector table
+    
 
     close files on collapse.
 

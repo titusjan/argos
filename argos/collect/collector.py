@@ -271,6 +271,7 @@ class Collector(BasePanel):
             logger.debug("Adding combobox at ({}, {})".format(row, col))
             comboBox = QtWidgets.QComboBox()
             comboBox.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
+            comboBox.setMinimumContentsLength(3) # So that collector table header always readable
             comboBox.activated.connect(self._comboBoxActivated)
             self._comboBoxes.append(comboBox)
 
