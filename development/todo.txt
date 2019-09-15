@@ -7,10 +7,10 @@ Argos philosophy:
         IPython or Spyder.
 
 
-/argos/Mini Scanner Output/acceptance7.h5/samples/re
+
 TODO short term:
 
-    display order in /Users/kenter/OneDrive - SPECTRAL Industries/Data/2019-09-01_avantes-ir_wls_et_scan/03_et_scan_avantes
+    minimal width in data collector table
 
     close files on collapse.
 

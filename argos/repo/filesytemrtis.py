@@ -65,7 +65,7 @@ class DirectoryRti(BaseRti):
             Does not fetch hidden files.
         """
         childItems = []
-        fileNames = os.listdir(self._fileName)
+        fileNames = sorted(os.listdir(self._fileName), key=lambda s: s.lower())
         absFileNames = [os.path.join(self._fileName, fn) for fn in fileNames]
 
         # Add subdirectories
