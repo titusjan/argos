@@ -10,8 +10,6 @@ Argos philosophy:
 
 TODO short term:
 
-    
-
     close files on collapse.
 
     -o/--open so that files after this command line option are opened.
@@ -60,6 +58,8 @@ TODO short term:
 
 
 TODO mid term:
+
+    Split screen for inspectors/config
 
     Histogram / statistics inspector.
 

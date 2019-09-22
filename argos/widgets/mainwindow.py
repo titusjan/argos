@@ -99,8 +99,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setDockNestingEnabled(False)
         self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
-        self.setCorner(Qt.TopRightCorner, Qt.TopDockWidgetArea)
-        self.setCorner(Qt.BottomRightCorner, Qt.RightDockWidgetArea)
+        self.setCorner(Qt.TopRightCorner, Qt.BottomDockWidgetArea)
+        self.setCorner(Qt.BottomRightCorner, Qt.BottomDockWidgetArea)
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setUnifiedTitleAndToolBarOnMac(True)
@@ -112,8 +112,8 @@ class MainWindow(QtWidgets.QMainWindow):
         center = desktopRect.center()
         self.move(center.x() - self.width () * 0.5, center.y() - self.height() * 0.5)
 
-        self.__setupViews()
         self.__setupMenus()
+        self.__setupViews()
         self.__setupDockWidgets()
 
 
@@ -149,11 +149,34 @@ class MainWindow(QtWidgets.QMainWindow):
         # Define a central widget that will be the parent of the inspector widget.
         # We don't set the inspector directly as the central widget to retain the size when the
         # inspector is changed.
-        widget = QtWidgets.QWidget()
-        layout = QtWidgets.QVBoxLayout(widget)
-        layout.setContentsMargins(CENTRAL_MARGIN, CENTRAL_MARGIN, CENTRAL_MARGIN, CENTRAL_MARGIN)
-        layout.setSpacing(CENTRAL_SPACING)
-        self.setCentralWidget(widget)
+        self.mainWidget = QtWidgets.QWidget()
+        self.mainLayout = QtWidgets.QVBoxLayout(self.mainWidget)
+        self.mainLayout.setContentsMargins(0, 0, 0, 0)
+        self.mainLayout.setSpacing(0)
+        self.setCentralWidget(self.mainWidget)
+
+        self.topPane = QtWidgets.QFrame()
+        # self.topPane.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
+        # self.topPane.setLineWidth(1)
+        self.mainLayout.addWidget(self.topPane)
+
+        self.topLayout = QtWidgets.QHBoxLayout(self.topPane)
+        self.topLayout.setContentsMargins(0, 0, 0, 0)
+        self.topLayout.setSpacing(0)
+
+        self.inspectorSelectionPane = InspectorSelectionPane(self.execInspectorDialogAction,
+                                                             self.inspectorActionGroup)
+        self.topLayout.addWidget(self.inspectorSelectionPane)
+        self.topLayout.addStretch()
+        self.sigInspectorChanged.connect(self.inspectorSelectionPane.updateFromInspectorRegItem)
+
+        self.wrapperWidget = QtWidgets.QWidget()
+        self.mainLayout.addWidget(self.wrapperWidget)
+
+        self.wrapperLayout = QtWidgets.QVBoxLayout(self.wrapperWidget)
+        self.wrapperLayout.setContentsMargins(0, 0, 0, 0)
+        self.wrapperLayout.setSpacing(0)
+
 
         # Must be after setInspector since that already draws the inspector
         self.collector.sigContentsChanged.connect(self.collectorContentsChanged)
@@ -285,16 +308,10 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         #self.dockWidget(self.currentInspectorPane, "Current Inspector", Qt.LeftDockWidgetArea)
 
-        self.inspectorSelectionPane = InspectorSelectionPane(self.execInspectorDialogAction,
-                                                             self.inspectorActionGroup)
-        self.sigInspectorChanged.connect(self.inspectorSelectionPane.updateFromInspectorRegItem)
-        self.dockWidget(self.inspectorSelectionPane, "Current Inspector",
-                        area=Qt.LeftDockWidgetArea)
-
         self.dockWidget(self.repoWidget, "Data Repository", Qt.LeftDockWidgetArea)
-        self.dockWidget(self.collector, "Data Collector", Qt.TopDockWidgetArea)
+        self.dockWidget(self.collector, "Data Collector", Qt.BottomDockWidgetArea)
         # TODO: if the title == "Settings" it won't be added to the view menu.
-        self.dockWidget(self.configWidget, "Application Settings", Qt.RightDockWidgetArea)
+        self.dockWidget(self.configWidget, "Inspector Settings", Qt.RightDockWidgetArea)
 
         self.viewMenu.addSeparator()
 
@@ -388,7 +405,8 @@ class MainWindow(QtWidgets.QMainWindow):
         assert widget.parent() is None, "Widget already has a parent"
 
         dockWidget = QtWidgets.QDockWidget(title, parent=self)
-        dockWidget.setObjectName("dock_" + string_to_identifier(title))
+        # Use dock2 as name to reset at upgrade
+        dockWidget.setObjectName("dock2_" + string_to_identifier(title)) # Use doc
         dockWidget.setWidget(widget)
 
         self.addDockWidget(area, dockWidget)
@@ -518,7 +536,7 @@ class MainWindow(QtWidgets.QMainWindow):
         logger.debug("Disabling updates.")
         self.setUpdatesEnabled(False)
         try:
-            centralLayout = self.centralWidget().layout()
+            #centralLayout = self.centralWidget().layout()
 
             # Delete old inspector
             if oldInspector is None: # can be None at start-up
@@ -533,7 +551,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self._configTreeModel.deleteItemAtIndex(oldConfigIndex)
 
                 oldInspector.finalize() # TODO: before removing config
-                centralLayout.removeWidget(oldInspector)
+                self.wrapperLayout.removeWidget(oldInspector)
                 oldInspector.deleteLater()
 
             # Set new inspector
@@ -553,7 +571,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     self._configTreeModel.insertItem(self.inspector.config, oldConfigPosition)
                     self.configWidget.configTreeView.expandBranch()
                     self.collector.clearAndSetComboBoxes(self.inspector.axesNames())
-                    centralLayout.addWidget(self.inspector)
+                    self.wrapperLayout.addWidget(self.inspector)
             finally:
                 self.collector.blockSignals(oldBlockState)
         finally:

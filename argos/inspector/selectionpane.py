@@ -63,6 +63,7 @@ class InspectorSelectionPane(BasePanel):
         # self.layout.addWidget(self.label)
 
         self.menuButton = QtWidgets.QPushButton("No inspector")
+        self.menuButton.setMinimumWidth(10)
         self.mainLayout.addWidget(self.menuButton)
 
         inspectorMenu = QtWidgets.QMenu("Change Inspector", parent=self.menuButton)
@@ -79,6 +80,7 @@ class InspectorSelectionPane(BasePanel):
         """ Updates the label from the full name of the InspectorRegItem
         """
         library, name = inspectorRegItem.splitName()
-        label = "{} ({})".format(name, library) if library else name
+        #label = "{} ({})".format(name, library) if library else name
+        label = name
         #self.label.setText(label)
         self.menuButton.setText(label)

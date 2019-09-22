@@ -95,7 +95,7 @@ class InspectorRegistry(ClassRegistry):
                              'argos.inspector.pgplugins.imageplot2d.PgImagePlot2d'),
             ]
         if DEBUGGING:
-            plugins.append(InspectorRegItem('zPyQtGraph/2D Image Plot (Old)',
+            plugins.append(InspectorRegItem('PyQtGraph/2D Image Plot (Old)',
                                             'argos.inspector.pgplugins.old_imageplot2d.PgImagePlot2d'))
             plugins.append(InspectorRegItem('Debug Inspector',
                                             'argos.inspector.debug.DebugInspector'))
