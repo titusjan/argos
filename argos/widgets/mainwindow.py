@@ -41,9 +41,6 @@ from argos.inspector.registry import InspectorRegItem
 from argos.inspector.selectionpane import InspectorSelectionPane, addInspectorActionsToMenu
 from argos.qt import Qt, QtCore, QtGui, QtWidgets, QtSignal, QtSlot
 
-from argos.repo.detailplugins.attr import AttributesPane
-from argos.repo.detailplugins.dim import DimensionsPane
-from argos.repo.detailplugins.prop import PropertiesPane
 from argos.repo.repotreeview import RepoWidget
 from argos.repo.testdata import createArgosTestData
 from argos.utils.cls import check_class, check_is_a_sequence
@@ -91,7 +88,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self._inspector = None
         self._inspectorRegItem = None # The registered inspector item a InspectorRegItem)
 
-        self._detailDockWidgets = []
         self._argosApplication = argosApplication
         self._configTreeModel = ConfigTreeModel()
         self._inspectorsNonDefaults = {}  # non-default values for all used plugins
@@ -99,7 +95,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setDockNestingEnabled(False)
         self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
-        self.setCorner(Qt.TopRightCorner, Qt.BottomDockWidgetArea)
+        self.setCorner(Qt.TopRightCorner, Qt.TopDockWidgetArea)
         self.setCorner(Qt.BottomRightCorner, Qt.BottomDockWidgetArea)
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
@@ -144,6 +140,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._collector = Collector(self.windowNumber)
         self.configWidget = ConfigWidget(self._configTreeModel)
         self.repoWidget = RepoWidget(self.argosApplication.repo, self.collector)
+
         # self._configTreeModel.insertItem(self.repoWidget.repoTreeView.config) # No configurable items yet
 
         # Define a central widget that will be the parent of the inspector widget.
@@ -315,18 +312,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.viewMenu.addSeparator()
 
-        propertiesPane = PropertiesPane(self.repoWidget.repoTreeView)
-        self.dockDetailPane(propertiesPane, area=Qt.LeftDockWidgetArea)
-
-        attributesPane = AttributesPane(self.repoWidget.repoTreeView)
-        self.dockDetailPane(attributesPane, area=Qt.LeftDockWidgetArea)
-
-        dimensionsPane = DimensionsPane(self.repoWidget.repoTreeView)
-        self.dockDetailPane(dimensionsPane, area=Qt.LeftDockWidgetArea)
+        for dockWidget in self.repoWidget.detailDockWidgets:
+            self.viewMenu.addAction(dockWidget.toggleViewAction())
 
         # Add am extra separator on mac because OS-X adds an 'Enter Full Screen' item
         if sys.platform.startswith('darwin'):
             self.viewMenu.addSeparator()
+
+
 
     ##############
     # Properties #
@@ -408,25 +401,11 @@ class MainWindow(QtWidgets.QMainWindow):
         # Use dock2 as name to reset at upgrade
         dockWidget.setObjectName("dock2_" + string_to_identifier(title)) # Use doc
         dockWidget.setWidget(widget)
-
         self.addDockWidget(area, dockWidget)
+
         self.viewMenu.addAction(dockWidget.toggleViewAction())
         return dockWidget
 
-
-    def dockDetailPane(self, detailPane, title=None, area=None):
-        """ Creates a dockWidget and add the detailPane with a default title.
-            By default the detail widget is added to the Qt.LeftDockWidgetArea.
-        """
-        title = detailPane.classLabel() if title is None else title
-        area = Qt.LeftDockWidgetArea if area is None else area
-        dockWidget = self.dockWidget(detailPane, title, area)
-        # TODO: undockDetailPane to disconnect
-        dockWidget.visibilityChanged.connect(detailPane.dockVisibilityChanged)
-        if len(self._detailDockWidgets) > 0:
-            self.tabifyDockWidget(self._detailDockWidgets[-1], dockWidget)
-        self._detailDockWidgets.append(dockWidget)
-        return dockWidget
 
 
     def updateWindowTitle(self):

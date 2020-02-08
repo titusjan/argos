@@ -22,33 +22,86 @@ import logging
 from argos.qt import QtWidgets, QtGui, QtCore, QtSignal, QtSlot, Qt
 from argos.config.groupcti import MainGroupCti
 from argos.config.boolcti import BoolCti
-from argos.repo.baserti import BaseRti
+from argos.repo.detailplugins.attr import AttributesPane
+from argos.repo.detailplugins.dim import DimensionsPane
+from argos.repo.detailplugins.prop import PropertiesPane
 from argos.repo.registry import globalRtiRegistry
 from argos.repo.repotreemodel import RepoTreeModel
+from argos.utils.misc import string_to_identifier
 from argos.widgets.argostreeview import ArgosTreeView
 from argos.widgets.constants import (LEFT_DOCK_WIDTH, COL_NODE_NAME_WIDTH,
                                         COL_SHAPE_WIDTH, COL_ELEM_TYPE_WIDTH,
                                         DOCK_SPACING, DOCK_MARGIN)
 from argos.widgets.misc import BasePanel
 
+
 logger = logging.getLogger(__name__)
 
 # Qt classes have many ancestors
 #pylint: disable=R0901
 
-class RepoWidget(BasePanel):
-    """ Shows the repository. At the moment only the repository tree view.
+
+
+class RepoWidget(QtWidgets.QMainWindow):
+    """ Groups the repository tree plus the details dock widgets.
     """
     def __init__(self, repoTreeModel, collector, parent=None):
         """ Constructor.
             :param parent:
         """
         super(RepoWidget, self).__init__(parent=parent)
-        self.repoTreeView = RepoTreeView(repoTreeModel, collector, parent=self)
-        self.mainLayout = QtWidgets.QVBoxLayout(self)
-        self.mainLayout.addWidget(self.repoTreeView)
+
+        self.detailDockWidgets = []
+
+        self.mainLayout = QtWidgets.QVBoxLayout()
         self.mainLayout.setSpacing(DOCK_SPACING)
         self.mainLayout.setContentsMargins(DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN)
+
+        self.mainWidget = BasePanel() # So we have some margins from the CSS.
+        self.mainWidget.setLayout(self.mainLayout)
+        self.setCentralWidget(self.mainWidget)
+
+        self.repoTreeView = RepoTreeView(repoTreeModel, collector)
+        self.mainLayout.addWidget(self.repoTreeView)
+
+        propertiesPane = PropertiesPane(self.repoTreeView)
+        self.dockDetailPane(propertiesPane, area=Qt.BottomDockWidgetArea)
+
+        attributesPane = AttributesPane(self.repoTreeView)
+        self.dockDetailPane(attributesPane, area=Qt.BottomDockWidgetArea)
+
+        dimensionsPane = DimensionsPane(self.repoTreeView)
+        self.dockDetailPane(dimensionsPane, area=Qt.BottomDockWidgetArea)
+
+
+    def dockWidget(self, widget, title, area):
+        """ Adds a widget as a docked widget.
+            Returns the added dockWidget
+        """
+        assert widget.parent() is None, "Widget already has a parent"
+
+        dockWidget = QtWidgets.QDockWidget(title, parent=self)
+        # Use dock2 as name to reset at upgrade
+        dockWidget.setObjectName("dock2_" + string_to_identifier(title)) # Use doc
+        dockWidget.setWidget(widget)
+        self.addDockWidget(area, dockWidget)
+
+        return dockWidget
+
+
+    def dockDetailPane(self, detailPane, title=None, area=None):
+        """ Creates a dockWidget and add the detailPane with a default title.
+            By default the detail widget is added to the Qt.LeftDockWidgetArea.
+        """
+        title = detailPane.classLabel() if title is None else title
+        area = Qt.LeftDockWidgetArea if area is None else area
+        dockWidget = self.dockWidget(detailPane, title, area)
+        # TODO: undockDetailPane to disconnect
+        dockWidget.visibilityChanged.connect(detailPane.dockVisibilityChanged)
+        if len(self.detailDockWidgets) > 0:
+            self.tabifyDockWidget(self.detailDockWidgets[-1], dockWidget)
+        self.detailDockWidgets.append(dockWidget)
+        return dockWidget
 
 
 
