@@ -23,6 +23,10 @@ BasePanel {
     padding: 5px;
 }
 
+InspectorSelectionPane {
+    padding: 5px;
+    padding-bottom: 0px;
+}
 
 QMainWindow::separator {
     background: black;

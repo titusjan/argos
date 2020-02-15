@@ -46,7 +46,7 @@ def addInspectorActionsToMenu(inspectorMenu, execInspectorDialogAction, inspecto
     return inspectorMenu
 
 
-class InspectorSelectionPane(BasePanel):
+class InspectorSelectionPane(QtWidgets.QFrame):
     """ Shows the attributes of the selected repo tree item
     """
     def __init__(self, execInspectorDialogAction, inspectorActionGroup, parent=None):
