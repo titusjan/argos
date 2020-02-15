@@ -82,31 +82,6 @@ class DetailBasePane(QtWidgets.QStackedWidget):
         return QtCore.QSize(LEFT_DOCK_WIDTH, 250)
 
 
-    @QtSlot(bool)
-    def dockVisibilityChanged(self, visible):
-        """ Slot to be called when the dock widget that this pane contains become (in)visible.
-            Is used to (dis)connect the pane from its repo tree view and so prevent unnecessary
-            and potentially costly updates when the pane is hidden.
-        """
-        logger.debug("dockVisibilityChanged of {!r}: visible={}".format(self, visible))
-
-        if visible:
-            self._repoTreeView.sigRepoItemChanged.connect(self.repoItemChanged)
-            self._isConnected = True
-
-            currentRepoItem, _currentIndex = self._repoTreeView.getCurrentItem()
-            self.repoItemChanged(currentRepoItem)
-        else:
-            # At start-up the pane be be hidden but the signals are not connected.
-            # A disconnect would fail in that case so we test for isConnected == True.
-            if self.isConnected:
-                self._repoTreeView.sigRepoItemChanged.disconnect(self.repoItemChanged)
-
-            self._isConnected = False
-            self.errorWidget.setError(msg="Contents disabled", title="Error")
-            self.setCurrentIndex(self.ERROR_PAGE_IDX)
-
-
     def repoItemChanged(self, rti):
         """ Updates the content when the current repo tree item changes.
             The rti parameter can be None when no RTI is selected in the repository tree.
@@ -162,4 +137,3 @@ class DetailTablePane(DetailBasePane):
         tableHeader = self.table.horizontalHeader()
         tableHeader.setSectionResizeMode(QtWidgets.QHeaderView.Interactive) # don't set to stretch
         tableHeader.setStretchLastSection(True)
-

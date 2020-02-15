@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 
 
 
-class RepoWidget(QtWidgets.QMainWindow):
+class RepoWidget(BasePanel):
     """ Groups the repository tree plus the details dock widgets.
     """
     def __init__(self, repoTreeModel, collector, parent=None):
@@ -51,57 +51,104 @@ class RepoWidget(QtWidgets.QMainWindow):
         """
         super(RepoWidget, self).__init__(parent=parent)
 
-        self.detailDockWidgets = []
+        self.detailDockPanes = []
 
         self.mainLayout = QtWidgets.QVBoxLayout()
         self.mainLayout.setSpacing(DOCK_SPACING)
         self.mainLayout.setContentsMargins(DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN)
+        self.setLayout(self.mainLayout)
 
-        self.mainWidget = BasePanel() # So we have some margins from the CSS.
-        self.mainWidget.setLayout(self.mainLayout)
-        self.setCentralWidget(self.mainWidget)
+        self.mainSplitter = QtWidgets.QSplitter(orientation=Qt.Vertical)
+        self.mainLayout.addWidget(self.mainSplitter)
 
         self.repoTreeView = RepoTreeView(repoTreeModel, collector)
-        self.mainLayout.addWidget(self.repoTreeView)
+        self.mainSplitter.addWidget(self.repoTreeView)
+        self.mainSplitter.setCollapsible(0, False)
 
-        propertiesPane = PropertiesPane(self.repoTreeView)
-        self.dockDetailPane(propertiesPane, area=Qt.BottomDockWidgetArea)
+        self.tabWidget = QtWidgets.QTabWidget()
+        self.mainSplitter.addWidget(self.tabWidget)
+        self.mainSplitter.setCollapsible(1, True)
 
-        attributesPane = AttributesPane(self.repoTreeView)
-        self.dockDetailPane(attributesPane, area=Qt.BottomDockWidgetArea)
+        self.addDetailsPane(PropertiesPane(self.repoTreeView))
+        self.addDetailsPane(AttributesPane(self.repoTreeView))
+        self.addDetailsPane(DimensionsPane(self.repoTreeView))
 
-        dimensionsPane = DimensionsPane(self.repoTreeView)
-        self.dockDetailPane(dimensionsPane, area=Qt.BottomDockWidgetArea)
+        self.repoTreeView.sigRepoItemChanged.connect(self.repoItemChanged)
+        self.tabWidget.currentChanged.connect(self.tabChanged)
+
+        self.tabWidget.setCurrentIndex(1) # Show attributes the first time the program runs
 
 
-    def dockWidget(self, widget, title, area):
-        """ Adds a widget as a docked widget.
-            Returns the added dockWidget
+
+    def addDetailsPane(self, detailPane):
+        """ Adds a pane widget as a tab
         """
-        assert widget.parent() is None, "Widget already has a parent"
-
-        dockWidget = QtWidgets.QDockWidget(title, parent=self)
-        # Use dock2 as name to reset at upgrade
-        dockWidget.setObjectName("dock2_" + string_to_identifier(title)) # Use doc
-        dockWidget.setWidget(widget)
-        self.addDockWidget(area, dockWidget)
-
-        return dockWidget
+        self.tabWidget.addTab(detailPane, detailPane.classLabel())
+        self.detailDockPanes.append(detailPane)
 
 
-    def dockDetailPane(self, detailPane, title=None, area=None):
-        """ Creates a dockWidget and add the detailPane with a default title.
-            By default the detail widget is added to the Qt.LeftDockWidgetArea.
+    def saveProfile(self, key, settings):
+        """ Writes the view settings to the persistent store
         """
-        title = detailPane.classLabel() if title is None else title
-        area = Qt.LeftDockWidgetArea if area is None else area
-        dockWidget = self.dockWidget(detailPane, title, area)
-        # TODO: undockDetailPane to disconnect
-        dockWidget.visibilityChanged.connect(detailPane.dockVisibilityChanged)
-        if len(self.detailDockWidgets) > 0:
-            self.tabifyDockWidget(self.detailDockWidgets[-1], dockWidget)
-        self.detailDockWidgets.append(dockWidget)
-        return dockWidget
+        logger.debug("Writing view settings for: {}".format(key))
+
+        settings.beginGroup(key)
+        try:
+            settings.setValue('tabIndex', self.tabWidget.currentIndex())
+
+            treeSize, detailsSize = self.mainSplitter.sizes()
+            settings.setValue('splitterTreeSize', treeSize)
+            settings.setValue('splitterDetailsSize', detailsSize)
+
+        finally:
+            settings.endGroup()
+
+
+    def readViewSettings(self, key, settings):
+        """ Reads settings from the persistent store
+        """
+
+        settings.beginGroup(key)
+        try:
+            splitterTreeSize = settings.value('splitterTreeSize')
+            splitterDetailsSize = settings.value('splitterDetailsSize')
+
+            if splitterTreeSize is None or splitterDetailsSize is None:
+                logger.debug("Not restoring splitter sizes")
+            else:
+                logger.debug("Restoring splitter sizes: {}"
+                             .format((splitterTreeSize, splitterDetailsSize)))
+                self.mainSplitter.setSizes( (splitterTreeSize, splitterDetailsSize) )
+
+            tabIndex = settings.value('tabIndex')
+            if tabIndex is None:
+                logger.debug("Not restoring tab index")
+            else:
+                self.tabWidget.setCurrentIndex(tabIndex)
+
+        finally:
+            settings.endGroup()
+
+
+    def repoItemChanged(self, rti):
+        """ Updates the current tab with the newly selected repoWidget
+
+            The rti parameter can be None when no RTI is selected in the repository tree.
+        """
+        logger.debug("RepoWidget.repoItemChanged: {}".format(rti))
+
+        curPanel = self.tabWidget.currentWidget() # can be None according to docs
+        if curPanel:
+            curPanel.repoItemChanged(rti)
+        else:
+            logger.debug("No panel selected")
+
+
+    def tabChanged(self, _tabIndex):
+        """ Updates the tab from the currently selected repo item in the tree.
+        """
+        currentRepoItem, _currentIndex = self.repoTreeView.getCurrentItem()
+        self.repoItemChanged(currentRepoItem)
 
 
 

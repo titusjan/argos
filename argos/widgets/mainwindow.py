@@ -310,15 +310,6 @@ class MainWindow(QtWidgets.QMainWindow):
         # TODO: if the title == "Settings" it won't be added to the view menu.
         self.dockWidget(self.configWidget, "Inspector Settings", Qt.RightDockWidgetArea)
 
-        self.viewMenu.addSeparator()
-
-        for dockWidget in self.repoWidget.detailDockWidgets:
-            self.viewMenu.addAction(dockWidget.toggleViewAction())
-
-        # Add am extra separator on mac because OS-X adds an 'Enter Full Screen' item
-        if sys.platform.startswith('darwin'):
-            self.viewMenu.addSeparator()
-
 
 
     ##############
@@ -716,6 +707,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.restoreGeometry(settings.value("geometry"))
         self.restoreState(settings.value("state"))
 
+        self.repoWidget.readViewSettings('repo_widget', settings)
         self.repoWidget.repoTreeView.readViewSettings('repo_tree/header_state', settings)
         self.configWidget.configTreeView.readViewSettings('config_tree/header_state', settings)
 
@@ -733,7 +725,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if identifier:
                 self.setInspectorById(identifier)
         except KeyError as ex:
-            logger.warn("No inspector with ID {!r}.: {}".format(identifier, ex))
+            logger.warning("No inspector with ID {!r}.: {}".format(identifier, ex))
 
 
     def saveProfile(self, settings=None):
@@ -755,6 +747,7 @@ class MainWindow(QtWidgets.QMainWindow):
             settings.endGroup()
 
         self.configWidget.configTreeView.saveProfile("config_tree/header_state", settings)
+        self.repoWidget.saveProfile("repo_widget", settings)
         self.repoWidget.repoTreeView.saveProfile("repo_tree/header_state", settings)
 
         settings.setValue("geometry", self.saveGeometry())

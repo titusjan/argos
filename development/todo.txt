@@ -10,6 +10,9 @@ Argos philosophy:
 
 TODO short term:
 
+
+    pyqtgraph 0.11 testen
+
     close files on collapse.
 
     -o/--open so that files after this command line option are opened.
