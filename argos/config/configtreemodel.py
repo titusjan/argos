@@ -83,13 +83,14 @@ class ConfigTreeModel(BaseTreeModel):
         return result
 
 
-    def insertTopLevelGroup(self, groupName, position=None):
-        """ Inserts a top level group tree item.
-            Used to group all config nodes of (for instance) the current inspector,
-            Returns the newly created CTI
-        """
-        groupCti = GroupCti(groupName)
-        return self._invisibleRootItem.insertChild(groupCti, position=position)
+    # # Seems no longer used
+    # def insertTopLevelGroup(self, groupName, position=None):
+    #     """ Inserts a top level group tree item.
+    #         Used to group all config nodes of (for instance) the current inspector,
+    #         Returns the newly created CTI
+    #     """
+    #     groupCti = GroupCti(groupName)
+    #     return self._invisibleRootItem.insertChild(groupCti, position=position)
 
 
     def itemData(self, treeItem, column, role=Qt.DisplayRole):
@@ -231,6 +232,13 @@ class ConfigTreeModel(BaseTreeModel):
         self._refreshBlocked = blocked
         return wasBlocked
 
+
+    def resetAllSettings(self):
+        """ Resets all items in the tree to their default
+        """
+        self.invisibleRootItem.resetToDefault(resetChildren=True)
+        rootIndex = self.rootIndex()
+        self.dataChanged.emit(rootIndex, rootIndex)
 
 
     def __obsolete__readModelSettings(self, key, settings):

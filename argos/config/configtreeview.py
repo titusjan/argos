@@ -40,11 +40,21 @@ class ConfigWidget(BasePanel):
             :param parent:
         """
         super(ConfigWidget, self).__init__(parent=parent)
-        self.configTreeView = ConfigTreeView(configTreeModel, parent=self)
         self.mainLayout = QtWidgets.QVBoxLayout(self)
-        self.mainLayout.addWidget(self.configTreeView)
         self.mainLayout.setSpacing(DOCK_SPACING)
         self.mainLayout.setContentsMargins(DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN)
+
+        self.topLayout = QtWidgets.QHBoxLayout()
+        self.mainLayout.addLayout(self.topLayout)
+
+        self.resetButton = QtWidgets.QPushButton("Reset Settings")
+        self.topLayout.addWidget(self.resetButton)
+
+        self.configTreeView = ConfigTreeView(configTreeModel, parent=self)
+        self.mainLayout.addWidget(self.configTreeView)
+
+        self.resetButton.clicked.connect(self.configTreeView.resetAllSettings)
+
 
 
 class ConfigTreeView(ArgosTreeView):
@@ -54,6 +64,8 @@ class ConfigTreeView(ArgosTreeView):
         """ Constructor
         """
         super(ConfigTreeView, self).__init__(treeModel=configTreeModel, parent=parent)
+
+        self.configTreeModel = configTreeModel
 
         self.expanded.connect(configTreeModel.expand)
         self.collapsed.connect(configTreeModel.collapse)
@@ -127,3 +139,10 @@ class ConfigTreeView(ArgosTreeView):
             childIndex = configModel.index(rowNr, configModel.COL_NODE_NAME, parentIndex=index)
             self.expandBranch(index=childIndex, expanded=expanded)
 
+
+    def resetAllSettings(self):
+        """ Resets all settings
+        """
+        logger.debug("Resetting all settings")
+
+        self.configTreeModel.resetAllSettings()

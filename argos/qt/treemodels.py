@@ -265,7 +265,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
 
         except Exception as ex:
             # When does this still happen? Can we remove it?
-            logger.warn("Unable to set data: {}".format(ex))
+            logger.warning("Unable to set data: {}".format(ex))
             if DEBUGGING:
                 raise
             return False
