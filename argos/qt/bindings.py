@@ -5,10 +5,10 @@
 
     Then it will try first PyQt5 and then PySide2.
 
-    Note that PySide2 (for now) is not officially supported! There are already enough dependencies
+    Note that PySide2 at the moment does not fully work yet. There are problems with the color
+    picker. Also (for now) is not officially supported! There are already enough dependencies
     that can vary (Python 2 & 3, Windows & Linux & OS-X, etc) so I don't want to support even more
-    combinations. It is expected to work though. If you encounter issues with PySide2 please report
-    them and I'll see what I can do.
+    combinations.
 """
 import logging
 import os
@@ -60,7 +60,7 @@ if QT_API_NAME is None:
 
 if QT_API_NAME == API_PYQT5:
     from PyQt5 import QtCore, QtGui, QtWidgets, QtSvg
-    from PyQt5.QtCore import Qt
+    from PyQt5.QtCore import Qt, QUrl
     from PyQt5.QtCore import pyqtSignal as QtSignal
     from PyQt5.QtCore import pyqtSlot as QtSlot
     from PyQt5.Qt import PYQT_VERSION_STR as PYQT_VERSION
@@ -69,7 +69,7 @@ if QT_API_NAME == API_PYQT5:
 elif QT_API_NAME == API_PYSIDE2:
 
     from PySide2 import QtCore, QtGui, QtWidgets, QtSvg
-    from PySide2.QtCore import Qt
+    from PySide2.QtCore import Qt, QUrl
     from PySide2.QtCore import Signal as QtSignal
     from PySide2.QtCore import Slot as QtSlot
     from PySide2 import __version__ as PYQT_VERSION

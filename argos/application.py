@@ -54,7 +54,8 @@ class ArgosApplication(QtCore.QObject):
 
         # Call initQtWidgetsApplicationInstance() so that the users can call argos.browse without
         # having to call it themselves.
-        self._qApplication = initQApplication()
+
+        self._qApplication = initQApplication()  # TODO: remove here
 
         if setExceptHook:
             logger.debug("Setting sys.excepthook to Argos exception handling")

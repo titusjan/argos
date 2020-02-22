@@ -39,11 +39,12 @@ from argos.inspector.abstract import AbstractInspector, UpdateReason
 from argos.inspector.dialog import OpenInspectorDialog
 from argos.inspector.registry import InspectorRegItem
 from argos.inspector.selectionpane import InspectorSelectionPane, addInspectorActionsToMenu
-from argos.qt import Qt, QtCore, QtGui, QtWidgets, QtSignal, QtSlot
+from argos.qt import Qt, QUrl, QtCore, QtGui, QtWidgets, QtSignal, QtSlot
 
 from argos.repo.repotreeview import RepoWidget
 from argos.repo.testdata import createArgosTestData
 from argos.utils.cls import check_class, check_is_a_sequence
+from argos.utils.dirs import argosConfigDirectory, argosLogDirectory
 from argos.utils.misc import string_to_identifier
 from argos.widgets.aboutdialog import AboutDialog
 from argos.widgets.constants import CENTRAL_MARGIN, CENTRAL_SPACING
@@ -266,6 +267,18 @@ class MainWindow(QtWidgets.QMainWindow):
         ### Help Menu ###
         menuBar.addSeparator()
         helpMenu = menuBar.addMenu("&Help")
+        helpMenu.addAction(
+            "&Online Documentation...",
+            lambda: self.openInWebBrowser("https://github.com/titusjan/argos#argos"))
+
+        helpMenu.addAction(
+            "Show Config Files...",
+            lambda: self.openInExternalApp(argosConfigDirectory()))
+
+        helpMenu.addAction(
+            "Show Log Files...",
+            lambda: self.openInExternalApp(argosLogDirectory()))
+
         helpMenu.addAction('&About...', self.about)
 
         if TESTING or DEBUGGING:
@@ -692,6 +705,41 @@ class MainWindow(QtWidgets.QMainWindow):
             if DEBUGGING:
                 raise
             return None, None
+
+
+
+    def openInWebBrowser(self, url):
+        """ Opens url or file in an external documentation.
+
+            Regular URLs are opened in the web browser, Local URLs are opened in the application
+            that is used to open that type of file by default.
+        """
+        try:
+            logger.debug("Opening URL: {}".format(url))
+            qUrl = QUrl(url)
+            QtGui.QDesktopServices.openUrl(qUrl)
+        except Exception as ex:
+            msg = "Unable to open URL {}. \n\nDetails: {}".format(url, ex)
+            QtWidgets.QMessageBox.warning(self, "Warning", msg)
+            logger.error(msg.replace('\n', ' '))
+
+
+    def openInExternalApp(self, fileName):
+        """ Opens url or file in an external documentation.
+
+            Regular URLs are opened in the web browser, Local URLs are opened in the application
+            that is used to open that type of file by default.
+        """
+        try:
+            logger.debug("Opening URL: {}".format(fileName))
+            if not os.path.exists(fileName):
+                raise OSError("File doesn't exist.")
+            url = QUrl.fromLocalFile(fileName)
+            QtGui.QDesktopServices.openUrl(url)
+        except Exception as ex:
+            msg = "Unable to open file '{}'. \n\nDetails: {}".format(fileName, ex)
+            QtWidgets.QMessageBox.warning(self, "Warning", msg)
+            logger.error(msg.strip('\n'))
 
 
     def readViewSettings(self, settings=None): # TODO: rename to readProfile?

@@ -41,6 +41,7 @@ def browse(fileNames=None,
            select=None,
            qtStyle=None,
            styleSheet=None,
+           configFile=None,
            profile=DEFAULT_PROFILE,
            resetProfile=False,      # TODO: should probably be moved to the main program
            resetAllProfiles=False,  # TODO: should probably be moved to the main program
@@ -63,14 +64,37 @@ def browse(fileNames=None,
     from argos.qt import QtWidgets, QtCore
     from argos.application import ArgosApplication
     from argos.repo.testdata import createArgosTestData
+    from argos.utils.dirs import argosConfigDirectory, normRealPath, ensureFileExists
+
+    defaultConfigFile = normRealPath(os.path.join(argosConfigDirectory(), 'config.json'))
+    if not configFile:
+        configFile = defaultConfigFile
+        logger.debug("No config file specified. Using default: {}".format(configFile))
+
+    configFile = normRealPath(configFile)
+    if not os.path.exists(configFile):
+        if configFile == defaultConfigFile:
+            ensureFileExists(configFile)
+        else:
+            qApp = QtWidgets.QApplication.instance()
+
+            button = QtWidgets.QMessageBox.question(qApp, "Create config file?",
+                "The config file cannot be found: {} \n\nCreate new config file?".format(configFile))
+
+            if button == QtWidgets.QMessageBox.Yes:
+                ensureFileExists(configFile)
+            else:
+                logger.warning("No valid config file. Quitting Argos...")
+                return
+
+    argosApp = ArgosApplication()
+
+
 
     try:
         QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
     except Exception as ex:
         logger.debug("AA_UseHighDpiPixmaps not available in PyQt4: {}".format(ex))
-
-    # Create
-    argosApp = ArgosApplication()
 
 
     if qtStyle:

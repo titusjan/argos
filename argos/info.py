@@ -26,7 +26,7 @@ PROFILING = False# and DEBUGGING
 
 VERSION = '0.3.0.rc2'
 REPO_NAME = "argos"
-#SCRIPT_NAME = "argos"
+SCRIPT_NAME = "argos"
 PACKAGE_NAME = "argos"
 PROJECT_NAME = "Argos"
 DEFAULT_PROFILE = 'Panoptes'
@@ -38,6 +38,8 @@ ORGANIZATION_NAME = "titusjan"
 ORGANIZATION_DOMAIN = "titusjan.nl"
 
 
+
+# TODO: move to utils locations
 def program_directory():
     """ Returns the program directory where this program is installed
     """

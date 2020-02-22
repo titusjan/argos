@@ -35,19 +35,6 @@ logger = logging.getLogger(__name__)
 ################
 
 
-def initQCoreApplication():
-    """ Initializes the QtCore.QApplication instance. Creates one if it doesn't exist.
-
-        Sets Argos specific attributes, such as the OrganizationName, so that the application
-        persistent settings are read/written to the correct settings file/winreg. It is therefore
-        important to call this function (or initQApplication) at startup.
-
-        Returns the application.
-    """
-    app = QtCore.QCoreApplication(sys.argv)
-    initArgosApplicationSettings(app)
-    return app
-
 
 def initQApplication():
     """ Initializes the QtWidgets.QApplication instance. Creates one if it doesn't exist.
