@@ -182,7 +182,11 @@ class RtiRegistry(ClassRegistry):
 
             RtiRegItem('Wav file',
                        'argos.repo.rtiplugins.scipyio.WavFileRti',
-                       extensions=['wav'])]
+                       extensions=['wav']),
+
+            RtiRegItem('Exdir file',
+                       'argos.repo.rtiplugins.exdir.ExdirFileRti',
+                       extensions=['exdir'])]
 
 
 # The RTI registry is implemented as a singleton. This is necessary because

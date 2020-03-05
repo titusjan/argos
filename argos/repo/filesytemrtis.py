@@ -70,14 +70,16 @@ class DirectoryRti(BaseRti):
 
         # Add subdirectories
         for fileName, absFileName in zip(fileNames, absFileNames):
-            if os.path.isdir(absFileName) and not fileName.startswith('.'):
-                childItems.append(DirectoryRti(fileName=absFileName, nodeName=fileName))
+            childItem = createRtiFromFileName(absFileName)
+            childItems.append(childItem)
+            # if os.path.isdir(absFileName) and not fileName.startswith('.'):
+            #     childItems.append(DirectoryRti(fileName=absFileName, nodeName=fileName))
 
         # Add regular files
-        for fileName, absFileName in zip(fileNames, absFileNames):
-            if os.path.isfile(absFileName) and not fileName.startswith('.'):
-                childItem = createRtiFromFileName(absFileName)
-                childItems.append(childItem)
+        # for fileName, absFileName in zip(fileNames, absFileNames):
+        #     if os.path.isfile(absFileName) and not fileName.startswith('.'):
+        #         childItem = createRtiFromFileName(absFileName)
+        #         childItems.append(childItem)
 
         return childItems
 
@@ -93,10 +95,16 @@ def detectRtiFromFileName(fileName):
         If the cls cannot be imported (None, regItem) returned. regItem.exception will be set.
         Otherwise (cls, regItem) will be returned.
     """
-    _, extension = os.path.splitext(fileName)
+    _, extension = os.path.splitext(fileName.strip('\\').strip('/')) # strip since .exdir is a directory and can have trailing "slash"
     if os.path.isdir(fileName):
-        rtiRegItem = None
-        cls = DirectoryRti
+        try:
+            rtiRegItem = globalRtiRegistry().getRtiRegItemByExtension(extension)
+        except (KeyError):
+            rtiRegItem = None
+            cls = DirectoryRti
+        else:
+            cls = rtiRegItem.getClass(tryImport=True) # cls can be None
+
     else:
         try:
             rtiRegItem = globalRtiRegistry().getRtiRegItemByExtension(extension)
