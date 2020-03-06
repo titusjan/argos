@@ -17,7 +17,6 @@
 
 """ Repository Tree Items (RTIs) for Exdir data.
 
-    See http://www.h5py.org/
 """
 
 import logging, os
@@ -28,6 +27,7 @@ from argos.repo.iconfactory import RtiIconFactory
 from argos.repo.baserti import BaseRti
 from argos.utils.cls import to_string, check_class, is_an_array
 from argos.utils.masks import maskedEqual
+from argos.repo.filesytemrtis import createRtiFromFileName
 
 logger = logging.getLogger(__name__)
 
@@ -92,9 +92,6 @@ def dataSetMissingValue(exdirDataset):
             else:
                 return missingDataValue
     return None
-
-
-
 
 
 
@@ -322,10 +319,14 @@ class ExdirDatasetRti(BaseRti):
         self._isStructured = bool(self._exdirDataset.dtype.names)
 
 
+        fileNames = os.listdir(os.path.abspath(self._exdirDataset.directory))
+        absFileNames = [os.path.join(self._exdirDataset.directory, fn) for fn in fileNames]
+        self._hasRaws = sum([os.path.isdir(f) for f in absFileNames]) > 0
+
     def hasChildren(self):
         """ Returns True if the variable has a structured type, otherwise returns False.
         """
-        return self._isStructured
+        return self._isStructured or self._hasRaws
 
 
     @property
@@ -378,21 +379,34 @@ class ExdirDatasetRti(BaseRti):
         return dataSetMissingValue(self._exdirDataset)
 
 
-    # def _fetchAllChildren(self):
-    #     """ Fetches all fields that this variable contains.
-    #         Only variables with a structured data type can have fields.
-    #     """
-    #     assert self.canFetchChildren(), "canFetchChildren must be True"
+    def _fetchAllChildren(self):
+        """ Fetches all fields that this variable contains.
+            Only variables with a structured data type can have fields.
+        """
+        assert self.canFetchChildren(), "canFetchChildren must be True"
 
-    #     childItems = []
+        childItems = []
 
-    #     # Add fields
-    #     if self._isStructured:
-    #         for fieldName in self._exdirDataset.dtype.names:
-    #             childItems.append(H5pyFieldRti(self._h5Dataset, nodeName=fieldName,
-    #                                            fileName=self.fileName))
+        # Add fields
+        if self._isStructured:
+            for fieldName in self._exdirDataset.dtype.names:
+                childItems.append(ExdirFieldRti(self._exdirDataset, nodeName=fieldName,
+                                               fileName=self.fileName))
 
-    #     return childItems
+
+        # Add raw directories
+        if self._hasRaws:
+            fileNames = os.listdir(os.path.abspath(self._exdirDataset.directory))
+            absFileNames = [os.path.join(self._exdirDataset.directory, fn) for fn in fileNames]
+
+            for fileName, absFileName in zip(fileNames, absFileNames):
+                if os.path.isdir(absFileName) and not fileName.startswith('.'):
+                    childItems.append(ExdirRawRti(self._exdirDataset.require_raw(fileName), nodeName=fileName,
+                                                    fileName=self.fileName))
+
+
+
+        return childItems
 
 
 
@@ -410,37 +424,25 @@ class ExdirRawRti(BaseRti):
 
         self._exdirRaw = exdirRaw
 
-    # @property
-    # def attributes(self):
-    #     """ The attributes dictionary.
-    #     """
-    #     return self._exdirRaw.attrs if self._exdirRaw else {}
 
+    def _fetchAllChildren(self): # Raw is treated like a directory
+        """ Fetches all sub groups and variables that this group contains.
+        """
+        assert self._exdirRaw is not None, "dataset undefined (file not opened?)"
+        assert self.canFetchChildren(), "canFetchChildren must be True"
 
-    # def _fetchAllChildren(self):
-    #     """ Fetches all sub groups and variables that this group contains.
-    #     """
-    #     assert self._exdirRaw is not None, "dataset undefined (file not opened?)"
-    #     assert self.canFetchChildren(), "canFetchChildren must be True"
+        childItems = []
 
-    #     childItems = []
+        absPaths = os.path.abspath(self._exdirRaw.directory)
+        fileNames = os.listdir(absPaths)
+        absFileNames = [os.path.join(self._exdirRaw.directory, fn) for fn in fileNames]
 
-    #     for childName, exdirChild in self._exdirRaw.items():
-    #         if isinstance(exdirChild, exdir.Group) or isinstance(exdirChild, exdir.Raw):
-    #             childItems.append(ExdirGroupRti(exdirChild, nodeName=childName,
-    #                                            fileName=self.fileName))
-    #         elif isinstance(exdirChild, exdir.Dataset):
-    #             if len(exdirChild.shape) == 0:
-    #                 childItems.append(ExdirScalarRti(exdirChild, nodeName=childName,
-    #                                                 fileName=self.fileName))
-    #             else:
-    #                 childItems.append(ExdirDatasetRti(exdirChild, nodeName=childName,
-    #                                                  fileName=self.fileName))
-    #         else:
-    #             logger.warn("Ignored {}. It has an unexpected Exdir type: {}"
-    #                         .format(childName, type(exdir)))
+        for fileName, absFileName in zip(fileNames, absFileNames):
+            if not fileName.startswith('.'):
+                childItem = createRtiFromFileName(absFileName)
+                childItems.append(childItem)
 
-    #     return childItems
+        return childItems
 
 
 
@@ -495,12 +497,6 @@ class ExdirGroupRti(BaseRti):
                             .format(childName, type(exdir)))
 
         return childItems
-
-
-
-
-
-
 
 class ExdirFileRti(ExdirGroupRti):
     """ Reads an Exdir file using the exdir package.
