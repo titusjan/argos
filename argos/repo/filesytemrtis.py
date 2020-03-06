@@ -68,18 +68,10 @@ class DirectoryRti(BaseRti):
         fileNames = os.listdir(self._fileName)
         absFileNames = [os.path.join(self._fileName, fn) for fn in fileNames]
 
-        # Add subdirectories
         for fileName, absFileName in zip(fileNames, absFileNames):
-            childItem = createRtiFromFileName(absFileName)
-            childItems.append(childItem)
-            # if os.path.isdir(absFileName) and not fileName.startswith('.'):
-            #     childItems.append(DirectoryRti(fileName=absFileName, nodeName=fileName))
-
-        # Add regular files
-        # for fileName, absFileName in zip(fileNames, absFileNames):
-        #     if os.path.isfile(absFileName) and not fileName.startswith('.'):
-        #         childItem = createRtiFromFileName(absFileName)
-        #         childItems.append(childItem)
+            if not fileName.startswith('.'):
+                childItem = createRtiFromFileName(absFileName)
+                childItems.append(childItem)
 
         return childItems
 
@@ -95,25 +87,19 @@ def detectRtiFromFileName(fileName):
         If the cls cannot be imported (None, regItem) returned. regItem.exception will be set.
         Otherwise (cls, regItem) will be returned.
     """
-    _, extension = os.path.splitext(fileName.strip('\\').strip('/')) # strip since .exdir is a directory and can have trailing "slash"
-    if os.path.isdir(fileName):
-        try:
-            rtiRegItem = globalRtiRegistry().getRtiRegItemByExtension(extension)
-        except (KeyError):
+    _, extension = os.path.splitext(fileName.strip('\\').strip('/')) # strip trailing backslash and forward slash
+    try:
+        rtiRegItem = globalRtiRegistry().getRtiRegItemByExtension(extension)
+    except (KeyError):
+        if os.path.isdir(fileName):
             rtiRegItem = None
             cls = DirectoryRti
         else:
-            cls = rtiRegItem.getClass(tryImport=True) # cls can be None
-
-    else:
-        try:
-            rtiRegItem = globalRtiRegistry().getRtiRegItemByExtension(extension)
-        except (KeyError):
             logger.debug("No file RTI registered for extension: {}".format(extension))
             rtiRegItem = None
             cls = UnknownFileRti
-        else:
-            cls = rtiRegItem.getClass(tryImport=True) # cls can be None
+    else:
+         cls = rtiRegItem.getClass(tryImport=True) # cls can be None
 
     return cls, rtiRegItem
 

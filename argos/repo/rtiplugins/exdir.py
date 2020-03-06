@@ -410,7 +410,6 @@ class ExdirRawRti(BaseRti):
 
         self._exdirRaw = exdirRaw
 
-
     # @property
     # def attributes(self):
     #     """ The attributes dictionary.
