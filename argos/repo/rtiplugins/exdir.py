@@ -23,17 +23,22 @@ import logging, os
 import collections
 import exdir #Try to remove the dependece of exdir afterwards
 import numpy as np
+import yaml
 
 from argos.repo.iconfactory import RtiIconFactory
 from argos.repo.baserti import BaseRti
+from argos.repo.filesytemrtis import createRtiFromFileName
 from argos.utils.cls import to_string, check_class, is_an_array
 from argos.utils.masks import maskedEqual
-from argos.repo.filesytemrtis import createRtiFromFileName
+
 
 logger = logging.getLogger(__name__)
 
 ICON_COLOR_EXDIR = '#FFBF00'
-
+EXDIR_METADATA = 'exdir.yaml'
+EXDIR_ATTRIBUTES = 'attributes.yaml'
+EXDIR_DATA = 'data.npy'
+EXDIR_VERSION = '1'
 
 
 def dataSetElementType(exdirDataset):
@@ -74,7 +79,6 @@ def dataSetUnit(exdirDataset):
     return ''
 
 
-
 def dataSetMissingValue(exdirDataset):
     """ Returns the missingData given a Exdir dataset
 
@@ -104,6 +108,184 @@ def flatten_dict(d, parent_key='', sep='/'):
         else:
             items.append((new_key, v))
     return dict(items)
+
+
+def flattenDict(d, parent_key='', sep='/'):
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, collections.MutableMapping):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+
+def readYAMLFile(path):
+    data = None
+    try: 
+        with open(path, 'r') as stream:
+            try:
+                data = yaml.safe_load(stream)
+            except yaml.YAMLError as exc:
+                logger.warn(exc)
+    except:
+        pass
+    return data
+
+
+def metadataIsValid(metadata):
+    isValid = False
+    try:
+        # checking metadata keys
+        hasKey1 = 'exdir' in metadata
+        hasKey2 = {'type', 'version'} == metadata['exdir'].keys()
+        validType = {'file', 'group', 'dataset'} >= {metadata['exdir']['type']}
+        
+        # checking version
+        validVersion = str(metadata['exdir']['version']) == EXDIR_VERSION
+        
+        isValid = hasKey1 and hasKey2 and validType and validVersion
+    except:
+        isValid = False
+    return isValid
+
+
+def isExdirType(exdirObj, typeName):
+    isType = False
+    try:
+        metadataType = exdir.metadata['type'] 
+        isType = metadataType == typeName
+    except KeyError:
+        isType = (typeName == 'Raw') or (typeName == 'raw')
+    
+    if not isType:
+         raise TypeError("obj must be a of type {}, got: {}"
+                         .format(typeName, str(metadataType)))
+
+
+def getExdirTypeFromDir(dirPath):
+    metadata = readYAMLFile(dirPath, EXDIR_METADATA))
+    try:
+        return metadata['exdir']['type']
+    except KeyError:
+        return ''
+
+
+class ExdirObjRti(BaseRti):
+
+    def __init__(self, parentObj, nodeName, fileName):
+        """ Constructor
+        """
+        super(ExdirObjRti, self).__init__(nodeName, fileName=fileName)
+        
+        self.relativePath = nodeName if parentObj is None else os.path.join(
+            parentObj.relativePath, nodeName)
+        
+        self._metadata = None
+        self._attributes = None
+
+    def loadMetadata(self):
+        metadata = readYAMLFile(os.path.join(self.absPath, EXDIR_METADATA))
+        if metadataIsValid(metadata):
+            self._metadata = metadata
+        else:
+            self._metadata = {}
+
+    def loadAttributes(self):
+        attributes = readYAMLFile(os.path.join(self.absPath, EXDIR_ATTRIBUTES))
+        if attributes is None or not isinstance(attributes,dict):
+            self._attributes = {}
+        else:
+            self._attributes = attributes
+
+    def getAllChildren(self):
+        return os.listdir(self.absPath)
+
+    @property
+    def absPath(self):
+        return os.path.abspath(self.relativePath)
+    
+    @property
+    def attributes(self):
+        """ The attributes dictionary.
+        """
+        if self._attributes is None:
+            self.loadAttributes()
+        return flattenDict(self._attributes) #flattenDict to remove nested dict
+
+    @property
+    def metadata(self):
+    
+        if self._metadata is None:
+            self.loadMetadata()
+        return self._metadata 
+
+
+
+
+class ExdirGroupRti(ExdirObjRti):
+    """ Repository Tree Item (RTI) that contains an Exdir group.
+    """
+    _defaultIconGlyph = RtiIconFactory.FOLDER
+    _defaultIconColor = ICON_COLOR_EXDIR 
+
+    def __init__(self, parentObj, nodeName, fileName=''):
+        """ Constructor
+        """
+        super(ExdirGroupRti, self).__init__(parentObj, nodeName, fileName=fileName)
+        isExdirType(self, "group")
+
+
+    def _fetchAllChildren(self):
+        """ Fetches all sub groups and variables that this group contains.
+        """
+        assert self.canFetchChildren(), "canFetchChildren must be True"
+
+        absPath = self.absPath()
+        allChildren = self.getAllChildren()
+
+        childItems = []
+        for child in allChildren:
+            
+            childAbsPath = os.path.join(absPath, child)
+            
+            if os.path.isdir(childAbsPath): 
+
+                childType = getExdirTypeFromDir(childAbsPath)
+
+                if childType == 'group':
+                    childItems.append(ExdirGroupRti(self, child, self.fileName))
+
+                if childType == 'dataset':
+                    childItems.append(ExdirDatasetRti(self, child, self.fileName))
+
+            # if isinstance(exdirChild, exdir.Group):
+            #     childItems.append(ExdirGroupRti(exdirChild, nodeName=childName,
+            #                                    fileName=self.fileName))
+
+            # elif isinstance(exdirChild, exdir.Raw):
+            #     childItems.append(ExdirRawRti(exdirChild, nodeName=childName,
+            #                                    fileName=self.fileName))
+            
+            # elif isinstance(exdirChild, exdir.Dataset):
+            #     if len(exdirChild.shape) == 0:
+            #         childItems.append(ExdirScalarRti(exdirChild, nodeName=childName,
+            #                                         fileName=self.fileName))
+            #     else:
+            #         childItems.append(ExdirDatasetRti(exdirChild, nodeName=childName,
+            #                                          fileName=self.fileName))
+            # else:
+            #     logger.warn("Ignored {}. It has an unexpected Exdir type: {}"
+            #                 .format(childName, type(exdir)))
+
+        return childItems
+
+
+
+
+
+
 
 class ExdirScalarRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a scalar HDF-5 variable.
@@ -310,8 +492,6 @@ class ExdirFieldRti(BaseRti):
             return value
 
 
-
-
 class ExdirDatasetRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a HDF5 dataset.
 
@@ -419,7 +599,6 @@ class ExdirDatasetRti(BaseRti):
         return childItems
 
 
-
 class ExdirRawRti(BaseRti):
     """ Repository Tree Item (RTI) that contains an Exdir group.
     """
@@ -453,7 +632,6 @@ class ExdirRawRti(BaseRti):
                 childItems.append(childItem)
 
         return childItems
-
 
 
 class ExdirGroupRti(BaseRti):
@@ -507,6 +685,7 @@ class ExdirGroupRti(BaseRti):
                             .format(childName, type(exdir)))
 
         return childItems
+
 
 class ExdirFileRti(ExdirGroupRti):
     """ Reads an Exdir file using the exdir package.
