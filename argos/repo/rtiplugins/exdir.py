@@ -20,6 +20,7 @@
 """
 
 import logging, os
+import collections
 import exdir #Try to remove the dependece of exdir afterwards
 import numpy as np
 
@@ -94,6 +95,15 @@ def dataSetMissingValue(exdirDataset):
     return None
 
 
+def flatten_dict(d, parent_key='', sep='/'):
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, collections.MutableMapping):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
 
 class ExdirScalarRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a scalar HDF-5 variable.
@@ -152,7 +162,7 @@ class ExdirScalarRti(BaseRti):
     def attributes(self):
         """ The attributes dictionary.
         """
-        return self._exdirDataset.attrs # add to_dict() ?
+        return flatten_dict(self._exdirDataset.attrs.to_dict()) # add to_dict() ?
 
 
     @property
@@ -195,7 +205,7 @@ class ExdirFieldRti(BaseRti):
         """ The attributes dictionary.
             Returns the attributes of the variable that contains this field.
         """
-        return self._exdirDataset.attrs # add to_dict() ?
+        return flatten_dict(self._exdirDataset.attrs.to_dict()) # add to_dict() ?
 
 
     @property
@@ -362,7 +372,7 @@ class ExdirDatasetRti(BaseRti):
     def attributes(self):
         """ The attributes dictionary.
         """
-        return self._exdirDataset.attrs #add .to_dict() ?
+        return flatten_dict(self._exdirDataset.attrs.to_dict()) #add .to_dict() ?
 
 
     @property
@@ -465,7 +475,7 @@ class ExdirGroupRti(BaseRti):
     def attributes(self):
         """ The attributes dictionary.
         """
-        return self._exdirGroup.attrs if self._exdirGroup else {}
+        return flatten_dict(self._exdirGroup.attrs.to_dict()) if self._exdirGroup else {}
 
 
     def _fetchAllChildren(self):
