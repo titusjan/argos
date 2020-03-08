@@ -87,7 +87,7 @@ def detectRtiFromFileName(fileName):
         If the cls cannot be imported (None, regItem) returned. regItem.exception will be set.
         Otherwise (cls, regItem) will be returned.
     """
-    _, extension = os.path.splitext(fileName.strip('\\').strip('/')) # strip trailing backslash and forward slash
+    _, extension = os.path.splitext(fileName.strip('\\').strip('/')) # strip trailing backslash and forward slash <=== add os.path.normpath
     try:
         rtiRegItem = globalRtiRegistry().getRtiRegItemByExtension(extension)
     except (KeyError):

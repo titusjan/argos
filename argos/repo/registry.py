@@ -185,7 +185,7 @@ class RtiRegistry(ClassRegistry):
                        extensions=['wav']),
 
             RtiRegItem('Exdir file',
-                       'argos.repo.rtiplugins.exdir.ExdirFileRti',
+                       'argos.repo.rtiplugins.exdir2.ExdirFileRti',
                        extensions=['exdir'])]
 
 
