@@ -389,8 +389,12 @@ class ArgosApplication(QtCore.QObject):
         return cfg
 
 
-    def unmarshall(self, cfg):
+    def unmarshall(self, cfg, inspectorFullName):
         """ Initializes itself from a config dict form the persistent settings.
+
+            :param inspectorFullName: If given a window with this inspector is created.
+            If an inspector window with this inspector is created from the config file, this
+            parameter is ignored.
         """
         cmLib = CmLibSingleton.instance()
         if not cmLib.color_maps:
@@ -407,34 +411,26 @@ class ArgosApplication(QtCore.QObject):
         self.inspectorRegistry.unmarshall(pluginCfg.get('inspectors', {}))
         self.rtiRegistry.unmarshall(pluginCfg.get('file-formats', {}))
 
-
-        # NOTE: we don't create windows here yet. We first have to load the data in the repo
-        # this is done in the main.browse() function. TODO: possible to create windows here?
-
-
         for winId, winCfg in cfg.get('windows', {}).items():
             assert winId.startswith('win-'), "Win ID doesnt't start with 'win-': {}".format(winId)
             self.addNewMainWindow(cfg=winCfg)
 
+        if inspectorFullName is not None:
+            windows = [win for win in self._mainWindows
+                       if win.inspectorFullName == inspectorFullName]
+            if len(windows) == 0:
+                logger.info("Creating window for inspector: {!r}".format(inspectorFullName))
+                try:
+                    win = self.addNewMainWindow(inspectorFullName=inspectorFullName)
+                except KeyError:
+                    logger.warning("No inspector found with ID: {}".format(inspectorFullName))
+            else:
+                for win in windows:
+                    win.raise_()
 
-        # if inspectorFullName is not None:
-        #     windows = [win for win in self._mainWindows
-        #                if win.inspectorFullName == inspectorFullName]
-        #     if len(windows) == 0:
-        #         logger.info("Creating window for inspector: {!r}".format(inspectorFullName))
-        #         try:
-        #             win = self.addNewMainWindow(inspectorFullName=inspectorFullName)
-        #         except KeyError:
-        #             logger.warning("No inspector found with ID: {}".format(inspectorFullName))
-        #     else:
-        #         for win in windows:
-        #             win.raise_()
-
-        # if len(self.mainWindows) == 0:
-        #     logger.info("No open windows in settings or command line (creating one).")
-        #     self.addNewMainWindow(inspectorFullName=DEFAULT_INSPECTOR)
-
-
+        if len(self.mainWindows) == 0:
+            logger.info("No open windows in settings or command line (creating one).")
+            self.addNewMainWindow(inspectorFullName=DEFAULT_INSPECTOR)
 
 
     def saveSettings(self):
@@ -468,8 +464,12 @@ class ArgosApplication(QtCore.QObject):
             self._settingsSaved = True
 
 
-    def loadSettings(self):
+    def loadSettings(self, inspectorFullName):
         """ Loads the settings from file and populates the application object from it.
+
+            :param inspectorFullName: If given a window with this inspector is created.
+                If an inspector window with this inspector is created from the config file, this
+                parameter is ignored.
         """
         cfg = {}
 
@@ -485,7 +485,7 @@ class ArgosApplication(QtCore.QObject):
             logger.warning("Error {} while reading settings file: {}"
                            .format(ex, self._settingsFile))
 
-        self.unmarshall(cfg)  # Always call unmarshall.
+        self.unmarshall(cfg, inspectorFullName)  # Always call unmarshall.
 
 
     def saveSettingsIfNeeded(self):

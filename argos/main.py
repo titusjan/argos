@@ -67,7 +67,7 @@ def browse(fileNames=None,
     from argos.repo.testdata import createArgosTestData
 
     argosApp = ArgosApplication(settingsFile)
-    argosApp.loadSettings()  # TODO: call in constructor?
+    argosApp.loadSettings(inspectorFullName)  # TODO: call in constructor?
 
 
     try:

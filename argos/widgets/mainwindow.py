@@ -724,6 +724,7 @@ class MainWindow(QtWidgets.QMainWindow):
         try:
             lastItem, lastIndex = self.repoWidget.repoTreeView.expandPath(path)
             self.repoWidget.repoTreeView.setCurrentIndex(lastIndex)
+            self.repoWidget.repoTreeView.setFocus()
             return lastItem, lastIndex
         except Exception as ex:
             logger.warning("Unable to select {!r} because: {}".format(path, ex))
