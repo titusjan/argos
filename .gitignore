@@ -97,3 +97,4 @@ ENV/
 *.prof
 *.pdf
 *.json
+.idea/
