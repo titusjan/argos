@@ -22,6 +22,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import base64
 import cProfile
 import os.path
 import pstats
@@ -40,6 +41,7 @@ from argos.inspector.dialog import OpenInspectorDialog
 from argos.inspector.registry import InspectorRegItem
 from argos.inspector.selectionpane import InspectorSelectionPane, addInspectorActionsToMenu
 from argos.qt import Qt, QUrl, QtCore, QtGui, QtWidgets, QtSignal, QtSlot
+from argos.qt.misc import getWidgetGeom, getWidgetState
 
 from argos.repo.repotreeview import RepoWidget
 from argos.repo.testdata import createArgosTestData
@@ -92,6 +94,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._argosApplication = argosApplication
         self._configTreeModel = ConfigTreeModel()
         self._inspectorsNonDefaults = {}  # non-default values for all used plugins
+        self._inspectorStates = {}  # keeps track of earlier inspector states
 
         self.setDockNestingEnabled(False)
         self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
@@ -526,6 +529,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 oldConfigPosition = None # Last top level element in the config tree.
             else:
                 self._updateNonDefaultsForInspector(oldInspectorRegItem, oldInspector)
+                self._storeInspectorState(oldInspectorRegItem, oldInspector)
 
                 # Remove old inspector configuration from tree
                 oldConfigPosition = oldInspector.config.childNumber()
@@ -548,9 +552,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 else:
                     # Add and apply config values to the inspector
                     key = self.inspectorRegItem.identifier
-                    nonDefaults = self._inspectorsNonDefaults.get(key, {})
-                    logger.debug("Setting non defaults: {}".format(nonDefaults))
-                    self.inspector.config.setValuesFromDict(nonDefaults)
+                    #nonDefaults = self._inspectorsNonDefaults.get(key, {})
+                    #logger.debug("Setting non defaults: {}".format(nonDefaults))
+                    #self.inspector.config.setValuesFromDict(nonDefaults)
+
+                    cfg = self._inspectorStates.get(key, {})
+                    logger.debug("Setting inspector settings from : {}".format(cfg))
+                    self.inspector.config.unmarshall(cfg)
+
                     self._configTreeModel.insertItem(self.inspector.config, oldConfigPosition)
                     self.configWidget.configTreeView.expandBranch()
                     self.collector.clearAndSetComboBoxes(self.inspector.axesNames())
@@ -573,6 +582,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
             This function must be called after the inspector was drawn because that may update
             some derived config values (e.g. ranges)
+
+            OBSOLETE by _storeInspectorState
         """
         if inspectorRegItem and inspector:
             key = inspectorRegItem.identifier
@@ -581,6 +592,21 @@ class MainWindow(QtWidgets.QMainWindow):
             self._inspectorsNonDefaults[key] = inspector.config.getNonDefaultsDict()
         else:
             logger.debug("_updateNonDefaultsForInspector: no inspector")
+
+
+    def _storeInspectorState(self, inspectorRegItem, inspector):
+        """ Store the settings values for the current inspector in a local dictionary.
+            This dictionary is later used to store value for persistence.
+
+            This function must be called after the inspector was drawn because that may update
+            some derived config values (e.g. ranges)
+        """
+        if inspectorRegItem and inspector:
+            key = inspectorRegItem.identifier
+            logger.debug("_updateInspectorState: {} {}".format(key, type(inspector)))
+            self._inspectorStates[key] = inspector.config.marshall()
+        else:
+            logger.debug("_updateInspectorState: no inspector")
 
 
     @QtSlot()
@@ -689,7 +715,6 @@ class MainWindow(QtWidgets.QMainWindow):
         return lastItem, lastIndex
 
 
-
     def trySelectRtiByPath(self, path):
         """ Selects a repository tree item given a path, expanding nodes if along the way if needed.
 
@@ -705,7 +730,6 @@ class MainWindow(QtWidgets.QMainWindow):
             if DEBUGGING:
                 raise
             return None, None
-
 
 
     def openInWebBrowser(self, url):
@@ -805,6 +829,53 @@ class MainWindow(QtWidgets.QMainWindow):
         settings.setValue("inspector", identifier)
 
 
+    def marshall(self):
+        """ Returns a dictionary to save in the persistent settings
+        """
+        self._storeInspectorState(self.inspectorRegItem, self.inspector)
+
+        layoutCfg = dict(
+            repoWidget = self.repoWidget.marshall(),
+            configTreeHeaders =  self.configWidget.configTreeView.marshall(),
+            winGeom = base64.b64encode(getWidgetGeom(self)).decode('ascii'),
+            winState = base64.b64encode(getWidgetState(self)).decode('ascii')
+        )
+
+        cfg = dict(
+            curInspector = self.inspectorRegItem.identifier if self.inspectorRegItem else '',
+            inspectors = self._inspectorStates,
+            layout = layoutCfg,
+
+        )
+        return cfg
+
+
+    def unmarshall(self, cfg):
+        """ Initializes itself from a config dict form the persistent settings.
+        """
+        self._inspectorStates = cfg.get('inspectors', {})
+
+        curInspector = cfg.get('curInspector')
+        if curInspector:
+            try:
+                logger.debug("Setting inspector to: {}".format(curInspector))
+                self.setInspectorById(curInspector)
+            except KeyError as ex:
+                logger.warning("No inspector with ID {!r}.: {}".format(curInspector, ex))
+
+
+        layoutCfg = cfg.get('layout', {})
+
+        self.repoWidget.unmarshall(layoutCfg.get('repoWidget', {}))
+        self.configWidget.configTreeView.unmarshall(layoutCfg.get('configTreeHeaders', {}))
+
+        if 'winGeom' in layoutCfg:
+            self.restoreGeometry(base64.b64decode(layoutCfg['winGeom']))
+        if 'winState' in layoutCfg:
+            self.restoreState(base64.b64decode(layoutCfg['winState']))
+
+
+
     @QtSlot()
     def cloneWindow(self):
         """ Opens a new window with the same inspector as the current window.
@@ -889,7 +960,16 @@ class MainWindow(QtWidgets.QMainWindow):
     def myTest(self):
         """ Function for small ad-hoc tests
         """
+        import pprint
+        from json import dumps
         logger.info("myTest function called")
+
+        logger.debug("Current inspector: {}, {}".format(self.inspectorRegItem, self.inspector))
+
+        self._storeInspectorState(self.inspectorRegItem, self.inspector)
+        jsonStr = dumps(self._inspectorStates, sort_keys=True, indent=4)
+        logger.debug("Inspector config: \n{}".format(jsonStr))
+
 
 
     def testWalkCurrentNode(self):

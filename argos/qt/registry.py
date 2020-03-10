@@ -200,7 +200,7 @@ class ClassRegItem(object):
             self._cls = import_symbol(self.fullClassName) # TODO: check class?
         except Exception as ex:
             self._exception = ex
-            logger.warn("Unable to import {!r}: {}".format(self.fullClassName, ex))
+            logger.warning("Unable to import {!r}: {}".format(self.fullClassName, ex))
             if DEBUGGING:
                 raise
 
@@ -220,13 +220,16 @@ class ClassRegItem(object):
         """
         return cls(**dct)
 
-    def asDict(self):
+
+    def marshall(self):
         """ Returns a dictionary for serialization. We don't use JSON since all items are
             quite simple and the registry will always contain the same type of ClassRegItem
         """
         return {'fullName': self.fullName,
                 'fullClassName': self.fullClassName,
                 'pythonPath': self.pythonPath}
+
+
 
 
 # TODO: Each class has an identifier that must be unique in lower-case with spaces are removed?
@@ -259,6 +262,13 @@ class ClassRegistry(object):
 
 
     @property
+    def registryName(self):
+        """ # Human readable name for this registry. Please override.
+        """
+        raise NotImplementedError()
+
+
+    @property
     def items(self):
         """ The registered class items. Use as read-only
         """
@@ -284,8 +294,8 @@ class ClassRegistry(object):
         check_class(regItem, ClassRegItem)
         if regItem.identifier in self._index:
             oldRegItem = self._index[regItem.identifier]
-            logger.warn("Class key {!r} already registered as {}. Removing old regItem."
-                        .format(regItem.identifier, oldRegItem.fullClassName))
+            logger.warning("Class key {!r} already registered as {}. Removing old regItem."
+                           .format(regItem.identifier, oldRegItem.fullClassName))
             self.removeItem(oldRegItem)
 
         logger.info("Registering {!r} with {}".format(regItem.identifier, regItem.fullClassName))
@@ -304,6 +314,11 @@ class ClassRegistry(object):
         idx = self._items.index(regItem)
         del self._items[idx]
 
+
+    #####
+    # The follow functions load or save their state to the QSettings
+    # This is obsolete and will be replaced by JSON config files.
+    #####
 
     def loadOrInitSettings(self, groupName=None):
         """ Reads the registry items from the persistent settings store, falls back on the
@@ -350,14 +365,14 @@ class ClassRegistry(object):
         """
         groupName = groupName if groupName else self.settingsGroupName
         settings = QtCore.QSettings()
-        logger.info("Saving {} to: {}".format(groupName, settings.fileName()))
+        logger.info("Saving {} to: {}".format(groupName, settings.fileName()), stack_info = True)
 
         settings.remove(groupName) # start with a clean slate
         settings.beginGroup(groupName)
         try:
             for itemNr, item in enumerate(self.items):
                 key = "item-{:03d}".format(itemNr)
-                value = repr(item.asDict())
+                value = repr(item.marshall())
                 settings.setValue(key, value)
         finally:
             settings.endGroup()
@@ -370,6 +385,37 @@ class ClassRegistry(object):
         settings = QtCore.QSettings()
         logger.info("Deleting {} from: {}".format(groupName, settings.fileName()))
         removeSettingsGroup(groupName)
+
+    #####
+    # The follow functions load or save their state to  JSON config files.
+    #####
+
+
+    def marshall(self):
+        """ Returns a dictionary to save in the persistent settings
+        """
+        cfg = {}
+        for itemNr, item in enumerate(self.items):
+            key = "item-{:03d}".format(itemNr)
+            cfg[key] = item.marshall()
+
+        return cfg
+
+
+    def unmarshall(self, cfg):
+        """ Initializes itself from a config dict form the persistent settings.
+        """
+        self.clear()
+        if not cfg:
+            logger.info("Empty config, using registry defaults for: {}".format(self.registryName), stack_info=True)
+            for regItem in self.getDefaultItems():
+                self.registerItem(regItem)
+        else:
+            for key, dct in sorted(cfg.items()):
+                assert key.startswith('item'), "Registry key should start with 'item': {}".format(key)
+                regItem = self._itemClass.createFromDict(dct)
+                self.registerItem(regItem)
+
 
 
     def getDefaultItems(self):

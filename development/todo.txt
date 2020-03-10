@@ -27,6 +27,8 @@ TODO short term:
         - help
             - online documentation
 
+    - log to text file.
+    - Why doesn't argos start from command line at work on my work laptop (Beast)?
 
     -o/--open so that files after this command line option are opened.
         Can probably replace the -s option
@@ -34,9 +36,12 @@ TODO short term:
 
     argos --help on Windows (Beast) doesn't seem to give output)
 
+    quickview tab 
     cross hair in the middle of the pixel
 
-    Fixed font size in tables so that windows10 with two monitors works. (setFixedPitch)
+    Fixed font size in tables and trees so that windows10 with two monitors works. (setFixedPitch)
+
+    Waarom doet autorange het niet in rigolscan_partial?
 
     What if the H5 only has a dimension label?
 
@@ -74,6 +79,13 @@ TODO short term:
 
 
 TODO mid term:
+
+    Use globs instead of extensions to recognize file types. This allows for directoriy and partial names
+
+    Make Rti.isFileFileFormat that opens a file and check if the RTI supports this.
+        Call this only for RTIs that are visible in the tree (e.g. when the icons is queried by the model.
+        Make an RTI that serves as a placeholder and shows name. This way large directories can opened quickly
+        but only visible files are opened and checked.
 
     Split screen for inspectors/config
 

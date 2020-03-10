@@ -137,9 +137,45 @@ def handleException(exc_type, exc_value, exc_traceback):
 # QSettings routines #
 ######################
 
+
+def getWidgetGeom(widget):
+    """ Gets the QWindow or QWidget geometry as a QByteArray.
+
+        Since Qt does not provide this directly we hack this by saving it to the QSettings
+        in a temporary location and then reading it from the QSettings.
+
+        :param widget: A QWidget that has a saveGeometry() methods
+    """
+    settings = QtCore.QSettings()
+    settings.beginGroup('temp_conversion')
+    try:
+        settings.setValue("winGeom", widget.saveGeometry())
+        return bytes(settings.value("winGeom"))
+    finally:
+        settings.endGroup()
+
+
+def getWidgetState(qWindow):
+    """ Gets the QWindow or QWidget state as a QByteArray.
+
+        Since Qt does not provide this directly we hack this by saving it to the QSettings
+        in a temporary location and then reading it from the QSettings.
+
+        :param widget: A QWidget that has a saveState() methods
+    """
+    settings = QtCore.QSettings()
+    settings.beginGroup('temp_conversion')
+    try:
+        settings.setValue("winState", qWindow.saveState())
+        return bytes(settings.value("winState"))
+    finally:
+        settings.endGroup()
+
+
 def removeSettingsGroup(groupName, settings=None):
     """ Removes a group from the persistent settings
     """
+    logger.warning("Obsolete function: removeSettingsGroup") # TODO: this function should be obsolete after refactoring
     logger.debug("Removing settings group: {}".format(groupName))
     settings = QtCore.QSettings() if settings is None else settings
     settings.remove(groupName)
@@ -149,6 +185,7 @@ def containsSettingsGroup(groupName, settings=None):
     """ Returns True if the settings contain a group with the name groupName.
         Works recursively when the groupName is a slash separated path.
     """
+    logger.warning("Obsolete function: containsSettingsGroup") # TODO: this function should be obsolete after refactoring
     def _containsPath(path, settings):
         "Aux function for containsSettingsGroup. Does the actual recursive search."
         if len(path) == 0:

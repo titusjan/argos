@@ -51,12 +51,13 @@ class RtiRegItem(ClassRegItem):
         return '{} ({})'.format(self.name, extStr)
 
 
-    def asDict(self):
+    def marshall(self): # TDOO: remove
         """ Returns a dictionary for serialization.
         """
-        dct = super(RtiRegItem, self).asDict()
+        dct = super(RtiRegItem, self).marshall()
         dct['extensions'] = self.extensions
         return dct
+
 
 
 class RtiRegistry(ClassRegistry):
@@ -73,6 +74,13 @@ class RtiRegistry(ClassRegistry):
         super(RtiRegistry, self).__init__(settingsGroupName=settingsGroupName)
         self._itemClass = RtiRegItem
         self._extensionMap = {}
+
+
+    @property
+    def registryName(self):
+        """ Human readable name for this registry.
+        """
+        return "File-Format"
 
 
     def clear(self):

@@ -74,6 +74,13 @@ class InspectorRegistry(ClassRegistry):
         self._itemClass = InspectorRegItem
 
 
+    @property
+    def registryName(self):
+        """ Human readable name for this registry.
+        """
+        return "Inspector"
+
+
     def registerInspector(self, fullName, fullClassName, pythonPath=''):
         """ Registers an Inspector class.
         """

@@ -32,8 +32,8 @@ from argos.widgets.misc import setApplicationQtStyle, setApplicationStyleSheet
 logger = logging.getLogger('argos')
 
 logging.basicConfig(level='DEBUG', stream=sys.stderr,
-                    #format='%(name)35s %(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s')
-                    format='%(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s')
+                    #format='%(name)35s %(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-8s: %(message)s')
+                    format='%(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-8s: %(message)s')
 
 
 def browse(fileNames=None,
@@ -41,9 +41,9 @@ def browse(fileNames=None,
            select=None,
            qtStyle=None,
            styleSheet=None,
-           configFile=None,
+           settingsFile=None,
            profile=DEFAULT_PROFILE,
-           resetProfile=False,      # TODO: should probably be moved to the main program
+           resetProfile=False,  # TODO: should probably be moved to the main program
            resetAllProfiles=False,  # TODO: should probably be moved to the main program
            resetRegistry=False):    # TODO: should probably be moved to the main program
     """ Opens the main window(s) for the persistent settings of the given profile,
@@ -54,6 +54,7 @@ def browse(fileNames=None,
         :param select: a path of the repository item that will selected at start up.
         :param qtStyle: name of qtStyle (E.g. fusion).
         :param styleSheet: a path to an optional Qt Cascading Style Sheet.
+        :param settingsFile: file with persistent settings. If None a default will be used.
         :param profile: the name of the profile that will be loaded
         :param resetProfile: if True, the profile will be reset to it standard settings.
         :param resetAllProfiles: if True, all profiles will be reset to it standard settings.
@@ -64,31 +65,9 @@ def browse(fileNames=None,
     from argos.qt import QtWidgets, QtCore
     from argos.application import ArgosApplication
     from argos.repo.testdata import createArgosTestData
-    from argos.utils.dirs import argosConfigDirectory, normRealPath, ensureFileExists
 
-    defaultConfigFile = normRealPath(os.path.join(argosConfigDirectory(), 'config.json'))
-    if not configFile:
-        configFile = defaultConfigFile
-        logger.debug("No config file specified. Using default: {}".format(configFile))
-
-    configFile = normRealPath(configFile)
-    if not os.path.exists(configFile):
-        if configFile == defaultConfigFile:
-            ensureFileExists(configFile)
-        else:
-            qApp = QtWidgets.QApplication.instance()
-
-            button = QtWidgets.QMessageBox.question(qApp, "Create config file?",
-                "The config file cannot be found: {} \n\nCreate new config file?".format(configFile))
-
-            if button == QtWidgets.QMessageBox.Yes:
-                ensureFileExists(configFile)
-            else:
-                logger.warning("No valid config file. Quitting Argos...")
-                return
-
-    argosApp = ArgosApplication()
-
+    argosApp = ArgosApplication(settingsFile)
+    argosApp.loadSettings()  # TODO: call in constructor?
 
 
     try:
@@ -123,13 +102,16 @@ def browse(fileNames=None,
     # Must be called before opening the files so that file formats are auto-detected.
     argosApp.loadOrInitRegistries()
 
+
+
     # Load data in common repository before windows are created.
     argosApp.loadFiles(fileNames)
+
     if DEBUGGING:
         argosApp.repo.insertItem(createArgosTestData())
 
     # Create windows for this profile.
-    argosApp.loadProfile(profile=profile, inspectorFullName=inspectorFullName)
+    #argosApp.loadProfile(profile=profile, inspectorFullName=inspectorFullName)
 
     if select:
         for mainWindow in argosApp.mainWindows:
@@ -174,7 +156,8 @@ def main():
     about_str = "{} version: {}".format(PROJECT_NAME, VERSION)
     parser = argparse.ArgumentParser(description = about_str)
 
-    parser.add_argument('fileNames', metavar='FILE', nargs='*', help='Input files')
+    parser.add_argument('fileNames', metavar='FILE', nargs='*',
+                        help='Files or directories that will be loaded at start up.')
 
     parser.add_argument('-i', '--inspector', dest='inspector',
         help="""The identifier or fullName of the inspector that will be opened at start up.
@@ -191,6 +174,10 @@ def main():
 
     parser.add_argument('--qss', dest='styleSheet',
                         help='Name of Qt Style Sheet file. If not set a default will be used.')
+
+    parser.add_argument('-c', '--config-file', metavar='FILE', dest='settingsFile',
+        help="Configuration file with persistent settings. When using a relative path the settings "
+             "file is loaded/saved to the argos settings directory.")
 
     parser.add_argument('-p', '--profile', dest='profile', default=DEFAULT_PROFILE,
         help="Can be used to have different persistent settings for different use cases.")
@@ -262,6 +249,7 @@ def main():
            select=args.selectPath,
            qtStyle=qtStyle,
            styleSheet=styleSheet,
+           settingsFile=args.settingsFile,
            profile=args.profile,
            resetProfile=args.reset_profile,
            resetAllProfiles=args.reset_all_profiles,

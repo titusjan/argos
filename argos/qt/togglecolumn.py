@@ -18,9 +18,11 @@
 """
 from __future__ import print_function
 
+import base64
 import logging
 
 from argos.qt import QtCore, QtWidgets, Qt
+from argos.qt.misc import getWidgetState
 
 logger = logging.getLogger(__name__)
 
@@ -122,6 +124,20 @@ class ToggleColumnMixIn(object):
             settings = QtCore.QSettings()
         settings.setValue(key, self.horizontalHeader().saveState())
 
+
+    def marshall(self):
+        """ Returns an ascii string with the base64 encoded tree header state.
+        """
+        return base64.b64encode(getWidgetState(self.horizontalHeader())).decode('ascii')
+
+
+    def unmarshall(self, dataStr):
+        """ Initializes itself from a config dict form the persistent settings.
+        """
+        headerBytes = base64.b64decode(dataStr)
+        header_restored = self.horizontalHeader().restoreState(headerBytes)
+        if not header_restored:
+            logger.warning("Tree headers state not restored: {}".format(self))
 
 
 class ToggleColumnTableWidget(QtWidgets.QTableWidget, ToggleColumnMixIn):

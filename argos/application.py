@@ -17,8 +17,10 @@
 
 """ Version and other info for this program
 """
+import json
 import logging
 import os.path
+import pprint
 import sys
 
 from argos.info import DEBUGGING
@@ -29,17 +31,36 @@ from argos.qt.registry import GRP_REGISTRY, nameToIdentifier
 from argos.repo.colors import CmLibSingleton, DEF_FAV_COLOR_MAPS
 from argos.repo.registry import globalRtiRegistry
 from argos.repo.repotreemodel import RepoTreeModel
+from argos.utils.dirs import argosConfigDirectory, normRealPath, ensureFileExists
 from argos.utils.misc import string_to_identifier
 from argos.widgets.mainwindow import MainWindow, UpdateReason
 
 logger = logging.getLogger(__name__)
 
 
+_Q_APP = None # Keep reference to QApplication instance to prevent garbage collection
+
+
+def qApplicationSingleton():
+    """ Returns the QApplication object. Creates it if it doesn't exist.
+
+        :rtype QtWidgets.QApplication:
+    """
+    global _Q_APP
+
+    qApp = QtWidgets.QApplication.instance()
+    if qApp is None:
+        _Q_APP = qApp = QtWidgets.QApplication([])
+
+    return qApp
+
+
 class ArgosApplication(QtCore.QObject):
     """ The application singleton which holds global state.
     """
-    def __init__(self, setExceptHook=True):
+    def __init__(self, settingsFile=None, setExceptHook=True):
         """ Constructor
+            :param settingsFile: Config file from which the persistent settings are loaded.
 
             :param setExceptHook: Sets the global sys.except hook so that Qt shows a dialog box
                 when an exception is raised.
@@ -52,10 +73,12 @@ class ArgosApplication(QtCore.QObject):
         """
         super(ArgosApplication, self).__init__()
 
-        # Call initQtWidgetsApplicationInstance() so that the users can call argos.browse without
-        # having to call it themselves.
+        if not settingsFile:
+            settingsFile = ArgosApplication.defaultSettingsFile()
+            logger.debug("No config file specified. Using default: {}".format(settingsFile))
 
-        self._qApplication = initQApplication()  # TODO: remove here
+        self._settingsFile = ArgosApplication.userConfirmedSettingsFile(
+            settingsFile, createWithoutConfirm=ArgosApplication.defaultSettingsFile())
 
         if setExceptHook:
             logger.debug("Setting sys.excepthook to Argos exception handling")
@@ -92,6 +115,43 @@ class ArgosApplication(QtCore.QObject):
         self.windowActionGroup.actions()[0].trigger()
 
 
+    @classmethod
+    def defaultSettingsFile(cls):
+        """ Returns the path to the default settings file
+        """
+        return normRealPath(os.path.join(argosConfigDirectory(), 'settings.json'))
+
+
+    @classmethod
+    def userConfirmedSettingsFile(cls, settingsFile, createWithoutConfirm=None):
+        """ Asks the user to confirm creating the settings file if it does not exist and is not
+            in the createWithoutConfirm list.
+
+            If settingsFile is a relative path it will be concatenated to the argos config dir.
+
+            :returns: The path of the setting file.
+        """
+        settingsFile = os.path.join(argosConfigDirectory(), settingsFile)
+        logger.debug("Testing if settings file exists: {}".format(settingsFile))
+        if os.path.exists(settingsFile):
+            return settingsFile
+        else:
+            if settingsFile in createWithoutConfirm:
+                return ensureFileExists(settingsFile)
+            else:
+                _app = qApplicationSingleton() # make sure QApplication exists.
+                button = QtWidgets.QMessageBox.question(
+                    None, "Create settings file?",
+                    "The setting file cannot be found: {} \n\nCreate new config file?"
+                                                        .format(settingsFile))
+
+                if button == QtWidgets.QMessageBox.Yes:
+                    return ensureFileExists(settingsFile)
+                else:
+                    logger.warning("No settings file created. Argos won't save persistent settings.")
+                    return None
+
+
     ##############
     # Properties #
     ##############
@@ -99,8 +159,18 @@ class ArgosApplication(QtCore.QObject):
     @property
     def qApplication(self):
         """ Returns the QApplication object. Equivalent to QtWidgets.qApp.
+
+            :rtype QtWidgets.QApplication:
         """
-        return self._qApplication
+        # TODO: replace the lines below by qApplicationSingleton()
+        global _Q_APP
+
+        qApp = QtWidgets.QApplication.instance()
+        if qApp is None:
+            logger.debug("Creating QApplication")
+            _Q_APP = qApp = initQApplication()
+
+        return qApp
 
 
     @property
@@ -158,6 +228,8 @@ class ArgosApplication(QtCore.QObject):
     def loadOrInitRegistries(self):
         """ Reads the registry persistent program settings
         """
+        logger.warning("Registry no longer loaded from QSettings!")
+        return
         self.inspectorRegistry.loadOrInitSettings()
         self.rtiRegistry.loadOrInitSettings()
 
@@ -214,6 +286,9 @@ class ArgosApplication(QtCore.QObject):
             If inspectorFullName is given, a window with this inspector will be created if it wasn't
             already created in the profile. All windows with this inspector will be raised.
         """
+        logger.warning("loadProfile is obsolete and doees nothing")
+        return
+
         settings = QtCore.QSettings()
         logger.info("Reading profile {!r} from: {}".format(profile, settings.fileName()))
 
@@ -223,13 +298,13 @@ class ArgosApplication(QtCore.QObject):
         # Instantiate windows from groups
         settings.beginGroup(profGroupName)
         try:
-            cmLib = CmLibSingleton.instance()
-            if not cmLib.color_maps:
-                logger.warning("No color maps loaded yet. Favorites will be empty.")
-
-            favKeys = settings.value('cmfavorites', DEF_FAV_COLOR_MAPS).split(',')
-            for colorMap in cmLib.color_maps:
-                colorMap.meta_data.favorite = colorMap.key in favKeys
+            # cmLib = CmLibSingleton.instance()
+            # if not cmLib.color_maps:
+            #     logger.warning("No color maps loaded yet. Favorites will be empty.")
+            #
+            # favKeys = settings.value('cmfavorites', DEF_FAV_COLOR_MAPS)
+            # for colorMap in cmLib.color_maps:
+            #     colorMap.meta_data.favorite = colorMap.key in favKeys
 
             for windowGroupName in settings.childGroups():
                 if windowGroupName.startswith('window'):
@@ -260,7 +335,7 @@ class ArgosApplication(QtCore.QObject):
 
 
 
-    def saveProfile(self):
+    def saveProfile(self): # OBSOLETE
         """ Writes the current profile settings to the persistent store
         """
         if not self.profile:
@@ -292,11 +367,98 @@ class ArgosApplication(QtCore.QObject):
                 settings.endGroup()
 
 
+    def marshall(self):
+        """ Returns a dictionary to save in the persistent settings
+        """
+        cfg = {}
+        cmLib = CmLibSingleton.instance()
+        cfg['cmFavorites'] = [colorMap.key for colorMap in cmLib.color_maps
+                     if colorMap.meta_data.favorite]
+        logger.debug("cmFavorites: {}".format(cfg['cmFavorites']))
+
+        cfg['plugins'] = {}
+        cfg['plugins']['inspectors'] = self.inspectorRegistry.marshall()
+        cfg['plugins']['file-formats'] = self.rtiRegistry.marshall()
+
+        # Save windows as a dict instead of a list to improve readability of the resulting JSON
+        cfg['windows'] = {}
+        for winNr, mainWindow in enumerate(self.mainWindows):
+            key = "win-{:d}".format(winNr)
+            cfg['windows'][key] = mainWindow.marshall()
+
+        return cfg
+
+
+    def unmarshall(self, cfg):
+        """ Initializes itself from a config dict form the persistent settings.
+        """
+        cmLib = CmLibSingleton.instance()
+        if not cmLib.color_maps:
+            logger.warning("No color maps loaded yet. Favorites will be empty.")
+            if DEBUGGING:
+                assert False, "No color maps loaded yet. Favorites will be empty."
+
+        favKeys = cfg.get('cmFavorites', DEF_FAV_COLOR_MAPS)
+        for colorMap in cmLib.color_maps:
+            colorMap.meta_data.favorite = colorMap.key in favKeys
+
+        pluginCfg = cfg.get('plugins', {})
+
+        self.inspectorRegistry.unmarshall(pluginCfg.get('inspectors', {}))
+        self.rtiRegistry.unmarshall(pluginCfg.get('file-formats', {}))
+
+
+        # NOTE: we don't create windows here yet. We first have to load the data in the repo
+        # this is done in the main.browse() function. TODO: possible to create windows here?
+
+
+        for winId, winCfg in cfg.get('windows', {}).items():
+            assert winId.startswith('win-'), "Win ID doesnt't start with 'win-': {}".format(winId)
+            self.addNewMainWindow(cfg=winCfg)
+
+
+        # if inspectorFullName is not None:
+        #     windows = [win for win in self._mainWindows
+        #                if win.inspectorFullName == inspectorFullName]
+        #     if len(windows) == 0:
+        #         logger.info("Creating window for inspector: {!r}".format(inspectorFullName))
+        #         try:
+        #             win = self.addNewMainWindow(inspectorFullName=inspectorFullName)
+        #         except KeyError:
+        #             logger.warning("No inspector found with ID: {}".format(inspectorFullName))
+        #     else:
+        #         for win in windows:
+        #             win.raise_()
+
+        # if len(self.mainWindows) == 0:
+        #     logger.info("No open windows in settings or command line (creating one).")
+        #     self.addNewMainWindow(inspectorFullName=DEFAULT_INSPECTOR)
+
+
+
+
     def saveSettings(self):
-        """ Saves the persistent settings. Only saves the profile.
+        """ Saves the persistent settings to file.
         """
         try:
             self.saveProfile()
+
+            if not self._settingsFile:
+                logger.info("No settings file specified. Not saving persistent state.")
+            else:
+                logger.info("Saving settings to: {}".format(self._settingsFile))
+                settings = self.marshall()
+                logger.info("FIle formats: {}".format(settings['plugins']['file-formats']))
+                try:
+                    jsonStr = json.dumps(settings, sort_keys=True, indent=4)
+                except Exception as ex:
+                    logger.error("Failed to serialize settings to JSON: {}".format(ex))
+                    logger.error("Settings: ...\n" + pprint.pformat(settings, width=100))
+                    raise
+                else:
+                    with open(self._settingsFile, 'w') as settingsFile:
+                        settingsFile.write(jsonStr)
+
         except Exception as ex:
             # Continue, even if saving the settings fails.
             logger.warning(ex)
@@ -304,6 +466,26 @@ class ArgosApplication(QtCore.QObject):
                 raise
         finally:
             self._settingsSaved = True
+
+
+    def loadSettings(self):
+        """ Loads the settings from file and populates the application object from it.
+        """
+        cfg = {}
+
+        if not os.path.exists(self._settingsFile):
+            logger.warning("Settings file does not exist: {}".format(self._settingsFile))
+
+        try:
+            with open(self._settingsFile, 'r') as settingsFile:
+                jsonStr = settingsFile.read()
+
+            cfg = json.loads(jsonStr)
+        except Exception as ex:
+            logger.warning("Error {} while reading settings file: {}"
+                           .format(ex, self._settingsFile))
+
+        self.unmarshall(cfg)  # Always call unmarshall.
 
 
     def saveSettingsIfNeeded(self):
@@ -332,7 +514,7 @@ class ArgosApplication(QtCore.QObject):
 
 
     @QtSlot()
-    def addNewMainWindow(self, settings=None, inspectorFullName=None):
+    def addNewMainWindow(self, cfg=None, settings=None, inspectorFullName=None):
         """ Creates and shows a new MainWindow.
 
             If inspectorFullName is set, it will set the identifier from that name.
@@ -344,7 +526,11 @@ class ArgosApplication(QtCore.QObject):
         self.windowActionGroup.addAction(mainWindow.activateWindowAction)
         self.repopulateAllWindowMenus()
 
+        if cfg:
+            mainWindow.unmarshall(cfg)
+
         if settings:
+            logger.warning("addNewMainWindow with settings paremter is obsolete.")
             mainWindow.readViewSettings(settings)
 
         if inspectorFullName:

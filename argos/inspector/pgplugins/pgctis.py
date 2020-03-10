@@ -987,6 +987,18 @@ class PgColorMapCti(AbstractCti):
             self.data = self.cmLibModel.getColorMapByKey(dct['data'])
 
 
+    def _nodeMarshall(self):
+        """ Returns the non-recursive marshalled value of this CTI. Is called by marshall()
+        """
+        return self.data.key
+
+
+    def _nodeUnmarshall(self, key):
+        """ Initializes itself non-recursively from data. Is called by unmarshall()
+        """
+        self.data = self.cmLibModel.getColorMapByKey(key)
+
+
     def createEditor(self, delegate, parent, option):
         """ Creates a ChoiceCtiEditor.
             For the parameters see the AbstractCti constructor documentation.

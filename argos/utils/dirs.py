@@ -67,18 +67,21 @@ def ensureDirectoryExists(dirName):
 
 def ensureFileExists(pathName):
     """ Creates an empty file file if it doesn't yet exist. Also creates necessary directory path.
+
+        :returns: the normRealPath of the path name.
     """
-    pathName = os.path.abspath(pathName)
+    pathName = normRealPath(pathName)
     dirName, fileName = os.path.split(pathName)
     ensureDirectoryExists(dirName)
 
-    if not os.path.exists(fileName):
+    if not os.path.exists(pathName):
         logger.info("Creating empty file: {}".format(pathName))
         with open(pathName, 'w') as f:
             f.write('')
 
     # Check file exists and is not a directory.
     assert os.path.isfile(pathName), "File does not exist or is a directory: {!r}".format(pathName)
+    return pathName
 
 
 def homeDirectory():

@@ -152,6 +152,27 @@ class ChoiceCti(AbstractCti):
         super(ChoiceCti, self)._nodeSetValuesFromDict(dct)
 
 
+    def _nodeMarshall(self):
+        """ Returns the non-recursive marshalled value of this CTI. Is called by marshall()
+        """
+        if self.editable:
+            return [self.data, self._configValues]
+        else:
+            return self.data
+
+
+    def _nodeUnmarshall(self, data):
+        """ Initializes itself non-recursively from data. Is called by unmarshall()
+        """
+        if self.editable:
+            curIdx, configValues = data
+            self._configValues = configValues
+            self._displayValues = configValues
+            self.data = curIdx
+        else:
+            self.data = data
+
+
     @property
     def debugInfo(self):
         """ Returns the string with debugging information

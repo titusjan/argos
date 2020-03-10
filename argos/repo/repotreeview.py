@@ -130,6 +130,29 @@ class RepoWidget(BasePanel):
             settings.endGroup()
 
 
+    def marshall(self):
+        """ Returns a dictionary to save in the persistent settings
+        """
+        cfg = dict(
+            tabIndex = self.tabWidget.currentIndex(),
+            splitterSizes = self.mainSplitter.sizes(),
+            treeHeaders = self.repoTreeView.marshall(),
+        )
+        return cfg
+
+
+    def unmarshall(self, cfg):
+        """ Initializes itself from a config dict form the persistent settings.
+        """
+        if 'tabIndex' in cfg:
+            self.tabWidget.setCurrentIndex(cfg['tabIndex'])
+
+        if 'splitterSizes' in cfg:
+            self.mainSplitter.setSizes(cfg['splitterSizes'])
+
+        self.repoTreeView.unmarshall(cfg.get('treeHeaders', {}))
+
+
     def repoItemChanged(self, rti):
         """ Updates the current tab with the newly selected repoWidget
 

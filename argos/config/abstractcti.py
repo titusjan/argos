@@ -44,10 +44,12 @@ class InvalidInputError(Exception):
 
 def ctiLoads(json_str):
     """ Loads a cti from JSON string """
+    logger.warning("ctiLoads is obsolete")
     return loads(json_str)
 
 def ctiDumps(obj, **kwargs):
     """ Dumps cti as JSON string """
+    logger.warning("ctiDumps is obsolete")
     return dumps(obj, cls=CtiEncoder, **kwargs)
 
 
@@ -124,7 +126,6 @@ class AbstractCti(BaseTreeItem):
     def __init__(self, nodeName, defaultData, enabled=True, expanded=True):
         """ Constructor
             :param nodeName: name of this node (used to construct the node path).
-            :param data: the configuration data. If omitted the defaultData will be used.
             :param defaultData: default data to which the data can be reset by the reset button.
             :param enabled: True if the item is enabled
             :param expanded: True if the item is expanded
@@ -364,34 +365,6 @@ class AbstractCti(BaseTreeItem):
     # serialization #
     #################
 
-    @classmethod
-    def __not_used__createFromJsonDict(cls, dct):
-        """ Creates a CTI given a dictionary, which usually comes from a JSON decoder.
-        """
-        cti = cls(dct['nodeName'])
-        if 'data' in dct:
-            cti.data = dct['data']
-        if 'defaultData' in dct:
-            cti.defaultData = dct['defaultData']
-
-        for childCti in dct['childItems']:
-            cti.insertChild(childCti)
-
-        if '_class_' in dct: # sanity check
-            assert get_full_class_name(cti) == dct['_class_'], \
-                "_class_ should be: {}, got: {}".format(get_full_class_name(cti), dct['_class_'])
-        return cti
-
-
-    def __not_used__asJsonDict(self):
-        """ Returns a dictionary representation to be used in a JSON encoder,
-        """
-        return {'_class_': get_full_class_name(self),
-                'nodeName': self.nodeName,
-                'data': self._dataToJson(self.data),
-                'defaultData': self._dataToJson(self.defaultData),
-                'childItems': self.childItems}
-
 
     def _nodeGetNonDefaultsDict(self):
         """ Retrieves this nodes` values as a dictionary to be used for persistence.
@@ -435,6 +408,7 @@ class AbstractCti(BaseTreeItem):
         return dct
 
 
+
     def _nodeSetValuesFromDict(self, dct):
         """ Sets values from a dictionary in the current node.
             Non-recursive auxiliary function for setValuesFromDict
@@ -449,6 +423,9 @@ class AbstractCti(BaseTreeItem):
             names in future Argos versions (or remove them) without breaking the application.
 
             Typically descendants should override _nodeSetValuesFromDict instead of this function.
+
+            TODO: OBSOLETE. Can be removed in the next version (we might keep it for now to let
+                user retrieve the QSettings one last time.
         """
         if 'nodeName' not in dct:
             return
@@ -472,6 +449,79 @@ class AbstractCti(BaseTreeItem):
                 logger.warn("Unable to set values for: {}".format(key))
             else:
                 childCti.setValuesFromDict(childDct)
+
+
+    def _nodeMarshall(self):
+        """ Returns the non-recursive marshalled value of this CTI. Is called by marshall()
+        """
+        return self.data
+
+
+    def marshall(self):
+        """ Recursively retrieves values as a dictionary to be used for persistence.
+
+            Typically descendants should override _nodeMarshall instead of this function.
+        """
+        nodeMar = self._nodeMarshall()
+        assert not isinstance(nodeMar, dict), "Node marshall returns dict: {}".format(self)
+
+        childDct = {}
+        for childCti in self.childItems:
+            childDct[childCti.nodeName] = childCti.marshall()
+
+        if nodeMar is not None and childDct:
+            res = {'_data': nodeMar, '_sub': childDct}
+            return res
+        elif childDct:
+            return childDct
+        else:
+            return nodeMar
+
+
+    def _nodeUnmarshall(self, data):
+        """ Initializes itself non-recursively from data. Is called by unmarshall()
+        """
+        self.data = data
+
+
+    def unmarshall(self, cfg):
+        """ Initializes itself recursively from a config dict form the persistent settings.
+
+            Typically descendants should override _nodeMarshall instead of this function.
+        """
+        if isinstance(cfg, dict):
+            if '_data' in cfg and '_sub' in cfg:
+                self._nodeUnmarshall(cfg['_data'])
+                self.unmarshall(cfg['_sub'])
+            else:
+                for childName, childCfg in cfg.items():
+                    try:
+                        childCti = self.childByNodeName(childName)
+                    except IndexError as _ex:
+                        logger.warning("Unable to set values for: {}".format(childName))
+                    else:
+                        childCti.unmarshall(childCfg)
+        else:
+            self._nodeUnmarshall(cfg)
+
+
+
+    # def marshall(self):
+    #     """ Recursively retrieves values as a dictionary to be used for persistence.
+    #
+    #         Typically descendants should override _nodeMarshall instead of this function.
+    #     """
+    #
+    #     if self.childItems:
+    #         dct = {'_data': self._nodeMarshall()}
+    #         dct['_sub'] = childDct = {}
+    #         for childCti in self.childItems:
+    #             childRes = childCti.marshall()
+    #             childDct[childCti.nodeName] = childRes
+    #     else:
+    #         return self._nodeMarshall()
+    #
+    #     return dct
 
     ########################
     # Editor look and feel #
