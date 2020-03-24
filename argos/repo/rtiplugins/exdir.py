@@ -95,6 +95,10 @@ def dataSetMissingValue(exdirDataset):
 
 
 def flattenDict(d, parent_key='', sep='/'):
+    """ Returns a flatten dictionary given a nested dictionary. 
+
+        The nested keys are be separated by sep. 
+    """
     items = []
     if isinstance(d,list): d = {str(i) : v for i, v in enumerate(d)} 
     for k, v in d.items():
@@ -420,7 +424,7 @@ class ExdirDatasetRti(BaseRti):
 
 
 class ExdirRawRti(BaseRti):
-    """ Repository Tree Item (RTI) that contains an Exdir group.
+    """ Repository Tree Item (RTI) that contains an Exdir Raw.
     """
     _defaultIconGlyph = RtiIconFactory.FOLDER
     _defaultIconColor = ICON_COLOR_EXDIR
