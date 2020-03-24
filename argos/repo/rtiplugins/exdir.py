@@ -33,7 +33,7 @@ from argos.utils.masks import maskedEqual
 
 logger = logging.getLogger(__name__)
 
-ICON_COLOR_EXDIR = '#FFBF00'
+ICON_COLOR_EXDIR = '#00BBFF'
 
 
 def dataSetElementType(exdirDataset):
@@ -96,6 +96,7 @@ def dataSetMissingValue(exdirDataset):
 
 def flattenDict(d, parent_key='', sep='/'):
     items = []
+    if isinstance(d,list): d = {str(i) : v for i, v in enumerate(d)} 
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
         if isinstance(v, collections.MutableMapping):
