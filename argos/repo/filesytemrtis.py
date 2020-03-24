@@ -78,16 +78,16 @@ class DirectoryRti(BaseRti):
 
 def detectRtiFromFileName(fileName):
     """ Determines the type of RepoTreeItem to use given a file or directory name.
-        Uses a DirectoryRti for directories without a valid extension and an UnknownFileRti
+        Uses a DirectoryRti for directories without a registered extension and an UnknownFileRti
         if the file extension doesn't match one of the registered RTI extensions.
 
         Returns (cls, regItem) tuple. Both the cls ond the regItem can be None.
-        If the file is a directory without a valid extension, (DirectoryRti, None) is returned.
+        If the file is a directory without a registered extension, (DirectoryRti, None) is returned.
         If the file extension is not in the registry, (UnknownFileRti, None) is returned.
         If the cls cannot be imported (None, regItem) returned. regItem.exception will be set.
         Otherwise (cls, regItem) will be returned.
     """
-    _, extension = os.path.splitext(fileName.strip('\\').strip('/')) # strip trailing backslash and forward slash <=== add os.path.normpath
+    _, extension = os.path.splitext(os.path.normpath(fileName))
     try:
         rtiRegItem = globalRtiRegistry().getRtiRegItemByExtension(extension)
     except (KeyError):
@@ -106,7 +106,7 @@ def detectRtiFromFileName(fileName):
 
 def createRtiFromFileName(fileName):
     """ Determines the type of RepoTreeItem to use given a file or directory name and creates it.
-        Uses a DirectoryRti for directories without extensions and an UnknownFileRti if the file
+        Uses a DirectoryRti for directories without registered extensions and an UnknownFileRti if the file
         extension doesn't match one of the registered RTI extensions.
     """
     cls, rtiRegItem = detectRtiFromFileName(fileName)
