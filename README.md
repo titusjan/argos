@@ -3,7 +3,7 @@ Argos
 
 Argos is a GUI for viewing and exploring scientific data, written in Python and Qt. It has a
 plug-in architecture that allows it to be extended to read new data formats. At the moment
-plug-ins are included to read HDF-5, NetCDF-4, WAV, numpy binary files and various image formats,
+plug-ins are included to read HDF-5, NetCDF-4, WAV, Exdir, numpy binary files and various image formats,
 but a plug-in could be written for any data that can be expressed as a Numpy array.
 
 ### Installing Argos
@@ -37,7 +37,7 @@ their respective website.
 | [pillow](https://python-pillow.org/)                 | BMP, JPEG, PNG, TIFF, GIF, etc. |
 | [scipy](https://www.scipy.org/)                      | Matlab & IDL save-files. WAV    |
 | [pandas](http://pandas.pydata.org/)                  | Comma-separated files           |
-
+| [exdir](https://github.com/CINPLA/exdir)             | Exdir                           |
 
 ### Starting Argos
 
