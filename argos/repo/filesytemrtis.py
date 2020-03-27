@@ -17,6 +17,7 @@
 
 """ Repository items (RTIs) for browsing the file system
 """
+# TODO: rename this file to filesystemrtis (with an extra 's'). Update in registry as well
 
 import logging, os
 from argos.repo.baserti import BaseRti

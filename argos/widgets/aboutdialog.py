@@ -85,13 +85,13 @@ class AboutDialog(QtWidgets.QDialog):
         self._addModuleInfo(mi.PythonModuleInfo())
         self._addModuleInfo(mi.QtModuleInfo())
 
-        modules = ['numpy', 'scipy', 'pandas', 'pyqtgraph']
+        modules = ['numpy', 'scipy', 'pandas', 'pyqtgraph', 'exdir']
         for module in modules:
             self._addModuleInfo(module)
 
-        self._addModuleInfo(mi.PillowInfo())
         self._addModuleInfo(mi.H5pyModuleInfo())
         self._addModuleInfo(mi.NetCDF4ModuleInfo())
+        self._addModuleInfo(mi.PillowInfo())
 
         self.progressLabel.setText("")
         logger.debug("Finished adding dependency info to the AboutDialog")
