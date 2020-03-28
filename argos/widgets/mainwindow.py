@@ -884,15 +884,9 @@ class MainWindow(QtWidgets.QMainWindow):
         # Save current window settings.
         settings = QtCore.QSettings()
         settings.beginGroup(self.argosApplication.windowGroupName(self.windowNumber))
-        try:
-            self.saveProfile(settings)
 
-            # Create new window with the freshly baked settings of the current window.
-            name = self.inspectorRegItem.fullName
-            newWindow = self.argosApplication.addNewMainWindow(settings=settings,
-                                                               inspectorFullName=name)
-        finally:
-            settings.endGroup()
+        newWindow = self.argosApplication.addNewMainWindow(
+            cfg=self.marshall(), inspectorFullName=self.inspectorRegItem.fullName)
 
         # Select the current item in the new window.
         currentItem, _currentIndex = self.repoWidget.repoTreeView.getCurrentItem()

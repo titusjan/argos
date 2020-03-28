@@ -517,7 +517,7 @@ class ArgosApplication(QtCore.QObject):
 
 
     @QtSlot()
-    def addNewMainWindow(self, cfg=None, settings=None, inspectorFullName=None):
+    def addNewMainWindow(self, cfg=None, inspectorFullName=None):
         """ Creates and shows a new MainWindow.
 
             If inspectorFullName is set, it will set the identifier from that name.
@@ -531,10 +531,6 @@ class ArgosApplication(QtCore.QObject):
 
         if cfg:
             mainWindow.unmarshall(cfg)
-
-        if settings:
-            logger.warning("addNewMainWindow with settings paremter is obsolete.")
-            mainWindow.readViewSettings(settings)
 
         if inspectorFullName:
             inspectorId = nameToIdentifier(inspectorFullName)
