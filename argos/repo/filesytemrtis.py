@@ -17,6 +17,7 @@
 
 """ Repository items (RTIs) for browsing the file system
 """
+# TODO: rename this file to filesystemrtis (with an extra 's'). Update in registry as well
 
 import logging, os
 from argos.repo.baserti import BaseRti
@@ -68,14 +69,8 @@ class DirectoryRti(BaseRti):
         fileNames = sorted(os.listdir(self._fileName), key=lambda s: s.lower())
         absFileNames = [os.path.join(self._fileName, fn) for fn in fileNames]
 
-        # Add subdirectories
         for fileName, absFileName in zip(fileNames, absFileNames):
-            if os.path.isdir(absFileName) and not fileName.startswith('.'):
-                childItems.append(DirectoryRti(fileName=absFileName, nodeName=fileName))
-
-        # Add regular files
-        for fileName, absFileName in zip(fileNames, absFileNames):
-            if os.path.isfile(absFileName) and not fileName.startswith('.'):
+            if not fileName.startswith('.'):
                 childItem = createRtiFromFileName(absFileName)
                 childItems.append(childItem)
 
@@ -83,36 +78,36 @@ class DirectoryRti(BaseRti):
 
 
 def detectRtiFromFileName(fileName):
-    """ Determines the type of RepoTreeItem to use given a file name.
-        Uses a DirectoryRti for directories and an UnknownFileRti if the file
-        extension doesn't match one of the registered RTI extensions.
+    """ Determines the type of RepoTreeItem to use given a file or directory name.
+        Uses a DirectoryRti for directories without a registered extension and an UnknownFileRti
+        if the file extension doesn't match one of the registered RTI extensions.
 
         Returns (cls, regItem) tuple. Both the cls ond the regItem can be None.
-        If the file is a directory, (DirectoryRti, None) is returned.
+        If the file is a directory without a registered extension, (DirectoryRti, None) is returned.
         If the file extension is not in the registry, (UnknownFileRti, None) is returned.
         If the cls cannot be imported (None, regItem) returned. regItem.exception will be set.
         Otherwise (cls, regItem) will be returned.
     """
-    _, extension = os.path.splitext(fileName)
-    if os.path.isdir(fileName):
-        rtiRegItem = None
-        cls = DirectoryRti
-    else:
-        try:
-            rtiRegItem = globalRtiRegistry().getRtiRegItemByExtension(extension)
-        except (KeyError):
+    _, extension = os.path.splitext(os.path.normpath(fileName))
+    try:
+        rtiRegItem = globalRtiRegistry().getRtiRegItemByExtension(extension)
+    except (KeyError):
+        if os.path.isdir(fileName):
+            rtiRegItem = None
+            cls = DirectoryRti
+        else:
             logger.debug("No file RTI registered for extension: {}".format(extension))
             rtiRegItem = None
             cls = UnknownFileRti
-        else:
-            cls = rtiRegItem.getClass(tryImport=True) # cls can be None
+    else:
+         cls = rtiRegItem.getClass(tryImport=True) # cls can be None
 
     return cls, rtiRegItem
 
 
 def createRtiFromFileName(fileName):
-    """ Determines the type of RepoTreeItem to use given a file name and creates it.
-        Uses a DirectoryRti for directories and an UnknownFileRti if the file
+    """ Determines the type of RepoTreeItem to use given a file or directory name and creates it.
+        Uses a DirectoryRti for directories without registered extensions and an UnknownFileRti if the file
         extension doesn't match one of the registered RTI extensions.
     """
     cls, rtiRegItem = detectRtiFromFileName(fileName)
