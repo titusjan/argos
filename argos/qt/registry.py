@@ -407,7 +407,7 @@ class ClassRegistry(object):
         """
         self.clear()
         if not cfg:
-            logger.info("Empty config, using registry defaults for: {}".format(self.registryName), stack_info=True)
+            logger.info("Empty config, using registry defaults for: {}".format(self.registryName), stack_info=False)
             for regItem in self.getDefaultItems():
                 self.registerItem(regItem)
         else:
