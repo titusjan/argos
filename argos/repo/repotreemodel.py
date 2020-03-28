@@ -45,8 +45,8 @@ class RepoTreeModel(BaseTreeModel):
         """ Constructor
         """
         super(RepoTreeModel, self).__init__(parent=parent)
-        self._invisibleRootItem = BaseRti(nodeName='<invisible-root>')
-        self._invisibleRootItem.model = self
+        self._invisibleRootTreeItem = BaseRti(nodeName='<invisible-root>')
+        self._invisibleRootTreeItem.model = self
         self._isEditable = False
 
 

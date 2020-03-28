@@ -47,16 +47,16 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         # The root item also is returned by getItem in case of an invalid index.
         # Finally, it is used to store the header data.
         #self._horizontalHeaders = [header for header in headers]
-        self._invisibleRootItem = BaseTreeItem(nodeName=INVISIBLE_ROOT_NAME)
+        self._invisibleRootTreeItem = BaseTreeItem(nodeName=INVISIBLE_ROOT_NAME)
 
         self.cellSizeHint = TREE_CELL_SIZE_HINT # Default cell size, can be overridden by items
 
 
     @property
-    def invisibleRootItem(self):
+    def invisibleRootTreeItem(self):
         """ Returns the invisible root item, which contains no actual data
         """
-        return self._invisibleRootItem
+        return self._invisibleRootTreeItem
 
 
     @property
@@ -87,7 +87,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         """
         try:
             if index.isValid():
-                item = self.getItem(index, altItem=self.invisibleRootItem)
+                item = self.getItem(index, altItem=self.invisibleRootTreeItem)
                 return self.itemData(item, index.column(), role=role)
             else:
                 return None
@@ -173,7 +173,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
 #                     .format(parentIndex.row(), parentIndex.column(), parentIndex.isValid(),
 #                             parentIndex.isValid() and parentIndex.column() != 0))
 
-        parentItem = self.getItem(parentIndex, altItem=self.invisibleRootItem)
+        parentItem = self.getItem(parentIndex, altItem=self.invisibleRootTreeItem)
         #logger.debug("    Getting row {} from parentItem: {}".format(row, parentItem))
 
         if not (0 <= row < parentItem.nChildren()):
@@ -208,10 +208,10 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         if not index.isValid():
             return QtCore.QModelIndex()
 
-        childItem = self.getItem(index, altItem=self.invisibleRootItem)
+        childItem = self.getItem(index, altItem=self.invisibleRootTreeItem)
         parentItem = childItem.parentItem
 
-        if parentItem == self.invisibleRootItem:
+        if parentItem == self.invisibleRootTreeItem:
             return QtCore.QModelIndex()
 
         return self.createIndex(parentItem.childNumber(), 0, parentItem)
@@ -224,7 +224,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             Note: When implementing a table based model, rowCount() should return 0 when the parent
             is valid.
         """
-        parentItem = self.getItem(parentIndex, altItem=self.invisibleRootItem)
+        parentItem = self.getItem(parentIndex, altItem=self.invisibleRootTreeItem)
         return parentItem.nChildren()
 
 
@@ -232,7 +232,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         """ Returns true if parent has any children; otherwise returns false.
             Use rowCount() on the parent to find out the number of children.
         """
-        parentItem = self.getItem(parentIndex, altItem=self.invisibleRootItem)
+        parentItem = self.getItem(parentIndex, altItem=self.invisibleRootTreeItem)
         return parentItem.hasChildren()
 
 
@@ -248,7 +248,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         if role != Qt.CheckStateRole and role != Qt.EditRole:
             return False
 
-        treeItem = self.getItem(index, altItem=self.invisibleRootItem)
+        treeItem = self.getItem(index, altItem=self.invisibleRootTreeItem)
         try:
             result = self.setItemData(treeItem, index.column(), value, role=role)
             if result:
@@ -300,7 +300,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
 
 
     # Originally from the editabletreemodel example but added the altItem parameter to force
-    # callers to specify request the invisibleRootItem as alternative in case of an invalid index.
+    # callers to specify request the an alternative in case of an invalid index.
     # TODO: rename to ItemFromIndex to be consistent with QStandardItemModel?
     def getItem(self, index, altItem=None):
         """ Returns the TreeItem for the given index. Returns the altItem if the index is invalid.
@@ -310,7 +310,6 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             if item:
                 return item
 
-        #return altItem if altItem is not None else self.invisibleRootItem # TODO: remove
         return altItem
 
 
@@ -323,7 +322,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         if parentIndex is None:
             parentIndex=QtCore.QModelIndex()
 
-        parentItem = self.getItem(parentIndex, altItem=self.invisibleRootItem)
+        parentItem = self.getItem(parentIndex, altItem=self.invisibleRootTreeItem)
 
         nChildren = parentItem.nChildren()
         if position is None:
@@ -382,7 +381,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         logger.debug("deleteItemAtIndex: removing {}".format(item))
 
         parentIndex = itemIndex.parent()
-        parentItem = self.getItem(parentIndex, altItem=self.invisibleRootItem)
+        parentItem = self.getItem(parentIndex, altItem=self.invisibleRootTreeItem)
         row = itemIndex.row()
         self.beginRemoveRows(parentIndex, row, row)
         try:
@@ -486,7 +485,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
 
         if startIndex is None or path.startswith('/'):
             startIndex = QtCore.QModelIndex()
-            startItem = self.invisibleRootItem
+            startItem = self.invisibleRootTreeItem
         else:
             startItem = self.getItem(startIndex, None)
 

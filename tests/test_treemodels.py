@@ -115,7 +115,7 @@ class TestGetByPath(unittest.TestCase):
         # Invisible root
         checkItem, checkIndex = self.getLastItem('/')
         self.assertFalse(checkIndex.isValid())
-        self.assertIs(checkItem, self.model.invisibleRootItem)
+        self.assertIs(checkItem, self.model.invisibleRootTreeItem)
 
         # Empty string
         self.assertRaises(IndexError, self.getLastItem, '')

@@ -44,8 +44,8 @@ class ConfigTreeModel(BaseTreeModel):
         """ Constructor
         """
         super(ConfigTreeModel, self).__init__(parent=parent)
-        self._invisibleRootItem = GroupCti(self.INVISIBLE_ROOT_NAME)
-        self._invisibleRootItem.model = self
+        self._invisibleRootTreeItem = GroupCti(self.INVISIBLE_ROOT_NAME)
+        self._invisibleRootTreeItem.model = self
         #self.dataChanged.connect(self.debug)
         self._refreshBlocked = False
 
@@ -236,7 +236,6 @@ class ConfigTreeModel(BaseTreeModel):
         """ Resets all items in the tree to their default
         """
         logger.debug("Resetting all settings ----------------------")
-        self.invisibleRootItem.resetToDefault(resetChildren=True)
-        self.invisibleRootItem.updateTarget()
-
+        self.invisibleRootTreeItem.resetToDefault(resetChildren=True)
+        self.invisibleRootTreeItem.updateTarget()
 
