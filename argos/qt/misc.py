@@ -172,41 +172,6 @@ def getWidgetState(qWindow):
         settings.endGroup()
 
 
-def removeSettingsGroup(groupName, settings=None):
-    """ Removes a group from the persistent settings
-    """
-    logger.warning("Obsolete function: removeSettingsGroup") # TODO: this function should be obsolete after refactoring
-    logger.debug("Removing settings group: {}".format(groupName))
-    settings = QtCore.QSettings() if settings is None else settings
-    settings.remove(groupName)
-
-
-def containsSettingsGroup(groupName, settings=None):
-    """ Returns True if the settings contain a group with the name groupName.
-        Works recursively when the groupName is a slash separated path.
-    """
-    logger.warning("Obsolete function: containsSettingsGroup") # TODO: this function should be obsolete after refactoring
-    def _containsPath(path, settings):
-        "Aux function for containsSettingsGroup. Does the actual recursive search."
-        if len(path) == 0:
-            return True
-        else:
-            head = path[0]
-            tail = path[1:]
-            if head not in settings.childGroups():
-                return False
-            else:
-                settings.beginGroup(head)
-                try:
-                    return _containsPath(tail, settings)
-                finally:
-                    settings.endGroup()
-
-    # Body starts here
-    path = os.path.split(groupName)
-    logger.debug("Looking for path: {}".format(path))
-    settings = QtCore.QSettings() if settings is None else settings
-    return _containsPath(path, settings)
 
 ######################
 # Debugging routines #

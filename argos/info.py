@@ -29,7 +29,6 @@ REPO_NAME = "argos"
 SCRIPT_NAME = "argos"
 PACKAGE_NAME = "argos"
 PROJECT_NAME = "Argos"
-DEFAULT_PROFILE = 'Panoptes'
 SHORT_DESCRIPTION = "Argos Panoptes HDF/NCDF/scientific data viewer."
 PROJECT_URL = "https://github.com/titusjan/argos"
 AUTHOR = "Pepijn Kenter"

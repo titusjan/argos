@@ -26,8 +26,8 @@ import sys
 from argos.info import DEBUGGING
 from argos.inspector.registry import InspectorRegistry, DEFAULT_INSPECTOR
 from argos.qt import QtCore, QtWidgets, QtSlot
-from argos.qt.misc import removeSettingsGroup, handleException, initQApplication
-from argos.qt.registry import GRP_REGISTRY, nameToIdentifier
+from argos.qt.misc import handleException, initQApplication
+from argos.qt.registry import nameToIdentifier
 from argos.repo.colors import CmLibSingleton, DEF_FAV_COLOR_MAPS
 from argos.repo.registry import globalRtiRegistry
 from argos.repo.repotreemodel import RepoTreeModel
@@ -90,7 +90,6 @@ class ArgosApplication(QtCore.QObject):
         self._rtiRegistry = globalRtiRegistry()
         self._inspectorRegistry = InspectorRegistry()
 
-        self._profile = ''
         self._mainWindows = []
         self._settingsSaved = False  # boolean to prevent saving settings twice
 
@@ -197,19 +196,18 @@ class ArgosApplication(QtCore.QObject):
 
 
     @property
-    def profile(self):
-        """ Persistent settings are associated to a profile. This allows users to save the
-            program state for several usage profiles.
-            Profile settings are case insensitive.
-        """
-        return self._profile
-
-
-    @property
     def mainWindows(self):
         """ Returns the list of MainWindows. For read-only purposes only.
         """
         return self._mainWindows
+
+
+    @property
+    def settingsFile(self):
+        """ Returns the name of the settings file
+        """
+        return self._settingsFile
+
 
     ###########
     # Methods #
@@ -219,154 +217,6 @@ class ArgosApplication(QtCore.QObject):
         """ Is called when the focus changes. Useful for debugging.
         """
         logger.debug("Focus changed from {} to {}".format(old, now))
-
-
-    def deleteRegistries(self):
-        """ Deletes all registry information from the persistent store.
-        """
-        removeSettingsGroup(GRP_REGISTRY)
-
-
-    def loadOrInitRegistries(self):
-        """ Reads the registry persistent program settings
-        """
-        logger.warning("Registry no longer loaded from QSettings!")
-        return
-        self.inspectorRegistry.loadOrInitSettings()
-        self.rtiRegistry.loadOrInitSettings()
-
-
-#    def saveRegistries(self):
-#        """ Writes the view settings to the persistent store
-#        """
-#        self.rtiRegistry.saveSettings(self.GRP_REGISTRY_RTI)
-#        self.inspectorRegistry.saveSettings(self.GRP_REGISTRY_INSPECTORS)
-
-
-    def profileGroupName(self, profile=None):
-        """ Returns the name of the QSetting group for the profile.
-            Converts to lower case and removes whitespace, interpunction, etc.
-            Prepends _debug_ if the debugging flag is set
-
-            :param profile: profile name. If None the current profile is used.
-        """
-        profile = profile if profile else self.profile
-        profGroupName = '_debug_' if DEBUGGING else ''
-        profGroupName += string_to_identifier(profile)
-        return profGroupName
-
-
-    def windowGroupName(self, windowNumber, profile=None):
-        """ Returns the name of the QSetting group for this window in the this profile.
-
-            :param windowNumber: int
-            :param profile: profile name. If None the current profile is used.
-        """
-        return "{}/window-{:02d}".format(self.profileGroupName(profile=profile), windowNumber)
-
-
-    def deleteProfile(self, profile):
-        """ Removes a profile from the persistent settings
-        """
-        profGroupName = self.profileGroupName(profile)
-        logger.debug("Resetting profile settings: {}".format(profGroupName))
-        settings = QtCore.QSettings()
-        settings.remove(profGroupName)
-
-
-    def deleteAllProfiles(self):
-        """ Returns a list of all profiles
-        """
-        settings = QtCore.QSettings()
-        for profGroupName in QtCore.QSettings().childGroups():
-            settings.remove(profGroupName)
-
-
-    def loadProfile(self, profile, inspectorFullName=None):
-        """ Reads the persistent program settings for the current profile.
-
-            If inspectorFullName is given, a window with this inspector will be created if it wasn't
-            already created in the profile. All windows with this inspector will be raised.
-        """
-        logger.warning("loadProfile is obsolete and doees nothing")
-        return
-
-        settings = QtCore.QSettings()
-        logger.info("Reading profile {!r} from: {}".format(profile, settings.fileName()))
-
-        self._profile = profile
-        profGroupName = self.profileGroupName(profile)
-
-        # Instantiate windows from groups
-        settings.beginGroup(profGroupName)
-        try:
-            # cmLib = CmLibSingleton.instance()
-            # if not cmLib.color_maps:
-            #     logger.warning("No color maps loaded yet. Favorites will be empty.")
-            #
-            # favKeys = settings.value('cmfavorites', DEF_FAV_COLOR_MAPS)
-            # for colorMap in cmLib.color_maps:
-            #     colorMap.meta_data.favorite = colorMap.key in favKeys
-
-            for windowGroupName in settings.childGroups():
-                if windowGroupName.startswith('window'):
-                    settings.beginGroup(windowGroupName)
-                    try:
-                        self.addNewMainWindow(settings=settings)
-                    finally:
-                        settings.endGroup()
-        finally:
-            settings.endGroup()
-
-        if inspectorFullName is not None:
-            windows = [win for win in self._mainWindows
-                       if win.inspectorFullName == inspectorFullName]
-            if len(windows) == 0:
-                logger.info("Creating window for inspector: {!r}".format(inspectorFullName))
-                try:
-                    win = self.addNewMainWindow(inspectorFullName=inspectorFullName)
-                except KeyError:
-                    logger.warning("No inspector found with ID: {}".format(inspectorFullName))
-            else:
-                for win in windows:
-                    win.raise_()
-
-        if len(self.mainWindows) == 0:
-            logger.info("No open windows in profile (creating one).")
-            self.addNewMainWindow(inspectorFullName=DEFAULT_INSPECTOR)
-
-
-
-    def saveProfile(self): # OBSOLETE
-        """ Writes the current profile settings to the persistent store
-        """
-        if not self.profile:
-            logger.warning("No profile defined (no settings saved)")
-            return
-
-        settings = QtCore.QSettings()
-        logger.debug("Writing settings to: {}".format(settings.fileName()))
-
-        profGroupName = self.profileGroupName()
-        settings.remove(profGroupName) # start with a clean slate
-
-        settings.beginGroup(profGroupName)
-        try:
-            cmLib = CmLibSingleton.instance()
-            favorites = [colorMap.key for colorMap in cmLib.color_maps
-                         if colorMap.meta_data.favorite]
-            logger.debug("cmfavorites: {}".format(favorites))
-            settings.setValue('cmfavorites', ','.join(favorites))
-        finally:
-            settings.endGroup()
-
-        assert self.mainWindows, "no main windows found"
-        for winNr, mainWindow in enumerate(self.mainWindows):
-            settings.beginGroup(self.windowGroupName(winNr))
-            try:
-                mainWindow.saveProfile(settings)
-            finally:
-                settings.endGroup()
 
 
     def marshall(self):
@@ -439,8 +289,6 @@ class ArgosApplication(QtCore.QObject):
         """ Saves the persistent settings to file.
         """
         try:
-            self.saveProfile()
-
             if not self._settingsFile:
                 logger.info("No settings file specified. Not saving persistent state.")
             else:
@@ -459,7 +307,7 @@ class ArgosApplication(QtCore.QObject):
 
         except Exception as ex:
             # Continue, even if saving the settings fails.
-            logger.warning(ex)
+            logger.exception(ex)
             if DEBUGGING:
                 raise
         finally:
@@ -492,8 +340,8 @@ class ArgosApplication(QtCore.QObject):
 
 
     def saveSettingsIfNeeded(self):
-        """ Writes the persistent settings of this profile is this is the last window and
-            the settings have not yet been saved.
+        """ Writes the persistent settings if this is the last window and the settings have not yet
+            been saved.
         """
         if not self._settingsSaved and len(self.mainWindows) <= 1:
             self.saveSettings()

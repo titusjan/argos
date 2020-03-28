@@ -36,7 +36,7 @@ TODO short term:
 
     argos --help on Windows (Beast) doesn't seem to give output)
 
-    quickview tab 
+    quickview tab
     cross hair in the middle of the pixel
 
     Fixed font size in tables and trees so that windows10 with two monitors works. (setFixedPitch)
@@ -98,7 +98,6 @@ TODO mid term:
     Default outlier percentage op 0.1%?
 
 	Interaction in IPython
-	QSettings should not use titusjan by default
 	(auto)refresh
 
     Consider getting rid of fake dimensions in getSlicedArray because it fails with masked arrays with fill values.
@@ -151,7 +150,6 @@ TODO Long term or nice to have:
     nested arrays (/argos/idl-sav-files/qds_dd.sav/qds_dd/OCCURRENCES) (need to read first element)
 	confirm on error when editing cell
 	make argos assert and assertEqual function for sanity checks (consistent "please report this bug" text)
-	read/write config to yaml, QSettings.
 	persistent expand of config options?
 	thinks how to stretch last line when toggling columns on/off (recalc column size?)
 	let repo tree view work with multiple selected items
@@ -164,7 +162,7 @@ TODO Long term or nice to have:
 	Cartopy: http://scitools.org.uk/cartopy/docs/latest/ (shape files)
 	Holoviews: http://ioam.github.io/holoviews
 
-	Change profile from menu?
+	Change settings file from menu?
 	Plugin management window
 	clean-up the settings reading/writing
 	Qt::SizeHintRole in toggleTreeView?

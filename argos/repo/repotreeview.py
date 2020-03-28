@@ -87,49 +87,6 @@ class RepoWidget(BasePanel):
         self.detailDockPanes.append(detailPane)
 
 
-    def saveProfile(self, key, settings):
-        """ Writes the view settings to the persistent store
-        """
-        logger.debug("Writing view settings for: {}".format(key))
-
-        settings.beginGroup(key)
-        try:
-            settings.setValue('tabIndex', self.tabWidget.currentIndex())
-
-            treeSize, detailsSize = self.mainSplitter.sizes()
-            settings.setValue('splitterTreeSize', treeSize)
-            settings.setValue('splitterDetailsSize', detailsSize)
-
-        finally:
-            settings.endGroup()
-
-
-    def readViewSettings(self, key, settings):
-        """ Reads settings from the persistent store
-        """
-
-        settings.beginGroup(key)
-        try:
-            splitterTreeSize = settings.value('splitterTreeSize')
-            splitterDetailsSize = settings.value('splitterDetailsSize')
-
-            if splitterTreeSize is None or splitterDetailsSize is None:
-                logger.debug("Not restoring splitter sizes")
-            else:
-                logger.debug("Restoring splitter sizes: {}"
-                             .format((splitterTreeSize, splitterDetailsSize)))
-                self.mainSplitter.setSizes( (splitterTreeSize, splitterDetailsSize) )
-
-            tabIndex = settings.value('tabIndex')
-            if tabIndex is None:
-                logger.debug("Not restoring tab index")
-            else:
-                self.tabWidget.setCurrentIndex(tabIndex)
-
-        finally:
-            settings.endGroup()
-
-
     def marshall(self):
         """ Returns a dictionary to save in the persistent settings
         """

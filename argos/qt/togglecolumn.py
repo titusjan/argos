@@ -93,38 +93,6 @@ class ToggleColumnMixIn(object):
         return show_column
 
 
-    def readViewSettings(self, key, settings=None):
-        """ Reads the persistent program settings
-
-            :param key: key where the setting will be read from
-            :param settings: optional QSettings object which can have a group already opened.
-            :returns: True if the header state was restored, otherwise returns False
-        """
-        #logger.debug("Reading view settings for: {}".format(key))
-        if settings is None:
-            settings = QtCore.QSettings()
-
-        horizontal_header = self.horizontalHeader()
-        header_restored = horizontal_header.restoreState(settings.value(key))
-
-        # update actions
-        for col, action in enumerate(horizontal_header.actions()):
-            is_checked = not horizontal_header.isSectionHidden(col)
-            action.setChecked(is_checked)
-
-        return header_restored
-
-    def saveProfile(self, key, settings=None):
-        """ Writes the view settings to the persistent store
-            :param key: key where the setting will be read from
-            :param settings: optional QSettings object which can have a group already opened.
-        """
-        #logger.debug("Writing view settings for: {}".format(key))
-        if settings is None:
-            settings = QtCore.QSettings()
-        settings.setValue(key, self.horizontalHeader().saveState())
-
-
     def marshall(self):
         """ Returns an ascii string with the base64 encoded tree header state.
         """

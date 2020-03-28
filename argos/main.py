@@ -25,7 +25,7 @@ from __future__ import print_function
 # If you import (for instance) numpy here, the setup.py will fail if numpy is not installed.
 
 import logging, sys, argparse, os, os.path
-from argos.info import DEBUGGING, PROJECT_NAME, VERSION, DEFAULT_PROFILE, resource_directory
+from argos.info import DEBUGGING, PROJECT_NAME, VERSION, resource_directory
 
 from argos.widgets.misc import setApplicationQtStyle, setApplicationStyleSheet
 
@@ -41,13 +41,8 @@ def browse(fileNames=None,
            select=None,
            qtStyle=None,
            styleSheet=None,
-           settingsFile=None,
-           profile=DEFAULT_PROFILE,
-           resetProfile=False,  # TODO: should probably be moved to the main program
-           resetAllProfiles=False,  # TODO: should probably be moved to the main program
-           resetRegistry=False):    # TODO: should probably be moved to the main program
-    """ Opens the main window(s) for the persistent settings of the given profile,
-        and executes the application.
+           settingsFile=None):
+    """ Opens the main window(s) for the persistent settings and executes the application.
 
         :param fileNames: List of file names that will be added to the repository
         :param inspectorFullName: The full path name of the inspector that will be loaded
@@ -55,11 +50,6 @@ def browse(fileNames=None,
         :param qtStyle: name of qtStyle (E.g. fusion).
         :param styleSheet: a path to an optional Qt Cascading Style Sheet.
         :param settingsFile: file with persistent settings. If None a default will be used.
-        :param profile: the name of the profile that will be loaded
-        :param resetProfile: if True, the profile will be reset to it standard settings.
-        :param resetAllProfiles: if True, all profiles will be reset to it standard settings.
-        :param resetRegistry: if True, the registry will be reset to it standard settings.
-        :return:
     """
     # Imported here so this module can be imported without Qt being installed.
     from argos.qt import QtWidgets, QtCore
@@ -69,12 +59,10 @@ def browse(fileNames=None,
     argosApp = ArgosApplication(settingsFile)
     argosApp.loadSettings(inspectorFullName)  # TODO: call in constructor?
 
-
     try:
         QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
     except Exception as ex:
         logger.debug("AA_UseHighDpiPixmaps not available in PyQt4: {}".format(ex))
-
 
     if qtStyle:
         availableStyles = QtWidgets.QStyleFactory.keys()
@@ -91,27 +79,11 @@ def browse(fileNames=None,
         #sys.exit(2)
     setApplicationStyleSheet(styleSheet)
 
-
-    if resetProfile:
-        argosApp.deleteProfile(profile)
-    if resetAllProfiles:
-        argosApp.deleteAllProfiles()
-    if resetRegistry:
-        argosApp.deleteRegistries()
-
-    # Must be called before opening the files so that file formats are auto-detected.
-    argosApp.loadOrInitRegistries()
-
-
-
     # Load data in common repository before windows are created.
     argosApp.loadFiles(fileNames)
 
     if DEBUGGING:
         argosApp.repo.insertItem(createArgosTestData())
-
-    # Create windows for this profile.
-    #argosApp.loadProfile(profile=profile, inspectorFullName=inspectorFullName)
 
     if select:
         for mainWindow in argosApp.mainWindows:
@@ -179,18 +151,6 @@ def main():
         help="Configuration file with persistent settings. When using a relative path the settings "
              "file is loaded/saved to the argos settings directory.")
 
-    parser.add_argument('-p', '--profile', dest='profile', default=DEFAULT_PROFILE,
-        help="Can be used to have different persistent settings for different use cases.")
-
-    parser.add_argument('--reset', '--reset-profile', dest='reset_profile', action = 'store_true',
-        help="If set, persistent settings will be reset for the current profile.")
-
-    parser.add_argument('--reset-all-profiles', dest='reset_all_profiles', action = 'store_true',
-        help="If set, persistent settings will be reset for the all profiles.")
-
-    parser.add_argument('--reset-registry', dest='reset_registry', action = 'store_true',
-        help="If set, the registry will be reset to contain only the default plugins.")
-
     parser.add_argument('-d', '--debugging-mode', dest='debugging', action = 'store_true',
         help="Run Argos in debugging mode. Useful during development.")
 
@@ -249,11 +209,7 @@ def main():
            select=args.selectPath,
            qtStyle=qtStyle,
            styleSheet=styleSheet,
-           settingsFile=args.settingsFile,
-           profile=args.profile,
-           resetProfile=args.reset_profile,
-           resetAllProfiles=args.reset_all_profiles,
-           resetRegistry=args.reset_registry)
+           settingsFile=args.settingsFile)
     logger.info('Done {}'.format(PROJECT_NAME))
 
 if __name__ == "__main__":

@@ -20,13 +20,13 @@
 import logging
 
 from argos.info import DEBUGGING
-from argos.qt.registry import ClassRegItem, ClassRegistry, GRP_REGISTRY
+from argos.qt.registry import ClassRegItem, ClassRegistry
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_INSPECTOR = 'Qt/Table'
 
-GRP_REGISTRY_INSPECTORS = GRP_REGISTRY + '/inspectors'
+
 
 class InspectorRegItem(ClassRegItem): # TODO: rename to InspectorRegItem? InspectorPlugin?
     """ Class to keep track of a registered Inspector.
@@ -67,10 +67,10 @@ class InspectorRegistry(ClassRegistry):
     """ Class that maintains the collection of registered inspector classes.
         See the base class documentation for more info.
     """
-    def __init__(self, settingsGroupName=GRP_REGISTRY_INSPECTORS):
+    def __init__(self):
         """ Constructor
         """
-        super(InspectorRegistry, self).__init__(settingsGroupName=settingsGroupName)
+        super(InspectorRegistry, self).__init__()
         self._itemClass = InspectorRegItem
 
 

@@ -31,7 +31,6 @@ import time
 from functools import partial
 
 from argos.collect.collector import Collector
-from argos.config.abstractcti import ctiDumps, ctiLoads
 from argos.config.abstractcti import AbstractCti
 from argos.config.configtreemodel import ConfigTreeModel
 from argos.config.configtreeview import ConfigWidget
@@ -93,7 +92,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._argosApplication = argosApplication
         self._configTreeModel = ConfigTreeModel()
-        self._inspectorsNonDefaults = {}  # non-default values for all used plugins
         self._inspectorStates = {}  # keeps track of earlier inspector states
 
         self.setDockNestingEnabled(False)
@@ -414,13 +412,18 @@ class MainWindow(QtWidgets.QMainWindow):
         return dockWidget
 
 
-
     def updateWindowTitle(self):
         """ Updates the window title frm the window number, inspector, etc
             Also updates the Window Menu
         """
-        self.setWindowTitle("{} #{} | {}-{}".format(self.inspectorName, self.windowNumber,
-                                                    PROJECT_NAME, self.argosApplication.profile))
+        title = "{} #{} | {}".format(self.inspectorName, self.windowNumber, PROJECT_NAME)
+
+        # Display settings file name in title bar if it's not the default
+        settingsFile = os.path.basename(self.argosApplication.settingsFile)
+        if settingsFile != 'settings.json':
+            title = "{} -- {}".format(title, settingsFile)
+
+        self.setWindowTitle(title)
         #self.activateWindowAction.setText("{} window".format(self.inspectorName, self.windowNumber))
         self.activateWindowAction.setText("{} window".format(self.inspectorName))
 
@@ -528,7 +531,6 @@ class MainWindow(QtWidgets.QMainWindow):
             if oldInspector is None: # can be None at start-up
                 oldConfigPosition = None # Last top level element in the config tree.
             else:
-                self._updateNonDefaultsForInspector(oldInspectorRegItem, oldInspector)
                 self._storeInspectorState(oldInspectorRegItem, oldInspector)
 
                 # Remove old inspector configuration from tree
@@ -552,10 +554,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 else:
                     # Add and apply config values to the inspector
                     key = self.inspectorRegItem.identifier
-                    #nonDefaults = self._inspectorsNonDefaults.get(key, {})
-                    #logger.debug("Setting non defaults: {}".format(nonDefaults))
-                    #self.inspector.config.setValuesFromDict(nonDefaults)
-
                     cfg = self._inspectorStates.get(key, {})
                     logger.debug("Setting inspector settings from : {}".format(cfg))
                     self.inspector.config.unmarshall(cfg)
@@ -574,24 +572,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
             logger.debug("Emitting sigInspectorChanged({})".format(self.inspectorRegItem))
             self.sigInspectorChanged.emit(self.inspectorRegItem)
-
-
-    def _updateNonDefaultsForInspector(self, inspectorRegItem, inspector):
-        """ Store the (non-default) config values for the current inspector in a local dictionary.
-            This dictionary is later used to store value for persistence.
-
-            This function must be called after the inspector was drawn because that may update
-            some derived config values (e.g. ranges)
-
-            OBSOLETE by _storeInspectorState
-        """
-        if inspectorRegItem and inspector:
-            key = inspectorRegItem.identifier
-            logger.debug("_updateNonDefaultsForInspector: {} {}"
-                         .format(key, type(inspector)))
-            self._inspectorsNonDefaults[key] = inspector.config.getNonDefaultsDict()
-        else:
-            logger.debug("_updateNonDefaultsForInspector: no inspector")
 
 
     def _storeInspectorState(self, inspectorRegItem, inspector):
@@ -767,69 +747,6 @@ class MainWindow(QtWidgets.QMainWindow):
             logger.error(msg.strip('\n'))
 
 
-    def readViewSettings(self, settings=None): # TODO: rename to readProfile?
-        """ Reads the persistent program settings
-
-            :param settings: optional QSettings object which can have a group already opened.
-            :returns: True if the header state was restored, otherwise returns False
-        """
-        if settings is None:
-            settings = QtCore.QSettings()
-        logger.debug("Reading settings from: {}".format(settings.group()))
-
-        self.restoreGeometry(settings.value("geometry"))
-        self.restoreState(settings.value("state"))
-
-        self.repoWidget.readViewSettings('repo_widget', settings)
-        self.repoWidget.repoTreeView.readViewSettings('repo_tree/header_state', settings)
-        self.configWidget.configTreeView.readViewSettings('config_tree/header_state', settings)
-
-        #self._configTreeModel.readModelSettings('config_model', settings)
-        settings.beginGroup('cfg_inspectors')
-        try:
-            for key in settings.childKeys():
-                json = settings.value(key)
-                self._inspectorsNonDefaults[key] = ctiLoads(json)
-        finally:
-            settings.endGroup()
-
-        identifier = settings.value("inspector", None)
-        try:
-            if identifier:
-                self.setInspectorById(identifier)
-        except KeyError as ex:
-            logger.warning("No inspector with ID {!r}.: {}".format(identifier, ex))
-
-
-    def saveProfile(self, settings=None):
-        """ Writes the view settings to the persistent store
-        """
-        self._updateNonDefaultsForInspector(self.inspectorRegItem, self.inspector)
-
-        if settings is None:
-            settings = QtCore.QSettings()
-        logger.debug("Writing settings to: {}".format(settings.group()))
-
-        settings.beginGroup('cfg_inspectors')
-        try:
-            for key, nonDefaults in self._inspectorsNonDefaults.items():
-                if nonDefaults:
-                    settings.setValue(key, ctiDumps(nonDefaults))
-                    logger.debug("Writing non defaults for {}: {}".format(key, nonDefaults))
-        finally:
-            settings.endGroup()
-
-        self.configWidget.configTreeView.saveProfile("config_tree/header_state", settings)
-        self.repoWidget.saveProfile("repo_widget", settings)
-        self.repoWidget.repoTreeView.saveProfile("repo_tree/header_state", settings)
-
-        settings.setValue("geometry", self.saveGeometry())
-        settings.setValue("state", self.saveState())
-
-        identifier = self.inspectorRegItem.identifier if self.inspectorRegItem else ''
-        settings.setValue("inspector", identifier)
-
-
     def marshall(self):
         """ Returns a dictionary to save in the persistent settings
         """
@@ -881,10 +798,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def cloneWindow(self):
         """ Opens a new window with the same inspector as the current window.
         """
-        # Save current window settings.
-        settings = QtCore.QSettings()
-        settings.beginGroup(self.argosApplication.windowGroupName(self.windowNumber))
-
         newWindow = self.argosApplication.addNewMainWindow(
             cfg=self.marshall(), inspectorFullName=self.inspectorRegItem.fullName)
 

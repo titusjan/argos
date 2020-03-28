@@ -20,11 +20,10 @@
 import logging
 from argos.utils.cls import check_is_a_string, check_class, check_is_a_sequence
 from argos.utils.misc import prepend_point_to_extension
-from argos.qt.registry import ClassRegItem, ClassRegistry, GRP_REGISTRY
+from argos.qt.registry import ClassRegItem, ClassRegistry
 
 logger = logging.getLogger(__name__)
 
-GRP_REGISTRY_RTI = GRP_REGISTRY + '/rti'
 
 class RtiRegItem(ClassRegItem):
     """ Class to keep track of a registered Repo Tree Item.
@@ -68,10 +67,10 @@ class RtiRegistry(ClassRegistry):
         the extensions in the RtiRegItem class do not have to be unique and are used in the
         filter in the getFileDialogFilter function.
     """
-    def __init__(self, settingsGroupName=GRP_REGISTRY_RTI):
+    def __init__(self):
         """ Constructor
         """
-        super(RtiRegistry, self).__init__(settingsGroupName=settingsGroupName)
+        super(RtiRegistry, self).__init__()
         self._itemClass = RtiRegItem
         self._extensionMap = {}
 
