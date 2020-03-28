@@ -237,7 +237,6 @@ class ConfigTreeModel(BaseTreeModel):
         """
         logger.debug("Resetting all settings ----------------------")
         self.invisibleRootItem.resetToDefault(resetChildren=True)
-        rootIndex = self.rootIndex()
-        self.dataChanged.emit(rootIndex, rootIndex)
+        self.invisibleRootItem.updateTarget()
 
 
