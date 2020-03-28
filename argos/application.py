@@ -112,7 +112,9 @@ class ArgosApplication(QtCore.QObject):
         # Raising all window because in OS-X window 0 is not shown.
         #self.raiseAllWindows()
         # activateWindow also solves the issue but doesn't work with the --inspector option.
-        self.windowActionGroup.actions()[0].trigger()
+        actions = self.windowActionGroup.actions()
+        if actions:
+            actions[0].trigger()
 
 
     @classmethod
@@ -482,8 +484,9 @@ class ArgosApplication(QtCore.QObject):
 
             cfg = json.loads(jsonStr)
         except Exception as ex:
-            logger.warning("Error {} while reading settings file: {}"
+            logger.error("Error {} while reading settings file: {}"
                            .format(ex, self._settingsFile))
+            raise # in case of a syntax error it's probably best to exit. TODO: default cfg?
 
         self.unmarshall(cfg, inspectorFullName)  # Always call unmarshall.
 

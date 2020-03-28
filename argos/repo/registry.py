@@ -148,6 +148,10 @@ class RtiRegistry(ClassRegistry):
         """ Returns a list with the default plugins in the repo tree item registry.
         """
         return [
+            RtiRegItem('Directory',
+                       'argos.repo.filesytemrtis.DirectoryRti',
+                       extensions=[]), # So a an Exdir 'file' can be opened as a directory again
+
             RtiRegItem('HDF-5 file',
                        'argos.repo.rtiplugins.hdf5.H5pyFileRti',
                        extensions=['hdf5', 'h5', 'h5e', 'he5', 'nc']), # hdf extension is for HDF-4
@@ -194,7 +198,11 @@ class RtiRegistry(ClassRegistry):
 
             RtiRegItem('Wav file',
                        'argos.repo.rtiplugins.scipyio.WavFileRti',
-                       extensions=['wav'])]
+                       extensions=['wav']),
+
+            RtiRegItem('Exdir file',
+                       'argos.repo.rtiplugins.exdir.ExdirFileRti',
+                       extensions=['exdir'])]
 
 
 # The RTI registry is implemented as a singleton. This is necessary because
