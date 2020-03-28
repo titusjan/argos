@@ -3,7 +3,7 @@ Argos
 
 Argos is a GUI for viewing and exploring scientific data, written in Python and Qt. It has a
 plug-in architecture that allows it to be extended to read new data formats. At the moment
-plug-ins are included to read HDF-5, NetCDF-4, WAV, numpy binary files and various image formats,
+plug-ins are included to read HDF-5, NetCDF-4, WAV, Exdir, numpy binary files and various image formats,
 but a plug-in could be written for any data that can be expressed as a Numpy array.
 
 ### Installing Argos
@@ -37,7 +37,7 @@ their respective website.
 | [pillow](https://python-pillow.org/)                 | BMP, JPEG, PNG, TIFF, GIF, etc. |
 | [scipy](https://www.scipy.org/)                      | Matlab & IDL save-files. WAV    |
 | [pandas](http://pandas.pydata.org/)                  | Comma-separated files           |
-
+| [exdir](https://github.com/CINPLA/exdir)             | Exdir                           |
 
 ### Starting Argos
 
@@ -149,12 +149,12 @@ the spinbox(es), and select the fasted changing array dimension(s) in the combob
 
 The `Application Settings` dock window, located to the right of the inspector, contains settings
 for configuring the current inspector. If you click on a config value, an appropriate widget
-will appear for editing, together with a ![reset button](argos/img/snipicons/reset-l.svg) that will
-reset the config value to its default when clicked. The settings are hierarchical so that related
-settings can be grouped together in a brance. Branches also have a reset button, so for instance by
-clicking on the reset button of the `y-axis` config value branch, all settings pertaining to the
-Y-axis are reset. The reset button in the dark gray bar at the top, the one that says
-`2D image plot` in the screen shot, will reset all config values of that inspector.
+will appear for editing, together with a reset button <img src="argos/img/snipicons/reset-l.svg" width="16" height="16">
+that will reset the config value to its default when clicked. The settings are hierarchical so that
+related settings can be grouped together in a brance. Branches also have a reset button, so for 
+instance by clicking on the reset button of the `y-axis` config value branch, all settings
+pertaining to the Y-axis are reset. The reset button in the dark gray bar at the top, the one that
+says `2D image plot` in the screen shot, will reset all config values of that inspector.
 
 A few of the config settings are explained below. It is not a complete list, many of the settings
 will be clear from their name. I also urge you to experiment yourself by just trying new values.

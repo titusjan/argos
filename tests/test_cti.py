@@ -7,7 +7,6 @@ from json import loads, dumps
 
 
 from argos.qt import QtWidgets, QtGui
-from argos.config.abstractcti import ctiDumps, CtiDecoder
 from argos.config.untypedcti import UntypedCti
 from argos.config.qtctis import ColorCti
 
@@ -37,61 +36,6 @@ class TestUntypedCtis(unittest.TestCase):
 
         ctiIn.childItems[0].data = 99
         self.assertNotEqual(ctiIn, ctiOut)
-
-
-    # This functionality is currently not used? Depricated?
-    def __not_used__testJson(self):
-
-        # encoding
-        jstr = ctiDumps(self.invisibleRootItem)
-        #print(jstr)
-
-        # decoding
-        #testItem = json.loads(jstr, object_hook=jsonAsCti)
-        testItem = loads(jstr, cls=CtiDecoder)
-        #print(mydumps(testItem))
-
-        self.assertEqual(testItem, self.invisibleRootItem)
-
-
-    def testNonDefaults(self):
-
-        # A data different than its default should be restored
-        ctiIn  = UntypedCti('parent', defaultData=7)
-        defDict = ctiIn.getNonDefaultsDict()
-        #print(defDict)
-        ctiOut = UntypedCti('parent', defaultData=7)
-        ctiOut.setValuesFromDict(defDict)
-        self.assertEqual(ctiIn, ctiOut)
-
-        # A data is not written if it's the default and
-        # is read correctly if the default stays the same
-        ctiIn  = UntypedCti('parent', defaultData=7)
-        defDict = ctiIn.getNonDefaultsDict()
-        #print(defDict)
-        ctiOut = UntypedCti('parent', defaultData=7)
-        ctiOut.setValuesFromDict(defDict)
-        self.assertEqual(ctiIn, ctiOut)
-
-        # A default data should have no effect it the default changes in the future.
-        ctiIn  = UntypedCti('parent', defaultData=7)
-        defDict = ctiIn.getNonDefaultsDict()
-        #print(defDict)
-        ctiOut = UntypedCti('parent', defaultData=9)
-        ctiOut.setValuesFromDict(defDict)
-        self.assertNotEqual(ctiIn, ctiOut)
-
-        # Test children
-        ctiIn  = UntypedCti('parent', defaultData=6)
-        ctiIn.insertChild(UntypedCti('child1', defaultData=1))
-        ctiIn.insertChild(UntypedCti('child2', defaultData=2))
-        defDict = ctiIn.getNonDefaultsDict()
-        #print(defDict)
-        ctiOut = UntypedCti('parent', defaultData=6)
-        ctiOut.insertChild(UntypedCti('child1', defaultData=1))
-        ctiOut.insertChild(UntypedCti('child2', defaultData=2))
-        ctiOut.setValuesFromDict(defDict)
-        self.assertEqual(ctiIn, ctiOut)
 
 
     def tearDown(self):

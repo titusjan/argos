@@ -96,3 +96,5 @@ ENV/
 # End of https://www.gitignore.io/api/python
 *.prof
 *.pdf
+*.json
+.idea/

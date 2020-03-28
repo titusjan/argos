@@ -968,23 +968,16 @@ class PgColorMapCti(AbstractCti):
             drawBorder=self.cmLibModel.drawIconBarBorder)
 
 
-    def _nodeGetNonDefaultsDict(self):
-        """ Retrieves this nodes` values as a dictionary to be used for persistence.
-            Non-recursive auxiliary function for getNonDefaultsDict
+    def _nodeMarshall(self):
+        """ Returns the non-recursive marshalled value of this CTI. Is called by marshall()
         """
-        dct = {}
-
-        if self.data != self.defaultData:
-            dct['data'] = self.data.key
-        return dct
+        return self.data.key
 
 
-    def _nodeSetValuesFromDict(self, dct):
-        """ Sets values from a dictionary in the current node.
-            Non-recursive auxiliary function for setValuesFromDict
+    def _nodeUnmarshall(self, key):
+        """ Initializes itself non-recursively from data. Is called by unmarshall()
         """
-        if 'data' in dct:
-            self.data = self.cmLibModel.getColorMapByKey(dct['data'])
+        self.data = self.cmLibModel.getColorMapByKey(key)
 
 
     def createEditor(self, delegate, parent, option):

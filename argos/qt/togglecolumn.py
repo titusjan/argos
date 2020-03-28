@@ -18,9 +18,11 @@
 """
 from __future__ import print_function
 
+import base64
 import logging
 
 from argos.qt import QtCore, QtWidgets, Qt
+from argos.qt.misc import getWidgetState
 
 logger = logging.getLogger(__name__)
 
@@ -91,37 +93,19 @@ class ToggleColumnMixIn(object):
         return show_column
 
 
-    def readViewSettings(self, key, settings=None):
-        """ Reads the persistent program settings
-
-            :param key: key where the setting will be read from
-            :param settings: optional QSettings object which can have a group already opened.
-            :returns: True if the header state was restored, otherwise returns False
+    def marshall(self):
+        """ Returns an ascii string with the base64 encoded tree header state.
         """
-        #logger.debug("Reading view settings for: {}".format(key))
-        if settings is None:
-            settings = QtCore.QSettings()
+        return base64.b64encode(getWidgetState(self.horizontalHeader())).decode('ascii')
 
-        horizontal_header = self.horizontalHeader()
-        header_restored = horizontal_header.restoreState(settings.value(key))
 
-        # update actions
-        for col, action in enumerate(horizontal_header.actions()):
-            is_checked = not horizontal_header.isSectionHidden(col)
-            action.setChecked(is_checked)
-
-        return header_restored
-
-    def saveProfile(self, key, settings=None):
-        """ Writes the view settings to the persistent store
-            :param key: key where the setting will be read from
-            :param settings: optional QSettings object which can have a group already opened.
+    def unmarshall(self, dataStr):
+        """ Initializes itself from a config dict form the persistent settings.
         """
-        #logger.debug("Writing view settings for: {}".format(key))
-        if settings is None:
-            settings = QtCore.QSettings()
-        settings.setValue(key, self.horizontalHeader().saveState())
-
+        headerBytes = base64.b64decode(dataStr)
+        header_restored = self.horizontalHeader().restoreState(headerBytes)
+        if not header_restored:
+            logger.warning("Tree headers state not restored: {}".format(self))
 
 
 class ToggleColumnTableWidget(QtWidgets.QTableWidget, ToggleColumnMixIn):

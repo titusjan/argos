@@ -21,7 +21,6 @@ import logging
 
 from argos.qt import Qt, QtCore, QtSlot
 from argos.qt.treemodels import BaseTreeModel
-from argos.config.abstractcti import ctiDumps, ctiLoads
 from argos.config.groupcti import GroupCti
 from argos.utils.cls import type_name
 
@@ -236,44 +235,9 @@ class ConfigTreeModel(BaseTreeModel):
     def resetAllSettings(self):
         """ Resets all items in the tree to their default
         """
+        logger.debug("Resetting all settings ----------------------")
         self.invisibleRootItem.resetToDefault(resetChildren=True)
         rootIndex = self.rootIndex()
         self.dataChanged.emit(rootIndex, rootIndex)
 
-
-    def __obsolete__readModelSettings(self, key, settings):
-        """ Reads the persistent program settings.
-
-            Will reset the model and thus collapse all nodes.
-
-            :param key: key where the setting will be read from
-            :param settings: optional QSettings object which can have a group already opened.
-            :returns: True if the header state was restored, otherwise returns False
-        """
-        if settings is None:
-            settings = QtCore.QSettings()
-
-        valuesJson = settings.value(key, None)
-
-        if valuesJson:
-            values = ctiLoads(valuesJson)
-            self.beginResetModel()
-            self.invisibleRootItem.setValuesFromDict(values)
-            self.endResetModel()
-        else:
-            logger.warn("No settings found at: {}".format(key))
-
-
-    def __obsolete__saveProfile(self, key, settings=None):
-        """ Writes the view settings to the persistent store
-            :param key: key where the setting will be read from
-            :param settings: optional QSettings object which can have a group already opened.
-        """
-        logger.debug("Writing model settings for: {}".format(key))
-        if settings is None:
-            settings = QtCore.QSettings()
-
-        values = self.invisibleRootItem.getNonDefaultsDict()
-        values_json = ctiDumps(values)
-        settings.setValue(key, values_json)
 

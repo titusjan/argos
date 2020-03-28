@@ -15,15 +15,33 @@ TODO short term:
 
     close files on collapse.
 
+    restructure main menu.
+        - config
+            - browse inspectors (remove?)
+            - plugins
+            - show config files...
+            - show log files...
+        - view menu
+            - panels
+            - inspectors
+        - help
+            - online documentation
+
+    - log to text file.
+    - Why doesn't argos start from command line at work on my work laptop (Beast)?
+
     -o/--open so that files after this command line option are opened.
         Can probably replace the -s option
         What happens if files occur twice when opening them?
 
     argos --help on Windows (Beast) doesn't seem to give output)
 
+    quickview tab
     cross hair in the middle of the pixel
 
-    Fixed font size in tables so that windows10 with two monitors works. (setFixedPitch)
+    Fixed font size in tables and trees so that windows10 with two monitors works. (setFixedPitch)
+
+    Waarom doet autorange het niet in rigolscan_partial?
 
     What if the H5 only has a dimension label?
 
@@ -62,6 +80,13 @@ TODO short term:
 
 TODO mid term:
 
+    Use globs instead of extensions to recognize file types. This allows for directoriy and partial names
+
+    Make Rti.isFileFileFormat that opens a file and check if the RTI supports this.
+        Call this only for RTIs that are visible in the tree (e.g. when the icons is queried by the model.
+        Make an RTI that serves as a placeholder and shows name. This way large directories can opened quickly
+        but only visible files are opened and checked.
+
     Split screen for inspectors/config
 
     Histogram / statistics inspector.
@@ -73,7 +98,6 @@ TODO mid term:
     Default outlier percentage op 0.1%?
 
 	Interaction in IPython
-	QSettings should not use titusjan by default
 	(auto)refresh
 
     Consider getting rid of fake dimensions in getSlicedArray because it fails with masked arrays with fill values.
@@ -126,7 +150,6 @@ TODO Long term or nice to have:
     nested arrays (/argos/idl-sav-files/qds_dd.sav/qds_dd/OCCURRENCES) (need to read first element)
 	confirm on error when editing cell
 	make argos assert and assertEqual function for sanity checks (consistent "please report this bug" text)
-	read/write config to yaml, QSettings.
 	persistent expand of config options?
 	thinks how to stretch last line when toggling columns on/off (recalc column size?)
 	let repo tree view work with multiple selected items
@@ -139,7 +162,7 @@ TODO Long term or nice to have:
 	Cartopy: http://scitools.org.uk/cartopy/docs/latest/ (shape files)
 	Holoviews: http://ioam.github.io/holoviews
 
-	Change profile from menu?
+	Change settings file from menu?
 	Plugin management window
 	clean-up the settings reading/writing
 	Qt::SizeHintRole in toggleTreeView?

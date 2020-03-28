@@ -124,22 +124,16 @@ class ColorCti(AbstractCti):
         return self.data
 
 
-    def _nodeGetNonDefaultsDict(self):
-        """ Retrieves this nodes` values as a dictionary to be used for persistence.
-            Non-recursive auxiliary function for getNonDefaultsDict
+    def _nodeMarshall(self):
+        """ Returns the non-recursive marshalled value of this CTI. Is called by marshall()
         """
-        dct = {}
-        if self.data != self.defaultData:
-            dct['data'] = self.data.name()
-        return dct
+        return self.data.name()
 
 
-    def _nodeSetValuesFromDict(self, dct):
-        """ Sets values from a dictionary in the current node.
-            Non-recursive auxiliary function for setValuesFromDict
+    def _nodeUnmarshall(self, data):
+        """ Initializes itself non-recursively from data. Is called by unmarshall()
         """
-        if 'data' in dct:
-            self.data = QtGui.QColor(dct['data'])
+        self.data = QtGui.QColor(data)
 
 
     def createEditor(self, delegate, parent, option):
@@ -362,6 +356,26 @@ class FontCti(AbstractCti):
             self.data = qFont
 
 
+    def _nodeMarshall(self):
+        """ Returns the non-recursive marshalled value of this CTI. Is called by marshall()
+        """
+        return self.data.toString() # calls QFont.toString()
+
+
+    def _nodeUnmarshall(self, data):
+        """ Initializes itself non-recursively from data. Is called by unmarshall()
+        """
+        qFont = QtGui.QFont()
+        success = qFont.fromString(data)
+        if not success:
+            msg = "Unable to create QFont from string {!r}".format(data)
+            logger.warning(msg)
+            if DEBUGGING:
+                raise ValueError(msg)
+        self.data = qFont
+
+
+
     def createEditor(self, delegate, parent, option):
         """ Creates a FontCtiEditor.
             For the parameters see the AbstractCti documentation.
@@ -404,7 +418,7 @@ class FontCtiEditor(AbstractCtiEditor):
         """ Opens a QColorDialog for the user
         """
         currentFont = self.getData()
-        newFont, ok = QtGui.QFontDialog.getFont(currentFont, self)
+        newFont, ok = QtWidgets.QFontDialog.getFont(currentFont, self)
         if ok:
             self.setData(newFont)
         else:

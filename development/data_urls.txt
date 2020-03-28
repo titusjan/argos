@@ -79,3 +79,6 @@ DATA & LIBS:
     # Grib
     http://mirador.gsfc.nasa.gov/cgi-bin/mirador/granlist.pl?page=1&location=(-90,-180),(90,180)&dataSet=NLDAS_FOR0125_H&version=001&allversion=001&startTime=2005-08-03T00:00:01Z&endTime=2005-08-03T23:59:59Z&keyword=NLDAS_FOR0125_H&prodpg=http://disc.gsfc.nasa.gov/datacollection/NLDAS_FOR0125_H_V001.html&longname=NLDAS%20Forcing%20Data%20L4%20Hourly%200.125%20x%200.125%20degree%20V001&CGISESSID=18bd3c7fb47ceeb1e5c1e9f8139efd0c
     http://mirador.gsfc.nasa.gov/cgi-bin/mirador/presentNavigation.pl?tree=scienceArea&CGISESSID=18bd3c7fb47ceeb1e5c1e9f8139efd0c&CURRENT_CONTEXT=scienceArea
+
+    # Grams SPC
+    https://en.wikipedia.org/wiki/SPC_file_format

@@ -21,15 +21,11 @@
 import logging, inspect, os, ast, sys
 
 from argos.info import DEBUGGING
-from argos.qt import QtCore
-from argos.qt.misc import containsSettingsGroup, removeSettingsGroup
 from argos.utils.cls import import_symbol, check_is_a_string, type_name, check_class
 from argos.utils.misc import string_to_identifier
 
 logger = logging.getLogger(__name__)
 
-
-GRP_REGISTRY = 'registry'
 
 def nameToIdentifier(fullName):
     """ Constructs the regItem identifier given its full name
@@ -200,7 +196,7 @@ class ClassRegItem(object):
             self._cls = import_symbol(self.fullClassName) # TODO: check class?
         except Exception as ex:
             self._exception = ex
-            logger.warn("Unable to import {!r}: {}".format(self.fullClassName, ex))
+            logger.warning("Unable to import {!r}: {}".format(self.fullClassName, ex))
             if DEBUGGING:
                 raise
 
@@ -220,7 +216,8 @@ class ClassRegItem(object):
         """
         return cls(**dct)
 
-    def asDict(self):
+
+    def marshall(self):
         """ Returns a dictionary for serialization. We don't use JSON since all items are
             quite simple and the registry will always contain the same type of ClassRegItem
         """
@@ -229,25 +226,22 @@ class ClassRegItem(object):
                 'pythonPath': self.pythonPath}
 
 
+
+
 # TODO: Each class has an identifier that must be unique in lower-case with spaces are removed?
 class ClassRegistry(object):
     """ Class that maintains the collection of registered classes (plugins).
 
-        It can load or store its classes in the persistent QSettings. It can also create a default
+        It can load or store its classes in the persistent settings. It can also create a default
         set of plugins that can be used initially, the first time the program is executed.
 
         The ClassRegistry can only store items of one type (ClassRegItem). Descendants will
         store their own type. For instance the InspectorRegistry will store InspectorRegItem
         items. This makes serialization easier.
     """
-    def __init__(self, settingsGroupName=None):
+    def __init__(self):
         """ Constructor
-
-            An optional QSettings group name can be specified so that the registry knows where to
-            load/store its settings. This can also be specified with the method parameters.
         """
-        self.settingsGroupName = settingsGroupName
-
         # We use an list to store the items in order and an index to find them in O(1)
         # We cannot use an ordereddict for this as this uses linked-list internally and therefore
         # does not allow to retrieve the Nth element in O(1)
@@ -256,6 +250,13 @@ class ClassRegistry(object):
 
         # The registry can only contain items of this type.
         self._itemClass = ClassRegItem
+
+
+    @property
+    def registryName(self):
+        """ # Human readable name for this registry. Please override.
+        """
+        raise NotImplementedError()
 
 
     @property
@@ -284,8 +285,8 @@ class ClassRegistry(object):
         check_class(regItem, ClassRegItem)
         if regItem.identifier in self._index:
             oldRegItem = self._index[regItem.identifier]
-            logger.warn("Class key {!r} already registered as {}. Removing old regItem."
-                        .format(regItem.identifier, oldRegItem.fullClassName))
+            logger.warning("Class key {!r} already registered as {}. Removing old regItem."
+                           .format(regItem.identifier, oldRegItem.fullClassName))
             self.removeItem(oldRegItem)
 
         logger.info("Registering {!r} with {}".format(regItem.identifier, regItem.fullClassName))
@@ -305,71 +306,36 @@ class ClassRegistry(object):
         del self._items[idx]
 
 
-    def loadOrInitSettings(self, groupName=None):
-        """ Reads the registry items from the persistent settings store, falls back on the
-            default plugins if there are no settings in the store for this registry.
+    #####
+    # The follow functions load or save their state to  JSON config files.
+    #####
+
+
+    def marshall(self):
+        """ Returns a dictionary to save in the persistent settings
         """
-        groupName = groupName if groupName else self.settingsGroupName
-        settings = QtCore.QSettings()
+        cfg = {}
+        for itemNr, item in enumerate(self.items):
+            key = "item-{:03d}".format(itemNr)
+            cfg[key] = item.marshall()
 
-        #for key in sorted(settings.allKeys()):
-        #    print(key)
-
-        if containsSettingsGroup(groupName, settings):
-            self.loadSettings(groupName)
-        else:
-            logger.info("Group {!r} not found, falling back on default settings".format(groupName))
-            for item in self.getDefaultItems():
-                self.registerItem(item)
-            self.saveSettings(groupName)
-            assert containsSettingsGroup(groupName, settings), \
-                "Sanity check failed. {} not found".format(groupName)
+        return cfg
 
 
-    def loadSettings(self, groupName=None):
-        """ Reads the registry items from the persistent settings store.
+    def unmarshall(self, cfg):
+        """ Initializes itself from a config dict form the persistent settings.
         """
-        groupName = groupName if groupName else self.settingsGroupName
-        settings = QtCore.QSettings()
-        logger.info("Reading {!r} from: {}".format(groupName, settings.fileName()))
-
-        settings.beginGroup(groupName)
         self.clear()
-        try:
-            for key in settings.childKeys():
-                if key.startswith('item'):
-                    dct = ast.literal_eval(settings.value(key))
-                    regItem = self._itemClass.createFromDict(dct)
-                    self.registerItem(regItem)
-        finally:
-            settings.endGroup()
+        if not cfg:
+            logger.info("Empty config, using registry defaults for: {}".format(self.registryName), stack_info=False)
+            for regItem in self.getDefaultItems():
+                self.registerItem(regItem)
+        else:
+            for key, dct in sorted(cfg.items()):
+                assert key.startswith('item'), "Registry key should start with 'item': {}".format(key)
+                regItem = self._itemClass.createFromDict(dct)
+                self.registerItem(regItem)
 
-
-    def saveSettings(self, groupName=None):
-        """ Writes the registry items into the persistent settings store.
-        """
-        groupName = groupName if groupName else self.settingsGroupName
-        settings = QtCore.QSettings()
-        logger.info("Saving {} to: {}".format(groupName, settings.fileName()))
-
-        settings.remove(groupName) # start with a clean slate
-        settings.beginGroup(groupName)
-        try:
-            for itemNr, item in enumerate(self.items):
-                key = "item-{:03d}".format(itemNr)
-                value = repr(item.asDict())
-                settings.setValue(key, value)
-        finally:
-            settings.endGroup()
-
-
-    def deleteSettings(self, groupName=None):
-        """ Deletes registry items from the persistent store.
-        """
-        groupName = groupName if groupName else self.settingsGroupName
-        settings = QtCore.QSettings()
-        logger.info("Deleting {} from: {}".format(groupName, settings.fileName()))
-        removeSettingsGroup(groupName)
 
 
     def getDefaultItems(self):

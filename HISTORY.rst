@@ -1,7 +1,8 @@
 .. :changelog:
 
 History
--------
+=======
+
 
 0.3.0 (????-??-??)
 ------------------
@@ -14,6 +15,10 @@ History
 *   If possible, only informative dimensions (i.e. length > 1) are selected in the collector
     comboboxes. (issue #9)
 
+0.2.2 (2020-03-28)
+---------------------
+
+* Exdir file format plugin. (Thanks to Lui Habl).
 
 
 0.2.1 (2017-01-12)

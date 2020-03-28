@@ -31,10 +31,10 @@ from argos.utils.cls import SingletonMixin
 logger = logging.getLogger(__name__)
 
 # The color maps that are favorites then the program is started for the first time or reset.
-DEF_FAV_COLOR_MAPS = ','.join([
+DEF_FAV_COLOR_MAPS = [
     'SciColMaps/Oleron', 'SciColMaps/Nuuk', 'SciColMaps/Acton', 'CET/CET-CBL2', 'MatPlotLib/Gray',
     'CET/CET-C2', 'CET/CET-R2', 'MatPlotLib/BrBG', 'MatPlotLib/Tab20', 'MatPlotLib/Inferno',
-    'MatPlotLib/Tab10', 'MatPlotLib/Cubehelix', 'MatPlotLib/Viridis', 'MatPlotLib/Coolwarm'])
+    'MatPlotLib/Tab10', 'MatPlotLib/Cubehelix', 'MatPlotLib/Viridis', 'MatPlotLib/Coolwarm']
 
 DEFAULT_COLOR_MAP = "MatPlotLib/Viridis"
 assert DEFAULT_COLOR_MAP in DEF_FAV_COLOR_MAPS, "Default color map not in default favorites."
