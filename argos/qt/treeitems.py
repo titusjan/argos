@@ -58,7 +58,6 @@ class BaseTreeItem(object):
     def model(self, value):
         """ Sets ConfigTreeModel this item belongs to.
         """
-        logger.debug("##### Setting {} model to {}".format(self.nodePath, value), stack_info=False)
         self._model = value
 
 #    @property

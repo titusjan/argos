@@ -330,7 +330,10 @@ class ArgosApplication(QtCore.QObject):
             with open(self._settingsFile, 'r') as settingsFile:
                 jsonStr = settingsFile.read()
 
-            cfg = json.loads(jsonStr)
+            if jsonStr:
+                cfg = json.loads(jsonStr)
+            else:
+                cfg = {}
         except Exception as ex:
             logger.error("Error {} while reading settings file: {}"
                            .format(ex, self._settingsFile))

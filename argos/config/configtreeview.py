@@ -85,7 +85,7 @@ class ConfigTreeView(ArgosTreeView):
         checked[headerNames[ConfigTreeModel.COL_VALUE]] = True # Checked by default
         self.addHeaderContextMenu(checked=checked, enabled=enabled, checkable={})
 
-        self.setRootIsDecorated(False)
+        self.setRootIsDecorated(True)
         self.setUniformRowHeights(True)
         self.setItemDelegate(ConfigItemDelegate())
         self.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)

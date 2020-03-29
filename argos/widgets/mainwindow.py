@@ -528,18 +528,10 @@ class MainWindow(QtWidgets.QMainWindow):
             #centralLayout = self.centralWidget().layout()
 
             # Delete old inspector
-            if oldInspector is None: # can be None at start-up
-                oldConfigPosition = None # Last top level element in the config tree.
-            else:
+            if oldInspector: # can be None at start-up
                 self._storeInspectorState(oldInspectorRegItem, oldInspector)
 
-                # Remove old inspector configuration from tree
-                oldConfigPosition = oldInspector.config.childNumber()
-                configPath = oldInspector.config.nodePath
-                _, oldConfigIndex = self._configTreeModel.findItemAndIndexPath(configPath)[-1]
-                self._configTreeModel.deleteItemAtIndex(oldConfigIndex)
-
-                oldInspector.finalize() # TODO: before removing config
+                oldInspector.finalize()
                 self.wrapperLayout.removeWidget(oldInspector)
                 oldInspector.deleteLater()
 
@@ -557,8 +549,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     cfg = self._inspectorStates.get(key, {})
                     logger.debug("Setting inspector settings from : {}".format(cfg))
                     self.inspector.config.unmarshall(cfg)
-
-                    self._configTreeModel.insertItem(self.inspector.config, oldConfigPosition)
+                    self._configTreeModel.setInvisibleRootItem(self.inspector.config)
                     self.configWidget.configTreeView.expandBranch()
                     self.collector.clearAndSetComboBoxes(self.inspector.axesNames())
                     self.wrapperLayout.addWidget(self.inspector)

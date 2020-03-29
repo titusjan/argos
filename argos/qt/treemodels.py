@@ -38,6 +38,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
     sigItemChanged = QtSignal(BaseTreeItem)
 
     def __init__(self, parent=None):
+
         """ Constructor
         """
         super(BaseTreeModel, self).__init__(parent)
@@ -57,6 +58,23 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         """ Returns the invisible root item, which contains no actual data
         """
         return self._invisibleRootTreeItem
+
+
+
+    def setInvisibleRootItem(self, treeItem=None):
+         """ SetsReplaces the invisible root item, which contains no actual data
+
+             If baseRti is None itis set to a place holder BaseTreeItem.
+             Note that this resets the model
+         """
+         treeItem = BaseTreeItem(nodeName=INVISIBLE_ROOT_NAME) if treeItem is None else treeItem
+
+         self.beginResetModel()
+         try:
+             self._invisibleRootTreeItem = treeItem
+             self._invisibleRootTreeItem.model = self
+         finally:
+             self.endResetModel()
 
 
     @property
