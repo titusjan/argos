@@ -68,7 +68,7 @@ class CollectorTree(ToggleColumnTreeView):
         treeHeader.setStretchLastSection(False)
         treeHeader.setSectionsMovable(False)
 
-        treeHeader.resizeSection(0, 400) # For item path
+        treeHeader.resizeSection(0, 600) # For item path
         treeHeader.setSectionResizeMode(QtWidgets.QHeaderView.Interactive) # don't set to stretch
 
         labels = [''] * model.columnCount()

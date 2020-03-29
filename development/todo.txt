@@ -27,8 +27,16 @@ TODO short term:
         - help
             - online documentation
 
-    - log to text file.
-    - Why doesn't argos start from command line at work on my work laptop (Beast)?
+    log to text file.
+    Why doesn't argos start from command line at work on my work laptop (Beast)?
+
+
+    Zoom is reset when changing RGB in image (and other RTIs)
+
+    Ctrl-Q doesn't work in Windows
+
+    Why does /argos/ucar/IMAGE0002.nc/dataWidth have no shape?
+
 
     -o/--open so that files after this command line option are opened.
         Can probably replace the -s option

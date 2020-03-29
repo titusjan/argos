@@ -319,10 +319,10 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         #self.dockWidget(self.currentInspectorPane, "Current Inspector", Qt.LeftDockWidgetArea)
 
-        self.dockWidget(self.repoWidget, "Data Repository", Qt.LeftDockWidgetArea)
-        self.dockWidget(self.collector, "Data Collector", Qt.BottomDockWidgetArea)
-        # TODO: if the title == "Settings" it won't be added to the view menu.
-        self.dockWidget(self.configWidget, "Inspector Settings", Qt.RightDockWidgetArea)
+        self.dockWidget(self.repoWidget, "Data", Qt.LeftDockWidgetArea)
+        self.dockWidget(self.collector, "Collector", Qt.BottomDockWidgetArea)
+        # TODO: if the title == "Settings" it won't be added to the view menu (2020-03-29 On OS-X it seems to work now)
+        self.dockWidget(self.configWidget, "Settings", Qt.RightDockWidgetArea)
 
 
 

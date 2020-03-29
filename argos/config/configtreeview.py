@@ -20,12 +20,17 @@
 from __future__ import print_function
 
 import logging
-from argos.qt import QtCore, QtWidgets, QtSlot
+import os.path
+
+from argos.info import DEBUGGING, icons_directory
+from argos.qt import QtCore, QtGui, QtWidgets, QtSlot
 from argos.widgets.argostreeview import ArgosTreeView
 from argos.widgets.constants import RIGHT_DOCK_WIDTH, DOCK_SPACING, DOCK_MARGIN
 from argos.widgets.misc import BasePanel
 from argos.config.configitemdelegate import ConfigItemDelegate
 from argos.config.configtreemodel import ConfigTreeModel
+
+
 logger = logging.getLogger(__name__)
 
 # Qt classes have many ancestors
@@ -41,17 +46,20 @@ class ConfigWidget(BasePanel):
         """
         super(ConfigWidget, self).__init__(parent=parent)
         self.mainLayout = QtWidgets.QVBoxLayout(self)
-        self.mainLayout.setSpacing(DOCK_SPACING)
+        self.mainLayout.setSpacing(5)
         self.mainLayout.setContentsMargins(DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN)
-
-        self.topLayout = QtWidgets.QHBoxLayout()
-        self.mainLayout.addLayout(self.topLayout)
-
-        self.resetButton = QtWidgets.QPushButton("Reset Settings")
-        self.topLayout.addWidget(self.resetButton)
 
         self.configTreeView = ConfigTreeView(configTreeModel, parent=self)
         self.mainLayout.addWidget(self.configTreeView)
+
+        self.buttonLayout = QtWidgets.QHBoxLayout()
+        self.mainLayout.addLayout(self.buttonLayout)
+
+        self.resetButton = QtWidgets.QPushButton("Reset All")
+        self.resetButton.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'reset-l.svg')))
+        self.buttonLayout.addStretch()
+        self.buttonLayout.addWidget(self.resetButton)
+        self.buttonLayout.addStretch()
 
         self.resetButton.clicked.connect(self.configTreeView.resetAllSettings)
 
