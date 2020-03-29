@@ -210,7 +210,7 @@ class ConfigTreeModel(BaseTreeModel):
         """
         indexLeft, indexRight = self.indexTupleFromItem(treeItem)
         checkItem = self.getItem(indexLeft)
-        assert checkItem is treeItem, "{} != {}".format(checkItem, treeItem) # TODO: remove
+        #assert checkItem is treeItem, "{} != {}".format(checkItem, treeItem) # TODO: remove
         self.dataChanged.emit(indexLeft, indexRight)
 
 
@@ -235,8 +235,9 @@ class ConfigTreeModel(BaseTreeModel):
     def resetAllSettings(self):
         """ Resets all items in the tree to their default
         """
-        logger.debug("Resetting all settings ----------------------")
+        logger.debug("Resetting all settings")
         self.invisibleRootItem.resetToDefault(resetChildren=True)
-        self.invisibleRootItem.updateTarget()
+        self.emitDataChanged(self.invisibleRootItem)     # Updates the tree
+        self.sigItemChanged.emit(self.invisibleRootItem) # Updates the inspector
 
 
