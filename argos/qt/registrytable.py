@@ -68,6 +68,12 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
         return len(self.attrNames)
 
 
+    def flags(self, index):
+        """ Returns the item flags for the given index.
+        """
+        return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+
+
     def data(self, index, role=Qt.DisplayRole):
         """ Returns the data stored under the given role for the item referred to by the index.
         """
@@ -98,6 +104,28 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
                 return self.errorBrush
         else:
             raise ValueError("Invalid role: {}".format(role))
+
+
+    def setData(self, index, value, role=Qt.EditRole):
+        """ Sets the role data for the item at index to value.
+        """
+        logger.debug("SET DATA")
+        if not index.isValid():
+            return False
+
+        if role != Qt.EditRole:
+            return False
+
+        row = index.row()
+        col = index.column()
+        regItem = self.registry.items[row]
+        attrName = self.attrNames[col]
+
+        setattr(regItem, attrName, value)
+        #self.dataChanged.emit(index, index)
+        self.emitDataChanged(regItem)
+
+        return True
 
 
     def headerData(self, section, orientation, role):
@@ -134,7 +162,7 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
 
 
     def emitDataChanged(self, regItem):
-        """ Emits the dataChagned signal for the regItem
+        """ Emits the dataChanged signal for the regItem
         """
         leftIndex = self.indexFromItem(regItem, col=0)
         rightIndex = self.indexFromItem(regItem, col=-1)
@@ -142,67 +170,6 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
         logger.debug("Data changed: {} ...{}".format(self.data(leftIndex), self.data(rightIndex)))
         self.dataChanged.emit(leftIndex, rightIndex)
 
-
-
-class RegistryTableProxyModel(QtCore.QSortFilterProxyModel):
-    """ Proxy model that overrides the sorting and can filter out regItems that are not imported.
-    """
-    def __init__(self, onlyShowImported=False, parent=None):
-        """ Constructor.
-            :param onlyShowImported: If true, only regItems that were successfully imported are
-                displayed. Default is False.
-            :param parent: parent widget
-        """
-        super(RegistryTableProxyModel, self).__init__(parent=parent)
-        self.onlyShowImported = onlyShowImported
-        self.setSortRole(RegistryTableModel.SORT_ROLE)
-        self.setDynamicSortFilter(True)
-        self.setSortCaseSensitivity(Qt.CaseInsensitive)
-
-
-    def filterAcceptsRow(self, sourceRow, sourceParent):
-        """ If onlyShowImported is True, regItems that were not (successfully) imported are
-            filtered out.
-        """
-        if not self.onlyShowImported:
-            return True
-
-        item = self.sourceModel().registry.items[sourceRow]
-        return bool(item.successfullyImported)
-
-
-    def lessThan(self, leftIndex, rightIndex):
-        """ Returns true if the value of the item referred to by the given index left is less than
-            the value of the item referred to by the given index right, otherwise returns false.
-        """
-        leftData  = self.sourceModel().data(leftIndex,  RegistryTableModel.SORT_ROLE)
-        rightData = self.sourceModel().data(rightIndex, RegistryTableModel.SORT_ROLE)
-
-        return leftData < rightData
-
-
-    def itemFromIndex(self, index):
-        """ Gets the item given the model index
-        """
-        sourceIndex = self.mapToSource(index)
-        return self.sourceModel().itemFromIndex(sourceIndex)
-
-
-    def indexFromItem(self, regItem, col=0):
-        """ Gets the index (with column=0) for the row that contains the regItem
-            If col is negative, it is counted from the end
-        """
-        sourceIndex = self.sourceModel().indexFromItem(regItem, col=col)
-        return self.mapFromSource(sourceIndex)
-
-
-    def emitDataChanged(self, regItem):
-        """ Emits the dataChagned signal for the regItem
-        """
-        #self.sourceModel().emitDataChanged(regItem) # Does this work?
-        leftIndex = self.indexFromItem(regItem, col=0)
-        rightIndex = self.indexFromItem(regItem, col=-1)
-        self.dataChanged.emit(leftIndex, rightIndex)
 
 
 
@@ -224,23 +191,25 @@ class RegistryTableView(ToggleColumnTableView):
         self._onlyShowImported = onlyShowImported
         if model is not None:
 
-            check_class(model, (RegistryTableModel, RegistryTableProxyModel))
+            check_class(model, RegistryTableModel)
             self.setModel(model)
         else:
             assert False, "not yet implemented"
 
         #self.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         #self.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
-        self.verticalHeader().hide()
+        verHeader = self.verticalHeader()
+        verHeader.setSectionsMovable(True)
+
         self.setAlternatingRowColors(True)
         self.setShowGrid(False)
-        self.setSortingEnabled(True)
+        #self.setSortingEnabled(True)
         self.setTabKeyNavigation(False)
 
         self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
-        self.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-        self.setWordWrap(True)
+        self.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)
+        #self.setWordWrap(True)
 
         tableHeader = self.horizontalHeader()
         tableHeader.setDefaultAlignment(Qt.AlignVCenter | Qt.AlignLeft)

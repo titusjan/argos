@@ -364,7 +364,7 @@ class ArgosApplication(QtCore.QObject):
             To be called when a main window is created or removed.
         """
         for win in self.mainWindows:
-            win.repopulateWinowMenu(self.windowActionGroup)
+            win.repopulateWindowMenu(self.windowActionGroup)
 
 
     @QtSlot()

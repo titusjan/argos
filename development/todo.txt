@@ -30,7 +30,7 @@ TODO short term:
     log to text file.
     Why doesn't argos start from command line at work on my work laptop (Beast)?
 
-
+    'open recent' in menu
     Zoom is reset when changing RGB in image (and other RTIs)
 
     Ctrl-Q doesn't work in Windows
@@ -77,9 +77,6 @@ TODO short term:
     Mousewheel click on color bar should autorange color bar.
     Right click in menu to reset color range
 
-    Reset buttons on groupCTI always visible?
-    Rename dock widget title of config widget from Application settings to settings
-    No separate color of the top level row
 
     Good message when no data is plotted. (/argos/ucar/IMAGE0002.nc/auditTrail)
 
@@ -114,6 +111,7 @@ TODO mid term:
         The less we do there, the less chance an error occurs.
 
 TODO long term:
+
 
     Drag and drop from file manager.
 
@@ -152,6 +150,8 @@ Test:
 	Memory leaks?
 
 TODO Long term or nice to have:
+
+    Reset buttons on groupCTI always visible?
 
     Downsample large slices (e.g. read a 300 MB wav file into a table or lineplot.)
 

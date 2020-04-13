@@ -22,7 +22,7 @@ from __future__ import print_function
 import logging
 
 from argos.qt.registry import ClassRegItem
-from argos.qt.registrytable import RegistryTableModel, RegistryTableProxyModel, RegistryTableView
+from argos.qt.registrytable import RegistryTableModel, RegistryTableView
 from argos.qt.registrytable import QCOLOR_REGULAR, QCOLOR_NOT_IMPORTED, QCOLOR_ERROR
 from argos.qt import QtCore, QtGui, QtWidgets, Qt, QtSlot
 from argos.utils.cls import check_class
@@ -40,8 +40,7 @@ class RegistryTab(QtWidgets.QWidget):
 
     """
     def __init__(self, registry, parent=None,
-                 attrNames=None, headerNames=None, headerSizes=None,
-                 onlyShowImported=False, importOnSelect=True):
+                 attrNames=None, headerNames=None, headerSizes=None, importOnSelect=True):
         """ Constructor.
 
             If onlyShowImported is True, regItems that are not (successfully) imported are
@@ -52,7 +51,6 @@ class RegistryTab(QtWidgets.QWidget):
         """
         super(RegistryTab, self).__init__(parent=parent)
         self._importOnSelect = importOnSelect
-        self._onlyShowImported = onlyShowImported
         self._registry = registry
 
 
@@ -84,10 +82,7 @@ class RegistryTab(QtWidgets.QWidget):
 
         # Table
         tableModel = RegistryTableModel(self._registry, attrNames=attrNames, parent=self)
-        proxyTableModel = RegistryTableProxyModel(parent=self,
-                                                  onlyShowImported=self._onlyShowImported)
-        proxyTableModel.setSourceModel(tableModel)
-        self.tableView = RegistryTableView(proxyTableModel, onlyShowImported=self.onlyShowImported)
+        self.tableView = RegistryTableView(tableModel)
 
         tableHeader = self.tableView.horizontalHeader()
         for col, headerSize in enumerate(headerSizes):

@@ -297,8 +297,9 @@ class MainWindow(QtWidgets.QMainWindow):
         actionGroup = QtWidgets.QActionGroup(parent)
         actionGroup.setExclusive(True)
 
-        sortedItems = sorted(self.argosApplication.inspectorRegistry.items,
-                             key=lambda item: item.identifier)
+        # sortedItems = sorted(self.argosApplication.inspectorRegistry.items,
+        #                      key=lambda item: item.identifier)
+        sortedItems = self.argosApplication.inspectorRegistry.items # don't sort
         shortCutNr = 1
         for item in sortedItems:
             logger.debug("item: {}".format(item.identifier))
@@ -386,7 +387,7 @@ class MainWindow(QtWidgets.QMainWindow):
     # Methods #
     ###########
 
-    def repopulateWinowMenu(self, actionGroup):
+    def repopulateWindowMenu(self, actionGroup):
         """ Clear the window menu and fills it with the actions of the actionGroup
         """
         for action in self.windowMenu.actions():

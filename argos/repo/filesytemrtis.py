@@ -49,7 +49,7 @@ class UnknownFileRti(BaseRti):
 
 
 class DirectoryRti(BaseRti):
-    """ A repository tree item that has a reference to a file.
+    """ A directory in the repository data tree.
     """
     _defaultIconGlyph = RtiIconFactory.FOLDER
     _defaultIconColor = RtiIconFactory.COLOR_UNKNOWN

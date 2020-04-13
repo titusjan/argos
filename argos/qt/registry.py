@@ -87,6 +87,16 @@ class ClassRegItem(object):
         """
         return self._fullName
 
+
+    @fullName.setter
+    def fullName(self, value):
+        """ Full plugin name comprising of library and name, separated by a slash.
+            Can contain spaces. E.g.: 'library name/My Widget'
+            Must be unique when spaces are removed and converted to lower case.
+        """
+        self._fullName = value
+
+
     @property
     def name(self):
         """ The last part of the fullName.
@@ -100,6 +110,7 @@ class ClassRegItem(object):
         """
         return os.path.dirname(self._fullName)
 
+
     def splitName(self):
         """ Returns (self.library, self.name) tuple but is more efficient than calling both
             properties separately.
@@ -112,6 +123,14 @@ class ClassRegItem(object):
             E.g.: 'argos.plugins.rti.ncdf.NcdfFileInspector'
         """
         return self._fullClassName
+
+    @fullClassName.setter
+    def fullClassName(self, value):
+        """ full name of the underlying class.
+            E.g.: 'argos.plugins.rti.ncdf.NcdfFileInspector'
+        """
+        self._fullClassName = value
+
 
 #    TODO: not used, remove?
 #    @property
@@ -134,6 +153,14 @@ class ClassRegItem(object):
             Can be multiple directories separated by a colon (:)
         """
         return self._pythonPath
+
+
+    @pythonPath.setter
+    def pythonPath(self, value):
+        """ Directory that will be added to the sys.path before importing.
+            Can be multiple directories separated by a colon (:)
+        """
+        self._pythonPath = value
 
 
     @property
