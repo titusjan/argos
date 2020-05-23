@@ -10,7 +10,6 @@ Argos philosophy:
 
 TODO short term:
 
-
     pyqtgraph 0.11 testen
 
     close files on collapse.
@@ -29,6 +28,8 @@ TODO short term:
 
     log to text file.
     Why doesn't argos start from command line at work on my work laptop (Beast)?
+
+    Is it possible to use word wrap in plot titles?
 
     'open recent' in menu
     Zoom is reset when changing RGB in image (and other RTIs)
@@ -74,7 +75,6 @@ TODO short term:
 
     Reset color and histogram range in context menu of 2D image plot.
 
-    Mousewheel click on color bar should autorange color bar.
     Right click in menu to reset color range
 
 

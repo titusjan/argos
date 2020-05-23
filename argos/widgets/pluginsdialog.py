@@ -19,6 +19,7 @@
 """
 from __future__ import print_function
 
+import copy
 import logging
 
 from argos.qt.registry import ClassRegItem
@@ -71,7 +72,7 @@ class RegistryTab(QtWidgets.QWidget):
         statusLayout.addWidget(self.statusLabel)
         statusLayout.setStretch(0, 1)
 
-        self.loadAllButton = QtWidgets.QPushButton("Load all")
+        self.loadAllButton = QtWidgets.QPushButton("Test Loading All")
         self.loadAllButton.setFocusPolicy(Qt.ClickFocus)
         self.loadAllButton.clicked.connect(self.tryImportAllPlugins)
         statusLayout.addWidget(self.loadAllButton)
@@ -194,42 +195,33 @@ class PluginsDialog(QtWidgets.QDialog):
     """ Dialog window that shows the installed plugins.
     """
 
-    def __init__(self,
-                 inspectorRegistry=None,
-                 rtiRegistry=None,
-                 parent=None):
+    def __init__(self, label, registry,  parent=None):
         """ Constructor
         """
         super(PluginsDialog, self).__init__(parent=parent)
 
-        self.setWindowTitle("Installed Argos Plugins")
-        self.setModal(False)
+        self.label = label
+        self._orgRegistry = registry
+        self._registry = copy.deepcopy(registry)  # make copy so changes can be canceled
+        self.setWindowTitle("Argos Plugins")
 
         layout = QtWidgets.QVBoxLayout(self)
 
         self.tabWidget = QtWidgets.QTabWidget()
+        self.tabWidget.setTabBarAutoHide(True)
         layout.addWidget(self.tabWidget)
 
         attrNames = ['fullName', 'fullClassName', 'pythonPath']
         headerSizes = [200, 300, None]
 
-        if inspectorRegistry:
-            inspectorTab = RegistryTab(inspectorRegistry,
-                                       attrNames=attrNames, headerSizes=headerSizes)
-            self.tabWidget.addTab(inspectorTab, "Inspectors")
-
-        if rtiRegistry:
-            rtiTab = RegistryTab(rtiRegistry,
-                                 attrNames=attrNames, headerSizes=headerSizes)
-            self.tabWidget.addTab(rtiTab, "File Formats")
-
-        # Sort by fullName by default.
-        for tabNr in range(self.tabWidget.count()):
-            self.tabWidget.widget(tabNr).tableView.sortByColumn(0, Qt.AscendingOrder)
+        inspectorTab = RegistryTab(self._registry, attrNames=attrNames, headerSizes=headerSizes)
+        self.tabWidget.addTab(inspectorTab, self.label)
 
         # Buttons
-        buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok)
+        buttonBox = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Save | QtWidgets.QDialogButtonBox.Cancel)
         buttonBox.accepted.connect(self.accept)
+        buttonBox.rejected.connect(self.reject)
         layout.addWidget(buttonBox)
 
         self.resize(QtCore.QSize(1100, 700))
@@ -244,3 +236,15 @@ class PluginsDialog(QtWidgets.QDialog):
             tab.tryImportAllPlugins()
 
 
+    def accept(self):
+        """ Saves registry.
+
+            After saving the application may be in an inconsistant state. For instance, files
+            may be opened with plugins that no longer exist. Therefore the caller must 'restart'
+            the application if the changes were accepted.
+        """
+        logger.debug("Updating registry")
+        self._orgRegistry.clear()
+        for item in self._registry.items:
+            self._orgRegistry.registerItem(item)
+        super().accept()

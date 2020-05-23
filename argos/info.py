@@ -36,6 +36,10 @@ EMAIL = "titusjan@gmail.com"
 ORGANIZATION_NAME = "titusjan"
 ORGANIZATION_DOMAIN = "titusjan.nl"
 
+EXIT_CODE_SUCCESS = 0
+EXIT_CODE_ERROR = 1
+EXIT_CODE_COMMAND_ARGS = 2
+EXIT_CODE_RESTART = 66 # Indicates the progoram must be 'restarted'
 
 
 # TODO: move to utils locations

@@ -109,7 +109,7 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
     def setData(self, index, value, role=Qt.EditRole):
         """ Sets the role data for the item at index to value.
         """
-        logger.debug("SET DATA")
+        #logger.debug("SET DATA")
         if not index.isValid():
             return False
 
@@ -167,7 +167,7 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
         leftIndex = self.indexFromItem(regItem, col=0)
         rightIndex = self.indexFromItem(regItem, col=-1)
 
-        logger.debug("Data changed: {} ...{}".format(self.data(leftIndex), self.data(rightIndex)))
+        logger.debug("Data changed: {} ... {}".format(self.data(leftIndex), self.data(rightIndex)))
         self.dataChanged.emit(leftIndex, rightIndex)
 
 

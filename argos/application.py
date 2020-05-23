@@ -23,7 +23,7 @@ import os.path
 import pprint
 import sys
 
-from argos.info import DEBUGGING
+from argos.info import DEBUGGING, EXIT_CODE_SUCCESS
 from argos.inspector.registry import InspectorRegistry, DEFAULT_INSPECTOR
 from argos.qt import QtCore, QtWidgets, QtSlot
 from argos.qt.misc import handleException, initQApplication
@@ -93,7 +93,8 @@ class ArgosApplication(QtCore.QObject):
         self._mainWindows = []
         self._settingsSaved = False  # boolean to prevent saving settings twice
 
-        self.qApplication.lastWindowClosed.connect(self.quit)
+        #self.qApplication.lastWindowClosed.connect(self.quit)
+        self.qApplication.aboutToQuit.connect(self.aboutToQuitHandler)
 
         # Activate-actions for all windows
         self.windowActionGroup = QtWidgets.QActionGroup(self)
@@ -294,7 +295,7 @@ class ArgosApplication(QtCore.QObject):
             else:
                 logger.info("Saving settings to: {}".format(self._settingsFile))
                 settings = self.marshall()
-                logger.info("FIle formats: {}".format(settings['plugins']['file-formats']))
+                logger.debug("File formats: {}".format(settings['plugins']['file-formats']))
                 try:
                     jsonStr = json.dumps(settings, sort_keys=True, indent=4)
                 except Exception as ex:
@@ -342,7 +343,7 @@ class ArgosApplication(QtCore.QObject):
         self.unmarshall(cfg, inspectorFullName)  # Always call unmarshall.
 
 
-    def saveSettingsIfNeeded(self):
+    def saveSettingsIfLastWindow(self):
         """ Writes the persistent settings if this is the last window and the settings have not yet
             been saved.
         """
@@ -428,22 +429,26 @@ class ArgosApplication(QtCore.QObject):
             mainWindow.raise_()
 
 
-    def closeAllWindows(self):
-        """ Closes all windows. Save windows state to persistent settings before closing them.
+    def exit(self, exitCode):
+        """ Saves settings and exits the program with a certain exit code.
         """
         self.saveSettings()
-        logger.debug("ArgosApplication: Closing all windows")
         self.qApplication.closeAllWindows()
+        self.qApplication.exit(exitCode)
 
 
     def quit(self):
-        """ Quits the application (called when the last window is closed)
+        """ Saves settings and exits the program with exit code 0 (success).
         """
-        logger.debug("ArgosApplication.quit called")
-        if len(self.mainWindows) > 0:
-            logger.warning("Still {} windows present at application quit!"
-                           .format(len(self.mainWindows)))
-        self.qApplication.quit()
+        self.exit(EXIT_CODE_SUCCESS)
+
+
+    def aboutToQuitHandler(self):
+        """ Called by Qt when the application is quitting
+        """
+        # No need to save the settings here as long as ArgosApplication.exit has been called.
+        logger.info("Argos is about to quit")
+        # QtWidgets.QMessageBox.warning(None, "Exit in progress", "We are quitting")
 
 
     def execute(self):

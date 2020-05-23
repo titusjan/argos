@@ -25,7 +25,7 @@ from __future__ import print_function
 # If you import (for instance) numpy here, the setup.py will fail if numpy is not installed.
 
 import logging, sys, argparse, os, os.path
-from argos.info import DEBUGGING, PROJECT_NAME, VERSION, resource_directory
+from argos.info import DEBUGGING, PROJECT_NAME, VERSION, EXIT_CODE_RESTART, resource_directory
 
 from argos.widgets.misc import setApplicationQtStyle, setApplicationStyleSheet
 
@@ -35,7 +35,7 @@ logging.basicConfig(level='DEBUG', stream=sys.stderr,
                     #format='%(name)35s %(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-8s: %(message)s')
                     format='%(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-8s: %(message)s')
 
-
+# We are not using **kwargs here so IDEs can see which parameters are expected.
 def browse(fileNames=None,
            inspectorFullName=None,
            select=None,
@@ -44,12 +44,40 @@ def browse(fileNames=None,
            settingsFile=None):
     """ Opens the main window(s) for the persistent settings and executes the application.
 
+        Calls _browse() in a while loop to enable pseudo restarts in case the registry was edited.
+
         :param fileNames: List of file names that will be added to the repository
         :param inspectorFullName: The full path name of the inspector that will be loaded
         :param select: a path of the repository item that will selected at start up.
         :param qtStyle: name of qtStyle (E.g. fusion).
         :param styleSheet: a path to an optional Qt Cascading Style Sheet.
         :param settingsFile: file with persistent settings. If None a default will be used.
+    """
+    while True:
+        logger.info("Starting browse window...")
+        exitCode = _browse(
+            fileNames=fileNames,
+            inspectorFullName=inspectorFullName,
+            select=select,
+            qtStyle=qtStyle,
+            styleSheet=styleSheet,
+            settingsFile=settingsFile)
+
+        logger.info("Argos event loop finished with exit code: {}".format(exitCode))
+        if exitCode != EXIT_CODE_RESTART:
+            return exitCode
+        else:
+            logger.critical("----- Restart requested. The Qt event loop will be restarted. -----\n")
+
+
+
+def _browse(fileNames=None,
+            inspectorFullName=None,
+            select=None,
+            qtStyle=None,
+            styleSheet=None,
+            settingsFile=None):
+    """ Execute browse a single time
     """
     # Imported here so this module can be imported without Qt being installed.
     from argos.qt import QtWidgets, QtCore

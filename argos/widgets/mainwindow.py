@@ -34,7 +34,7 @@ from argos.collect.collector import Collector
 from argos.config.abstractcti import AbstractCti
 from argos.config.configtreemodel import ConfigTreeModel
 from argos.config.configtreeview import ConfigWidget
-from argos.info import DEBUGGING, TESTING, PROJECT_NAME, PROFILING
+from argos.info import DEBUGGING, TESTING, PROJECT_NAME, PROFILING, EXIT_CODE_RESTART
 from argos.inspector.abstract import AbstractInspector, UpdateReason
 from argos.inspector.dialog import OpenInspectorDialog
 from argos.inspector.registry import InspectorRegItem
@@ -236,12 +236,17 @@ class MainWindow(QtWidgets.QMainWindow):
         #     fileMenu.addAction(action)
 
         fileMenu.addSeparator()
-        fileMenu.addAction("E&xit", self.argosApplication.closeAllWindows, QtGui.QKeySequence.Quit)
+        fileMenu.addAction("E&xit", self.argosApplication.quit, QtGui.QKeySequence.Quit)
 
         ### View Menu ###
         self.viewMenu = menuBar.addMenu("&View")
-        action = self.viewMenu.addAction("Installed &Plugins...", self.execPluginsDialog)
-        action.setShortcut(QtGui.QKeySequence("Ctrl+P"))
+        app = self.argosApplication
+        action = self.viewMenu.addAction("&File Format Plugins...",
+            lambda: self.execPluginsDialog("File Formats", app.rtiRegistry))
+        action = self.viewMenu.addAction("&Inspector Plugins...",
+            lambda: self.execPluginsDialog("Inspectors", app.inspectorRegistry))
+
+        action.setShortcut(QtGui.QKeySequence("Ctrl+P"))  # TODO: remove
         self.viewMenu.addSeparator()
 
         ### Inspector Menu ###
@@ -582,13 +587,21 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     @QtSlot()
-    def execPluginsDialog(self):
+    def execPluginsDialog(self, label, registry):
         """ Shows the plugins dialog with the registered plugins
         """
-        pluginsDialog = PluginsDialog(parent=self,
-                                inspectorRegistry=self.argosApplication.inspectorRegistry,
-                                rtiRegistry=self.argosApplication.rtiRegistry)
+        pluginsDialog = PluginsDialog(label, registry, parent=self)
         pluginsDialog.exec_()
+        pluginsDialog.deleteLater()
+
+        if pluginsDialog.result() == PluginsDialog.Accepted:
+            logger.info("Accepted changes to {} registry.".format(label))
+
+            logger.critical("Closing all windows and restarting eventloop")
+            self.argosApplication.exit(EXIT_CODE_RESTART)
+        else:
+            logger.info("Cancelled changes to {} registry.".format(label))
+
 
 
     @QtSlot(str)
@@ -832,7 +845,11 @@ class MainWindow(QtWidgets.QMainWindow):
         """ Called when closing this window.
         """
         logger.debug("closeEvent")
-        self.argosApplication.saveSettingsIfNeeded()
+
+        # Save settings must be called here, at the point that there is still a windows open.
+        # We can't use the QApplication.aboutToQuit signal because at that point the windows have
+        # been closed
+        self.argosApplication.saveSettingsIfLastWindow()
         self.finalize()
         self.argosApplication.removeMainWindow(self)
         event.accept()
@@ -860,9 +877,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def myTest(self):
         """ Function for small ad-hoc tests
         """
+        logger.info("myTest function called")
+
+        raise AssertionError("Forcing an exception.")
         import pprint
         from json import dumps
-        logger.info("myTest function called")
 
         logger.debug("Current inspector: {}, {}".format(self.inspectorRegItem, self.inspector))
 
