@@ -80,7 +80,7 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
         if not index.isValid():
             return None
 
-        if role not in (Qt.DisplayRole, self.SORT_ROLE,  Qt.ForegroundRole):
+        if role not in (Qt.DisplayRole, Qt.EditRole, self.SORT_ROLE,  Qt.ForegroundRole):
             return None
 
         row = index.row()
@@ -88,7 +88,7 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
         item = self.registry.items[row]
         attrName = self.attrNames[col]
 
-        if role == Qt.DisplayRole:
+        if role == Qt.DisplayRole or role == Qt.EditRole:
             return str(getattr(item, attrName))
 
         elif role == self.SORT_ROLE:
@@ -123,6 +123,10 @@ class RegistryTableModel(QtCore.QAbstractTableModel):
 
         setattr(regItem, attrName, value)
         #self.dataChanged.emit(index, index)
+
+        regItem.triedImport = False
+        regItem.tryImportClass()
+
         self.emitDataChanged(regItem)
 
         return True
@@ -206,9 +210,10 @@ class RegistryTableView(ToggleColumnTableView):
         #self.setSortingEnabled(True)
         self.setTabKeyNavigation(False)
 
-        self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
-        self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
-        self.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)
+        #self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        #self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        Qiv = QtWidgets.QAbstractItemView
+        self.setEditTriggers(Qiv.DoubleClicked | Qiv.SelectedClicked | Qiv.EditKeyPressed)
         #self.setWordWrap(True)
 
         tableHeader = self.horizontalHeader()
@@ -224,9 +229,7 @@ class RegistryTableView(ToggleColumnTableView):
 
 
     def getCurrentRegItem(self):
-        """ Find the current tree item (and the current index while we're at it)
-            Returns a tuple with the current item, and its index.
-            See also the notes at the top of this module on current item vs selected item(s).
+        """ Find the regItem that is currently selected.
         """
         return self.model().itemFromIndex(self.currentIndex())
 
@@ -236,6 +239,6 @@ class RegistryTableView(ToggleColumnTableView):
         """
         rowIndex = self.model().indexFromItem(regItem)
         if not rowIndex.isValid():
-            logger.warn("Can't select {!r} in table".format(regItem))
+            logger.warning("Can't select {!r} in table".format(regItem))
         self.setCurrentIndex(rowIndex)
 

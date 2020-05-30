@@ -15,7 +15,6 @@
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
 """ Classes for registering plugins.
-    This is part of the argos.qt package since it uses QSettings for persistency.
 """
 
 import logging, inspect, os, ast, sys
@@ -32,7 +31,8 @@ def nameToIdentifier(fullName):
     """
     return string_to_identifier(fullName, white_space_becomes='')
 
-# TODO: why is this in the Qt package? Only be because we use QtCore settings. Refactor?
+# Why is this in the Qt package? Only be because we use QtCore settings!
+# TODO: not anymore. Move to utils.
 class ClassRegItem(object):
     """ Represents an class that is registered in the registry.
 
@@ -188,6 +188,13 @@ class ClassRegItem(object):
         """ Returns True if the class has been imported (either successfully or not)
         """
         return self._triedImport
+
+    @triedImport.setter
+    def triedImport(self, value):
+        """ Set to true if the class has been imported (either successfully or not)
+        """
+        self._triedImport = value
+
 
     @property
     def successfullyImported(self):

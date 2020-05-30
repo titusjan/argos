@@ -64,26 +64,23 @@ class RegistryTab(QtWidgets.QWidget):
             assert len(headerSizes) == len(attrNames), \
                 "Size mismatch {} != {}".format(len(headerSizes), len(attrNames))
 
-        layout = QtWidgets.QVBoxLayout(self)
-        statusLayout = QtWidgets.QHBoxLayout()
-        layout.addLayout(statusLayout)
-
-        self.statusLabel = QtWidgets.QLabel("")
-        statusLayout.addWidget(self.statusLabel)
-        statusLayout.setStretch(0, 1)
-
-        self.loadAllButton = QtWidgets.QPushButton("Test Loading All")
-        self.loadAllButton.setFocusPolicy(Qt.ClickFocus)
-        self.loadAllButton.clicked.connect(self.tryImportAllPlugins)
-        statusLayout.addWidget(self.loadAllButton)
-        statusLayout.setStretch(1, 0)
+        layout = QtWidgets.QHBoxLayout(self)
 
         splitter = QtWidgets.QSplitter(Qt.Vertical)
         layout.addWidget(splitter)
 
         # Table
+        topWidget = QtWidgets.QWidget()
+        splitter.addWidget(topWidget)
+        splitter.setCollapsible(0, False)
+
+        topLayout = QtWidgets.QHBoxLayout()
+        topWidget.setLayout(topLayout)
+
+
         tableModel = RegistryTableModel(self._registry, attrNames=attrNames, parent=self)
         self.tableView = RegistryTableView(tableModel)
+        topLayout.addWidget(self.tableView)
 
         tableHeader = self.tableView.horizontalHeader()
         for col, headerSize in enumerate(headerSizes):
@@ -93,8 +90,25 @@ class RegistryTab(QtWidgets.QWidget):
         selectionModel = self.tableView.selectionModel()
         selectionModel.currentRowChanged.connect(self.currentItemChanged)
 
-        splitter.addWidget(self.tableView)
-        splitter.setCollapsible(0, False)
+        # Table Buttonscl
+
+        buttonLayout = QtWidgets.QVBoxLayout()
+        topLayout.addLayout(buttonLayout)
+
+        # self.addButton = QtWidgets.QPushButton("Add")
+        # self.addButton.clicked.connect(self.addPlugin)
+        # buttonLayout.addWidget(self.addButton)
+        #
+        # self.removeButton = QtWidgets.QPushButton("Remove")
+        # self.removeButton.clicked.connect(self.removePlugin)
+        # buttonLayout.addWidget(self.removeButton)
+        #buttonLayout.addStretch()
+
+        self.loadAllButton = QtWidgets.QPushButton("Test Loading All")
+        #self.loadAllButton.setFocusPolicy(Qt.ClickFocus) # Why?
+        self.loadAllButton.clicked.connect(self.tryImportAllPlugins)
+        buttonLayout.addWidget(self.loadAllButton)
+        buttonLayout.addStretch()
 
         # Detail info widget
         font = QtGui.QFont()
@@ -130,11 +144,10 @@ class RegistryTab(QtWidgets.QWidget):
         """ Imports the regItem
             Writes this in the statusLabel while the import is in progress.
         """
-        self.statusLabel.setText("Importing {}...".format(regItem.fullName))
+        logger.debug("Importing {}...".format(regItem.fullName))
         QtWidgets.qApp.processEvents()
         regItem.tryImportClass()
         self.tableView.model().emitDataChanged(regItem)
-        self.statusLabel.setText("")
         QtWidgets.qApp.processEvents()
 
 
@@ -188,6 +201,15 @@ class RegistryTab(QtWidgets.QWidget):
             self.editor.setHtml(regItem.descriptionHtml)
         else:
             self.editor.setPlainText(regItem.docString)
+
+
+    # def addPlugin(self):
+    #     """ Adds an empty row in the plugin table
+    #     """
+    #     curIdx = self.tableView.currentIndex()
+    #     curRow = curIdx.row()
+    #     if curRow < 0:
+    #         curRow = 0
 
 
 
