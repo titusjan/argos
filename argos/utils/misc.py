@@ -91,6 +91,45 @@ def log_dictionary(dictionary, msg='', logger=None, level='debug', item_prefix='
 
 
 
+def make_log_format(
+        ascTime = True,
+        processId = False,
+        threadName = False,
+        threadId = False,
+        fileLine = True,
+        loggerName = False,
+        level = True):
+    """ Creates a format string to use in logging.basicConfig.
+
+        Use example:
+            logging.basicConfig(level="DEBUG", format=makeLogFormat(fileLine=False))
+    """
+    parts = []
+    if ascTime:
+        parts.append('%(asctime)s')
+
+    if processId:
+        parts.append('pid=%(process)5d')
+
+    if threadName:
+        parts.append('%(threadName)15s')
+
+    if threadId:
+        parts.append('id=0x%(thread)x')
+
+    if fileLine:
+        parts.append('%(filename)25s:%(lineno)-4d')
+
+    if loggerName:
+        parts.append("%(name)30s")
+
+    if level:
+        parts.append('%(levelname)-7s')
+
+    parts.append('%(message)s')
+    return " : ".join(parts)
+
+
 def prepend_point_to_extension(extension):
     """ Prepends a point to the extension of it doesn't already start with it
     """
