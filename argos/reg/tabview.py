@@ -50,14 +50,15 @@ class BaseTableView(ToggleColumnTableView):
         #self.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         #self.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         verHeader = self.verticalHeader()
-        verHeader.setSectionsMovable(True)
+        verHeader.setSectionsMovable(False)
+        verHeader.hide()
 
         self.setAlternatingRowColors(True)
         self.setShowGrid(False)
         #self.setSortingEnabled(True)
         self.setTabKeyNavigation(False)
 
-        #self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
         #self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         Qiv = QtWidgets.QAbstractItemView
         self.setEditTriggers(Qiv.DoubleClicked | Qiv.SelectedClicked | Qiv.EditKeyPressed)
@@ -69,20 +70,15 @@ class BaseTableView(ToggleColumnTableView):
         tableHeader.setStretchLastSection(True)
 
 
-    def getCurrentRegItem(self):
-        """ Find the regItem that is currently selected.
+    def setCurrentCell(self, row, col=0):
+        """ Sets the current row
         """
-        return self.model().itemFromIndex(self.currentIndex())
-
-
-    def setCurrentRegItem(self, regItem):
-        """ Sets the current registry item.
-        """
-        rowIndex = self.model().indexFromItem(regItem)
-        if not rowIndex.isValid():
-            logger.warning("Can't select {!r} in table".format(regItem))
-        self.setCurrentIndex(rowIndex)
-
+        cellIdx = self.model().index(row, col)
+        if not cellIdx.isValid():
+            logger.warning("Can't set (row = {}, col = {}) in table".format(row, col))
+        else:
+            logger.debug("Setting cellIdx (row = {}, col = {}) in table".format(row, col))
+        self.setCurrentIndex(cellIdx)
 
 
 
@@ -111,33 +107,84 @@ class TableEditWidget(QtWidgets.QWidget):
         self.removeButton = QtWidgets.QPushButton("Remove")
         self.removeButton.clicked.connect(self.removeRow)
         buttonLayout.addWidget(self.removeButton)
+
+        self.moveUpButton = QtWidgets.QPushButton("Move Up")
+        self.moveUpButton.clicked.connect(lambda: self.moveRow(-1))
+        buttonLayout.addWidget(self.moveUpButton)
+
+        self.moveDownButton = QtWidgets.QPushButton("Move Down")
+        self.moveDownButton.clicked.connect(lambda: self.moveRow(+1))
+        buttonLayout.addWidget(self.moveDownButton)
+
         buttonLayout.addStretch()
 
+        self.tableView.selectionModel().currentChanged.connect(self.onCurrentChanged)
         self.tableView.setFocus(Qt.NoFocusReason)
+        self.updateWidgets()
 
 
     def addRow(self):
         """ Adds an empty row in the plugin table
         """
-        curIdx = self.tableView.currentIndex()
-        curRow = curIdx.row()
-        if curRow < 0:
-            curRow = None
-
         model = self.tableView.model()
+        # curIdx = self.tableView.getSectionCurrentIndex()
+        curIdx = self.tableView.currentIndex()
+        curRow, curCol = curIdx.row(), curIdx.column()
+        curRow = model.rowCount() if curRow < 0 else curRow # append at the end if non selected
+        curCol = 0 if curCol < 0 else curCol
         model.insertItem(model.createItem(), row=curRow)
+
+        self.tableView.setCurrentCell(curRow, curCol)
 
 
     def removeRow(self):
-        """ Adds remove the currently selected row
+        """ Removes the currently selected row
         """
+        model = self.tableView.model()
+        # curIdx = self.tableView.getSectionCurrentIndex()
         curIdx = self.tableView.currentIndex()
         curRow = curIdx.row()
         if curRow < 0:
             logger.warning("No row selected so no row removed.")
             return
 
-        self.tableView.model().removeItemAtRow(curRow)
+        model.popItemAtRow(curRow)
+        self.tableView.setCurrentCell(min(curRow, model.rowCount() - 1), curIdx.column())
+
+
+    def moveRow(self, number):
+        """ Moves the currently selected row a with a number of positions
+        """
+        #curIdx = self.tableView.getSectionCurrentIndex()
+        model = self.tableView.model()
+        curIdx = self.tableView.currentIndex()
+        curRow = curIdx.row()
+        if curRow < 0:
+            logger.warning("No row selected so no row moved.")
+            return
+
+        model.moveItem(curRow, curRow + number)
+        newRow = max(0, min(curRow + number, model.rowCount() - 1) ) # clip
+        self.tableView.setCurrentCell(newRow, curIdx.column())
+
+
+    def onCurrentChanged(self, _curIdx, _prefIdx):
+        """ Called when the current table index changes
+        """
+        self.updateWidgets()
+
+
+    def updateWidgets(self):
+        """ Enables/disables widgets according to the selected row
+        """
+        row = self.tableView.currentIndex().row()
+        numRows = self.tableView.model().rowCount()
+
+        logger.debug("updateWidgets: {} ")
+        self.addButton.setEnabled(True)
+        self.removeButton.setEnabled(0 <= row < numRows)
+        self.moveUpButton.setEnabled(1 <= row < numRows)
+        self.moveDownButton.setEnabled(0 <= row < numRows-1)
 
 
 

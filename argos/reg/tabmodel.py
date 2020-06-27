@@ -148,47 +148,6 @@ class BaseItemStore(object):
 
 
 
-
-    #
-    # def insertItemAt(self, item, pos=None):
-    #     """ Insert an item in the store at a certain position.
-    #
-    #         If pos is None the item will be appended at the end.
-    #
-    #         If you are using a BaseModel that is linked to this store, then reset that model or
-    #         use the append method of that model so that the model indexes are updated.
-    #     """
-    #     check_class(item, self.ITEM_CLASS)
-    #     assert item.name
-    #     pos = len(self._items) if pos is None else pos
-    #     logger.info("Inserting {!r} as positions {} to {}".format(item.name, pos, self))
-    #     self._items.insert(pos, item)
-    #
-    #
-    # def removeItemAt(self, pos):
-    #     """ Removes a ClassstoreItem object to the registry.
-    #         Will raise a KeyError if the storeItem is not registered.
-    #
-    #         If you are using a BaseModel that is linked to this store, then reset that model or
-    #         use the append method of that model so that the model indexes are updated.
-    #     """
-    #     check_class(item, self.ITEM_CLASS)
-    #     logger.info("Removing {!r} from {}".format(item.name, self))
-    #
-    #     idx = self._items.index(item)
-    #     del self._items[idx]
-    #
-    #
-    # def moveItem(self, fromPos, toPos):
-    #     """ Moves the item for position
-    #     """
-    #     item = self._items[fromPos]
-    #     self.removeItem(item)
-    #
-    #     # This always works, regardless if fromPos is before or after toPos
-    #     self.insertItem(item, toPos)
-
-
     #####
     # The follow functions load or save their state to JSON config files.
     #####
@@ -372,13 +331,11 @@ class BaseTableModel(QtCore.QAbstractTableModel):
         return self.store.ITEM_CLASS()
 
 
-    def insertItem(self, item, row=None):
+    def insertItem(self, item, row):
         """ Insert an item in the store at a certain row.
-            If row is None the item will be appended at the end.
         """
         check_class(item, self.store.ITEM_CLASS)
         logger.info("Inserting {!r} at row {}".format(item, row, self))
-        row = self.rowCount() if row is None else row
         self.beginInsertRows(QtCore.QModelIndex(), row, row)
         try:
             self.store.items.insert(row, item)
@@ -386,14 +343,26 @@ class BaseTableModel(QtCore.QAbstractTableModel):
             self.endInsertRows()
 
 
-    def removeItemAtRow(self, row):
+    def popItemAtRow(self, row):
         """ Removes a store item from the store.
+            Returns the item
         """
         self.beginRemoveRows(QtCore.QModelIndex(), row, row)
         try:
+            item = self.store.items[row]
             del self.store.items[row]
+            return item
         finally:
             self.endRemoveRows()
+
+
+    def moveItem(self, fromRow, toRow):
+        """ Moves the item for position
+        """
+        item = self.popItemAtRow(fromRow)
+
+        # This always works, regardless if fromPos is before or after toPos
+        self.insertItem(item, toRow)
 
 
 
