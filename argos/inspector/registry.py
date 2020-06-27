@@ -14,29 +14,28 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" Defines a global Inspector registry to register plugins.
+""" Defines a global Inspector registry to register inspector plugins.
 """
 
 import logging
 
 from argos.info import DEBUGGING
-from argos.qt.registry import ClassRegItem, ClassRegistry
+from argos.reg.basereg import BaseRegItem, BaseRegistry
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_INSPECTOR = 'Qt/Table'
+DEFAULT_INSPECTOR = 'Table'
 
-
-
-class InspectorRegItem(ClassRegItem): # TODO: rename to InspectorRegItem? InspectorPlugin?
+class InspectorRegItem(BaseRegItem):
     """ Class to keep track of a registered Inspector.
         Has a create() method that functions as an Inspector factory.
     """
 
-    def __init__(self, fullName, fullClassName, pythonPath=''):
+    def __init__(self, name='', absClassName='', pythonPath=''):
         """ Constructor. See the ClassRegItem class doc string for the parameter help.
         """
-        super(InspectorRegItem, self).__init__(fullName, fullClassName, pythonPath=pythonPath)
+        super(InspectorRegItem, self).__init__(name=name, absClassName=absClassName,
+                                               pythonPath=pythonPath)
 
 
     @property
@@ -63,15 +62,17 @@ class InspectorRegItem(ClassRegItem): # TODO: rename to InspectorRegItem? Inspec
         return cls(collector)
 
 
-class InspectorRegistry(ClassRegistry):
+
+class InspectorRegistry(BaseRegistry):
     """ Class that maintains the collection of registered inspector classes.
         See the base class documentation for more info.
     """
+    ITEM_CLASS = InspectorRegItem
+
     def __init__(self):
         """ Constructor
         """
         super(InspectorRegistry, self).__init__()
-        self._itemClass = InspectorRegItem
 
 
     @property
@@ -81,28 +82,21 @@ class InspectorRegistry(ClassRegistry):
         return "Inspector"
 
 
-    def registerInspector(self, fullName, fullClassName, pythonPath=''):
-        """ Registers an Inspector class.
-        """
-        regInspector = InspectorRegItem(fullName, fullClassName, pythonPath=pythonPath)
-        self.registerItem(regInspector)
-
-
     def getDefaultItems(self):
         """ Returns a list with the default plugins in the inspector registry.
         """
         plugins = [
             InspectorRegItem(DEFAULT_INSPECTOR,
                              'argos.inspector.qtplugins.table.TableInspector'),
-            InspectorRegItem('Qt/Text',
+            InspectorRegItem('Text',
                              'argos.inspector.qtplugins.text.TextInspector'),
-            InspectorRegItem('PyQtGraph/1D Line Plot',
+            InspectorRegItem('Line Plot',
                              'argos.inspector.pgplugins.lineplot1d.PgLinePlot1d'),
-            InspectorRegItem('PyQtGraph/2D Image Plot',
+            InspectorRegItem('Image Plot',
                              'argos.inspector.pgplugins.imageplot2d.PgImagePlot2d'),
             ]
         if DEBUGGING:
-            plugins.append(InspectorRegItem('PyQtGraph/2D Image Plot (Old)',
+            plugins.append(InspectorRegItem('Image Plot (Old)',
                                             'argos.inspector.pgplugins.old_imageplot2d.PgImagePlot2d'))
             plugins.append(InspectorRegItem('Debug Inspector',
                                             'argos.inspector.debug.DebugInspector'))

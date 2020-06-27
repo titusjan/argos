@@ -22,34 +22,18 @@ import logging
 from argos.qt import QtWidgets, QtSlot
 
 from argos.inspector.registry import InspectorRegItem
-from argos.widgets.misc import BasePanel
 from argos.widgets.constants import DOCK_MARGIN, DOCK_SPACING
 
 logger = logging.getLogger(__name__)
 
-
-
-def addInspectorActionsToMenu(inspectorMenu, execInspectorDialogAction, inspectorActionGroup):
-    """ Adds menu items to the inpsectorMenu for the given set-inspector actions.
-
-        :param inspectorMenu: inspector menu that will be modified
-        :param execInspectorDialogAction: the "Browse Inspectors..." actions
-        :param inspectorActionGroup: action group with actions for selecting a new inspector
-        :return: the inspectorMenu, which has been modified.
-    """
-    inspectorMenu.addAction(execInspectorDialogAction)
-    inspectorMenu.addSeparator()
-
-    for action in inspectorActionGroup.actions():
-        inspectorMenu.addAction(action)
-
-    return inspectorMenu
+NO_INSPECTOR_LABEL = '<No Inspector>'
 
 
 class InspectorSelectionPane(QtWidgets.QFrame):
     """ Shows the attributes of the selected repo tree item
     """
-    def __init__(self, execInspectorDialogAction, inspectorActionGroup, parent=None):
+
+    def __init__(self, inspectorActionGroup, parent=None):
         super(InspectorSelectionPane, self).__init__(parent=parent)
 
         #self.setFrameShape(QtWidgets.QFrame.Box)
@@ -58,16 +42,16 @@ class InspectorSelectionPane(QtWidgets.QFrame):
         self.mainLayout.setContentsMargins(DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN)
         self.setLayout(self.mainLayout)
 
-
         # self.label = QtWidgets.QLabel("Current inspector")
         # self.layout.addWidget(self.label)
 
-        self.menuButton = QtWidgets.QPushButton("No inspector")
+        self.menuButton = QtWidgets.QPushButton(NO_INSPECTOR_LABEL)
         self.menuButton.setMinimumWidth(10)
         self.mainLayout.addWidget(self.menuButton)
 
         inspectorMenu = QtWidgets.QMenu("Change Inspector", parent=self.menuButton)
-        addInspectorActionsToMenu(inspectorMenu, execInspectorDialogAction, inspectorActionGroup)
+        for action in inspectorActionGroup.actions():
+            inspectorMenu.addAction(action)
         self.menuButton.setMenu(inspectorMenu)
 
         sizePolicy = self.sizePolicy()
@@ -79,8 +63,5 @@ class InspectorSelectionPane(QtWidgets.QFrame):
     def updateFromInspectorRegItem(self, inspectorRegItem):
         """ Updates the label from the full name of the InspectorRegItem
         """
-        library, name = inspectorRegItem.splitName()
-        #label = "{} ({})".format(name, library) if library else name
-        label = name
-        #self.label.setText(label)
+        label = NO_INSPECTOR_LABEL if inspectorRegItem is None else inspectorRegItem.name
         self.menuButton.setText(label)

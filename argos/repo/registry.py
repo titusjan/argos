@@ -18,28 +18,51 @@
 """
 
 import logging
+
+from argos.reg.basereg import BaseRegItem, BaseRegistry
 from argos.utils.cls import check_is_a_string, check_class, check_is_a_sequence
 from argos.utils.misc import prepend_point_to_extension
-from argos.qt.registry import ClassRegItem, ClassRegistry
 
 logger = logging.getLogger(__name__)
 
 
-class RtiRegItem(ClassRegItem):
+def parseExtensionStr(extensions):
+    """ Splits extension string on colons and prepends points to each extension
+
+        :returns: List of extensions
+    """
+    check_class(extensions, str)
+    extensionList = extensions.split(':')
+    return [prepend_point_to_extension(ext.strip()) for ext in extensionList]
+
+
+
+class RtiRegItem(BaseRegItem):
     """ Class to keep track of a registered Repo Tree Item.
     """
-    def __init__(self, fullName, fullClassName, extensions, pythonPath=''):
+    FIELDS =  BaseRegItem.FIELDS + ['extensions']
+
+    def __init__(self, name='', absClassName='', pythonPath='', extensions=None):
         """ Constructor. See the ClassRegItem class doc string for the parameter help.
         """
-        super(RtiRegItem, self).__init__(fullName, fullClassName, pythonPath=pythonPath)
-        self._extensions = [prepend_point_to_extension(ext) for ext in extensions]
+        super(RtiRegItem, self).__init__(name=name, absClassName=absClassName, pythonPath=pythonPath)
+
+        # TODO: this is temporary
+        if extensions is None:
+            extensions = ''
+        if isinstance(extensions, list):
+            extensions = ': '.join(extensions)
+
+
+        check_class(extensions, str)
+        self._data['extensions'] = extensions
 
 
     @property
     def extensions(self):
         """ Filename extensions that will automatically open as this RTI.
         """
-        return self._extensions
+        return parseExtensionStr(self._data['extensions'])
 
 
     def getFileDialogFilter(self):
@@ -50,16 +73,9 @@ class RtiRegItem(ClassRegItem):
         return '{} ({})'.format(self.name, extStr)
 
 
-    def marshall(self): # TDOO: remove
-        """ Returns a dictionary for serialization.
-        """
-        dct = super(RtiRegItem, self).marshall()
-        dct['extensions'] = self.extensions
-        return dct
 
 
-
-class RtiRegistry(ClassRegistry):
+class RtiRegistry(BaseRegistry):
     """ Class that can be used to register repository tree items (RTIs).
 
         Maintains a name to RtiClass mapping and an extension to RtiClass mapping.
@@ -67,11 +83,12 @@ class RtiRegistry(ClassRegistry):
         the extensions in the RtiRegItem class do not have to be unique and are used in the
         filter in the getFileDialogFilter function.
     """
+    ITEM_CLASS = RtiRegItem
+
     def __init__(self):
         """ Constructor
         """
         super(RtiRegistry, self).__init__()
-        self._itemClass = RtiRegItem
         self._extensionMap = {}
 
 
@@ -81,56 +98,55 @@ class RtiRegistry(ClassRegistry):
         """
         return "File-Format"
 
+    # def _registerExtension(self, extension, rtiRegItem):
+    #     """ Links an file name extension to a repository tree item.
+    #     """
+    #     check_is_a_string(extension)
+    #     check_class(rtiRegItem, RtiRegItem)
+    #
+    #     logger.debug("  Registering extension {!r} for {}".format(extension, rtiRegItem))
+    #
+    #     # TODO: type checking
+    #     if extension in self._extensionMap:
+    #         logger.info("Overriding extension {!r}: old={}, new={}"
+    #                     .format(extension, self._extensionMap[extension], rtiRegItem))
+    #     self._extensionMap[extension] = rtiRegItem
 
-    def clear(self):
-        """ Empties the registry
-        """
-        super(RtiRegistry, self).clear()
-        self._extensionMap = {}
-
-
-    def _registerExtension(self, extension, rtiRegItem):
-        """ Links an file name extension to a repository tree item.
-        """
-        check_is_a_string(extension)
-        check_class(rtiRegItem, RtiRegItem)
-
-        logger.debug("  Registering extension {!r} for {}".format(extension, rtiRegItem))
-
-        # TODO: type checking
-        if extension in self._extensionMap:
-            logger.info("Overriding extension {!r}: old={}, new={}"
-                        .format(extension, self._extensionMap[extension], rtiRegItem))
-        self._extensionMap[extension] = rtiRegItem
-
-
-    def registerItem(self, regItem):
-        """ Adds a ClassRegItem object to the registry.
-        """
-        super(RtiRegistry, self).registerItem(regItem)
-
-        for ext in regItem.extensions:
-            self._registerExtension(ext, regItem)
+    #
+    # def registerItem(self, regItem):
+    #     """ Adds a ClassRegItem object to the registry.
+    #     """
+    #     super(RtiRegistry, self).registerItem(regItem)
+    #
+    #     for ext in regItem.extensions:
+    #         self._registerExtension(ext, regItem)
 
 
-    def registerRti(self, fullName, fullClassName, extensions=None, pythonPath=''):
-        """ Class that maintains the collection of registered inspector classes.
-            Maintains a lit of file extensions that open the RTI by default.
-        """
-        check_is_a_sequence(extensions)
-        extensions = extensions if extensions is not None else []
-        extensions = [prepend_point_to_extension(ext) for ext in extensions]
-
-        regRti = RtiRegItem(fullName, fullClassName, extensions, pythonPath=pythonPath)
-        self.registerItem(regRti)
+    # def registerRti(self, fullName, fullClassName, extensions=None, pythonPath=''):
+    #     """ Class that maintains the collection of registered inspector classes.
+    #         Maintains a lit of file extensions that open the RTI by default.
+    #     """
+    #     check_is_a_sequence(extensions)
+    #     extensions = extensions if extensions is not None else []
+    #     extensions = [prepend_point_to_extension(ext) for ext in extensions]
+    #
+    #     regRti = RtiRegItem(fullName, fullClassName, extensions, pythonPath=pythonPath)
+    #     self.registerItem(regRti)
 
 
     def getRtiRegItemByExtension(self, extension):
-        """ Returns the RtiRegItem class registered for the extension.
-            Raise KeyError if no class registered for the extension.
+        """ Returns the first RtiRegItem class that contains the extension.
+            Returns None if no class registered for the extension.
         """
-        rtiRegItem = self._extensionMap[extension]
-        return rtiRegItem
+        if not extension: # Defensive programming in action.
+            return None
+
+        # Current implementation just returns the first rtiRegItem that contains the extension.
+        for rtiRegItem in self._items:
+            if extension in rtiRegItem.extensions:
+                return rtiRegItem
+
+        return None
 
 
     def getFileDialogFilter(self):
@@ -146,28 +162,34 @@ class RtiRegistry(ClassRegistry):
     def getDefaultItems(self):
         """ Returns a list with the default plugins in the repo tree item registry.
         """
+
+        # Note that when finding a plug in by extension, Argos uses the first one that matches.
+        # Therefor put the defaults at the top of the list. The user can changed the order in the
+        # plugin configuration dialog.
+
+        hdfExtensions = ['hdf5', 'h5', 'h5e', 'he5'] # hdf extension is for HDF-4
         return [
-            RtiRegItem('Directory',
-                       'argos.repo.filesytemrtis.DirectoryRti',
-                       extensions=[]), # So a an Exdir 'file' can be opened as a directory again
-
-            RtiRegItem('HDF-5 file',
-                       'argos.repo.rtiplugins.hdf5.H5pyFileRti',
-                       extensions=['hdf5', 'h5', 'h5e', 'he5', 'nc']), # hdf extension is for HDF-4
-
-            RtiRegItem('MATLAB file',
-                       'argos.repo.rtiplugins.scipyio.MatlabFileRti',
-                       extensions=['mat']),
-
             RtiRegItem('NetCDF file',
                        'argos.repo.rtiplugins.ncdf.NcdfFileRti',
                        #extensions=['nc', 'nc3', 'nc4']),
                        extensions=['nc', 'nc4']),
                        #extensions=[]),
 
+            RtiRegItem('HDF-5 file',
+                       'argos.repo.rtiplugins.hdf5.H5pyFileRti',
+                       extensions=hdfExtensions + ['nc']),
+
             RtiRegItem('NumPy binary file',
                        'argos.repo.rtiplugins.numpyio.NumpyBinaryFileRti',
                        extensions=['npy']),
+
+            RtiRegItem('Pandas HDF file',
+                       'argos.repo.rtiplugins.pandasio.PandasHdfFileRti',
+                        extensions=hdfExtensions),
+
+            RtiRegItem('Pandas CSV file',
+                       'argos.repo.rtiplugins.pandasio.PandasCsvFileRti',
+                        extensions=['csv']),
 
             RtiRegItem('NumPy compressed file',
                        'argos.repo.rtiplugins.numpyio.NumpyCompressedFileRti',
@@ -182,26 +204,27 @@ class RtiRegistry(ClassRegistry):
                        'argos.repo.rtiplugins.scipyio.IdlSaveFileRti',
                        extensions=['sav']),
 
-            RtiRegItem('Pandas CSV file',
-                       'argos.repo.rtiplugins.pandasio.PandasCsvFileRti',
-                        extensions=['csv']),
+            RtiRegItem('MATLAB file',
+                       'argos.repo.rtiplugins.scipyio.MatlabFileRti',
+                       extensions=['mat']),
 
-            RtiRegItem('Pandas HDF file',
-                       'argos.repo.rtiplugins.pandasio.PandasHdfFileRti',
-                        extensions=[]),
+            RtiRegItem('Wav file',
+                       'argos.repo.rtiplugins.scipyio.WavFileRti',
+                       extensions=['wav']),
 
             RtiRegItem('Pillow image',
                        'argos.repo.rtiplugins.pillowio.PillowFileRti',
                         extensions=['bmp', 'eps', 'im', 'gif', 'jpg', 'jpeg', 'msp', 'pcx',
                                     'png', 'ppm', 'spi', 'tif', 'tiff', 'xbm', 'xv']),
 
-            RtiRegItem('Wav file',
-                       'argos.repo.rtiplugins.scipyio.WavFileRti',
-                       extensions=['wav']),
-
             RtiRegItem('Exdir file',
                        'argos.repo.rtiplugins.exdir.ExdirFileRti',
-                       extensions=['exdir'])]
+                       extensions=['exdir']),
+
+            RtiRegItem('Directory',
+               'argos.repo.filesytemrtis.DirectoryRti',
+               extensions=''), # So a an Exdir 'file' can be opened as a directory again
+        ]
 
 
 # The RTI registry is implemented as a singleton. This is necessary because

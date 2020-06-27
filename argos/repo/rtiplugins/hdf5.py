@@ -544,6 +544,8 @@ class H5pyFileRti(H5pyGroupRti):
         """ Opens the root Dataset.
         """
         logger.info("Opening: {}".format(self._fileName))
+        if not os.path.isfile(self._fileName):
+            raise OSError("{} does not exist or is not a regular file.".format(self._fileName))
         self._h5Group = h5py.File(self._fileName, 'r')
 
 

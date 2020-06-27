@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 class BaseTableView(ToggleColumnTableView):
     """ Editable QTableView that shows the contents of a BaseTableModel.
     """
-    def __init__(self, model=None, onlyShowImported=False, parent=None):
+    def __init__(self, model=None, parent=None):
         """ Constructor
 
             :param model: a RegistryTableModel that maps the regItems
@@ -68,6 +68,20 @@ class BaseTableView(ToggleColumnTableView):
         tableHeader.setDefaultAlignment(Qt.AlignVCenter | Qt.AlignLeft)
         tableHeader.setSectionResizeMode(QtWidgets.QHeaderView.Interactive) # don't set to stretch
         tableHeader.setStretchLastSection(True)
+
+        headerSizes = [200, 300, None]  # TODO: from model?
+
+        headerSizes = [] if headerSizes is None else headerSizes
+        if headerSizes is None:
+            headerSizes = []
+        # else:
+        #     assert len(headerSizes) == model.columnCount(), \
+        #         "Size mismatch {} != {}".format(len(headerSizes), model.columnCount())
+
+        for col, headerSize in enumerate(headerSizes):
+            if headerSize:
+                tableHeader.resizeSection(col, headerSize)
+
 
 
     def setCurrentCell(self, row, col=0):
@@ -107,6 +121,7 @@ class TableEditWidget(QtWidgets.QWidget):
         self.removeButton = QtWidgets.QPushButton("Remove")
         self.removeButton.clicked.connect(self.removeRow)
         buttonLayout.addWidget(self.removeButton)
+        buttonLayout.addSpacing(25)
 
         self.moveUpButton = QtWidgets.QPushButton("Move Up")
         self.moveUpButton.clicked.connect(lambda: self.moveRow(-1))

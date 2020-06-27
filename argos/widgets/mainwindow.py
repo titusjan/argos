@@ -36,12 +36,12 @@ from argos.config.configtreemodel import ConfigTreeModel
 from argos.config.configtreeview import ConfigWidget
 from argos.info import DEBUGGING, TESTING, PROJECT_NAME, PROFILING, EXIT_CODE_RESTART
 from argos.inspector.abstract import AbstractInspector, UpdateReason
-from argos.inspector.dialog import OpenInspectorDialog
+# from argos.inspector.dialog import OpenInspectorDialog # TODO: remove
 from argos.inspector.registry import InspectorRegItem
-from argos.inspector.selectionpane import InspectorSelectionPane, addInspectorActionsToMenu
+from argos.inspector.selectionpane import InspectorSelectionPane
 from argos.qt import Qt, QUrl, QtCore, QtGui, QtWidgets, QtSignal, QtSlot
 from argos.qt.misc import getWidgetGeom, getWidgetState
-
+from argos.reg.dialog import PluginsDialog
 from argos.repo.repotreeview import RepoWidget
 from argos.repo.testdata import createArgosTestData
 from argos.utils.cls import check_class, check_is_a_sequence
@@ -50,7 +50,7 @@ from argos.utils.misc import string_to_identifier
 from argos.widgets.aboutdialog import AboutDialog
 from argos.widgets.constants import CENTRAL_MARGIN, CENTRAL_SPACING
 from argos.widgets.misc import processEvents
-from argos.widgets.pluginsdialog import PluginsDialog
+
 
 import logging
 
@@ -68,7 +68,7 @@ class MainWindow(QtWidgets.QMainWindow):
     __numInstances = 0
 
     # Emitted when the inspector has changed.
-    sigInspectorChanged = QtSignal(InspectorRegItem)
+    sigInspectorChanged = QtSignal(object)  # InspectorRegItem or None
 
     def __init__(self, argosApplication):
         """ Constructor
@@ -163,8 +163,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.topLayout.setContentsMargins(0, 0, 0, 0)
         self.topLayout.setSpacing(0)
 
-        self.inspectorSelectionPane = InspectorSelectionPane(self.execInspectorDialogAction,
-                                                             self.inspectorActionGroup)
+        self.inspectorSelectionPane = InspectorSelectionPane(self.inspectorActionGroup)
         self.topLayout.addWidget(self.inspectorSelectionPane)
         self.topLayout.addStretch()
         self.sigInspectorChanged.connect(self.inspectorSelectionPane.updateFromInspectorRegItem)
@@ -243,33 +242,35 @@ class MainWindow(QtWidgets.QMainWindow):
         app = self.argosApplication
         action = self.viewMenu.addAction("&File Format Plugins...",
             lambda: self.execPluginsDialog("File Formats", app.rtiRegistry))
+        action.setShortcut(QtGui.QKeySequence("Ctrl+P"))  # TODO: remove
+
         action = self.viewMenu.addAction("&Inspector Plugins...",
             lambda: self.execPluginsDialog("Inspectors", app.inspectorRegistry))
 
-        action.setShortcut(QtGui.QKeySequence("Ctrl+P"))  # TODO: remove
         self.viewMenu.addSeparator()
 
         ### Inspector Menu ###
-        self.execInspectorDialogAction = QtWidgets.QAction("&Browse Inspectors...", self,
-                                                           triggered=self.execInspectorDialog)
-        self.execInspectorDialogAction.setShortcut(QtGui.QKeySequence("Ctrl+i"))
+        # self.execInspectorDialogAction = QtWidgets.QAction(
+        # "&Browse Inspectors...", self, triggered=self.execInspectorDialog)
+        # self.execInspectorDialogAction.setShortcut(QtGui.QKeySequence("Ctrl+i"))
 
         self.inspectorActionGroup = self.__createInspectorActionGroup(self)
         self.inspectorMenu = menuBar.addMenu("Inspector")
-        addInspectorActionsToMenu(self.inspectorMenu, self.execInspectorDialogAction,
-                                  self.inspectorActionGroup)
+        for action in self.inspectorActionGroup.actions():
+            self.inspectorMenu.addAction(action)
 
         ### Window Menu ###
         self.windowMenu = menuBar.addMenu("&Window")
 
         # The action added to the menu in the repopulateWindowMenu method, which is called by
         # the ArgosApplication object every time a window is added or removed.
-        self.activateWindowAction = QtWidgets.QAction("Window #{}".format(self.windowNumber),
-                                                      self, triggered=self.activateAndRaise,
-                                                      checkable=True)
+        self.activateWindowAction = QtWidgets.QAction(
+            "Window #{}".format(self.windowNumber), self,
+            triggered=self.activateAndRaise, checkable=True)
         if self.windowNumber <= 9:
-            self.activateWindowAction.setShortcut(QtGui.QKeySequence("Alt+{}"
-                                                                     .format(self.windowNumber)))
+            self.activateWindowAction.setShortcut(QtGui.QKeySequence(
+                "Alt+{}".format(self.windowNumber)))
+
         ### Help Menu ###
         menuBar.addSeparator()
         helpMenu = menuBar.addMenu("&Help")
@@ -302,12 +303,9 @@ class MainWindow(QtWidgets.QMainWindow):
         actionGroup = QtWidgets.QActionGroup(parent)
         actionGroup.setExclusive(True)
 
-        # sortedItems = sorted(self.argosApplication.inspectorRegistry.items,
-        #                      key=lambda item: item.identifier)
-        sortedItems = self.argosApplication.inspectorRegistry.items # don't sort
         shortCutNr = 1
-        for item in sortedItems:
-            logger.debug("item: {}".format(item.identifier))
+        for item in self.argosApplication.inspectorRegistry.items:
+            logger.debug("__createInspectorActionGroup item: {} {}".format(item.identifier, item._data))
             setAndDrawFn = partial(self.setAndDrawInspectorById, item.identifier)
             action = QtWidgets.QAction(item.name, self, triggered=setAndDrawFn, checkable=True)
             action.setData(item.identifier)
@@ -434,17 +432,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.activateWindowAction.setText("{} window".format(self.inspectorName))
 
 
-    @QtSlot()
-    def execInspectorDialog(self):
-        """ Opens the inspector dialog box to let the user change the current inspector.
-        """
-        dialog = OpenInspectorDialog(self.argosApplication.inspectorRegistry, parent=self)
-        dialog.setCurrentInspectorRegItem(self.inspectorRegItem)
-        dialog.exec_()
-        if dialog.result():
-            inspectorRegItem = dialog.getCurrentInspectorRegItem()
-            if inspectorRegItem is not None:
-                self.getInspectorActionById(inspectorRegItem.identifier).trigger()
+    # @QtSlot()
+    # def execInspectorDialog(self):
+    #     """ Opens the inspector dialog box to let the user change the current inspector.
+    #     """
+    #     dialog = OpenInspectorDialog(self.argosApplication.inspectorRegistry, parent=self)
+    #     dialog.setCurrentInspectorRegItem(self.inspectorRegItem)
+    #     dialog.exec_()
+    #     if dialog.result():
+    #         inspectorRegItem = dialog.getCurrentInspectorRegItem()
+    #         if inspectorRegItem is not None:
+    #             self.getInspectorActionById(inspectorRegItem.identifier).trigger()
 
 
     def getInspectorActionById(self, identifier):
@@ -503,7 +501,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self._inspectorRegItem = None
         else:
             inspectorRegistry = self.argosApplication.inspectorRegistry
-            inspectorRegItem = inspectorRegistry.getItemById(identifier)
+            inspectorRegItem = inspectorRegistry.getItemById(identifier)  #
+            #raise AssertionError("No inspector found for: {}".format(identifier))
 
             self._inspectorRegItem = inspectorRegItem
             if inspectorRegItem is None:
@@ -514,17 +513,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 except ImportError as ex:
                     # Only log the error. No dialog box or user interaction here because this
                     # function may be called at startup.
-                    logger.exception("Clearing inspector. Unable to create {!r} because {}"
-                                     .format(inspectorRegItem.identifier, ex))
+                    logger.warning("Clearing inspector. Unable to create {!r} because {}"
+                                   .format(inspectorRegItem.identifier, ex),
+                                   exc_info=DEBUGGING)
                     inspector = None
                     self.getInspectorActionById(identifier).setEnabled(False)
 
-                    if DEBUGGING:
-                        raise
 
-        ######################
-        # Set self.inspector #
-        ######################
+        ###### Set self.inspector ######
 
         check_class(inspector, AbstractInspector, allow_none=True)
 
@@ -878,17 +874,9 @@ class MainWindow(QtWidgets.QMainWindow):
         """ Function for small ad-hoc tests
         """
         logger.info("myTest function called")
-
-        raise AssertionError("Forcing an exception.")
-        import pprint
-        from json import dumps
-
-        logger.debug("Current inspector: {}, {}".format(self.inspectorRegItem, self.inspector))
-
-        self._storeInspectorState(self.inspectorRegItem, self.inspector)
-        jsonStr = dumps(self._inspectorStates, sort_keys=True, indent=4)
-        logger.debug("Inspector config: \n{}".format(jsonStr))
-
+        logger.debug("Current inspector after: {}, {}".format(self.inspectorRegItem, self.inspector))
+        self.setInspectorById('')
+        logger.debug("Current inspector after: {}, {}".format(self.inspectorRegItem, self.inspector))
 
 
     def testWalkCurrentNode(self):

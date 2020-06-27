@@ -27,12 +27,11 @@ from argos.info import DEBUGGING, EXIT_CODE_SUCCESS
 from argos.inspector.registry import InspectorRegistry, DEFAULT_INSPECTOR
 from argos.qt import QtCore, QtWidgets, QtSlot
 from argos.qt.misc import handleException, initQApplication
-from argos.qt.registry import nameToIdentifier
+from argos.reg.basereg import nameToIdentifier
 from argos.repo.colors import CmLibSingleton, DEF_FAV_COLOR_MAPS
 from argos.repo.registry import globalRtiRegistry
 from argos.repo.repotreemodel import RepoTreeModel
 from argos.utils.dirs import argosConfigDirectory, normRealPath, ensureFileExists
-from argos.utils.misc import string_to_identifier
 from argos.widgets.mainwindow import MainWindow, UpdateReason
 
 logger = logging.getLogger(__name__)
@@ -392,7 +391,7 @@ class ArgosApplication(QtCore.QObject):
             inspectorId = mainWindow.inspectorRegItem.identifier
             mainWindow.getInspectorActionById(inspectorId).setChecked(True)
             logger.info("Created new window with inspector: {}"
-                        .format(mainWindow.inspectorRegItem.fullName))
+                        .format(mainWindow.inspectorRegItem.name))
         else:
             logger.info("Created new window without inspector")
 

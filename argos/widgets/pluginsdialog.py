@@ -18,6 +18,7 @@
     PluginsDialog window that shows which plugins are registered.
 """
 from __future__ import print_function
+assert False, "obsolete"  # TODO: remove
 
 import copy
 import logging

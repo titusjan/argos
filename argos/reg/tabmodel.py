@@ -21,8 +21,7 @@ import logging
 
 from argos.utils.cls import type_name, check_class
 
-from argos.qt import QtCore, QtGui, QtWidgets, Qt
-from argos.qt.togglecolumn import ToggleColumnTableView
+from argos.qt import QtCore, QtGui, Qt
 
 
 QCOLOR_REGULAR = QtGui.QColor('black')
@@ -38,9 +37,10 @@ class BaseItem(object):
 
         It always must have a name, which is used as the identifier
     """
-    FIELDS = ['count', 'name', 'path']  # The fields that this item contains. Should be overridden in descendants
+    FIELDS = []  # The fields that this item contains. Should be overridden in descendants
+    # FIELDS = ['debugCount', 'name', 'path']  # For debugging.
 
-    _sequenceCounter = 0
+    _sequenceCounter = 0  # For debugging
 
     def __init__(self, **kwargs):
         """ Constructor
@@ -53,11 +53,11 @@ class BaseItem(object):
                 raise ValueError("Key '{}' not in field names: {}".format(key, self.FIELDS))
             self._data[key] = value
 
-        # Set remaining fiels to empty string
+        # Set remaining fields to empty string
         for key in self.FIELDS:
             if key not in self._data:
-                if key == 'count':
-                    self._data['count'] = BaseItem._sequenceCounter
+                if key == 'debugCount':
+                    self._data['debugCount'] = BaseItem._sequenceCounter
                     BaseItem._sequenceCounter += 1
                 else:
                     self._data[key] = ''
@@ -65,13 +65,6 @@ class BaseItem(object):
 
     def __repr__(self):
         return "<{}: {}>".format(type_name(self), self._data)
-
-
-    # @property
-    # def name(self):
-    #     """ The name field of the item. Serves as an identifier
-    #     """
-    #     return self._data['name']
 
 
     @property
@@ -147,7 +140,6 @@ class BaseItemStore(object):
         self._items = []
 
 
-
     #####
     # The follow functions load or save their state to JSON config files.
     #####
@@ -165,12 +157,13 @@ class BaseItemStore(object):
         if not cfg:
             logger.info("Empty config, using registry defaults for: {}".format(self))
             for storeItem in self.getDefaultItems():
-                self.insertItem(storeItem)
+                self._items.append(storeItem)
         else:
-            for dct in sorted(cfg.items()):
+            for dct in cfg:
+                logger.debug("Creating {} from: {}".format(self.ITEM_CLASS, dct))
                 storeItem = self.ITEM_CLASS()
                 storeItem.unmarshall(dct)
-                self.insertItem(storeItem)
+                self._items.append(storeItem)
 
 
     def getDefaultItems(self):
@@ -197,6 +190,7 @@ class BaseTableModel(QtCore.QAbstractTableModel):
             :param parent: Parent widget
         """
         super(BaseTableModel, self).__init__(parent)
+        check_class(store, BaseItemStore)
         self._store = store
         self._fieldNames = self._store.fieldNames
 

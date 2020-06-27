@@ -87,17 +87,17 @@ def detectRtiFromFileName(fileName):
         If the file extension is not in the registry, (UnknownFileRti, None) is returned.
         If the cls cannot be imported (None, regItem) returned. regItem.exception will be set.
         Otherwise (cls, regItem) will be returned.
+
+         Note that directories can have an extension (e.g. extdir archives). So it is not enought to
+         just test if a file is a directory.
     """
     _, extension = os.path.splitext(os.path.normpath(fileName))
-    try:
-        rtiRegItem = globalRtiRegistry().getRtiRegItemByExtension(extension)
-    except (KeyError):
+    rtiRegItem = globalRtiRegistry().getRtiRegItemByExtension(extension)
+    if rtiRegItem is None:
         if os.path.isdir(fileName):
-            rtiRegItem = None
             cls = DirectoryRti
         else:
             logger.debug("No file RTI registered for extension: {}".format(extension))
-            rtiRegItem = None
             cls = UnknownFileRti
     else:
          cls = rtiRegItem.getClass(tryImport=True) # cls can be None
