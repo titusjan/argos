@@ -41,6 +41,7 @@ class RtiRegItem(BaseRegItem):
     """ Class to keep track of a registered Repo Tree Item.
     """
     FIELDS =  BaseRegItem.FIELDS + ['extensions']
+    LABELS =  BaseRegItem.LABELS + ['Extensions']
 
     def __init__(self, name='', absClassName='', pythonPath='', extensions=None):
         """ Constructor. See the ClassRegItem class doc string for the parameter help.
@@ -52,7 +53,6 @@ class RtiRegItem(BaseRegItem):
             extensions = ''
         if isinstance(extensions, list):
             extensions = ': '.join(extensions)
-
 
         check_class(extensions, str)
         self._data['extensions'] = extensions

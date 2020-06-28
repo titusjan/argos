@@ -44,6 +44,8 @@ class BaseRegItem(BaseItem):
         properties of the RegItem as well. If the class is not yet imported, they return None.
     """
     FIELDS = ['name', 'absClassName', 'pythonPath']
+    LABELS = ['Name', 'Class', 'Python Path']
+
     def __init__(self, name='', absClassName='', pythonPath=''):
         """ Constructor.
 

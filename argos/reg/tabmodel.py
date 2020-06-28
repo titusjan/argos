@@ -37,8 +37,10 @@ class BaseItem(object):
 
         It always must have a name, which is used as the identifier
     """
-    FIELDS = []  # The fields that this item contains. Should be overridden in descendants
+    FIELDS = []  # The fields that this item contains.
     # FIELDS = ['debugCount', 'name', 'path']  # For debugging.
+
+    LABELS = []  # Human readable label for each field. Should be overridden in descendants
 
     _sequenceCounter = 0  # For debugging
 
@@ -61,6 +63,11 @@ class BaseItem(object):
                     BaseItem._sequenceCounter += 1
                 else:
                     self._data[key] = ''
+
+        assert len(self.FIELDS) > 0
+        if len(self.LABELS) != len(self.FIELDS):
+            raise AssertionError("Number of labels ({}) is not equal to number of labels ({})"
+                                 .format(len(self.LABELS), len(self.FIELDS)))
 
 
     def __repr__(self):
@@ -125,7 +132,15 @@ class BaseItemStore(object):
 
     @property
     def fieldNames(self):
+        """ Name of the fields. So think twice before changing them."""
         return self.ITEM_CLASS.FIELDS
+
+
+    @property
+    def fieldLabels(self):
+        """ Short, human readable, label fields for use in GUI. """
+        return self.ITEM_CLASS.LABELS
+
 
     @property
     def items(self):
@@ -193,6 +208,7 @@ class BaseTableModel(QtCore.QAbstractTableModel):
         check_class(store, BaseItemStore)
         self._store = store
         self._fieldNames = self._store.fieldNames
+        self._fieldLabels = self.store.fieldLabels
 
         self.regularBrush = QtGui.QBrush(QCOLOR_REGULAR)
         self.notImportedBrush = QtGui.QBrush(QCOLOR_NOT_IMPORTED)
@@ -247,7 +263,7 @@ class BaseTableModel(QtCore.QAbstractTableModel):
         """
         if role == QtCore.Qt.DisplayRole:
             if orientation == Qt.Horizontal:
-                return self._fieldNames[section]
+                return self._fieldLabels[section]
             else:
                 return str(section)
         else:
@@ -260,7 +276,7 @@ class BaseTableModel(QtCore.QAbstractTableModel):
         if not index.isValid():
             return None
 
-        if role not in (Qt.DisplayRole, Qt.EditRole, Qt.ForegroundRole):
+        if role not in (Qt.DisplayRole, Qt.EditRole, Qt.ForegroundRole, Qt.ToolTipRole):
             return None
 
         row = index.row()
@@ -268,7 +284,7 @@ class BaseTableModel(QtCore.QAbstractTableModel):
         item = self._store.items[row]
         attrName = self._fieldNames[col]
 
-        if role == Qt.DisplayRole or role == Qt.EditRole:
+        if role in (Qt.DisplayRole, Qt.EditRole, Qt.ToolTipRole):
             return str(item.data[attrName])
 
         elif role == Qt.ForegroundRole:

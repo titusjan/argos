@@ -47,45 +47,52 @@ class BaseTableView(ToggleColumnTableView):
         else:
             assert False, "not yet implemented"
 
-        #self.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
-        #self.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+        #self.setTextElideMode(QtCore.Qt.ElideMiddle) # Does not work nicely when editing cells.
+        self.setAlternatingRowColors(True)
+        self.setShowGrid(False)
+        self.setSortingEnabled(False)
+        self.setTabKeyNavigation(False)
+        self.setWordWrap(False)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        Qiv = QtWidgets.QAbstractItemView
+        self.setEditTriggers(Qiv.DoubleClicked | Qiv.SelectedClicked | Qiv.EditKeyPressed)
+        self.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+
         verHeader = self.verticalHeader()
         verHeader.setSectionsMovable(False)
         verHeader.hide()
 
-        self.setAlternatingRowColors(True)
-        self.setShowGrid(False)
-        #self.setSortingEnabled(True)
-        self.setTabKeyNavigation(False)
+        horHeader = self.horizontalHeader()
+        horHeader.setDefaultAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+        horHeader.setSectionResizeMode(QtWidgets.QHeaderView.Interactive) # don't set to stretch
+        horHeader.setStretchLastSection(True)
+        horHeader.setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
 
-        self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
-        #self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
-        Qiv = QtWidgets.QAbstractItemView
-        self.setEditTriggers(Qiv.DoubleClicked | Qiv.SelectedClicked | Qiv.EditKeyPressed)
-        #self.setWordWrap(True)
+        # headerSizes = [200, 300, None]  # TODO: from model?
+        # # assert len(headerSizes) == model.columnCount(), \
+        # #   "Size mismatch {} != {}".format(len(headerSizes), model.columnCount())
+        #
+        # for col, headerSize in enumerate(headerSizes):
+        #     if headerSize:
+        #         horHeader.resizeSection(col, headerSize)
 
-        tableHeader = self.horizontalHeader()
-        tableHeader.setDefaultAlignment(Qt.AlignVCenter | Qt.AlignLeft)
-        tableHeader.setSectionResizeMode(QtWidgets.QHeaderView.Interactive) # don't set to stretch
-        tableHeader.setStretchLastSection(True)
 
-        headerSizes = [200, 300, None]  # TODO: from model?
-
-        headerSizes = [] if headerSizes is None else headerSizes
-        if headerSizes is None:
-            headerSizes = []
-        # else:
-        #     assert len(headerSizes) == model.columnCount(), \
-        #         "Size mismatch {} != {}".format(len(headerSizes), model.columnCount())
-
-        for col, headerSize in enumerate(headerSizes):
-            if headerSize:
-                tableHeader.resizeSection(col, headerSize)
+    # def resizeEvent(self, event):
+    #     """ Called when the table is resized. Automicially resizes the headers.
+    #
+    #         :param QtGui.QResizeEvent event: the resize event.
+    #     """
+    #     horHeader = self.horizontalHeader()
+    #     numCols = horHeader.count()
+    #
+    #     for col in range(numCols):
+    #         self.setColumnWidth(col, int(round(self.width() / numCols)))
+    #
 
 
 
     def setCurrentCell(self, row, col=0):
-        """ Sets the current row
+        """ Sets the current row and column.
         """
         cellIdx = self.model().index(row, col)
         if not cellIdx.isValid():
