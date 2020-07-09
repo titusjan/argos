@@ -18,7 +18,7 @@
 """ Constants related to the layout and other widget properties.
 """
 import sys
-from argos.qt import QtCore, QtWidgets
+from argos.qt import QtCore, QtGui, QtWidgets
 
 #TREE_ROW_HEIGHT = 20 # pixels
 TREE_CELL_SIZE_HINT = QtCore.QSize(100, 20)
@@ -59,4 +59,8 @@ else:
     MONO_FONT = 'Courier'
     FONT_SIZE = 13
 
+
+QCOLOR_REGULAR = QtGui.QColor('black')
+QCOLOR_NOT_IMPORTED = QtGui.QColor('grey')
+QCOLOR_ERROR = QtGui.QColor('red')
 

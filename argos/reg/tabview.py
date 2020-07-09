@@ -90,6 +90,12 @@ class BaseTableView(ToggleColumnTableView):
     #
 
 
+    def getCurrentItem(self):
+        """ Returns the item of the selected row, or None if none is selected
+        """
+        curIdx = self.currentIndex()
+        return self.model().itemFromIndex(curIdx)
+
 
     def setCurrentCell(self, row, col=0):
         """ Sets the current row and column.
@@ -113,6 +119,7 @@ class TableEditWidget(QtWidgets.QWidget):
         super(TableEditWidget, self).__init__(parent=parent)
 
         self.mainLayout = QtWidgets.QHBoxLayout()
+        self.mainLayout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.mainLayout)
 
         self.tableView = BaseTableView(tableModel)
@@ -202,7 +209,6 @@ class TableEditWidget(QtWidgets.QWidget):
         row = self.tableView.currentIndex().row()
         numRows = self.tableView.model().rowCount()
 
-        logger.debug("updateWidgets: {} ")
         self.addButton.setEnabled(True)
         self.removeButton.setEnabled(0 <= row < numRows)
         self.moveUpButton.setEnabled(1 <= row < numRows)

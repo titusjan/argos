@@ -26,24 +26,46 @@ TODO short term:
         - help
             - online documentation
 
+    Better plugin management.
+        - RegTableModel that shows colors for import status.
+        - Details frame that shows both error and description
+        - auto import
+        - Remove old pluginsdialog.py
+        - restructure main menu (see above)
+        - separate edit widgets (instead of editable table cells)?
+
+        - Other fields:
+            - icons colors for RTIs. (new color scheme?)
+            - globs (cache globs/extensions?)
+            - short cuts for inspectors.
+        - Make ErrorInspector at startup and error. So that RegItem is never empty
+          and better errors can be shown in the inspector panel. E.g. if selected inspector
+          can't be found at startup.
+
+        - ctrl-I should open inspector selector menu
+
+        - Test
+            - edit name of currently
+            - duplicate names
+            - Sifpy plugin on windows.
+
+        - Update changes.txt
+
     log to text file.
     Why doesn't argos start from command line at work on my work laptop (Beast)?
+    argos --help on Windows (Beast) doesn't seem to give output)
+    Ctrl-Q doesn't work in Windows
 
     Is it possible to use word wrap in plot titles?
 
     'open recent' in menu
     Zoom is reset when changing RGB in image (and other RTIs)
 
-    Ctrl-Q doesn't work in Windows
-
     Why does /argos/ucar/IMAGE0002.nc/dataWidth have no shape?
-
 
     -o/--open so that files after this command line option are opened.
         Can probably replace the -s option
         What happens if files occur twice when opening them?
-
-    argos --help on Windows (Beast) doesn't seem to give output)
 
     quickview tab
     cross hair in the middle of the pixel
@@ -61,7 +83,6 @@ TODO short term:
 
     Exporter to PNG
 
-    Old numpy support.
 
     Installed plugins dialog doesn't work if scipy is not installed.  (Test under Linux)
 
@@ -70,18 +91,14 @@ TODO short term:
 	    Change if unit is new or combox dim is new.
 	    Keep collector state (comboboxes, when the dimensions of the new RTI are the same as of the old)
 
-    Better plugin management.
-    Show both error and description in plugins dialog.
 
-    Reset color and histogram range in context menu of 2D image plot.
-
-    Right click in menu to reset color range
-
-
+    Better color for rectangle zoom
     Good message when no data is plotted. (/argos/ucar/IMAGE0002.nc/auditTrail)
 
-    Flip Y image Y-axis by default.
+    Flip Y image Y-axis by default (done but not yet in Old image plot)
 
+
+    check if mid & long term todos are still needed
 
 TODO mid term:
 
@@ -110,8 +127,13 @@ TODO mid term:
             ICID_30683_GROUP_00001/INSTRUMENT/housekeeping_data
         The less we do there, the less chance an error occurs.
 
+    Editable defaults in config.
+
 TODO long term:
 
+    When the collector can have multiple entries, the RtiPlugin can select them by default.
+    E.g. you can make an TropL2 RTI pluting that always selects the lat and lon dimension on the
+    x-axis. If a ncdf/hdf file follows the CF conventions, we can use that instead.
 
     Drag and drop from file manager.
 

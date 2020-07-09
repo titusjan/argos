@@ -24,11 +24,6 @@ from argos.utils.cls import type_name, check_class
 from argos.qt import QtCore, QtGui, Qt
 
 
-QCOLOR_REGULAR = QtGui.QColor('black')
-QCOLOR_NOT_IMPORTED = QtGui.QColor('brown')
-QCOLOR_ERROR = QtGui.QColor('red')
-
-
 logger = logging.getLogger(__name__)
 
 
@@ -210,10 +205,6 @@ class BaseTableModel(QtCore.QAbstractTableModel):
         self._fieldNames = self._store.fieldNames
         self._fieldLabels = self.store.fieldLabels
 
-        self.regularBrush = QtGui.QBrush(QCOLOR_REGULAR)
-        self.notImportedBrush = QtGui.QBrush(QCOLOR_NOT_IMPORTED)
-        self.errorBrush = QtGui.QBrush(QCOLOR_ERROR)
-
 
     @property
     def store(self):
@@ -231,10 +222,14 @@ class BaseTableModel(QtCore.QAbstractTableModel):
         return len(self._fieldNames)
 
 
-    def itemFromIndex(self, index):
+    def itemFromIndex(self, index, altItem=None):
         """ Gets the item given the model index
+            Returns altItem (default: None) if the index is not alid
         """
-        return self._store.items[index.row()]
+        if not index.isValid():
+            return altItem
+        else:
+            return self._store.items[index.row()]
 
 
     def indexFromItem(self, storeItem, col=0):
@@ -276,7 +271,7 @@ class BaseTableModel(QtCore.QAbstractTableModel):
         if not index.isValid():
             return None
 
-        if role not in (Qt.DisplayRole, Qt.EditRole, Qt.ForegroundRole, Qt.ToolTipRole):
+        if role not in (Qt.DisplayRole, Qt.EditRole, Qt.ToolTipRole):
             return None
 
         row = index.row()
@@ -287,14 +282,8 @@ class BaseTableModel(QtCore.QAbstractTableModel):
         if role in (Qt.DisplayRole, Qt.EditRole, Qt.ToolTipRole):
             return str(item.data[attrName])
 
-        elif role == Qt.ForegroundRole:
-            return self.regularBrush
-            # if item.successfullyImported is None:
-            #     return self.notImportedBrush
-            # elif item.successfullyImported:
-            #     return self.regularBrush
-            # else:
-            #     return self.errorBrush
+        # elif role == Qt.ForegroundRole:
+        #     return self.regularBrush
         else:
             raise ValueError("Invalid role: {}".format(role))
 

@@ -20,11 +20,16 @@ import logging, inspect, os, sys
 
 from argos.info import DEBUGGING
 from argos.utils.cls import import_symbol, check_is_a_string, type_name, check_class
-from argos.reg.tabmodel import BaseItem, BaseItemStore
+from argos.reg.tabmodel import BaseItem, BaseItemStore, BaseTableModel
+from argos.qt import Qt, QtGui
 from argos.utils.misc import string_to_identifier
 
 logger = logging.getLogger(__name__)
 
+
+QCOLOR_REGULAR = QtGui.QColor('black')
+QCOLOR_NOT_IMPORTED = QtGui.QColor('grey')
+QCOLOR_ERROR = QtGui.QColor('red')
 
 
 def nameToIdentifier(fullName):
@@ -195,8 +200,8 @@ class BaseRegItem(BaseItem):
         except Exception as ex:
             self._exception = ex
             logger.warning("Unable to import {!r}: {}".format(self.absClassName, ex))
-            if DEBUGGING:
-                raise
+            # if DEBUGGING:
+            #     raise
 
 
     def getClass(self, tryImport=True):
@@ -216,7 +221,7 @@ class BaseRegistry(BaseItemStore):
         It can load or store its classes in the persistent settings. It can also create a default
         set of plugins that can be used initially, the first time the program is executed.
 
-        The ClassRegistry can only store items of one type (ClassRegItem). Descendants will
+        The BaseRegistry can only store items of one type (ClassRegItem). Descendants will
         store their own type. For instance the InspectorRegistry will store InspectorRegItem
         items. This makes serialization easier.
     """
@@ -239,7 +244,6 @@ class BaseRegistry(BaseItemStore):
         return None
 
 
-
     def getDefaultItems(self):
         """ Returns a list with the default plugins in the registry.
             This is used initialize the application plugins when there are no saved settings,
@@ -248,4 +252,41 @@ class BaseRegistry(BaseItemStore):
         """
         raise NotImplementedError
 
+
+
+class BaseRegistryModel(BaseTableModel):
+    """ Table model that holds a BaseRegistry store
+    """
+
+    def __init__(self, store, parent=None):
+        """ Constructor.
+
+            :param store: Underlying data store, must descent from BaseRegistry
+            :param parent: Parent widget
+        """
+        super(BaseRegistryModel, self).__init__(store, parent)
+        check_class(store, BaseRegistry)
+
+        self.regularBrush = QtGui.QBrush(QCOLOR_REGULAR)
+        self.notImportedBrush = QtGui.QBrush(QCOLOR_NOT_IMPORTED)
+        self.errorBrush = QtGui.QBrush(QCOLOR_ERROR)
+
+
+    def data(self, index, role=Qt.DisplayRole):
+        """ Returns the data stored under the given role for the item referred to by the index.
+        """
+        if not index.isValid():
+            return None
+
+        if role == Qt.ForegroundRole:
+            item = self._store.items[index.row()]
+
+            if item.successfullyImported is None:
+                return self.notImportedBrush
+            elif item.successfullyImported:
+                return self.regularBrush
+            else:
+                return self.errorBrush
+        else:
+            return super(BaseRegistryModel, self).data(index, role=role)
 
