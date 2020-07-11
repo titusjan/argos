@@ -82,10 +82,12 @@ class PluginsDialog(QtWidgets.QDialog):
         layout.addWidget(buttonBox)
 
         self.tableWidget.tableView.selectionModel().currentChanged.connect(self.currentItemChanged)
+        self.tableWidget.tableView.model().sigItemChanged.connect(self._updateEditor)
 
         self.resize(QtCore.QSize(1100, 700))
         self.tableWidget.tableView.setFocus(Qt.NoFocusReason)
-        #self.tableWidget.setFocus(Qt.NoFocusReason)
+
+        self.tryImportAllPlugins()
 
 
     def accept(self):
@@ -103,39 +105,16 @@ class PluginsDialog(QtWidgets.QDialog):
         super().accept()
 
 
-    @property
-    def registeredItems(self):
-        "Returns the items from the registry"
-        return self._registry.items
-
-
-    def importRegItem(self, regItem):
-        """ Imports the regItem
-            Writes this in the statusLabel while the import is in progress.
-        """
-        logger.debug("Importing {}...".format(regItem.name))
-        QtWidgets.qApp.processEvents()
-        regItem.tryImportClass()
-        self.tableWidget.tableView.model().emitDataChanged(regItem)
-        QtWidgets.qApp.processEvents()
-
-
-    # def tryImportAllPlugins(self):
-    #     """ Refreshes the tables of all tables by importing the underlying classes
-    #     """
-    #     logger.debug("Importing plugins: {}".format(self))
-    #     for tabNr in range(self.tabWidget.count()):
-    #         tab = self.tabWidget.widget(tabNr)
-    #         tab.tryImportAllPlugins()
-    #
-
 
     def tryImportAllPlugins(self):
         """ Tries to import all underlying plugin classes
         """
-        for regItem in self.registeredItems:
+        logger.debug("Importing all plugins.")
+
+        model = self.tableWidget.tableView.model()
+        for regItem in self._registry.items:
             if not regItem.triedImport:
-                self.importRegItem(regItem)
+                model.tryImportRegItem(regItem)
 
         logger.debug("Importing finished.")
 
@@ -147,28 +126,23 @@ class PluginsDialog(QtWidgets.QDialog):
         return self.tableWidget.tableView.getCurrentItem()
 
 
-    # def setCurrentRegItem(self, regItem):
-    #     """ Sets the current item to the regItem
-    #     """
-    #     check_class(regItem, BaseRegItem, allow_none=True)
-    #     self.tableWidget.tableView.setCurrentCell(regItem)
-
-
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
     def currentItemChanged(self, _currentIndex=None, _previousIndex=None):
         """ Updates the description text widget when the user clicks on a selector in the table.
             The _currentIndex and _previousIndex parameters are ignored.
         """
+        regItem = self.getCurrentRegItem()
+        self._updateEditor(regItem)
+
+
+    def _updateEditor(self, regItem):
+        """ Updates the editor with contents of the currently selected regItem
+        """
         self.editor.clear()
         self.editor.setTextColor(QCOLOR_REGULAR)
 
-        regItem = self.getCurrentRegItem()
-
         if regItem is None:
             return
-
-        if regItem.successfullyImported is None:
-            self.importRegItem(regItem)
 
         header = "{}\n{}\n\n".format(regItem.name, len(regItem.name) * '=')
 

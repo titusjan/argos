@@ -290,3 +290,29 @@ class BaseRegistryModel(BaseTableModel):
         else:
             return super(BaseRegistryModel, self).data(index, role=role)
 
+
+    def setData(self, index, value, role=Qt.EditRole):
+        """ Sets the role data for the item at index to value.
+        """
+        result = super(BaseRegistryModel, self).setData(index, value, role=role)
+
+        if not index.isValid():
+            return False
+
+        if role != Qt.EditRole:
+            return False
+
+        regItem = self._store.items[index.row()]
+        regItem.tryImportClass()
+
+        self.emitDataChanged(regItem)
+        return result
+
+
+    def tryImportRegItem(self, regItem):
+        """ Tries to import a registry item (plugin)
+        """
+        check_class(regItem, self.store.ITEM_CLASS)
+        logger.debug("Importing {}...".format(regItem.name))
+        regItem.tryImportClass()
+        self.emitDataChanged(regItem)

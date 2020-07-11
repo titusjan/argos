@@ -238,26 +238,31 @@ class MainWindow(QtWidgets.QMainWindow):
         fileMenu.addAction("E&xit", self.argosApplication.quit, QtGui.QKeySequence.Quit)
 
         ### View Menu ###
+
         self.viewMenu = menuBar.addMenu("&View")
+        self.panelsMenu = self.viewMenu.addMenu("&Panels")
+        self.viewMenu.addSeparator()
+
+        self.inspectorActionGroup = self.__createInspectorActionGroup(self)
+        for action in self.inspectorActionGroup.actions():
+            self.viewMenu.addAction(action)
+
+        ### Config Menu ###
+        self.configMenu = menuBar.addMenu("Configure")
+
         app = self.argosApplication
-        action = self.viewMenu.addAction("&File Format Plugins...",
+        action = self.configMenu.addAction("&File Format Plugins...",
             lambda: self.execPluginsDialog("File Formats", app.rtiRegistry))
         action.setShortcut(QtGui.QKeySequence("Ctrl+P"))  # TODO: remove
 
-        action = self.viewMenu.addAction("&Inspector Plugins...",
+        action = self.configMenu.addAction("&Inspector Plugins...",
             lambda: self.execPluginsDialog("Inspectors", app.inspectorRegistry))
 
-        self.viewMenu.addSeparator()
+        self.configMenu.addSeparator()
 
-        ### Inspector Menu ###
-        # self.execInspectorDialogAction = QtWidgets.QAction(
-        # "&Browse Inspectors...", self, triggered=self.execInspectorDialog)
-        # self.execInspectorDialogAction.setShortcut(QtGui.QKeySequence("Ctrl+i"))
-
-        self.inspectorActionGroup = self.__createInspectorActionGroup(self)
-        self.inspectorMenu = menuBar.addMenu("Inspector")
-        for action in self.inspectorActionGroup.actions():
-            self.inspectorMenu.addAction(action)
+        self.configMenu.addAction(
+            "Show Config Files...",
+            lambda: self.openInExternalApp(argosConfigDirectory()))
 
         ### Window Menu ###
         self.windowMenu = menuBar.addMenu("&Window")
@@ -278,9 +283,7 @@ class MainWindow(QtWidgets.QMainWindow):
             "&Online Documentation...",
             lambda: self.openInWebBrowser("https://github.com/titusjan/argos#argos"))
 
-        helpMenu.addAction(
-            "Show Config Files...",
-            lambda: self.openInExternalApp(argosConfigDirectory()))
+        helpMenu.addSeparator()
 
         helpMenu.addAction(
             "Show Log Files...",
@@ -412,7 +415,7 @@ class MainWindow(QtWidgets.QMainWindow):
         dockWidget.setWidget(widget)
         self.addDockWidget(area, dockWidget)
 
-        self.viewMenu.addAction(dockWidget.toggleViewAction())
+        self.panelsMenu.addAction(dockWidget.toggleViewAction())
         return dockWidget
 
 

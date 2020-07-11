@@ -21,7 +21,7 @@ import logging
 
 from argos.utils.cls import type_name, check_class
 
-from argos.qt import QtCore, QtGui, Qt
+from argos.qt import QtCore, QtSignal, Qt
 
 
 logger = logging.getLogger(__name__)
@@ -193,6 +193,8 @@ class BaseItemStore(object):
 
 class BaseTableModel(QtCore.QAbstractTableModel):
 
+    sigItemChanged = QtSignal(BaseItem)
+
     def __init__(self, store, parent=None):
         """ Constructor.
 
@@ -315,13 +317,14 @@ class BaseTableModel(QtCore.QAbstractTableModel):
 
 
     def emitDataChanged(self, storeItem):
-        """ Emits the dataChanged signal for the storeItem
+        """ Emits the dataChanged and sigItemChanged signals for the storeItem
         """
         leftIndex = self.indexFromItem(storeItem, col=0)
         rightIndex = self.indexFromItem(storeItem, col=-1)
 
         logger.debug("Data changed: {} ... {}".format(self.data(leftIndex), self.data(rightIndex)))
         self.dataChanged.emit(leftIndex, rightIndex)
+        self.sigItemChanged.emit(storeItem)
 
 
     def createItem(self):

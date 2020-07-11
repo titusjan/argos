@@ -14,25 +14,11 @@ TODO short term:
 
     close files on collapse.
 
-    restructure main menu.
-        - config
-            - browse inspectors (remove?)
-            - plugins
-            - show config files...
-            - show log files...
-        - view menu
-            - panels
-            - inspectors
-        - help
-            - online documentation
 
     Better plugin management.
-        - RegTableModel that shows colors for import status.
-        - Details frame that shows both error and description
-        - auto import
-        - Remove old pluginsdialog.py
-        - restructure main menu (see above)
         - separate edit widgets (instead of editable table cells)?
+
+        - Remove old pluginsdialog.py
 
         - Other fields:
             - icons colors for RTIs. (new color scheme?)
