@@ -19,6 +19,7 @@ TODO short term:
         - separate edit widgets (instead of editable table cells)?
 
         - Remove old pluginsdialog.py
+        - Reset repository default button
 
         - Other fields:
             - icons colors for RTIs. (new color scheme?)

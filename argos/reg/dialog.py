@@ -22,7 +22,7 @@ import copy
 import logging
 
 from argos.qt import QtCore, QtGui, QtWidgets, Qt, QtSlot
-from argos.reg.basereg import BaseRegistryModel
+from argos.reg.basereg import BaseRegistryModel, BaseRegistry
 from argos.reg.tabview import TableEditWidget
 from argos.utils.cls import check_class
 from argos.widgets.constants import MONO_FONT, FONT_SIZE
@@ -44,20 +44,45 @@ class PluginsDialog(QtWidgets.QDialog):
         """ Constructor
         """
         super(PluginsDialog, self).__init__(parent=parent)
+        check_class(registry, BaseRegistry)
 
-        self.label = label
         self._orgRegistry = registry
         self._registry = copy.deepcopy(registry)  # make copy so changes can be canceled
-        self.setWindowTitle("Argos Plugins")
+        self._tableModel = BaseRegistryModel(self._registry)
+        self.mapper = QtWidgets.QDataWidgetMapper(parent=self)
+        self.mapper.setModel(self._tableModel)
+
+        self.setWindowTitle("Argos {} Plugins".format(label))
+
 
         layout = QtWidgets.QVBoxLayout(self)
 
-        splitter = QtWidgets.QSplitter(Qt.Vertical)
-        layout.addWidget(splitter)
+        self.verSplitter = QtWidgets.QSplitter(Qt.Vertical)
+        #self.verSplitter.setCollapsible(1, False)
+        self.verSplitter.setChildrenCollapsible(False)
+        layout.addWidget(self.verSplitter)
 
-        self.tableModel = BaseRegistryModel(self._registry)
-        self.tableWidget = TableEditWidget(self.tableModel)
-        splitter.addWidget(self.tableWidget)
+        self.tableWidget = TableEditWidget(self._tableModel)
+        self.verSplitter.addWidget(self.tableWidget)
+
+        # Form
+
+        self.horSplitter = QtWidgets.QSplitter(Qt.Horizontal)
+        self.horSplitter.setChildrenCollapsible(False)
+
+        self.verSplitter.addWidget(self.horSplitter)
+
+        self.formWidget = QtWidgets.QWidget()
+        self.formLayout = QtWidgets.QFormLayout()
+        self.formLayout.setContentsMargins(0, 0, 0, 0)
+        self.formWidget.setLayout(self.formLayout)
+        self.horSplitter.addWidget(self.formWidget)
+
+        for col, label in enumerate(registry.ITEM_CLASS.LABELS):
+            editWidget = QtWidgets.QLineEdit()
+            self.formLayout.addRow(label, editWidget)
+            self.mapper.addMapping(editWidget, col)
+
 
         # Detail info widget
         font = QtGui.QFont()
@@ -70,11 +95,13 @@ class PluginsDialog(QtWidgets.QDialog):
         self.editor.setFont(font)
         self.editor.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.editor.clear()
-        splitter.addWidget(self.editor)
-        splitter.setCollapsible(1, False)
-        splitter.setSizes([300, 150])
+        self.horSplitter.addWidget(self.editor)
 
-        # Buttons
+        self.horSplitter.setStretchFactor(0, 2)
+        self.horSplitter.setStretchFactor(1, 3)
+        self.verSplitter.setSizes([300, 150])
+
+        # Cancel/Save Buttons
         buttonBox = QtWidgets.QDialogButtonBox(
             QtWidgets.QDialogButtonBox.Save | QtWidgets.QDialogButtonBox.Cancel)
         buttonBox.accepted.connect(self.accept)
@@ -105,16 +132,14 @@ class PluginsDialog(QtWidgets.QDialog):
         super().accept()
 
 
-
     def tryImportAllPlugins(self):
         """ Tries to import all underlying plugin classes
         """
         logger.debug("Importing all plugins.")
 
-        model = self.tableWidget.tableView.model()
         for regItem in self._registry.items:
             if not regItem.triedImport:
-                model.tryImportRegItem(regItem)
+                self._tableModel.tryImportRegItem(regItem)
 
         logger.debug("Importing finished.")
 
@@ -127,10 +152,11 @@ class PluginsDialog(QtWidgets.QDialog):
 
 
     @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
-    def currentItemChanged(self, _currentIndex=None, _previousIndex=None):
+    def currentItemChanged(self, currentIndex=None, _previousIndex=None):
         """ Updates the description text widget when the user clicks on a selector in the table.
             The _currentIndex and _previousIndex parameters are ignored.
         """
+        self.mapper.setCurrentModelIndex(currentIndex)
         regItem = self.getCurrentRegItem()
         self._updateEditor(regItem)
 
