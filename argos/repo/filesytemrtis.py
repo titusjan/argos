@@ -80,7 +80,7 @@ class DirectoryRti(BaseRti):
 def detectRtiFromFileName(fileName):
     """ Determines the type of RepoTreeItem to use given a file or directory name.
         Uses a DirectoryRti for directories without a registered extension and an UnknownFileRti
-        if the file extension doesn't match one of the registered RTI extensions.
+        if the file extension doesn't match one of the registered RTI globs.
 
         Returns (cls, regItem) tuple. Both the cls ond the regItem can be None.
         If the file is a directory without a registered extension, (DirectoryRti, None) is returned.
@@ -91,13 +91,14 @@ def detectRtiFromFileName(fileName):
          Note that directories can have an extension (e.g. extdir archives). So it is not enought to
          just test if a file is a directory.
     """
-    _, extension = os.path.splitext(os.path.normpath(fileName))
-    rtiRegItem = globalRtiRegistry().getRtiRegItemByExtension(extension)
+    #_, extension = os.path.splitext(os.path.normpath(fileName))
+    fullPath = os.path.normpath(os.path.abspath(fileName))
+    rtiRegItem = globalRtiRegistry().getRtiRegItemByExtension(fullPath)
     if rtiRegItem is None:
         if os.path.isdir(fileName):
             cls = DirectoryRti
         else:
-            logger.debug("No file RTI registered for extension: {}".format(extension))
+            logger.debug("No file RTI registered for path: {}".format(fullPath))
             cls = UnknownFileRti
     else:
          cls = rtiRegItem.getClass(tryImport=True) # cls can be None

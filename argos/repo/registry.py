@@ -19,6 +19,9 @@
 
 import logging
 
+from fnmatch import fnmatch
+
+from argos.info import DEBUGGING
 from argos.reg.basereg import BaseRegItem, BaseRegistry
 from argos.utils.cls import check_is_a_string, check_class, check_is_a_sequence
 from argos.utils.misc import prepend_point_to_extension
@@ -40,35 +43,45 @@ def parseExtensionStr(extensions):
 class RtiRegItem(BaseRegItem):
     """ Class to keep track of a registered Repo Tree Item.
     """
-    FIELDS =  BaseRegItem.FIELDS + ['extensions']
-    LABELS =  BaseRegItem.LABELS + ['Extensions']
+    FIELDS =  BaseRegItem.FIELDS + ['globs']
+    LABELS =  BaseRegItem.LABELS + ['Globs']
 
-    def __init__(self, name='', absClassName='', pythonPath='', extensions=None):
+    def __init__(self, name='', absClassName='', pythonPath='', globs=''):
         """ Constructor. See the ClassRegItem class doc string for the parameter help.
         """
         super(RtiRegItem, self).__init__(name=name, absClassName=absClassName, pythonPath=pythonPath)
 
-        # TODO: this is temporary
-        if extensions is None:
-            extensions = ''
-        if isinstance(extensions, list):
-            extensions = ': '.join(extensions)
+        check_class(globs, str)
+        self._data['globs'] = globs
 
-        check_class(extensions, str)
-        self._data['extensions'] = extensions
+        # The following optimization works because self._data is not changed after creation. Only
+        # when the uses is editing the plugins in the dialog is this not true, but then after
+        # saving the entire registry is recreated.
+        self._globList = self._data['globs'].split(':')
 
 
-    @property
-    def extensions(self):
-        """ Filename extensions that will automatically open as this RTI.
+    def pathNameMatchesGlobs(self, path):
+        """ Returns True if the file path matches one of the globs
+
+            Matching is case-insensitive. See the Python fnmatch module for further info.
         """
-        return parseExtensionStr(self._data['extensions'])
+        if DEBUGGING:
+            check = self._globList = self._data['globs'].split(':')
+            assert check == self._globList, "Sanity check failed: {} != {}"\
+                .format(check, self._globList)
+
+        for glob in self._globList:
+            if fnmatch(path, glob.strip()):
+                return True
+
+        return False
 
 
     def getFileDialogFilter(self):
         """ Returns a filters that can be used to construct file dialogs filters,
             for example: 'Text File (*.txt;*.text)'
         """
+        assert False, "TODO: reimplement"
         extStr = ';'.join(['*' + ext for ext in self.extensions])
         return '{} ({})'.format(self.name, extStr)
 
@@ -92,58 +105,13 @@ class RtiRegistry(BaseRegistry):
         self._extensionMap = {}
 
 
-    @property
-    def registryName(self):
-        """ Human readable name for this registry.
-        """
-        return "File-Format"
-
-    # def _registerExtension(self, extension, rtiRegItem):
-    #     """ Links an file name extension to a repository tree item.
-    #     """
-    #     check_is_a_string(extension)
-    #     check_class(rtiRegItem, RtiRegItem)
-    #
-    #     logger.debug("  Registering extension {!r} for {}".format(extension, rtiRegItem))
-    #
-    #     # TODO: type checking
-    #     if extension in self._extensionMap:
-    #         logger.info("Overriding extension {!r}: old={}, new={}"
-    #                     .format(extension, self._extensionMap[extension], rtiRegItem))
-    #     self._extensionMap[extension] = rtiRegItem
-
-    #
-    # def registerItem(self, regItem):
-    #     """ Adds a ClassRegItem object to the registry.
-    #     """
-    #     super(RtiRegistry, self).registerItem(regItem)
-    #
-    #     for ext in regItem.extensions:
-    #         self._registerExtension(ext, regItem)
-
-
-    # def registerRti(self, fullName, fullClassName, extensions=None, pythonPath=''):
-    #     """ Class that maintains the collection of registered inspector classes.
-    #         Maintains a lit of file extensions that open the RTI by default.
-    #     """
-    #     check_is_a_sequence(extensions)
-    #     extensions = extensions if extensions is not None else []
-    #     extensions = [prepend_point_to_extension(ext) for ext in extensions]
-    #
-    #     regRti = RtiRegItem(fullName, fullClassName, extensions, pythonPath=pythonPath)
-    #     self.registerItem(regRti)
-
-
-    def getRtiRegItemByExtension(self, extension):
-        """ Returns the first RtiRegItem class that contains the extension.
+    def getRtiRegItemByExtension(self, filePath):
+        """ Returns the first RtiRegItem class where filePath matches one of the globs patherns.
             Returns None if no class registered for the extension.
         """
-        if not extension: # Defensive programming in action.
-            return None
-
         # Current implementation just returns the first rtiRegItem that contains the extension.
         for rtiRegItem in self._items:
-            if extension in rtiRegItem.extensions:
+            if rtiRegItem.pathNameMatchesGlobs(filePath):
                 return rtiRegItem
 
         return None
@@ -163,67 +131,66 @@ class RtiRegistry(BaseRegistry):
         """ Returns a list with the default plugins in the repo tree item registry.
         """
 
-        # Note that when finding a plug in by extension, Argos uses the first one that matches.
-        # Therefor put the defaults at the top of the list. The user can changed the order in the
+        # Note that when finding a plugin by extension, Argos uses the first one that matches.
+        # Therefore put the defaults at the top of the list. The user can changed the order in the
         # plugin configuration dialog.
 
-        hdfExtensions = ['hdf5', 'h5', 'h5e', 'he5'] # hdf extension is for HDF-4
+        hdfGlobs = '*.hdf5:*.h5:*.h5e:*.he5' # hdf extension is for HDF-4
         return [
             RtiRegItem('NetCDF file',
                        'argos.repo.rtiplugins.ncdf.NcdfFileRti',
-                       #extensions=['nc', 'nc3', 'nc4']),
-                       extensions=['nc', 'nc4']),
-                       #extensions=[]),
+                       globs='*.nc;*.nc4'),
 
             RtiRegItem('HDF-5 file',
                        'argos.repo.rtiplugins.hdf5.H5pyFileRti',
-                       extensions=hdfExtensions + ['nc']),
+                       globs=hdfGlobs + ':*.nc'),
 
             RtiRegItem('NumPy binary file',
                        'argos.repo.rtiplugins.numpyio.NumpyBinaryFileRti',
-                       extensions=['npy']),
+                       globs='*.npy'),
 
             RtiRegItem('Pandas HDF file',
                        'argos.repo.rtiplugins.pandasio.PandasHdfFileRti',
-                        extensions=hdfExtensions),
+                       globs=hdfGlobs),
 
             RtiRegItem('Pandas CSV file',
                        'argos.repo.rtiplugins.pandasio.PandasCsvFileRti',
-                        extensions=['csv']),
+                       globs='*.csv'),
 
             RtiRegItem('NumPy compressed file',
                        'argos.repo.rtiplugins.numpyio.NumpyCompressedFileRti',
-                       extensions=['npz']),
+                       globs='*.npz'),
 
             RtiRegItem('NumPy text file',
                        'argos.repo.rtiplugins.numpyio.NumpyTextFileRti',
-                       #extensions=['txt', 'text']),
-                       extensions=['dat']),
+                       #globs=['*.txt:*.text'),
+                       globs='*.dat'),
 
             RtiRegItem('IDL save file',
                        'argos.repo.rtiplugins.scipyio.IdlSaveFileRti',
-                       extensions=['sav']),
+                       globs='*.sav'),
 
             RtiRegItem('MATLAB file',
                        'argos.repo.rtiplugins.scipyio.MatlabFileRti',
-                       extensions=['mat']),
+                       globs='*.mat'),
 
             RtiRegItem('Wav file',
                        'argos.repo.rtiplugins.scipyio.WavFileRti',
-                       extensions=['wav']),
+                       globs='*.wav'),
 
             RtiRegItem('Pillow image',
                        'argos.repo.rtiplugins.pillowio.PillowFileRti',
-                        extensions=['bmp', 'eps', 'im', 'gif', 'jpg', 'jpeg', 'msp', 'pcx',
-                                    'png', 'ppm', 'spi', 'tif', 'tiff', 'xbm', 'xv']),
+                       globs='*.bmp:*.eps:*.im:*.gif:*.jpg:*.jpeg:*.msp:*.pcx:*.png:*.ppm:*.spi:'
+                             '*.tif:*.tiff:*.xbm:*.xv'),
 
             RtiRegItem('Exdir file',
                        'argos.repo.rtiplugins.exdir.ExdirFileRti',
-                       extensions=['exdir']),
+                       globs='*.exdir'),
 
+            # Add directory to the context menu so a an Exdir 'file' can be re-opened as a directory
             RtiRegItem('Directory',
-               'argos.repo.filesytemrtis.DirectoryRti',
-               extensions=''), # So a an Exdir 'file' can be opened as a directory again
+                       'argos.repo.filesytemrtis.DirectoryRti',
+                       globs=''),
         ]
 
 

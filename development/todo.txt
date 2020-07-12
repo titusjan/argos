@@ -30,6 +30,7 @@ TODO short term:
         - ctrl-I should open inspector selector menu
 
         - Test
+            - globs with path on windows
             - edit name of currently
             - duplicate names
             - Sifpy plugin on windows.
