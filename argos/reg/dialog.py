@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import copy
 import logging
+import sys
 
 from argos.qt import QtCore, QtGui, QtWidgets, Qt, QtSlot
 from argos.reg.basereg import BaseRegistryModel, BaseRegistry
@@ -46,6 +47,7 @@ class PluginsDialog(QtWidgets.QDialog):
         super(PluginsDialog, self).__init__(parent=parent)
         check_class(registry, BaseRegistry)
 
+        self._label = label
         self._orgRegistry = registry
         self._registry = copy.deepcopy(registry)  # make copy so changes can be canceled
         self._tableModel = BaseRegistryModel(self._registry)
@@ -53,7 +55,6 @@ class PluginsDialog(QtWidgets.QDialog):
         self.mapper.setModel(self._tableModel)
 
         self.setWindowTitle("Argos {} Plugins".format(label))
-
 
         layout = QtWidgets.QVBoxLayout(self)
 
@@ -65,8 +66,10 @@ class PluginsDialog(QtWidgets.QDialog):
         self.tableWidget = TableEditWidget(self._tableModel)
         self.verSplitter.addWidget(self.tableWidget)
 
-        # Form
+        self._tableView = self.tableWidget.tableView
+        self._tableView.installEventFilter(self)
 
+        # Form
         self.horSplitter = QtWidgets.QSplitter(Qt.Horizontal)
         self.horSplitter.setChildrenCollapsible(False)
 
@@ -78,11 +81,13 @@ class PluginsDialog(QtWidgets.QDialog):
         self.formWidget.setLayout(self.formLayout)
         self.horSplitter.addWidget(self.formWidget)
 
+        self._editWidgets = []
         for col, label in enumerate(registry.ITEM_CLASS.LABELS):
             editWidget = QtWidgets.QLineEdit()
+            editWidget.installEventFilter(self)
             self.formLayout.addRow(label, editWidget)
             self.mapper.addMapping(editWidget, col)
-
+            self._editWidgets.append(editWidget)
 
         # Detail info widget
         font = QtGui.QFont()
@@ -92,6 +97,7 @@ class PluginsDialog(QtWidgets.QDialog):
 
         self.editor = QtWidgets.QTextEdit()
         self.editor.setReadOnly(True)
+        self.editor.setFocusPolicy(Qt.NoFocus)
         self.editor.setFont(font)
         self.editor.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.editor.clear()
@@ -101,12 +107,37 @@ class PluginsDialog(QtWidgets.QDialog):
         self.horSplitter.setStretchFactor(1, 3)
         self.verSplitter.setSizes([300, 150])
 
-        # Cancel/Save Buttons
-        buttonBox = QtWidgets.QDialogButtonBox(
-            QtWidgets.QDialogButtonBox.Save | QtWidgets.QDialogButtonBox.Cancel)
-        buttonBox.accepted.connect(self.accept)
-        buttonBox.rejected.connect(self.reject)
-        layout.addWidget(buttonBox)
+        # Reset/Cancel/Save Buttons
+
+        self.saveButton = QtWidgets.QPushButton("Save")
+        self.saveButton.clicked.connect(self.accept)
+
+        self.cancelButton = QtWidgets.QPushButton("Cancel")
+        self.cancelButton.clicked.connect(self.reject)
+
+        self.resetButton = QtWidgets.QPushButton("Reset to Default...")
+        self.resetButton.clicked.connect(self.resetToDefaults)
+
+        # We use a button layout instead of a QButtonBox because there always will be a default
+        # button (e.g. the Save button) that will light up, even if another widget has the focus.
+        # From https://doc.qt.io/archives/qt-4.8/qdialogbuttonbox.html#details
+        #   However, if there is no default button set and to preserve which button is the default
+        #   button across platforms when using the QPushButton::autoDefault property, the first
+        #   push button with the accept role is made the default button when the QDialogButtonBox
+        #   is shown,
+
+        self.buttonLayout = QtWidgets.QHBoxLayout()
+        self.buttonLayout.addWidget(self.resetButton)
+        self.buttonLayout.addStretch()
+        if sys.platform == 'darwin':
+            self.buttonLayout.addWidget(self.cancelButton)
+            self.buttonLayout.addWidget(self.saveButton)
+        else:
+            self.buttonLayout.addWidget(self.saveButton)
+            self.buttonLayout.addWidget(self.cancelButton)
+        layout.addLayout(self.buttonLayout)
+
+        # Connect signals and populate
 
         self.tableWidget.tableView.selectionModel().currentChanged.connect(self.currentItemChanged)
         self.tableWidget.tableView.model().sigItemChanged.connect(self._updateEditor)
@@ -115,6 +146,30 @@ class PluginsDialog(QtWidgets.QDialog):
         self.tableWidget.tableView.setFocus(Qt.NoFocusReason)
 
         self.tryImportAllPlugins()
+
+
+
+    def eventFilter(self, targetWidget, event):
+        """ Toggles the focus between table and edit form when the return key is pressed.
+        """
+        if event.type() == QtCore.QEvent.KeyPress and event.key() in (Qt.Key_Enter, Qt.Key_Return):
+
+            if (event.modifiers() & Qt.ControlModifier):
+                self.accept()
+                return True
+
+            if targetWidget in self._editWidgets:
+                self._tableView.setFocus()
+                return True
+
+            elif targetWidget == self._tableView:
+                curIdx = self._tableView.currentIndex()
+                col = curIdx.column() if curIdx.isValid() else 0
+                self._editWidgets[col].setFocus()
+                return True
+
+        # Give parent event filter chance to filter the event. Otherwise targetWidget will get it.
+        return super(PluginsDialog, self).eventFilter(targetWidget, event)
 
 
     def accept(self):
@@ -130,6 +185,25 @@ class PluginsDialog(QtWidgets.QDialog):
         self._orgRegistry.clear()
         self._orgRegistry.unmarshall(self._registry.marshall())
         super().accept()
+
+
+    def resetToDefaults(self):
+        """ Resets the registry to it's default values
+        """
+        button = QtWidgets.QMessageBox.question(
+            self, "Reset {}".format(self._label), "Reset plugins to the default set?")
+
+        if button != QtWidgets.QMessageBox.Yes:
+            logger.info("Resetting registry canceled.")
+            return None
+
+        logger.info("Resetting {} registry to its default.".format(self._label))
+        self._tableModel.beginResetModel()
+        try:
+            self._registry.unmarshall(cfg={}) #  Empty config will cause the defaults to be used.
+            self.tryImportAllPlugins()
+        finally:
+            self._tableModel.endResetModel()
 
 
     def tryImportAllPlugins(self):

@@ -83,7 +83,8 @@ class ArgosApplication(QtCore.QObject):
             logger.debug("Setting sys.excepthook to Argos exception handling")
             sys.excepthook = handleException
 
-        #self.qApplication.focusChanged.connect(self.focusChanged) # for debugging
+        if DEBUGGING:
+            self.qApplication.focusChanged.connect(self.focusChanged) # for debugging
 
         self._repo = RepoTreeModel()
         self._rtiRegistry = globalRtiRegistry()

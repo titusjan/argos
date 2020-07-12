@@ -47,7 +47,7 @@ class BaseTableView(ToggleColumnTableView):
         else:
             assert False, "not yet implemented"
 
-        #self.setTextElideMode(QtCore.Qt.ElideMiddle) # Does not work nicely when editing cells.
+        self.setTextElideMode(QtCore.Qt.ElideMiddle) # Does not work nicely when editing cells.
         self.setAlternatingRowColors(True)
         self.setShowGrid(False)
         self.setSortingEnabled(False)
@@ -55,7 +55,8 @@ class BaseTableView(ToggleColumnTableView):
         self.setWordWrap(False)
         self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
         Qiv = QtWidgets.QAbstractItemView
-        self.setEditTriggers(Qiv.DoubleClicked | Qiv.SelectedClicked | Qiv.EditKeyPressed)
+        #self.setEditTriggers(Qiv.DoubleClicked | Qiv.SelectedClicked | Qiv.EditKeyPressed)
+        self.setEditTriggers(Qiv.NoEditTriggers)
         self.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
 
         verHeader = self.verticalHeader()
@@ -117,6 +118,8 @@ class TableEditWidget(QtWidgets.QWidget):
         """ Constructor.
         """
         super(TableEditWidget, self).__init__(parent=parent)
+
+        self.setFocusPolicy(Qt.NoFocus)
 
         self.mainLayout = QtWidgets.QHBoxLayout()
         self.mainLayout.setContentsMargins(0, 0, 0, 0)

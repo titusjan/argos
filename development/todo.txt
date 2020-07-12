@@ -16,10 +16,8 @@ TODO short term:
 
 
     Better plugin management.
-        - separate edit widgets (instead of editable table cells)?
 
         - Remove old pluginsdialog.py
-        - Reset repository default button
 
         - Other fields:
             - icons colors for RTIs. (new color scheme?)
@@ -84,6 +82,7 @@ TODO short term:
 
     Flip Y image Y-axis by default (done but not yet in Old image plot)
 
+    Consistent use of capitals in table headers.
 
     check if mid & long term todos are still needed
 
