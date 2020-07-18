@@ -36,7 +36,6 @@ from argos.config.configtreemodel import ConfigTreeModel
 from argos.config.configtreeview import ConfigWidget
 from argos.info import DEBUGGING, TESTING, PROJECT_NAME, PROFILING, EXIT_CODE_RESTART
 from argos.inspector.abstract import AbstractInspector, UpdateReason
-# from argos.inspector.dialog import OpenInspectorDialog # TODO: remove
 from argos.inspector.registry import InspectorRegItem
 from argos.inspector.selectionpane import InspectorSelectionPane
 from argos.qt import Qt, QUrl, QtCore, QtGui, QtWidgets, QtSignal, QtSlot
@@ -434,19 +433,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowTitle(title)
         #self.activateWindowAction.setText("{} window".format(self.inspectorName, self.windowNumber))
         self.activateWindowAction.setText("{} window".format(self.inspectorName))
-
-
-    # @QtSlot()
-    # def execInspectorDialog(self):
-    #     """ Opens the inspector dialog box to let the user change the current inspector.
-    #     """
-    #     dialog = OpenInspectorDialog(self.argosApplication.inspectorRegistry, parent=self)
-    #     dialog.setCurrentInspectorRegItem(self.inspectorRegItem)
-    #     dialog.exec_()
-    #     if dialog.result():
-    #         inspectorRegItem = dialog.getCurrentInspectorRegItem()
-    #         if inspectorRegItem is not None:
-    #             self.getInspectorActionById(inspectorRegItem.identifier).trigger()
 
 
     def getInspectorActionById(self, identifier):

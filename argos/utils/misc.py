@@ -130,14 +130,6 @@ def make_log_format(
     return " : ".join(parts)
 
 
-def prepend_point_to_extension(extension):
-    """ Prepends a point to the extension of it doesn't already start with it
-    """
-    if extension.startswith('.'):
-        return extension
-    else:
-        return '.' + extension
-
 
 def is_quoted(s):
     """ Returns True if the string begins and ends with quotes (single or double)

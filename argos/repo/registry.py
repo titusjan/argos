@@ -16,27 +16,17 @@
 
 """ Defines a global RTI registry to register repository tree item plugins.
 """
-
 import logging
+import os.path
 
 from fnmatch import fnmatch
 
 from argos.info import DEBUGGING
 from argos.reg.basereg import BaseRegItem, BaseRegistry
 from argos.utils.cls import check_is_a_string, check_class, check_is_a_sequence
-from argos.utils.misc import prepend_point_to_extension
 
 logger = logging.getLogger(__name__)
 
-
-def parseExtensionStr(extensions):
-    """ Splits extension string on colons and prepends points to each extension
-
-        :returns: List of extensions
-    """
-    check_class(extensions, str)
-    extensionList = extensions.split(':')
-    return [prepend_point_to_extension(ext.strip()) for ext in extensionList]
 
 
 
@@ -52,12 +42,13 @@ class RtiRegItem(BaseRegItem):
         super(RtiRegItem, self).__init__(name=name, absClassName=absClassName, pythonPath=pythonPath)
 
         check_class(globs, str)
-        self._data['globs'] = globs
 
-        # The following optimization works because self._data is not changed after creation. Only
-        # when the uses is editing the plugins in the dialog is this not true, but then after
-        # saving the entire registry is recreated.
-        self._globList = self._data['globs'].split(':')
+
+    @property
+    def globList(self):
+        """ Returns list of globs by splitting the globs string at the colons (:).
+        """
+        return self._data['globs'].split(':')
 
 
     def pathNameMatchesGlobs(self, path):
@@ -65,13 +56,9 @@ class RtiRegItem(BaseRegItem):
 
             Matching is case-insensitive. See the Python fnmatch module for further info.
         """
-        if DEBUGGING:
-            check = self._globList = self._data['globs'].split(':')
-            assert check == self._globList, "Sanity check failed: {} != {}"\
-                .format(check, self._globList)
-
-        for glob in self._globList:
-            if fnmatch(path, glob.strip()):
+        for glob in self.globList:
+            #logger.debug("  glob '{}' -> match = {}".format(glob, fnmatch(path, glob)))
+            if fnmatch(path, glob):
                 return True
 
         return False
@@ -81,9 +68,9 @@ class RtiRegItem(BaseRegItem):
         """ Returns a filters that can be used to construct file dialogs filters,
             for example: 'Text File (*.txt;*.text)'
         """
-        assert False, "TODO: reimplement"
-        extStr = ';'.join(['*' + ext for ext in self.extensions])
-        return '{} ({})'.format(self.name, extStr)
+        # Remove any path info from the glob. E.g. '/mypath/prefix*1.nc' becomes '*.nc'
+        extensions = ['*' + os.path.splitext(glob)[1] for glob in self.globList]
+        return '{} ({})'.format(self.name, ';'.join(extensions))
 
 
 
@@ -110,6 +97,7 @@ class RtiRegistry(BaseRegistry):
             Returns None if no class registered for the extension.
         """
         # Current implementation just returns the first rtiRegItem that contains the extension.
+        #logger.debug("{} getRtiRegItemByExtension, filePath: {}".format(self, filePath))
         for rtiRegItem in self._items:
             if rtiRegItem.pathNameMatchesGlobs(filePath):
                 return rtiRegItem
@@ -137,13 +125,13 @@ class RtiRegistry(BaseRegistry):
 
         hdfGlobs = '*.hdf5:*.h5:*.h5e:*.he5' # hdf extension is for HDF-4
         return [
-            RtiRegItem('NetCDF file',
-                       'argos.repo.rtiplugins.ncdf.NcdfFileRti',
-                       globs='*.nc;*.nc4'),
-
             RtiRegItem('HDF-5 file',
                        'argos.repo.rtiplugins.hdf5.H5pyFileRti',
-                       globs=hdfGlobs + ':*.nc'),
+                       globs=hdfGlobs),
+
+            RtiRegItem('NetCDF file',
+                       'argos.repo.rtiplugins.ncdf.NcdfFileRti',
+                       globs='*.nc:*.nc4'),
 
             RtiRegItem('NumPy binary file',
                        'argos.repo.rtiplugins.numpyio.NumpyBinaryFileRti',

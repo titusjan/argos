@@ -82,16 +82,6 @@ class ConfigTreeModel(BaseTreeModel):
         return result
 
 
-    # # Seems no longer used
-    # def insertTopLevelGroup(self, groupName, position=None):
-    #     """ Inserts a top level group tree item.
-    #         Used to group all config nodes of (for instance) the current inspector,
-    #         Returns the newly created CTI
-    #     """
-    #     groupCti = GroupCti(groupName)
-    #     return self._invisibleRootItem.insertChild(groupCti, position=position)
-
-
     def itemData(self, treeItem, column, role=Qt.DisplayRole):
         """ Returns the data stored under the given role for the item.
         """
