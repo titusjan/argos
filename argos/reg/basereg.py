@@ -70,9 +70,9 @@ class BaseRegItem(BaseItem):
         self._triedImport = False
         self._exception = None # Any exception that occurs during the class import
 
+
     def __repr__(self):
         return "<{} (Ox{:x}): {!r}>".format(type_name(self), id(self), self.name)
-
 
 
     @property
@@ -251,6 +251,14 @@ class BaseRegistry(BaseItemStore):
             The base implementation returns an empty list but other registries should override it.
         """
         raise NotImplementedError
+
+
+    def createTableModel(self, parent=None):
+        """ Creates a BaseRegistryModel that has self as an item store.
+
+            Descendants can override so they can create specialized types of registry models
+        """
+        return BaseRegistryModel(store=self, parent=parent)
 
 
 

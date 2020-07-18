@@ -28,6 +28,10 @@ TODO short term:
 
         - ctrl-I should open inspector selector menu
 
+        - Html in details.
+        - (only?) Icons in add/remove move up/down buttons
+        - use idemData, just as in
+
         - Test
             - globs with path on windows
             - edit name of currently

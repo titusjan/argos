@@ -37,6 +37,9 @@ class BaseItem(object):
 
     LABELS = []  # Human readable label for each field. Should be overridden in descendants
 
+    COL_DECORATION = None   # Column number that contains the decoration. None for no icons
+
+
     _sequenceCounter = 0  # For debugging
 
     def __init__(self, **kwargs):
@@ -74,6 +77,15 @@ class BaseItem(object):
         """ The data dictionary
         """
         return self._data
+
+
+    @property
+    def decoration(self):
+        """ A optional icon that is displayed in the COL_DECORATION column.
+
+            The base implementation returns None (no icon). Descendants can override this
+        """
+        return None
 
 
     #####
@@ -210,7 +222,12 @@ class BaseTableModel(QtCore.QAbstractTableModel):
 
     @property
     def store(self):
-        """ The underlying BaseItemStore"""
+        """ The underlying BaseItemStore
+
+            Note that if you modify this directly (i.e. not via the setData method), the model is
+            not aware of the modifications. Therefore the user is responsible for nofifying the
+            this table model after modifications.
+        """
         return self._store
 
 
@@ -273,7 +290,7 @@ class BaseTableModel(QtCore.QAbstractTableModel):
         if not index.isValid():
             return None
 
-        if role not in (Qt.DisplayRole, Qt.EditRole, Qt.ToolTipRole):
+        if role not in (Qt.DisplayRole, Qt.EditRole, Qt.ToolTipRole, Qt.DecorationRole):
             return None
 
         row = index.row()
@@ -283,6 +300,10 @@ class BaseTableModel(QtCore.QAbstractTableModel):
 
         if role in (Qt.DisplayRole, Qt.EditRole, Qt.ToolTipRole):
             return str(item.data[attrName])
+
+        elif role == Qt.DecorationRole:
+            if col == item.COL_DECORATION:
+                return item.decoration
 
         # elif role == Qt.ForegroundRole:
         #     return self.regularBrush
@@ -304,12 +325,6 @@ class BaseTableModel(QtCore.QAbstractTableModel):
         storeItem = self._store.items[row]
         fieldName = self._fieldNames[col]
         storeItem.data[fieldName] = value
-
-        #setattr(storeItem, attrName, value)
-        #self.dataChanged.emit(index, index)
-
-        # storeItem.triedImport = False
-        # storeItem.tryImportClass()
 
         self.emitDataChanged(storeItem)
 

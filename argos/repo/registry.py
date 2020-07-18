@@ -21,9 +21,9 @@ import os.path
 
 from fnmatch import fnmatch
 
-from argos.info import DEBUGGING
 from argos.reg.basereg import BaseRegItem, BaseRegistry
-from argos.utils.cls import check_is_a_string, check_class, check_is_a_sequence
+from argos.repo.iconfactory import RtiIconFactory
+from argos.utils.cls import check_class
 
 logger = logging.getLogger(__name__)
 
@@ -36,12 +36,14 @@ class RtiRegItem(BaseRegItem):
     FIELDS =  BaseRegItem.FIELDS + ['globs']
     LABELS =  BaseRegItem.LABELS + ['Globs']
 
+    COL_DECORATION = 0  # Display Icon in the main column
+
     def __init__(self, name='', absClassName='', pythonPath='', globs=''):
         """ Constructor. See the ClassRegItem class doc string for the parameter help.
         """
         super(RtiRegItem, self).__init__(name=name, absClassName=absClassName, pythonPath=pythonPath)
-
         check_class(globs, str)
+        self._data['globs'] = globs
 
 
     @property
@@ -72,6 +74,23 @@ class RtiRegItem(BaseRegItem):
         extensions = ['*' + os.path.splitext(glob)[1] for glob in self.globList]
         return '{} ({})'.format(self.name, ';'.join(extensions))
 
+
+    @property
+    def decoration(self):
+        """ The displayed icon.
+        """
+        rtiIconFactory = RtiIconFactory.singleton()
+
+        if self._exception:
+            return rtiIconFactory.getIcon(
+                rtiIconFactory.ERROR, isOpen=False, color=rtiIconFactory.COLOR_ERROR)
+        else:
+            if self._cls is None:
+                return rtiIconFactory.getIcon(
+                    rtiIconFactory.ERROR, isOpen=False, color=rtiIconFactory.COLOR_UNKNOWN)
+            else:
+                return rtiIconFactory.getIcon(
+                    self.cls._defaultIconGlyph, isOpen=False, color=self.cls._defaultIconColor)
 
 
 
@@ -129,13 +148,13 @@ class RtiRegistry(BaseRegistry):
                        'argos.repo.rtiplugins.hdf5.H5pyFileRti',
                        globs=hdfGlobs),
 
+            RtiRegItem('Exdir file',
+                       'argos.repo.rtiplugins.exdir.ExdirFileRti',
+                       globs='*.exdir'),
+
             RtiRegItem('NetCDF file',
                        'argos.repo.rtiplugins.ncdf.NcdfFileRti',
                        globs='*.nc:*.nc4'),
-
-            RtiRegItem('NumPy binary file',
-                       'argos.repo.rtiplugins.numpyio.NumpyBinaryFileRti',
-                       globs='*.npy'),
 
             RtiRegItem('Pandas HDF file',
                        'argos.repo.rtiplugins.pandasio.PandasHdfFileRti',
@@ -144,6 +163,10 @@ class RtiRegistry(BaseRegistry):
             RtiRegItem('Pandas CSV file',
                        'argos.repo.rtiplugins.pandasio.PandasCsvFileRti',
                        globs='*.csv'),
+
+            RtiRegItem('NumPy binary file',
+                       'argos.repo.rtiplugins.numpyio.NumpyBinaryFileRti',
+                       globs='*.npy'),
 
             RtiRegItem('NumPy compressed file',
                        'argos.repo.rtiplugins.numpyio.NumpyCompressedFileRti',
@@ -170,10 +193,6 @@ class RtiRegistry(BaseRegistry):
                        'argos.repo.rtiplugins.pillowio.PillowFileRti',
                        globs='*.bmp:*.eps:*.im:*.gif:*.jpg:*.jpeg:*.msp:*.pcx:*.png:*.ppm:*.spi:'
                              '*.tif:*.tiff:*.xbm:*.xv'),
-
-            RtiRegItem('Exdir file',
-                       'argos.repo.rtiplugins.exdir.ExdirFileRti',
-                       globs='*.exdir'),
 
             # Add directory to the context menu so a an Exdir 'file' can be re-opened as a directory
             RtiRegItem('Directory',

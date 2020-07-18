@@ -50,7 +50,7 @@ class PluginsDialog(QtWidgets.QDialog):
         self._label = label
         self._orgRegistry = registry
         self._registry = copy.deepcopy(registry)  # make copy so changes can be canceled
-        self._tableModel = BaseRegistryModel(self._registry)
+        self._tableModel = self._registry.createTableModel(parent=self)
         self.mapper = QtWidgets.QDataWidgetMapper(parent=self)
         self.mapper.setModel(self._tableModel)
 

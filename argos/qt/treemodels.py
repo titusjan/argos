@@ -124,9 +124,6 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         """ Returns the data stored under the given role for the item. O
             The column parameter may be used to differentiate behavior per column.
 
-            The default implementation does nothing. Descendants should typically override this
-            function instead of data()
-
             Note: If you do not have a value to return, return an invalid QVariant instead of
             returning 0. (This means returning None in Python)
         """

@@ -36,7 +36,6 @@ from argos.config.configtreemodel import ConfigTreeModel
 from argos.config.configtreeview import ConfigWidget
 from argos.info import DEBUGGING, TESTING, PROJECT_NAME, PROFILING, EXIT_CODE_RESTART
 from argos.inspector.abstract import AbstractInspector, UpdateReason
-from argos.inspector.registry import InspectorRegItem
 from argos.inspector.selectionpane import InspectorSelectionPane
 from argos.qt import Qt, QUrl, QtCore, QtGui, QtWidgets, QtSignal, QtSlot
 from argos.qt.misc import getWidgetGeom, getWidgetState
