@@ -24,7 +24,7 @@ import collections
 import exdir
 import numpy as np
 
-from argos.repo.iconfactory import RtiIconFactory
+from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.repo.baserti import BaseRti
 from argos.repo.filesytemrtis import createRtiFromFileName
 from argos.utils.cls import to_string, check_class, is_an_array
@@ -33,7 +33,7 @@ from argos.utils.masks import maskedEqual
 
 logger = logging.getLogger(__name__)
 
-ICON_COLOR_EXDIR = '#00BBFF'
+
 
 
 def dataSetElementType(exdirDataset):
@@ -95,12 +95,12 @@ def dataSetMissingValue(exdirDataset):
 
 
 def flattenDict(d, parent_key='', sep='/'):
-    """ Returns a flatten dictionary given a nested dictionary. 
+    """ Returns a flatten dictionary given a nested dictionary.
 
-        The nested keys are be separated by sep. 
+        The nested keys are be separated by sep.
     """
     items = []
-    if isinstance(d,list): d = {str(i) : v for i, v in enumerate(d)} 
+    if isinstance(d,list): d = {str(i) : v for i, v in enumerate(d)}
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
         if isinstance(v, collections.MutableMapping):
@@ -116,12 +116,12 @@ class ExdirScalarRti(BaseRti):
 
     """
     _defaultIconGlyph = RtiIconFactory.SCALAR
-    _defaultIconColor = ICON_COLOR_EXDIR
 
-    def __init__(self, exdirDataset, nodeName='', fileName=''):
+    def __init__(self, exdirDataset, nodeName='', fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor
         """
-        super(ExdirScalarRti, self).__init__(nodeName = nodeName, fileName=fileName)
+        super(ExdirScalarRti, self).__init__(
+            nodeName=nodeName, fileName=fileName, iconColor=iconColor)
         check_class(exdirDataset, exdir.Dataset)
         self._exdirDataset = exdirDataset
 
@@ -189,13 +189,12 @@ class ExdirFieldRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a field in a structured HDF-5 variable.
     """
     _defaultIconGlyph = RtiIconFactory.FIELD
-    _defaultIconColor = ICON_COLOR_EXDIR
 
-    def __init__(self, exdirDataset, nodeName, fileName=''):
+    def __init__(self, exdirDataset, nodeName, fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor.
             The name of the field must be given to the nodeName parameter.
         """
-        super(ExdirFieldRti, self).__init__(nodeName, fileName=fileName)
+        super(ExdirFieldRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
         check_class(exdirDataset, exdir.Dataset)
         self._exdirDataset = exdirDataset
 
@@ -316,18 +315,18 @@ class ExdirFieldRti(BaseRti):
             return value
 
 
+
 class ExdirDatasetRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a HDF5 dataset.
 
         This includes dimenions scales, which are then displayed with a different icon.
     """
     _defaultIconGlyph = RtiIconFactory.ARRAY # the iconGlyph property is overridden below
-    _defaultIconColor = ICON_COLOR_EXDIR
 
-    def __init__(self, exdirDataset, nodeName, fileName=''):
+    def __init__(self, exdirDataset, nodeName, fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor
         """
-        super(ExdirDatasetRti, self).__init__(nodeName, fileName=fileName)
+        super(ExdirDatasetRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
         check_class(exdirDataset, exdir.Dataset)
         self._exdirDataset = exdirDataset
         self._isStructured = bool(self._exdirDataset.dtype.names)
@@ -405,8 +404,7 @@ class ExdirDatasetRti(BaseRti):
         if self._isStructured:
             for fieldName in self._exdirDataset.dtype.names:
                 childItems.append(ExdirFieldRti(self._exdirDataset, nodeName=fieldName,
-                                               fileName=self.fileName))
-
+                                                fileName=self.fileName, iconColor=self.iconColor))
 
         # Add raw directories
         if self._hasRaws:
@@ -415,24 +413,23 @@ class ExdirDatasetRti(BaseRti):
 
             for fileName, absFileName in zip(fileNames, absFileNames):
                 if os.path.isdir(absFileName) and not fileName.startswith('.'):
-                    childItems.append(ExdirRawRti(self._exdirDataset.require_raw(fileName), nodeName=fileName,
-                                                    fileName=self.fileName))
-
-
+                    childItems.append(ExdirRawRti(
+                        self._exdirDataset.require_raw(fileName), nodeName=fileName,
+                        fileName=self.fileName, iconColor=self.iconColor))
 
         return childItems
+
 
 
 class ExdirRawRti(BaseRti):
     """ Repository Tree Item (RTI) that contains an Exdir Raw.
     """
     _defaultIconGlyph = RtiIconFactory.FOLDER
-    _defaultIconColor = ICON_COLOR_EXDIR
 
-    def __init__(self, exdirRaw, nodeName, fileName=''):
+    def __init__(self, exdirRaw, nodeName, fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor
         """
-        super(ExdirRawRti, self).__init__(nodeName, fileName=fileName)
+        super(ExdirRawRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
         check_class(exdirRaw, exdir.Raw, allow_none=True)
 
         self._exdirRaw = exdirRaw
@@ -458,16 +455,16 @@ class ExdirRawRti(BaseRti):
         return childItems
 
 
+
 class ExdirGroupRti(BaseRti):
     """ Repository Tree Item (RTI) that contains an Exdir group.
     """
     _defaultIconGlyph = RtiIconFactory.FOLDER
-    _defaultIconColor = ICON_COLOR_EXDIR
 
-    def __init__(self, exdirGroup, nodeName, fileName=''):
+    def __init__(self, exdirGroup, nodeName, fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor
         """
-        super(ExdirGroupRti, self).__init__(nodeName, fileName=fileName)
+        super(ExdirGroupRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
         check_class(exdirGroup, exdir.Group, allow_none=True)
 
         self._exdirGroup = exdirGroup
@@ -491,19 +488,21 @@ class ExdirGroupRti(BaseRti):
         for childName, exdirChild in self._exdirGroup.items():
             if isinstance(exdirChild, exdir.Group):
                 childItems.append(ExdirGroupRti(exdirChild, nodeName=childName,
-                                               fileName=self.fileName))
+                                                fileName=self.fileName, iconColor=self.iconColor))
 
             elif isinstance(exdirChild, exdir.Raw):
                 childItems.append(ExdirRawRti(exdirChild, nodeName=childName,
-                                               fileName=self.fileName))
-            
+                                              fileName=self.fileName, iconColor=self.iconColor))
+
             elif isinstance(exdirChild, exdir.Dataset):
                 if len(exdirChild.shape) == 0:
-                    childItems.append(ExdirScalarRti(exdirChild, nodeName=childName,
-                                                    fileName=self.fileName))
+                    childItems.append(ExdirScalarRti(
+                        exdirChild, nodeName=childName, fileName=self.fileName,
+                        iconColor=self.iconColor))
                 else:
-                    childItems.append(ExdirDatasetRti(exdirChild, nodeName=childName,
-                                                     fileName=self.fileName))
+                    childItems.append(ExdirDatasetRti(
+                        exdirChild, nodeName=childName, fileName=self.fileName,
+                        iconColor=self.iconColor))
             else:
                 logger.warn("Ignored {}. It has an unexpected Exdir type: {}"
                             .format(childName, type(exdir)))
@@ -511,16 +510,16 @@ class ExdirGroupRti(BaseRti):
         return childItems
 
 
+
 class ExdirFileRti(ExdirGroupRti):
     """ Reads an Exdir file using the exdir package.
     """
     _defaultIconGlyph = RtiIconFactory.FILE
-    _defaultIconColor = ICON_COLOR_EXDIR
 
-    def __init__(self, nodeName, fileName=''):
+    def __init__(self, nodeName, fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor
         """
-        super(ExdirFileRti, self).__init__(None, nodeName, fileName=fileName)
+        super(ExdirFileRti, self).__init__(None, nodeName, fileName=fileName, iconColor=iconColor)
         self._checkFileExists()
 
     def _openResources(self):

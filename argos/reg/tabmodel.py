@@ -107,7 +107,10 @@ class BaseItem(object):
         """
         self._fields = {}
         for field in self.FIELDS:
-            self._data[field] = cfg[field]
+            if field in cfg:
+                self._data[field] = cfg[field]
+            else:
+                logger.warning("Field '{}' not in config: {}".format(field, cfg))
 
 
 

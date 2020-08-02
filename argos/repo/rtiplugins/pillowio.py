@@ -23,13 +23,10 @@ import numpy as np
 from PIL import Image
 
 from argos.info import DEBUGGING
-from argos.repo.iconfactory import RtiIconFactory
+from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.repo.memoryrtis import ArrayRti, SliceRti
 
 logger = logging.getLogger(__name__)
-
-ICON_COLOR_PILLOW = '#880088'
-
 
 class PillowBandRti(SliceRti):
     """ Image band repo tree item. Will typically be a child of a PillowFileRti
@@ -64,13 +61,12 @@ class PillowFileRti(ArrayRti):
         See https://python-pillow.org/
     """
     _defaultIconGlyph = RtiIconFactory.FILE
-    _defaultIconColor = ICON_COLOR_PILLOW
 
-    def __init__(self, nodeName='', fileName=''):
+    def __init__(self, nodeName='', fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor. Initializes as an ArrayRTI with None as underlying array.
         """
         super(PillowFileRti, self).__init__(None, nodeName=nodeName, fileName=fileName,
-                                            iconColor=self._defaultIconColor)
+                                            iconColor=iconColor)
         self._checkFileExists()
         self._bands = [] # image band names
 

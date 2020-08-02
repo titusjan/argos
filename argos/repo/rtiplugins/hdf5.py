@@ -26,14 +26,13 @@ import h5py
 import numpy as np
 
 
-from argos.repo.iconfactory import RtiIconFactory
+from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.repo.baserti import BaseRti
 from argos.utils.cls import to_string, check_class, is_an_array
 from argos.utils.masks import maskedEqual
 
 logger = logging.getLogger(__name__)
 
-ICON_COLOR_H5PY = '#00EE88'
 
 
 def dimNamesFromDataset(h5Dataset):
@@ -158,12 +157,12 @@ class H5pyScalarRti(BaseRti):
 
     """
     _defaultIconGlyph = RtiIconFactory.SCALAR
-    _defaultIconColor = ICON_COLOR_H5PY
 
-    def __init__(self, h5Dataset, nodeName='', fileName=''):
+    def __init__(self, h5Dataset, nodeName='', fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor
         """
-        super(H5pyScalarRti, self).__init__(nodeName = nodeName, fileName=fileName)
+        super(H5pyScalarRti, self).__init__(
+            nodeName=nodeName, fileName=fileName, iconColor=iconColor)
         check_class(h5Dataset, h5py.Dataset)
         self._h5Dataset = h5Dataset
 
@@ -232,13 +231,12 @@ class H5pyFieldRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a field in a structured HDF-5 variable.
     """
     _defaultIconGlyph = RtiIconFactory.FIELD
-    _defaultIconColor = ICON_COLOR_H5PY
 
-    def __init__(self, h5Dataset, nodeName, fileName=''):
+    def __init__(self, h5Dataset, nodeName, fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor.
             The name of the field must be given to the nodeName parameter.
         """
-        super(H5pyFieldRti, self).__init__(nodeName, fileName=fileName)
+        super(H5pyFieldRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
         check_class(h5Dataset, h5py.Dataset)
         self._h5Dataset = h5Dataset
 
@@ -366,12 +364,11 @@ class H5pyDatasetRti(BaseRti):
         This includes dimenions scales, which are then displayed with a different icon.
     """
     #_defaultIconGlyph = RtiIconFactory.ARRAY # the iconGlyph property is overridden below
-    _defaultIconColor = ICON_COLOR_H5PY
 
-    def __init__(self, h5Dataset, nodeName, fileName=''):
+    def __init__(self, h5Dataset, nodeName, fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor
         """
-        super(H5pyDatasetRti, self).__init__(nodeName, fileName=fileName)
+        super(H5pyDatasetRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
         check_class(h5Dataset, h5py.Dataset)
         self._h5Dataset = h5Dataset
         self._isStructured = bool(self._h5Dataset.dtype.names)
@@ -467,7 +464,7 @@ class H5pyDatasetRti(BaseRti):
         if self._isStructured:
             for fieldName in self._h5Dataset.dtype.names:
                 childItems.append(H5pyFieldRti(self._h5Dataset, nodeName=fieldName,
-                                               fileName=self.fileName))
+                                               fileName=self.fileName, iconColor=self.iconColor))
 
         return childItems
 
@@ -476,12 +473,11 @@ class H5pyGroupRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a HDF-5 group.
     """
     _defaultIconGlyph = RtiIconFactory.FOLDER
-    _defaultIconColor = ICON_COLOR_H5PY
 
-    def __init__(self, h5Group, nodeName, fileName=''):
+    def __init__(self, h5Group, nodeName, fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor
         """
-        super(H5pyGroupRti, self).__init__(nodeName, fileName=fileName)
+        super(H5pyGroupRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
         check_class(h5Group, h5py.Group, allow_none=True)
 
         self._h5Group = h5Group
@@ -504,16 +500,19 @@ class H5pyGroupRti(BaseRti):
 
         for childName, h5Child in self._h5Group.items():
             if isinstance(h5Child, h5py.Group):
-                childItems.append(H5pyGroupRti(h5Child, nodeName=childName,
-                                               fileName=self.fileName))
+                childItems.append(H5pyGroupRti(
+                    h5Child, nodeName=childName,
+                    fileName=self.fileName, iconColor=self.iconColor))
             elif isinstance(h5Child, h5py.Dataset):
                 # The shape can be None in case of Null datasets.
                 if h5Child.shape is None or len(h5Child.shape) == 0:
-                    childItems.append(H5pyScalarRti(h5Child, nodeName=childName,
-                                                    fileName=self.fileName))
+                    childItems.append(H5pyScalarRti(
+                        h5Child, nodeName=childName,
+                        fileName=self.fileName, iconColor=self.iconColor))
                 else:
-                    childItems.append(H5pyDatasetRti(h5Child, nodeName=childName,
-                                                     fileName=self.fileName))
+                    childItems.append(H5pyDatasetRti(
+                        h5Child, nodeName=childName,
+                        fileName=self.fileName, iconColor=self.iconColor))
 
             elif isinstance(h5Child, h5py.Datatype):
                 #logger.debug("Ignored DataType item: {}".format(childName))
@@ -532,12 +531,11 @@ class H5pyFileRti(H5pyGroupRti):
         See http://www.h5py.org/
     """
     _defaultIconGlyph = RtiIconFactory.FILE
-    _defaultIconColor = ICON_COLOR_H5PY
 
-    def __init__(self, nodeName, fileName=''):
+    def __init__(self, nodeName, fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor
         """
-        super(H5pyFileRti, self).__init__(None, nodeName, fileName=fileName)
+        super(H5pyFileRti, self).__init__(None, nodeName, fileName=fileName, iconColor=iconColor)
         self._checkFileExists()
 
     def _openResources(self):

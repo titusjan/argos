@@ -26,11 +26,9 @@ from netCDF4 import Dataset, Variable, Dimension
 
 from argos.utils.cls import check_class
 from argos.repo.baserti import BaseRti
-from argos.repo.iconfactory import RtiIconFactory
+from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 
 logger = logging.getLogger(__name__)
-
-ICON_COLOR_NCDF4 = '#0088FF'
 
 
 def ncVarAttributes(ncVar):
@@ -89,12 +87,11 @@ class NcdfDimensionRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a NCDF group.
     """
     _defaultIconGlyph = RtiIconFactory.DIMENSION
-    _defaultIconColor = ICON_COLOR_NCDF4
 
-    def __init__(self, ncDim, nodeName, fileName=''):
+    def __init__(self, ncDim, nodeName, fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor
         """
-        super(NcdfDimensionRti, self).__init__(nodeName, fileName=fileName)
+        super(NcdfDimensionRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
         check_class(ncDim, Dimension)
 
         self._ncDim = ncDim
@@ -118,13 +115,12 @@ class NcdfFieldRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a field in a structured NCDF variable.
     """
     _defaultIconGlyph = RtiIconFactory.FIELD
-    _defaultIconColor = ICON_COLOR_NCDF4
 
-    def __init__(self, ncVar, nodeName, fileName=''):
+    def __init__(self, ncVar, nodeName, fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor.
             The name of the field must be given to the nodeName parameter.
         """
-        super(NcdfFieldRti, self).__init__(nodeName, fileName=fileName)
+        super(NcdfFieldRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
         check_class(ncVar, Variable)
 
         self._ncVar = ncVar
@@ -222,7 +218,6 @@ class NcdfFieldRti(BaseRti):
             return unit
 
 
-
     @property
     def dimensionNames(self):
         """ Returns a list with the dimension names of the underlying NCDF variable
@@ -248,16 +243,16 @@ class NcdfFieldRti(BaseRti):
             return value
 
 
+
 class NcdfVariableRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a NCDF variable.
     """
     _defaultIconGlyph = RtiIconFactory.ARRAY
-    _defaultIconColor = ICON_COLOR_NCDF4
 
-    def __init__(self, ncVar, nodeName, fileName=''):
+    def __init__(self, ncVar, nodeName, fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor
         """
-        super(NcdfVariableRti, self).__init__(nodeName, fileName=fileName)
+        super(NcdfVariableRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
         check_class(ncVar, Variable)
         self._ncVar = ncVar
 
@@ -362,7 +357,8 @@ class NcdfVariableRti(BaseRti):
         # Add fields
         if self._isStructured:
             for fieldName in self._ncVar.dtype.names:
-                childItems.append(NcdfFieldRti(self._ncVar, nodeName=fieldName, fileName=self.fileName))
+                childItems.append(NcdfFieldRti(self._ncVar, nodeName=fieldName,
+                                               fileName=self.fileName, iconColor=self.iconColor))
 
         return childItems
 
@@ -372,12 +368,11 @@ class NcdfGroupRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a NCDF group.
     """
     _defaultIconGlyph = RtiIconFactory.FOLDER
-    _defaultIconColor = ICON_COLOR_NCDF4
 
-    def __init__(self, ncGroup, nodeName, fileName=''):
+    def __init__(self, ncGroup, nodeName, fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor
         """
-        super(NcdfGroupRti, self).__init__(nodeName, fileName=fileName)
+        super(NcdfGroupRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
         check_class(ncGroup, Dataset, allow_none=True)
 
         self._ncGroup = ncGroup
@@ -400,15 +395,18 @@ class NcdfGroupRti(BaseRti):
 
         # Add dimensions
         for dimName, ncDim in self._ncGroup.dimensions.items():
-            childItems.append(NcdfDimensionRti(ncDim, nodeName=dimName, fileName=self.fileName))
+            childItems.append(NcdfDimensionRti(
+                ncDim, nodeName=dimName, fileName=self.fileName, iconColor=self.iconColor))
 
         # Add groups
         for groupName, ncGroup in self._ncGroup.groups.items():
-            childItems.append(NcdfGroupRti(ncGroup, nodeName=groupName, fileName=self.fileName))
+            childItems.append(NcdfGroupRti(
+                ncGroup, nodeName=groupName, fileName=self.fileName, iconColor=self.iconColor))
 
         # Add variables
         for varName, ncVar in self._ncGroup.variables.items():
-            childItems.append(NcdfVariableRti(ncVar, nodeName=varName, fileName=self.fileName))
+            childItems.append(NcdfVariableRti(
+                ncVar, nodeName=varName, fileName=self.fileName, iconColor=self.iconColor))
 
         return childItems
 
@@ -420,12 +418,11 @@ class NcdfFileRti(NcdfGroupRti):
         See http://unidata.github.io/netcdf4-python/
     """
     _defaultIconGlyph = RtiIconFactory.FILE
-    _defaultIconColor = ICON_COLOR_NCDF4
 
-    def __init__(self, nodeName, fileName=''):
+    def __init__(self, nodeName, fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor
         """
-        super(NcdfFileRti, self).__init__(None, nodeName, fileName=fileName)
+        super(NcdfFileRti, self).__init__(None, nodeName, fileName=fileName, iconColor=iconColor)
         self._checkFileExists()
 
     def _openResources(self):

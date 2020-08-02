@@ -23,30 +23,27 @@ import numpy as np
 from numpy.lib.npyio import NpzFile
 
 from argos.qt import QtWidgets
-from argos.repo.iconfactory import RtiIconFactory
+from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.repo.memoryrtis import ArrayRti, SliceRti, MappingRti
 from argos.utils.cls import check_is_an_array, check_class
 
 logger = logging.getLogger(__name__)
 
-ICON_COLOR_NUMPY = '#987456'
 
 # Do not allow pickle in numpy.load(), at least for now. This can be a security risk
 ALLOW_PICKLE = False
-
 
 
 class NumpyTextFileRti(ArrayRti):
     """ Reads a 2D array from a simple text file using numpy.loadtxt().
     """
     _defaultIconGlyph = RtiIconFactory.FILE
-    _defaultIconColor = ICON_COLOR_NUMPY
 
-    def __init__(self, nodeName='', fileName=''):
+    def __init__(self, nodeName='', fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor. Initializes as an ArrayRTI with None as underlying array.
         """
         super(NumpyTextFileRti, self).__init__(None, nodeName=nodeName, fileName=fileName,
-                                               iconColor=self._defaultIconColor)
+                                               iconColor=iconColor)
         self._checkFileExists()
 
 
@@ -82,7 +79,6 @@ class NumpyTextFileRti(ArrayRti):
 
 
 
-
 class NumpyBinaryFileRti(ArrayRti):
     """ Reads a Numpy array from a binary file (.npy) using numpy.load().
 
@@ -92,13 +88,12 @@ class NumpyBinaryFileRti(ArrayRti):
         The allow_pickle is set to False, no object arrays can be read.
     """
     _defaultIconGlyph = RtiIconFactory.FILE
-    _defaultIconColor = ICON_COLOR_NUMPY
 
-    def __init__(self, nodeName='', fileName=''):
+    def __init__(self, nodeName='', fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor. Initializes as an ArrayRTI with None as underlying array.
         """
         super(NumpyBinaryFileRti, self).__init__(None, nodeName=nodeName, fileName=fileName,
-                                                 iconColor=self._defaultIconColor)
+                                                 iconColor=iconColor)
         self._checkFileExists()
 
 
@@ -134,14 +129,13 @@ class NumpyCompressedFileRti(MappingRti):
         The allow_pickle is set to False, no object arrays can be read.
     """
     _defaultIconGlyph = RtiIconFactory.FILE
-    _defaultIconColor = ICON_COLOR_NUMPY
 
-    def __init__(self, nodeName='', fileName=''):
+    def __init__(self, nodeName='', fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor. Initializes as an MappingRti with None as underlying dictionary.
         """
         super(NumpyCompressedFileRti, self).__init__(None,
                                                      nodeName=nodeName, fileName=fileName,
-                                                     iconColor=self._defaultIconColor)
+                                                     iconColor=iconColor)
         self._checkFileExists()
 
 

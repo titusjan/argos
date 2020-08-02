@@ -351,12 +351,12 @@ class ArgosApplication(QtCore.QObject):
             self.saveSettings()
 
 
-    def loadFiles(self, fileNames, rtiClass=None):
+    def loadFiles(self, fileNames):
         """ Loads files into the repository as repo tree items of class rtiClass.
             Auto-detects using the extensions when rtiClass is None
         """
         for fileName in fileNames:
-            self.repo.loadFile(fileName, rtiClass=rtiClass)
+            self.repo.loadFile(fileName, rtiRegItem=None)
 
 
     def repopulateAllWindowMenus(self):

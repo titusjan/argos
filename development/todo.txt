@@ -90,6 +90,15 @@ TODO short term:
 
     check if mid & long term todos are still needed
 
+    all log.warn -> log.warning
+
+    Fix error: on Windows browsing a single drive (e.g. 'C:\') fails.
+
+    WavFileRti._closeResources doesn't reset attribute correctly. Fix and check in other classes
+
+    Test ExdirFieldRti
+
+
 TODO mid term:
 
     Use globs instead of extensions to recognize file types. This allows for directoriy and partial names

@@ -664,8 +664,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         fileRootIndex = None
         for fileName in fileNames:
-            rtiClass = rtiRegItem.getClass(tryImport=True) if rtiRegItem else None
-            fileRootIndex = self.argosApplication.repo.loadFile(fileName, rtiClass=rtiClass)
+            fileRootIndex = self.argosApplication.repo.loadFile(fileName, rtiRegItem=rtiRegItem)
             self.repoWidget.repoTreeView.setExpanded(fileRootIndex, True)
 
         # Select last opened file
@@ -884,7 +883,7 @@ class MainWindow(QtWidgets.QMainWindow):
             # Subtrees that will be visited. At the moment only data on my development PC.
             #rootNodes = ['/argos/icm/S5P_ICM_CA_UVN_20120919T051721_20120919T065655_01890_01_001000_20151002T140000.h5']
             #rootNodes = ['/argos/martin', '/argos/images', '/argos/Mini Scanner Output', '/myDict']
-            rootNodes = ['/argos/martin', '/argos/images', '/myDict']
+            rootNodes = ['/argos/exdir', '/argos/martin', '/argos/images', '/myDict']
             #rootNodes = ['/myDict']
 
             #/argos/trop/S5P_NRTI_L2__AER_LH_20150821T201929_20150821T202429_45862_01_000000_20170506T003521.nc/PRODUCT/dim_surface_albedo
@@ -893,12 +892,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
             #rootNodes = ['/argos/trop/2015_03_16T16_32_16_MonA/after_dccorr_l1bavg/trl1brb8g.lx.nc/BAND8/ICID_30683_GROUP_00001']
 
-            # Skip nodes that give known, unfixable errors.
+            # Skip nodes that give known, unfixable errors, or that take a long time to load.
             skipPaths = [
                 '/myDict/numbers/-inf', '/myDict/numbers/nan', '/myDict/age', '/myDict/numbers/int',
                 '/myDict/numbers/large float', # These give errors in 2D image plot
                 '/myDict/structured_arr4', # gives ValueError: Unable to transform (63, 63) to dtype [('r', '|u1'), ('', '|V1'), ('b', '|u1')]
                 '/argos/Mini Scanner Output/multiple_dimension_scales.h5/samples_raw', # TODO:
+                '/argos/images/eclipseclouds_tamo_2017_geo.tif',
                 '/argos/images/peter_karpov',
                 '/argos/trop/2015_03_16T16_32_16_MonA/after_dccorr_l1bavg/trl1brb8g.lx.nc/BAND8/ICID_30683_GROUP_00001/INSTRUMENT/'
             ]

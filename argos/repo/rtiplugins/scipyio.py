@@ -24,11 +24,9 @@ import scipy.io
 import scipy.io.wavfile
 
 from argos.repo.memoryrtis import ArrayRti, SliceRti, MappingRti
-from argos.repo.iconfactory import RtiIconFactory
+from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 
 logger = logging.getLogger(__name__)
-
-ICON_COLOR_SCIPY = '#987456'
 
 
 class MatlabFileRti(MappingRti):
@@ -42,13 +40,12 @@ class MatlabFileRti(MappingRti):
         does not supply one; they do not implement the HDF5 / 7.3 interface.
     """
     _defaultIconGlyph = RtiIconFactory.FILE
-    _defaultIconColor = ICON_COLOR_SCIPY
 
-    def __init__(self, nodeName='', fileName=''):
+    def __init__(self, nodeName='', fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor. Initializes as an MappingRti with None as underlying dictionary.
         """
         super(MatlabFileRti, self).__init__(None, nodeName=nodeName, fileName=fileName,
-                                            iconColor=self._defaultIconColor)
+                                            iconColor=iconColor)
         self._checkFileExists()
 
 
@@ -79,13 +76,12 @@ class IdlSaveFileRti(MappingRti):
         to read a large save-file. During this time the application is not responsive!
     """
     _defaultIconGlyph = RtiIconFactory.FILE
-    _defaultIconColor = ICON_COLOR_SCIPY
 
-    def __init__(self, nodeName='', fileName=''):
+    def __init__(self, nodeName='', fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor. Initializes as an MappingRti with None as underlying dictionary.
         """
         super(IdlSaveFileRti, self).__init__(None, nodeName=nodeName, fileName=fileName,
-                                             iconColor=self._defaultIconColor)
+                                             iconColor=iconColor)
         self._checkFileExists()
 
 
@@ -115,13 +111,12 @@ class WavFileRti(ArrayRti):
         that fails the file is tried to be read without memory mapping(
     """
     _defaultIconGlyph = RtiIconFactory.FILE
-    _defaultIconColor = ICON_COLOR_SCIPY
 
-    def __init__(self, nodeName='', fileName=''):
+    def __init__(self, nodeName='', fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor. Initializes as an ArrayRTI with None as underlying array.
         """
         super(WavFileRti, self).__init__(None, nodeName=nodeName, fileName=fileName,
-                                         iconColor=self._defaultIconColor)
+                                         iconColor=iconColor)
         self._checkFileExists()
 
 

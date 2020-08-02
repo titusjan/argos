@@ -23,7 +23,8 @@ from argos.qt.treemodels import BaseTreeModel
 #from argos.info import DEBUGGING
 from argos.repo.filesytemrtis import createRtiFromFileName
 from argos.repo.baserti import BaseRti
-from argos.utils.cls import to_string, type_name
+from argos.repo.registry import ICON_COLOR_UNDEF, RtiRegItem
+from argos.utils.cls import to_string, type_name, check_class
 
 
 logger = logging.getLogger(__name__)
@@ -45,7 +46,7 @@ class RepoTreeModel(BaseTreeModel):
         """ Constructor
         """
         super(RepoTreeModel, self).__init__(parent=parent)
-        self._invisibleRootTreeItem = BaseRti(nodeName='<invisible-root>')
+        self._invisibleRootTreeItem = BaseRti(nodeName='<invisible-root>', iconColor='#FFFFFF')
         self._invisibleRootTreeItem.model = self
         self._isEditable = False
 
@@ -158,10 +159,10 @@ class RepoTreeModel(BaseTreeModel):
                 return childIndex
 
 
-    def reloadFileAtIndex(self, itemIndex, rtiClass=None):
+    def reloadFileAtIndex(self, itemIndex, rtiRegItem=None):
         """ Reloads the item at the index by removing the repo tree item and inserting a new one.
 
-            The new item will have by of type rtiClass. If rtiClass is None (the default), the
+            The new item will have by of type rtiClass. If rtiRegItem is None (the default), the
             new rtiClass will be the same as the old one.
         """
         fileRtiParentIndex = itemIndex.parent()
@@ -169,26 +170,41 @@ class RepoTreeModel(BaseTreeModel):
         position = fileRti.childNumber()
         fileName = fileRti.fileName
 
-        if rtiClass is None:
-            rtiClass = type(fileRti)
-
         # Delete old RTI and Insert a new one instead.
         self.deleteItemAtIndex(itemIndex) # this will close the items resources.
-        return self.loadFile(fileName, rtiClass, position=position, parentIndex=fileRtiParentIndex)
+
+        if rtiRegItem is None:
+            # Do NOT autodetect but use the class from the the RTI that's being replaced.
+            rtiClass = type(fileRti)
+
+            repoTreeItem = rtiClass.createFromFileName(fileName, fileRti.iconColor)
+
+            assert repoTreeItem.parentItem is None, "repoTreeItem {!r}".format(repoTreeItem)
+            return self.insertItem(repoTreeItem, position=position, parentIndex=fileRtiParentIndex)
+
+        else:
+            return self.loadFile(fileName, rtiRegItem, position=position,
+                                 parentIndex=fileRtiParentIndex)
 
 
-    def loadFile(self, fileName, rtiClass=None,
+
+    def loadFile(self, fileName, rtiRegItem,
                  position=None, parentIndex=QtCore.QModelIndex()):
         """ Loads a file in the repository as a repo tree item of class rtiClass.
             Autodetects the RTI type if rtiClass is None.
             If position is None the child will be appended as the last child of the parent.
             Returns the index of the newly inserted RTI
         """
+        check_class(rtiRegItem, RtiRegItem, allow_none=True)
         logger.info("Loading data from: {!r}".format(fileName))
+
+        # TODO: rtiRegItem.createRtiFromFileName?
+        rtiClass = rtiRegItem.getClass(tryImport=True) if rtiRegItem else None
         if rtiClass is None:
             repoTreeItem = createRtiFromFileName(fileName)
         else:
-            repoTreeItem = rtiClass.createFromFileName(fileName)
+            repoTreeItem = rtiClass.createFromFileName(fileName, rtiRegItem.iconColor)
+
         assert repoTreeItem.parentItem is None, "repoTreeItem {!r}".format(repoTreeItem)
         return self.insertItem(repoTreeItem, position=position, parentIndex=parentIndex)
 

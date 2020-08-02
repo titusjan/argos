@@ -26,34 +26,31 @@ import pandas as pd
 from pandas.core.generic import NDFrame
 
 from argos.repo.baserti import BaseRti
-from argos.repo.iconfactory import RtiIconFactory
+from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.utils.cls import check_class
 
 logger = logging.getLogger(__name__)
 
-ICON_COLOR_PANDAS = '#FB9A99'
 
 class PandasIndexRti(BaseRti):
     """ Contains a Pandas undex.
     """
     _defaultIconGlyph = RtiIconFactory.DIMENSION
-    _defaultIconColor = ICON_COLOR_PANDAS
 
-    def __init__(self, index=None, nodeName='', fileName='',
-                 iconColor=_defaultIconColor):
+    def __init__(self, index=None, nodeName='', fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor
 
             The Index is not part of Pandas' documented API, although it is not private either,
-            many metods return a pd.core.index.Index, but the class itself is not documented.
+            many methods return a pd.core.index.Index, but the class itself is not documented.
             We therefore don't check if index is of the correct type, as it is not clear if
             pd.core.index.Index is the ancestor of all panda index objects.
 
             :param index: the underlying pandas index.
         """
-        super(PandasIndexRti, self).__init__(nodeName=nodeName, fileName=fileName)
+        super(PandasIndexRti, self).__init__(nodeName=nodeName, fileName=fileName,
+                                             iconColor=iconColor)
 
         self._index = index
-        self._iconColor = iconColor
 
 
     def hasChildren(self):
@@ -119,10 +116,9 @@ class AbstractPandasNDFrameRti(BaseRti):
     # a higher-dimensional NDFrame, so the Field glyph, does not apply (fields have the same nr
     # of dimensions as their parents).
     _defaultIconGlyph = RtiIconFactory.ARRAY
-    _defaultIconColor = ICON_COLOR_PANDAS
 
     def __init__(self, ndFrame=None, nodeName='', fileName='', standAlone=True,
-                 iconColor=_defaultIconColor):
+                 iconColor=ICON_COLOR_UNDEF):
         """ Constructor
 
             The NDFrame is not part of Pandas' documented API, although it mentions this
@@ -135,11 +131,11 @@ class AbstractPandasNDFrameRti(BaseRti):
                 standAlone is True the index of the NDFrame will be included when the children
                 are fetched and included in the tree (as a PandasIndexRti)
         """
-        super(AbstractPandasNDFrameRti, self).__init__(nodeName=nodeName, fileName=fileName)
-        check_class(ndFrame, NDFrame, allow_none=True)
+        super(AbstractPandasNDFrameRti, self).__init__(
+            nodeName=nodeName, fileName=fileName, iconColor = iconColor)
 
+        check_class(ndFrame, NDFrame, allow_none=True)
         self._ndFrame = ndFrame
-        self._iconColor = iconColor
         self._standAlone = standAlone
 
 
@@ -209,7 +205,7 @@ class AbstractPandasNDFrameRti(BaseRti):
         """ Auxiliary method that creates a PandasIndexRti.
         """
         return PandasIndexRti(index=index, nodeName=nodeName, fileName=self.fileName,
-                              iconColor=self._iconColor)
+                              iconColor=self.iconColor)
 
 
 
@@ -273,7 +269,7 @@ class PandasDataFrameRti(AbstractPandasNDFrameRti):
 
         for subName in self._ndFrame.columns: # Note that this is not the first dimension!
             childItem = PandasSeriesRti(self._ndFrame[subName], nodeName=subName,
-                                        fileName=self.fileName, iconColor=self._iconColor,
+                                        fileName=self.fileName, iconColor=self.iconColor,
                                         standAlone=False)
             childItems.append(childItem)
 
@@ -319,7 +315,7 @@ class PandasPanelRti(AbstractPandasNDFrameRti):
 
         for subName in self._ndFrame.items:
             childItem = PandasDataFrameRti(self._ndFrame[subName], nodeName=subName,
-                                           fileName=self.fileName, iconColor=self._iconColor,
+                                           fileName=self.fileName, iconColor=self.iconColor,
                                            standAlone=False)
             childItems.append(childItem)
 
@@ -336,14 +332,12 @@ class PandasCsvFileRti(PandasDataFrameRti):
     """ Reads a comma-separated file (CSV) into a Pandas DataFrame.
     """
     _defaultIconGlyph = RtiIconFactory.FILE
-    _defaultIconColor = ICON_COLOR_PANDAS
 
-    def __init__(self, nodeName='', fileName=''):
+    def __init__(self, nodeName='', fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor. Initializes as an ArrayRTI with None as underlying array.
         """
         super(PandasCsvFileRti, self).__init__(ndFrame=None, nodeName=nodeName, fileName=fileName,
-                                               iconColor=PandasCsvFileRti._defaultIconColor,
-                                               standAlone=True)
+                                               iconColor=iconColor, standAlone=True)
         self._checkFileExists()
         self._ndFrame = None
 
@@ -371,12 +365,12 @@ class PandasHdfFileRti(BaseRti):
     """ Repository Tree Item (RTI) that contains Pandas data stored as HDF-5.
     """
     _defaultIconGlyph = RtiIconFactory.FILE
-    _defaultIconColor = ICON_COLOR_PANDAS
 
-    def __init__(self, nodeName, fileName=''):
+    def __init__(self, nodeName, fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor
         """
-        super(PandasHdfFileRti, self).__init__(nodeName=nodeName, fileName=fileName)
+        super(PandasHdfFileRti, self).__init__(
+            nodeName=nodeName, fileName=fileName, iconColor=iconColor)
 
         self._store = None
 
@@ -409,14 +403,17 @@ class PandasHdfFileRti(BaseRti):
             obj = self._store.get(key)
 
             if isinstance(obj, pd.Series):
-                childItem = PandasSeriesRti(obj, nodeName=key, fileName=self.fileName)
+                childItem = PandasSeriesRti(
+                    obj, nodeName=key, fileName=self.fileName, iconColor=self.iconColor)
             elif isinstance(obj, pd.DataFrame):
-                childItem = PandasDataFrameRti(obj, nodeName=key, fileName=self.fileName)
+                childItem = PandasDataFrameRti(
+                    obj, nodeName=key, fileName=self.fileName, iconColor=self.iconColor)
             elif isinstance(obj, pd.Panel):
-                childItem = PandasPanelRti(obj, nodeName=key, fileName=self.fileName)
+                childItem = PandasPanelRti(
+                    obj, nodeName=key, fileName=self.fileName, iconColor=self.iconColor)
             else:
-                logger.warning("Unexpteded child type: {}".type(obj))
-                childItem = BaseRti(nodeName=key, fileName=self.fileName)
+                logger.warning("Unexpected child type: {}".format(type(obj)))
+                childItem = BaseRti(nodeName=key, fileName=self.fileName, iconColor=self.iconColor)
 
             childItems.append(childItem)
         return childItems

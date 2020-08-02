@@ -23,27 +23,51 @@ from fnmatch import fnmatch
 
 from argos.reg.basereg import BaseRegItem, BaseRegistry
 from argos.repo.iconfactory import RtiIconFactory
-from argos.utils.cls import check_class
+from argos.utils.cls import check_class, is_a_color_str
 
 logger = logging.getLogger(__name__)
 
+ICON_COLOR_UNDEF = RtiIconFactory.COLOR_UNDEF
+ICON_COLOR_UNKNOWN = RtiIconFactory.COLOR_UNKNOWN
+ICON_COLOR_ERROR = RtiIconFactory.COLOR_ERROR
+ICON_COLOR_MEMORY = RtiIconFactory.COLOR_MEMORY
 
+ICON_COLOR_EXDIR = '#00BBFF'
+ICON_COLOR_H5PY = '#00EE88'
+ICON_COLOR_NCDF4 = '#0088FF'
+ICON_COLOR_NUMPY = '#987456'
+ICON_COLOR_PANDAS = '#FB9A99'
+ICON_COLOR_PILLOW = '#880088'
+ICON_COLOR_SCIPY = ICON_COLOR_NUMPY
 
 
 class RtiRegItem(BaseRegItem):
     """ Class to keep track of a registered Repo Tree Item.
     """
-    FIELDS =  BaseRegItem.FIELDS + ['globs']
-    LABELS =  BaseRegItem.LABELS + ['Globs']
+    FIELDS =  BaseRegItem.FIELDS + ['iconColor', 'globs']
+    LABELS =  BaseRegItem.LABELS + ['Icon Color', 'Globs']
 
     COL_DECORATION = 0  # Display Icon in the main column
 
-    def __init__(self, name='', absClassName='', pythonPath='', globs=''):
+    def __init__(self, name='', absClassName='', pythonPath='', iconColor=ICON_COLOR_UNDEF, globs=''):
         """ Constructor. See the ClassRegItem class doc string for the parameter help.
         """
         super(RtiRegItem, self).__init__(name=name, absClassName=absClassName, pythonPath=pythonPath)
         check_class(globs, str)
+        assert is_a_color_str(iconColor), \
+            "Icon color for {} is not a color string: {!r}".format(self, iconColor)
+
+        self._data['iconColor'] = iconColor
         self._data['globs'] = globs
+
+    def __str__(self):
+        return "<RtiRegItem: {}>".format(self.name)
+
+    @property
+    def iconColor(self):
+        """ Icon color hex string.
+        """
+        return self._data['iconColor']
 
 
     @property
@@ -83,14 +107,14 @@ class RtiRegItem(BaseRegItem):
 
         if self._exception:
             return rtiIconFactory.getIcon(
-                rtiIconFactory.ERROR, isOpen=False, color=rtiIconFactory.COLOR_ERROR)
+                rtiIconFactory.ERROR, isOpen=False, color=rtiIconFactory.ICON_COLOR_ERROR)
         else:
             if self._cls is None:
                 return rtiIconFactory.getIcon(
-                    rtiIconFactory.ERROR, isOpen=False, color=rtiIconFactory.COLOR_UNKNOWN)
+                    rtiIconFactory.ERROR, isOpen=False, color=rtiIconFactory.ICON_COLOR_UNKNOWN)
             else:
                 return rtiIconFactory.getIcon(
-                    self.cls._defaultIconGlyph, isOpen=False, color=self.cls._defaultIconColor)
+                    self.cls._defaultIconGlyph, isOpen=False, color=self.iconColor)
 
 
 
@@ -146,51 +170,63 @@ class RtiRegistry(BaseRegistry):
         return [
             RtiRegItem('HDF-5 file',
                        'argos.repo.rtiplugins.hdf5.H5pyFileRti',
+                       iconColor=ICON_COLOR_H5PY,
                        globs=hdfGlobs),
 
             RtiRegItem('Exdir file',
                        'argos.repo.rtiplugins.exdir.ExdirFileRti',
+                       iconColor=ICON_COLOR_EXDIR,
                        globs='*.exdir'),
 
             RtiRegItem('NetCDF file',
                        'argos.repo.rtiplugins.ncdf.NcdfFileRti',
+                       iconColor=ICON_COLOR_NCDF4,
                        globs='*.nc:*.nc4'),
 
             RtiRegItem('Pandas HDF file',
                        'argos.repo.rtiplugins.pandasio.PandasHdfFileRti',
+                       iconColor=ICON_COLOR_PANDAS,
                        globs=hdfGlobs),
 
             RtiRegItem('Pandas CSV file',
                        'argos.repo.rtiplugins.pandasio.PandasCsvFileRti',
+                       iconColor=ICON_COLOR_PANDAS,
                        globs='*.csv'),
 
             RtiRegItem('NumPy binary file',
                        'argos.repo.rtiplugins.numpyio.NumpyBinaryFileRti',
+                       iconColor=ICON_COLOR_NUMPY,
                        globs='*.npy'),
 
             RtiRegItem('NumPy compressed file',
                        'argos.repo.rtiplugins.numpyio.NumpyCompressedFileRti',
+                       iconColor=ICON_COLOR_NUMPY,
                        globs='*.npz'),
 
             RtiRegItem('NumPy text file',
                        'argos.repo.rtiplugins.numpyio.NumpyTextFileRti',
+                       iconColor=ICON_COLOR_NUMPY,
                        #globs=['*.txt:*.text'),
                        globs='*.dat'),
 
             RtiRegItem('IDL save file',
                        'argos.repo.rtiplugins.scipyio.IdlSaveFileRti',
+                       iconColor=ICON_COLOR_SCIPY,
                        globs='*.sav'),
 
             RtiRegItem('MATLAB file',
                        'argos.repo.rtiplugins.scipyio.MatlabFileRti',
+                       iconColor=ICON_COLOR_SCIPY,
                        globs='*.mat'),
 
             RtiRegItem('Wav file',
                        'argos.repo.rtiplugins.scipyio.WavFileRti',
+                       iconColor=ICON_COLOR_SCIPY,
                        globs='*.wav'),
 
             RtiRegItem('Pillow image',
                        'argos.repo.rtiplugins.pillowio.PillowFileRti',
+                       iconColor=ICON_COLOR_PILLOW,
                        globs='*.bmp:*.eps:*.im:*.gif:*.jpg:*.jpeg:*.msp:*.pcx:*.png:*.ppm:*.spi:'
                              '*.tif:*.tiff:*.xbm:*.xv'),
 

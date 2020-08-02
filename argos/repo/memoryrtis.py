@@ -30,12 +30,15 @@ from argos.utils.misc import NOT_SPECIFIED
 
 logger = logging.getLogger(__name__)
 
+ICON_COLOR_MEMORY = RtiIconFactory.COLOR_MEMORY
+
 def _createFromObject(obj, *args, **kwargs):
     """ Creates an RTI given an object. Auto-detects which RTI class to return.
         The *args and **kwargs parameters are passed to the RTI constructor.
         It is therefor important that all memory RTIs accept the same parameters in the
         constructor (with exception of the FieldRti which is not auto-detected).
     """
+    # logger.debug("_createFromObject: {} (args={}), (kwargs={})".format(obj, args, kwargs))
     if is_a_sequence(obj):
         return SequenceRti(obj, *args, **kwargs)
     elif is_a_mapping(obj):
@@ -52,7 +55,7 @@ def getMissingDataValue(obj):
     """ Returns obj.fill_value or None if obj doesn't have a fill_value property.
 
         Typically masked arrays have a fill_value and regular Numpy arrays don't.
-        If array is None, this funciont returns None, indicating no fill value.
+        If array is None, this funcion returns None, indicating no fill value.
 
         :param array: None or a numpy array (masked or regular.
         :return: None or value that represents missing data
@@ -72,13 +75,10 @@ class ScalarRti(BaseRti):
 
     """
     _defaultIconGlyph = RtiIconFactory.SCALAR
-    _defaultIconColor = RtiIconFactory.COLOR_MEMORY
 
-    def __init__(self, scalar, nodeName='', fileName='',
-                 attributes=None, iconColor=_defaultIconColor):
-        super(ScalarRti, self).__init__(nodeName = nodeName, fileName=fileName)
+    def __init__(self, scalar, nodeName='', iconColor=ICON_COLOR_MEMORY, fileName='', attributes=None):
+        super(ScalarRti, self).__init__(nodeName = nodeName, iconColor=iconColor, fileName=fileName)
         self._scalar = scalar
-        self._iconColor = iconColor
         self._attributes = {} if attributes is None else attributes
 
 
@@ -139,18 +139,15 @@ class FieldRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a field in a structured numpy array.
     """
     _defaultIconGlyph = RtiIconFactory.FIELD
-    _defaultIconColor = RtiIconFactory.COLOR_MEMORY
 
-    def __init__(self, array, nodeName, fileName='',
-                 attributes=None, iconColor=_defaultIconColor):
+    def __init__(self, array, nodeName, iconColor=ICON_COLOR_MEMORY, fileName='', attributes=None):
         """ Constructor.
             The name of the field must be given to the nodeName parameter.
             The attributes can be set so the parent's attributes can be reused.
         """
-        super(FieldRti, self).__init__(nodeName, fileName=fileName)
+        super(FieldRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
         check_is_an_array(array, allow_none=True)
         self._array = array
-        self._iconColor = iconColor
         self._attributes = {} if attributes is None else attributes
 
 
@@ -256,18 +253,15 @@ class ArrayRti(BaseRti):
     """ Represents a numpy array (or None for undefined/unopened nodes)
     """
     _defaultIconGlyph = RtiIconFactory.ARRAY
-    _defaultIconColor = RtiIconFactory.COLOR_MEMORY
 
-    def __init__(self, array, nodeName='', fileName='',
-                 attributes=None, iconColor=_defaultIconColor):
+    def __init__(self, array, nodeName='', iconColor=ICON_COLOR_MEMORY, fileName='', attributes=None):
         """ Constructor.
             :param array: the underlying array. May be undefined (None)
             :type array: numpy.ndarray or None
         """
-        super(ArrayRti, self).__init__(nodeName=nodeName, fileName=fileName)
+        super(ArrayRti, self).__init__(nodeName=nodeName, iconColor=iconColor, fileName=fileName)
         check_is_an_array(array, allow_none=True) # TODO: what about masked arrays?
         self._array = array
-        self._iconColor = iconColor
         self._attributes = {} if attributes is None else attributes
 
 
@@ -353,8 +347,8 @@ class ArrayRti(BaseRti):
         # Add fields in case of an array of structured type.
         if self._isStructured:
             for fieldName in self._array.dtype.names:
-                childItem = FieldRti(self._array, nodeName=fieldName, fileName=self.fileName)
-                childItem._iconColor = self.iconColor
+                childItem = FieldRti(self._array, nodeName=fieldName, iconColor=self.iconColor,
+                                     fileName=self.fileName)
                 childItems.append(childItem)
 
         return childItems
@@ -371,7 +365,6 @@ class SliceRti(ArrayRti):
     # to the array to which the field belongs. A slice decreases the number of dimensions.
     _defaultIconGlyph = RtiIconFactory.ARRAY
     #_defaultIconGlyph = RtiIconFactory.FIELD
-    _defaultIconColor = RtiIconFactory.COLOR_MEMORY
 
 
 
@@ -383,8 +376,7 @@ class SyntheticArrayRti(ArrayRti):
     def __init__(self, nodeName='', fun=None):
         """ Constructor. Initializes as an ArrayRTI with None as underlying array.
         """
-        super(SyntheticArrayRti, self).__init__(None, nodeName=nodeName,
-                                                iconColor=self._defaultIconColor)
+        super(SyntheticArrayRti, self).__init__(None, nodeName=nodeName, iconColor=ICON_COLOR_MEMORY)
         assert callable(fun), "fun parameter should be callable"
         self._fun = fun
 
@@ -418,19 +410,16 @@ class SequenceRti(BaseRti):
         A sequence is always one-dimensional.
     """
     _defaultIconGlyph = RtiIconFactory.SEQUENCE
-    _defaultIconColor = RtiIconFactory.COLOR_MEMORY
 
-    def __init__(self, sequence, nodeName='', fileName='',
-                 attributes=None, iconColor=_defaultIconColor):
+    def __init__(self, sequence, nodeName='', iconColor=ICON_COLOR_MEMORY, fileName='', attributes=None):
         """ Constructor.
             :param sequence: the underlying sequence. May be undefined (None)
             :type array: None or a Python sequence (e.g. list or tuple)
         """
-        super(SequenceRti, self).__init__(nodeName=nodeName, fileName=fileName)
+        super(SequenceRti, self).__init__(nodeName=nodeName, iconColor=iconColor, fileName=fileName)
         check_is_a_sequence(sequence, allow_none=True)
         self._sequence = sequence
         #self._array = NOT_SPECIFIED # To cache the sequence converted to a numpy array.
-        self._iconColor = iconColor
         self._attributes = {} if attributes is None else attributes
 
 
@@ -452,8 +441,8 @@ class SequenceRti(BaseRti):
         """
         childItems = []
         for nr, elem in enumerate(self._sequence):
-            childItem = _createFromObject(elem, "elem-{}".format(nr), self.fileName)
-            childItem._iconColor = self.iconColor
+            childItem = _createFromObject(elem, nodeName="elem-{}".format(nr),
+                                          iconColor=self.iconColor, fileName=self.fileName)
             childItems.append(childItem)
         return childItems
 
@@ -463,17 +452,15 @@ class MappingRti(BaseRti):
     """ Represents a mapping (e.g. a dictionary)
     """
     _defaultIconGlyph = RtiIconFactory.FOLDER
-    _defaultIconColor = RtiIconFactory.COLOR_MEMORY
 
-    def __init__(self, dictionary, nodeName='', fileName='',
-                 attributes=None, iconColor=_defaultIconColor):
+    def __init__(self, dictionary,
+                 nodeName='', iconColor=ICON_COLOR_MEMORY, fileName='', attributes=None):
         """ Constructor.
             The dictionary may be None for under(or None for undefined/unopened nodes)
         """
-        super(MappingRti, self).__init__(nodeName=nodeName, fileName=fileName)
+        super(MappingRti, self).__init__(nodeName=nodeName, iconColor=iconColor, fileName=fileName)
         check_is_a_mapping(dictionary, allow_none=True)
         self._dictionary = dictionary
-        self._iconColor = iconColor
         self._attributes = {} if attributes is None else attributes
 
 
@@ -500,13 +487,14 @@ class MappingRti(BaseRti):
         """ Adds a child item for each item
         """
         childItems = []
-        logger.debug("_fetchAllChildren of {!r}:  {!r}".format(self, self.fileName))
+        logger.debug("_fetchAllChildren of {!r} ({}):  {!r}"
+                     .format(self, self.iconColor, self.fileName))
 
         if self.hasChildren():
             for key, value in sorted(self._dictionary.items()):
                 # TODO: pass the attributes to the children? (probably not)
-                childItem = _createFromObject(value, str(key), self.fileName)
-                childItem._iconColor = self.iconColor
+                childItem = _createFromObject(value, nodeName=str(key), iconColor=self.iconColor,
+                                              fileName=self.fileName)
                 childItems.append(childItem)
 
         return childItems

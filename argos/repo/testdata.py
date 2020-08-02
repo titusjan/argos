@@ -25,6 +25,7 @@ import numpy.ma as ma
 
 from decimal import Decimal
 from argos.repo.memoryrtis import MappingRti, SyntheticArrayRti
+from argos.repo.registry import ICON_COLOR_MEMORY, ICON_COLOR_PANDAS
 from argos.utils.moduleinfo import versionStrToTuple
 
 
@@ -162,7 +163,7 @@ def createArgosTestData():
     myDict['byte array'] = bytearray(range(256))
     myDict['bytes'] = bytes(bytearray(range(0, 256)))
 
-    mappingRti = MappingRti(myDict, nodeName="myDict")
+    mappingRti = MappingRti(myDict, nodeName="myDict", iconColor=ICON_COLOR_MEMORY)
 
     # New axis at the beginning and end.
     mappingRti.insertChild(SyntheticArrayRti(
@@ -209,7 +210,7 @@ def addPandasTestData(rti):
     pandsRti = rti.insertChild(MappingRti({}, nodeName="pandas"))
 
     s = pd.Series([1, 2, 3, -4, 5], index=list('abcde'), name='simple series')
-    pandsRti.insertChild(PandasSeriesRti(s, s.name))
+    pandsRti.insertChild(PandasSeriesRti(s, s.name, iconColor=ICON_COLOR_PANDAS))
 
 
     df = pd.DataFrame({'A' : ['foo', 'bar', 'foo', 'bar', 'foo', 'bar', 'foo', 'foo'],
@@ -217,14 +218,14 @@ def addPandasTestData(rti):
                        'C' : np.random.randn(8),
                        'D' : np.random.randn(8)})
 
-    pandsRti.insertChild(PandasDataFrameRti(df, 'df'))
+    pandsRti.insertChild(PandasDataFrameRti(df, 'df', iconColor=ICON_COLOR_PANDAS))
 
     if versionInfo < (0, 25, 0):
         # Panels are depricated and completely removed from Pandas 0.25.0
         panel = pd.Panel(np.random.randn(2, 5, 4), items=['Item1', 'Item2'],
                          major_axis=pd.date_range('1/1/2000', periods=5),
                          minor_axis=['A', 'B', 'C', 'D'])
-        pandsRti.insertChild(PandasPanelRti(panel, 'panel'))
+        pandsRti.insertChild(PandasPanelRti(panel, 'panel', iconColor=ICON_COLOR_PANDAS))
 
     # Multi index
     arrays = [['bar', 'bar', 'baz', 'baz', 'foo', 'foo', 'qux', 'qux'],
@@ -232,4 +233,4 @@ def addPandasTestData(rti):
     tuples = list(zip(*arrays))
     index = pd.MultiIndex.from_tuples(tuples, names=['first', 'second'])
     s = pd.Series(np.random.randn(8), index=index)
-    pandsRti.insertChild(PandasSeriesRti(s, "multi-index"))
+    pandsRti.insertChild(PandasSeriesRti(s, "multi-index", iconColor=ICON_COLOR_PANDAS))

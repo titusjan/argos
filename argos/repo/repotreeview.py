@@ -365,13 +365,7 @@ class RepoTreeView(ArgosTreeView):
         fileRtiIndex = self.model().findFileRtiIndex(currentIndex)
         isExpanded = self.isExpanded(fileRtiIndex)
 
-        if rtiRegItem is None:
-            rtiClass = None
-        else:
-            rtiRegItem.tryImportClass()
-            rtiClass = rtiRegItem.cls
-
-        newRtiIndex = self.model().reloadFileAtIndex(fileRtiIndex, rtiClass=rtiClass)
+        newRtiIndex = self.model().reloadFileAtIndex(fileRtiIndex, rtiRegItem=rtiRegItem)
 
         try:
             # Expand and select the name with the old path

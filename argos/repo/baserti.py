@@ -20,12 +20,13 @@
 """
 import logging
 import os
+import re
 
 from argos.external import six
 from argos.info import DEBUGGING
 from argos.qt.treeitems import AbstractLazyLoadTreeItem
 from argos.repo.iconfactory import RtiIconFactory
-from argos.utils.cls import check_class, is_a_sequence
+from argos.utils.cls import check_class, is_a_sequence, is_a_color_str
 
 logger = logging.getLogger(__name__)
 
@@ -39,13 +40,16 @@ class BaseRti(AbstractLazyLoadTreeItem):
     _defaultIconGlyph = None  # Can be overridden by defining a _iconGlyph attribute
     _defaultIconColor = None  # Can be overridden by defining a _iconColor attribute
 
-    def __init__(self, nodeName, fileName=''):
+    def __init__(self, nodeName, iconColor, fileName=''):
         """ Constructor
 
             :param nodeName: name of this node (used to construct the node path).
             :param fileName: absolute path to the file where the data of this RTI originates.
         """
         super(BaseRti, self).__init__(nodeName=nodeName)
+        assert is_a_color_str(iconColor), \
+            "Icon color for {!r} not a hex string: {!r}".format(self, iconColor)
+        self._iconColor = iconColor
 
         self._isOpen = False
         self._exception = None # Any exception that may occur when opening this item.
@@ -57,13 +61,14 @@ class BaseRti(AbstractLazyLoadTreeItem):
 
 
     @classmethod
-    def createFromFileName(cls, fileName):
+    def createFromFileName(cls, fileName, iconColor):
         """ Creates a BaseRti (or descendant), given a file name.
         """
+        logger.debug("createFromFileName {}, {}, color={}".format(cls, fileName, iconColor))
         # See https://julien.danjou.info/blog/2013/guide-python-static-class-abstract-methods
         #logger.debug("Trying to create object of class: {!r}".format(cls))
         basename = os.path.basename(os.path.realpath(fileName)) # strips trailing slashes
-        return cls(nodeName=basename, fileName=fileName)
+        return cls(nodeName=basename, fileName=fileName, iconColor=iconColor)
 
 
     @property
@@ -196,7 +201,10 @@ class BaseRti(AbstractLazyLoadTreeItem):
     def fetchChildren(self):
         """ Creates child items and returns them.
             Opens the tree item first if it's not yet open.
+
+            Descendants should override _fetchAllChildren, not fetchChildren.
         """
+        assert self._iconColor is not None, "Icon color none for: {}".format(self)
         assert self._canFetchChildren, "canFetchChildren must be True"
         try:
             self.clearException()
@@ -235,14 +243,9 @@ class BaseRti(AbstractLazyLoadTreeItem):
     @property
     def iconColor(self):
         """ Returns the color of the icon (.e.g. '#FF0000' for red).
-            If self contains a _iconColor attribute, this is returned.
-            Otherwise the _defaultIconColor of the class is returned.
             :rtype: string
         """
-        if hasattr(self, "_iconColor"): # TODO: probably better override this in descendants.
-            return getattr(self, "_iconColor")
-        else:
-            return self._defaultIconColor
+        return self._iconColor
 
 
     @property
@@ -272,7 +275,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
                                           color=rtiIconFactory.COLOR_ERROR)
         else:
             return rtiIconFactory.getIcon(self.iconGlyph, isOpen=not self.canFetchChildren(),
-                                          color=self.iconColor)
+                                          color=self._iconColor)
 
     @property
     def isSliceable(self):

@@ -26,6 +26,12 @@ from argos.utils.cls import check_class
 
 logger = logging.getLogger(__name__)
 
+ICON_COLOR_UNDEF      = '#FFFFFF'  # White to indicate something went wrong
+ICON_COLOR_ERROR      = '#FF0000'
+ICON_COLOR_UNKNOWN    = '#999999'
+#ICON_COLOR_MEMORY     = '#FFAA00'
+#ICON_COLOR_MEMORY     = '#FFFF40'
+ICON_COLOR_MEMORY     = '#FFDD20'
 
 
 class RtiIconFactory(object):
@@ -59,12 +65,11 @@ class RtiIconFactory(object):
     SEQUENCE = "sequence"
     SCALAR = "scalar"
 
-    # Icon colors
-    COLOR_ERROR      = '#FF0000'
-    COLOR_UNKNOWN    = '#999999'
-    #COLOR_MEMORY     = '#FFAA00'
-    #COLOR_MEMORY     = '#FFFF40'
-    COLOR_MEMORY     = '#FFDD20'
+    # Icon colors from constants defined at the top of this module
+    COLOR_UNDEF      = ICON_COLOR_UNDEF
+    COLOR_UNKNOWN    = ICON_COLOR_UNKNOWN
+    COLOR_ERROR      = ICON_COLOR_ERROR
+    COLOR_MEMORY     = ICON_COLOR_MEMORY
 
     _singleInstance = None
 

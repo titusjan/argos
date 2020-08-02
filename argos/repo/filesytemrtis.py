@@ -23,7 +23,7 @@ import logging, os
 from argos.repo.baserti import BaseRti
 from argos.qt import QtWidgets
 from argos.repo.iconfactory import RtiIconFactory
-from argos.repo.registry import globalRtiRegistry
+from argos.repo.registry import globalRtiRegistry, ICON_COLOR_UNKNOWN
 
 logger = logging.getLogger(__name__)
 
@@ -33,12 +33,13 @@ class UnknownFileRti(BaseRti):
         The file is not opened.
     """
     _defaultIconGlyph = RtiIconFactory.FILE
-    _defaultIconColor = RtiIconFactory.COLOR_UNKNOWN
 
-    def __init__(self, nodeName='', fileName=''):
+    def __init__(self, nodeName='', iconColor=ICON_COLOR_UNKNOWN, fileName=''):
         """ Constructor
         """
-        super(UnknownFileRti, self).__init__(nodeName=nodeName, fileName=fileName)
+        super(UnknownFileRti, self).__init__(
+            nodeName=nodeName, iconColor=iconColor, fileName=fileName)
+
         self._checkFileExists()
 
 
@@ -54,10 +55,11 @@ class DirectoryRti(BaseRti):
     _defaultIconGlyph = RtiIconFactory.FOLDER
     _defaultIconColor = RtiIconFactory.COLOR_UNKNOWN
 
-    def __init__(self, nodeName='', fileName=''):
+    def __init__(self, nodeName='', iconColor=ICON_COLOR_UNKNOWN, fileName=''):
         """ Constructor
         """
-        super(DirectoryRti, self).__init__(nodeName=nodeName, fileName=fileName)
+        super(DirectoryRti, self).__init__(
+            nodeName=nodeName, iconColor=iconColor, fileName=fileName)
         self._checkFileExists() # TODO: check for directory?
 
 
@@ -77,7 +79,7 @@ class DirectoryRti(BaseRti):
         return childItems
 
 
-def detectRtiFromFileName(fileName):
+def _detectRtiFromFileName(fileName):
     """ Determines the type of RepoTreeItem to use given a file or directory name.
         Uses a DirectoryRti for directories without a registered extension and an UnknownFileRti
         if the file extension doesn't match one of the registered RTI globs.
@@ -88,7 +90,7 @@ def detectRtiFromFileName(fileName):
         If the cls cannot be imported (None, regItem) returned. regItem.exception will be set.
         Otherwise (cls, regItem) will be returned.
 
-         Note that directories can have an extension (e.g. extdir archives). So it is not enought to
+         Note that directories can have an extension (e.g. extdir archives). So it is not enough to
          just test if a file is a directory.
     """
     #_, extension = os.path.splitext(os.path.normpath(fileName))
@@ -111,15 +113,21 @@ def createRtiFromFileName(fileName):
         Uses a DirectoryRti for directories without registered extensions and an UnknownFileRti if the file
         extension doesn't match one of the registered RTI extensions.
     """
-    cls, rtiRegItem = detectRtiFromFileName(fileName)
+    cls, rtiRegItem = _detectRtiFromFileName(fileName)
+    assert not (cls is None and rtiRegItem is None), "cls and rtiRegItem both none."
+
+    iconColor = rtiRegItem.iconColor if rtiRegItem else ICON_COLOR_UNKNOWN
+
     if cls is None:
-        logger.warn("Unable to import plugin {}: {}"
-                    .format(rtiRegItem.fullName, rtiRegItem.exception))
-        rti = UnknownFileRti.createFromFileName(fileName)
+        logger.warning("Unable to import plugin {}: {}"
+                       .format(rtiRegItem.name, rtiRegItem.exception))
+        rti = UnknownFileRti.createFromFileName(fileName, ICON_COLOR_UNKNOWN)
         rti.setException(rtiRegItem.exception)
     else:
-        rti = cls.createFromFileName(fileName)
+        logger.debug("Calling createFromFileName: {} ({}, {})".format(cls, fileName, iconColor))
+        rti = cls.createFromFileName(fileName, iconColor)
 
     assert rti, "Sanity check failed (createRtiFromFileName). Please report this bug."
+
     return rti
 

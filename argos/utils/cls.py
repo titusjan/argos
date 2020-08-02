@@ -21,6 +21,7 @@
 
 import logging
 import numbers
+import re
 
 import numpy as np
 import numpy.ma as ma
@@ -385,6 +386,26 @@ def check_class(obj, target_class, allow_none = False):
         if not (allow_none and obj is None):
             raise TypeError("obj must be a of type {}, got: {}"
                             .format(target_class, type(obj)))
+
+
+COLOR_REGEXP = re.compile('^#[0-9A-Fa-f]{6}$')  # Hex color string representation
+
+def is_a_color_str(colorStr, allow_none=False):
+    """ Returns True if colorStr is a string starting with '#' folowed by 6 hexadecimal digits.
+    """
+    if not is_a_string(colorStr, allow_none=allow_none):
+        return False
+
+    return COLOR_REGEXP.match(colorStr)
+
+
+
+def check_is_a_color_str(var, allow_none=False):
+    """ Calls is_an_array and raises a type error if the check fails.
+    """
+    if not check_is_a_color_str(var, allow_none=allow_none):
+        raise TypeError("var must be a NumPy array, however type(var) is {}"
+                        .format(type(var)))
 
 
 #############
