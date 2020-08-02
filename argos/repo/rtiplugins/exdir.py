@@ -526,7 +526,7 @@ class ExdirFileRti(ExdirGroupRti):
         """ Opens the root Dataset.
         """
         logger.info("Opening: {}".format(self._fileName))
-        self._exdirGroup = exdir.File(self._fileName)
+        self._exdirGroup = exdir.File(self._fileName, mode='r')
 
 
     def _closeResources(self):
