@@ -132,7 +132,7 @@ class AbstractPandasNDFrameRti(BaseRti):
                 are fetched and included in the tree (as a PandasIndexRti)
         """
         super(AbstractPandasNDFrameRti, self).__init__(
-            nodeName=nodeName, fileName=fileName, iconColor = iconColor)
+            nodeName=str(nodeName), fileName=fileName, iconColor = iconColor)
 
         check_class(ndFrame, NDFrame, allow_none=True)
         self._ndFrame = ndFrame
