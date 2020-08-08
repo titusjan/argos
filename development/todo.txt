@@ -40,6 +40,8 @@ TODO short term:
 
         - Update changes.txt
 
+    look at h5py 3.0
+
     log to text file.
     Why doesn't argos start from command line at work on my work laptop (Beast)?
     argos --help on Windows (Beast) doesn't seem to give output)

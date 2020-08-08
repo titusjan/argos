@@ -208,22 +208,8 @@ class MainWindow(QtWidgets.QMainWindow):
             lambda: self.openFiles(fileMode = QtWidgets.QFileDialog.ExistingFiles))
         action.setShortcut(QtGui.QKeySequence("Ctrl+O"))
 
-        openAsMenu = fileMenu.addMenu("Open As")
-        for rtiRegItem in self.argosApplication.rtiRegistry.items:
-            #rtiRegItem.tryImportClass()
-            def createTrigger():
-                "Function to create a closure with the regItem"
-                _rtiRegItem = rtiRegItem # keep reference in closure
-                return lambda: self.openFiles(rtiRegItem=_rtiRegItem,
-                                              fileMode = QtWidgets.QFileDialog.ExistingFiles,
-                                              caption="Open {}".format(_rtiRegItem.name))
-
-            action = QtWidgets.QAction("{}...".format(rtiRegItem.name), self,
-                enabled=True, # Since this is only executed at start-up, it must be static
-                #enabled=bool(rtiRegItem.successfullyImported), # TODO: make this work?
-                triggered=createTrigger())
-            openAsMenu.addAction(action)
-
+        self.openAsMenu = fileMenu.addMenu("Open As")
+        self.openAsMenu.aboutToShow.connect(self.repopulateOpenAsMenu)
         fileMenu.addSeparator()
 
         # for action in self.repoWidget.repoTreeView.topLevelItemActionGroup.actions():
@@ -391,6 +377,34 @@ class MainWindow(QtWidgets.QMainWindow):
     ###########
     # Methods #
     ###########
+
+
+    def repopulateOpenAsMenu(self, *args, **kwargs):
+        """ Clear the window menu and fills it with the actions of the actionGroup
+        """
+        logger.debug("Called repopulateOpenAsMenu")
+
+        for action in self.openAsMenu.actions():
+            self.openAsMenu.removeAction(action)
+
+        rtiRegistry = self.argosApplication.rtiRegistry
+        for rtiRegItem in (rtiRegistry.items + rtiRegistry.extraItemsForOpenAsMenu()):
+            if not rtiRegItem.triedImport:
+                rtiRegItem.tryImportClass()
+
+            def createTrigger():
+                "Function to create a closure with the regItem"
+                _rtiRegItem = rtiRegItem # keep reference in closure
+                return lambda: self.openFiles(rtiRegItem=_rtiRegItem,
+                                              fileMode = QtWidgets.QFileDialog.ExistingFiles,
+                                              caption="Open {}".format(_rtiRegItem.name))
+
+            action = QtWidgets.QAction("{}...".format(rtiRegItem.name), self,
+                enabled=bool(rtiRegItem.successfullyImported),
+                triggered=createTrigger(), icon=rtiRegItem.decoration)
+
+            self.openAsMenu.addAction(action)
+
 
     def repopulateWindowMenu(self, actionGroup):
         """ Clear the window menu and fills it with the actions of the actionGroup

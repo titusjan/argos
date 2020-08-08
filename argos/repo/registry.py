@@ -107,11 +107,11 @@ class RtiRegItem(BaseRegItem):
 
         if self._exception:
             return rtiIconFactory.getIcon(
-                rtiIconFactory.ERROR, isOpen=False, color=rtiIconFactory.ICON_COLOR_ERROR)
+                rtiIconFactory.ERROR, isOpen=False, color=rtiIconFactory.COLOR_ERROR)
         else:
             if self._cls is None:
                 return rtiIconFactory.getIcon(
-                    rtiIconFactory.ERROR, isOpen=False, color=rtiIconFactory.ICON_COLOR_UNKNOWN)
+                    rtiIconFactory.ERROR, isOpen=False, color=rtiIconFactory.COLOR_UNKNOWN)
             else:
                 return rtiIconFactory.getIcon(
                     self.cls._defaultIconGlyph, isOpen=False, color=self.iconColor)
@@ -156,6 +156,17 @@ class RtiRegistry(BaseRegistry):
         for regRti in self.items:
             filters.append(regRti.getFileDialogFilter())
         return ';;'.join(filters)
+
+
+    def extraItemsForOpenAsMenu(self):
+        """ Creates list of RtiRegItem to append to the 'open-as' and 'reload-as menus
+        """
+        return [
+            # Add directory to the context menu so a an Exdir 'file' can be re-opened as a directory
+            RtiRegItem('Directory',
+                       'argos.repo.filesytemrtis.DirectoryRti',
+                       iconColor=ICON_COLOR_UNKNOWN)
+        ]
 
 
     def getDefaultItems(self):
@@ -229,11 +240,6 @@ class RtiRegistry(BaseRegistry):
                        iconColor=ICON_COLOR_PILLOW,
                        globs='*.bmp:*.eps:*.im:*.gif:*.jpg:*.jpeg:*.msp:*.pcx:*.png:*.ppm:*.spi:'
                              '*.tif:*.tiff:*.xbm:*.xv'),
-
-            # Add directory to the context menu so a an Exdir 'file' can be re-opened as a directory
-            RtiRegItem('Directory',
-                       'argos.repo.filesytemrtis.DirectoryRti',
-                       globs=''),
         ]
 
 

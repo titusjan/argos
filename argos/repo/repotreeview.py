@@ -230,13 +230,18 @@ class RepoTreeView(ArgosTreeView):
 
     def createOpenAsMenu(self, parent=None):
         """ Creates the submenu for the Open As choice
+
+            This is actuall used in to reload files.
         """
         openAsMenu = QtWidgets.QMenu(parent=parent)
         openAsMenu.setTitle("Open Item As")
 
         registry = globalRtiRegistry()
-        for rtiRegItem in registry.items:
-            #rtiRegItem.tryImportClass()
+        for rtiRegItem in (registry.items + registry.extraItemsForOpenAsMenu()):
+
+            if not rtiRegItem.triedImport:
+                rtiRegItem.tryImportClass()
+
             def createTrigger():
                 """Function to create a closure with the regItem"""
                 _rtiRegItem = rtiRegItem # keep reference in closure
@@ -244,7 +249,7 @@ class RepoTreeView(ArgosTreeView):
 
             action = QtWidgets.QAction("{}".format(rtiRegItem.name), self,
                 enabled=bool(rtiRegItem.successfullyImported is not False),
-                triggered=createTrigger())
+                triggered=createTrigger(), icon=rtiRegItem.decoration)
             openAsMenu.addAction(action)
 
         return openAsMenu
