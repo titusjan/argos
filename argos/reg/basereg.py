@@ -16,6 +16,7 @@
 
 """ Classes for registering plugins.
 """
+import enum
 import logging, inspect, os, sys
 
 from argos.info import DEBUGGING
@@ -30,6 +31,12 @@ logger = logging.getLogger(__name__)
 QCOLOR_REGULAR = QtGui.QColor('black')
 QCOLOR_NOT_IMPORTED = QtGui.QColor('grey')
 QCOLOR_ERROR = QtGui.QColor('red')
+
+# Used to determine the type of editor needed
+@enum.unique
+class RegType(enum.Enum):
+    String = 0
+    ColorStr = 1
 
 
 def nameToIdentifier(fullName):
@@ -49,6 +56,7 @@ class BaseRegItem(BaseItem):
         properties of the RegItem as well. If the class is not yet imported, they return None.
     """
     FIELDS = ['name', 'absClassName', 'pythonPath']
+    TYPES = [RegType.String, RegType.String, RegType.String]
     LABELS = ['Name', 'Class', 'Python Path']
 
     def __init__(self, name='', absClassName='', pythonPath=''):

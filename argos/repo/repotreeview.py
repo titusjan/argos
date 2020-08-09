@@ -359,7 +359,6 @@ class RepoTreeView(ArgosTreeView):
         """
         logger.debug("reloadFileOfCurrentItem, rtiClass={}".format(rtiRegItem))
 
-
         currentIndex = self.getRowCurrentIndex()
         if not currentIndex.isValid():
             return

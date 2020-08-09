@@ -17,7 +17,7 @@ TODO short term:
 
     Better plugin management.
 
-        - Remove old pluginsdialog.py
+        - Remove old pluginsdialog.py, LabeledWidget
 
         - Other fields:
             - icons colors for RTIs. (new color scheme?)
@@ -30,7 +30,7 @@ TODO short term:
 
         - Html in details.
         - (only?) Icons in add/remove move up/down buttons
-        - use idemData, just as in
+        - use itemData, just as in rti....
 
         - Test
             - globs with path on windows
@@ -38,7 +38,6 @@ TODO short term:
             - duplicate names
             - Sifpy plugin on windows.
 
-        - Update changes.txt
 
     look at h5py 3.0
 

@@ -23,7 +23,8 @@ import logging
 import sys
 
 from argos.qt import QtCore, QtGui, QtWidgets, Qt, QtSlot
-from argos.reg.basereg import BaseRegistryModel, BaseRegistry
+from argos.qt.colorselect import ColorSelectWidget
+from argos.reg.basereg import BaseRegistryModel, BaseRegistry, RegType
 from argos.reg.tabview import TableEditWidget
 from argos.utils.cls import check_class
 from argos.widgets.constants import MONO_FONT, FONT_SIZE
@@ -82,11 +83,21 @@ class PluginsDialog(QtWidgets.QDialog):
         self.horSplitter.addWidget(self.formWidget)
 
         self._editWidgets = []
-        for col, label in enumerate(registry.ITEM_CLASS.LABELS):
-            editWidget = QtWidgets.QLineEdit()
+        itemCls = registry.ITEM_CLASS
+        assert len(itemCls.LABELS) == len(itemCls.TYPES), \
+            "Regtype Mismatch: {} != {}".format(len(itemCls.LABELS), len(itemCls.TYPES))
+        for col, (label, regType) in enumerate(zip(itemCls.LABELS, itemCls.TYPES)):
+
+            if regType == RegType.String:
+                editWidget = QtWidgets.QLineEdit()
+                self.mapper.addMapping(editWidget, col)
+            elif regType == RegType.ColorStr:
+                editWidget = ColorSelectWidget()
+                self.mapper.addMapping(editWidget.lineEditor, col)
+            else:
+                raise AssertionError("Unexpected regType: {}".format(regType))
             editWidget.installEventFilter(self)
             self.formLayout.addRow(label, editWidget)
-            self.mapper.addMapping(editWidget, col)
             self._editWidgets.append(editWidget)
 
         # Detail info widget

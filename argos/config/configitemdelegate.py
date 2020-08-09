@@ -19,7 +19,7 @@
 from __future__ import print_function
 
 import logging
-from argos.config.abstractcti import InvalidInputError
+from argos.utils.defs import InvalidInputError
 from argos.qt import Qt, QtCore, QtWidgets
 from argos.qt.misc import widgetSubCheckBoxRect
 from argos.widgets.constants import TREE_CELL_SIZE_HINT

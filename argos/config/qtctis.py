@@ -19,7 +19,7 @@
 """
 import logging
 
-from argos.config.abstractcti import AbstractCti, AbstractCtiEditor, InvalidInputError
+from argos.config.abstractcti import AbstractCti, AbstractCtiEditor
 from argos.config.boolcti import BoolCti
 from argos.config.choicecti import ChoiceCti
 from argos.config.intcti import IntCti
@@ -27,6 +27,7 @@ from argos.config.floatcti import FloatCti
 from argos.info import DEBUGGING
 from argos.qt import Qt, QtCore, QtGui, QtWidgets, QtSlot
 from argos.utils.cls import check_is_a_string
+from argos.utils.defs import InvalidInputError
 
 
 

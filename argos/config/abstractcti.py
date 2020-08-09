@@ -23,19 +23,9 @@ from json import JSONEncoder, JSONDecoder, loads, dumps
 from argos.info import DEBUGGING, icons_directory
 from argos.qt import Qt, QtCore, QtGui, QtWidgets, QtSlot
 from argos.qt.treeitems import BaseTreeItem
-from argos.utils.cls import get_full_class_name, import_symbol
 
 
 logger = logging.getLogger(__name__)
-
-
-# TODO: QCompleter? See demos/spreadsheet/spreadsheetdelegate.py
-
-class InvalidInputError(Exception):
-    """ Exception raised when the input is invalid after editing
-    """
-    pass
-
 
 
 ###########

@@ -21,7 +21,7 @@ import os.path
 
 from fnmatch import fnmatch
 
-from argos.reg.basereg import BaseRegItem, BaseRegistry
+from argos.reg.basereg import BaseRegItem, BaseRegistry, RegType
 from argos.repo.iconfactory import RtiIconFactory
 from argos.utils.cls import check_class, is_a_color_str
 
@@ -44,8 +44,9 @@ ICON_COLOR_SCIPY = ICON_COLOR_NUMPY
 class RtiRegItem(BaseRegItem):
     """ Class to keep track of a registered Repo Tree Item.
     """
-    FIELDS =  BaseRegItem.FIELDS + ['iconColor', 'globs']
-    LABELS =  BaseRegItem.LABELS + ['Icon Color', 'Globs']
+    FIELDS = BaseRegItem.FIELDS + ['iconColor', 'globs']
+    TYPES  = BaseRegItem.TYPES + [RegType.ColorStr, RegType.String]
+    LABELS = BaseRegItem.LABELS + ['Icon Color', 'Globs']
 
     COL_DECORATION = 0  # Display Icon in the main column
 
