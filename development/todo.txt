@@ -17,14 +17,8 @@ TODO short term:
 
     Better plugin management.
 
-        - Make ErrorInspector at startup and error. So that RegItem is never empty
-          and better errors can be shown in the inspector panel. E.g. if selected inspector
-          can't be found at startup.
-
         - Test
             - globs with path on windows
-            - edit name of currently
-            - duplicate names
             - Sifpy plugin on windows.
 
 

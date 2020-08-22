@@ -119,4 +119,11 @@ class DebugInspector(AbstractInspector):
             self.label.setText(text)
 
 
+    def _clearContents(self):
+        """ Override to clear the widget contents.
+
+            Is called to empty the inspector when an exception occurs during _drawContents,
+            to prevent further errors.
+        """
+        logger.debug("DebugInspector._clearContents called")
 

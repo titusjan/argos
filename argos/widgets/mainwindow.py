@@ -26,7 +26,6 @@ import base64
 import cProfile
 import os.path
 import pstats
-import sys
 import time
 from functools import partial
 
@@ -36,6 +35,7 @@ from argos.config.configtreemodel import ConfigTreeModel
 from argos.config.configtreeview import ConfigWidget
 from argos.info import DEBUGGING, TESTING, PROJECT_NAME, PROFILING, EXIT_CODE_RESTART
 from argos.inspector.abstract import AbstractInspector, UpdateReason
+from argos.inspector.errormsg import ErrorMsgInspector
 from argos.inspector.selectionpane import InspectorSelectionPane
 from argos.qt import Qt, QUrl, QtCore, QtGui, QtWidgets, QtSignal, QtSlot
 from argos.qt.misc import getWidgetGeom, getWidgetState
@@ -85,7 +85,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self._profiler = cProfile.Profile()
 
         self._collector = None
-        self._inspector = None
+        self._inspector = ErrorMsgInspector(
+            self._collector, "No inspector yet. Please select one from the menu.")
         self._inspectorRegItem = None # The registered inspector item a InspectorRegItem)
 
         self._argosApplication = argosApplication
@@ -130,8 +131,7 @@ class MainWindow(QtWidgets.QMainWindow):
             profStats = pstats.Stats(self._profiler)
             profStats.dump_stats(self._profFileName)
 
-        if self.inspector: # Can be None if inspector couldn't load, e.g. PyQtGraph not installed.
-            self.inspector.finalize()
+        self.inspector.finalize()
 
 
     def __setupViews(self):
@@ -177,7 +177,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.wrapperLayout = QtWidgets.QVBoxLayout(self.wrapperWidget)
         self.wrapperLayout.setContentsMargins(0, 0, 0, 0)
         self.wrapperLayout.setSpacing(0)
-
+        self.wrapperLayout.addWidget(self.inspector)
 
         # Must be after setInspector since that already draws the inspector
         self.collector.sigContentsChanged.connect(self.collectorContentsChanged)
@@ -507,29 +507,29 @@ class MainWindow(QtWidgets.QMainWindow):
         oldInspectorRegItem = self.inspectorRegItem
         oldInspector = self.inspector
 
+        inspector = None
+        errMsg = None
+
         if not identifier:
-            inspector = None
+            errMsg = "No inspector selected. Please select one from menu."
             self._inspectorRegItem = None
         else:
             inspectorRegistry = self.argosApplication.inspectorRegistry
             inspectorRegItem = inspectorRegistry.getItemById(identifier)  #
-            #raise AssertionError("No inspector found for: {}".format(identifier))
 
             self._inspectorRegItem = inspectorRegItem
             if inspectorRegItem is None:
-                inspector = None
+                errMsg = "No {!r} inspector found. Please select one from menu.".format(identifier)
             else:
                 try:
                     inspector = inspectorRegItem.create(self.collector, tryImport=True)
                 except ImportError as ex:
                     # Only log the error. No dialog box or user interaction here because this
                     # function may be called at startup.
-                    logger.warning("Clearing inspector. Unable to create {!r} because {}"
-                                   .format(inspectorRegItem.identifier, ex),
-                                   exc_info=DEBUGGING)
-                    inspector = None
+                    errMsg = "Unable to create {!r} inspector because {}"\
+                        .format(inspectorRegItem.identifier, ex)
+                    logger.warning(errMsg, exc_info=DEBUGGING)
                     self.getInspectorActionById(identifier).setEnabled(False)
-
 
         ###### Set self.inspector ######
 
@@ -541,22 +541,22 @@ class MainWindow(QtWidgets.QMainWindow):
             #centralLayout = self.centralWidget().layout()
 
             # Delete old inspector
-            if oldInspector: # can be None at start-up
-                self._storeInspectorState(oldInspectorRegItem, oldInspector)
+            self._storeInspectorState(oldInspectorRegItem, oldInspector)
 
-                oldInspector.finalize()
-                self.wrapperLayout.removeWidget(oldInspector)
-                oldInspector.deleteLater()
+            oldInspector.finalize()
+            self.wrapperLayout.removeWidget(oldInspector)
+            oldInspector.deleteLater()
 
-            # Set new inspector
-            self._inspector = inspector
-
-            # Update collector widgets and the config tree
+            # Set new inspector, update collector widgets and the config tree
             oldBlockState = self.collector.blockSignals(True)
             try:
-                if self.inspector is None:
+                if inspector is None:
+                    logger.warning(errMsg)
+                    self._inspector = ErrorMsgInspector(self._collector, errMsg)
                     self.collector.clearAndSetComboBoxes([])
                 else:
+                    assert not errMsg, "Unexpected error message: {}".format(errMsg)
+                    self._inspector = inspector
                     # Add and apply config values to the inspector
                     key = self.inspectorRegItem.identifier
                     cfg = self._inspectorStates.get(key, {})
@@ -565,7 +565,8 @@ class MainWindow(QtWidgets.QMainWindow):
                     self._configTreeModel.setInvisibleRootItem(self.inspector.config)
                     self.configWidget.configTreeView.expandBranch()
                     self.collector.clearAndSetComboBoxes(self.inspector.axesNames())
-                    self.wrapperLayout.addWidget(self.inspector)
+
+                self.wrapperLayout.addWidget(self.inspector)
             finally:
                 self.collector.blockSignals(oldBlockState)
         finally:
@@ -640,16 +641,13 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         logger.debug("")
         logger.debug("-------- Drawing inspector of window: {} --------".format(self.windowTitle()))
-        if self.inspector:
-            if PROFILING:
-                self._profiler.enable()
+        if PROFILING:
+            self._profiler.enable()
 
-            self.inspector.updateContents(reason=reason, initiator=origin)
+        self.inspector.updateContents(reason=reason, initiator=origin)
 
-            if PROFILING:
-                self._profiler.disable()
-        else:
-            logger.debug("No inspector selected")
+        if PROFILING:
+            self._profiler.disable()
         logger.debug("Finished draw inspector.\n")
 
 
