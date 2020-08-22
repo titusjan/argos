@@ -166,6 +166,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.topLayout.addStretch()
         self.sigInspectorChanged.connect(self.inspectorSelectionPane.updateFromInspectorRegItem)
 
+        showInspectorMenuAction = QtWidgets.QAction("ShowInspectorMenu", self,
+            triggered=self.inspectorSelectionPane.menuButton.showMenu, checkable=False)
+        showInspectorMenuAction.setShortcut("Ctrl+I")
+        self.addAction(showInspectorMenuAction)
+
         self.wrapperWidget = QtWidgets.QWidget()
         self.mainLayout.addWidget(self.wrapperWidget)
 
