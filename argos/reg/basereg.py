@@ -209,7 +209,7 @@ class BaseRegItem(BaseItem):
             self._cls = import_symbol(self.absClassName) # TODO: check class?
         except Exception as ex:
             self._exception = ex
-            logger.warning("Unable to import {!r}: {}".format(self.absClassName, ex), exc_info=ex)
+            logger.warning("Unable to import {!r}: {}".format(self.absClassName, ex))
             # if DEBUGGING:
             #     raise
 

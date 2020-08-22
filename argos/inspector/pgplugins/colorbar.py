@@ -35,6 +35,8 @@ from pgcolorbar.colorlegend import ColorLegendItem
 
 logger = logging.getLogger(__name__)
 
+warnings.filterwarnings(action='default', category=RuntimeWarning, module='pgcolorbar.colorlegend')  # Show once
+
 
 class ArgosColorLegendItem(ColorLegendItem):
     """ Wrapper around pgcolorbar.colorlegend.ColorLegendItem.
@@ -74,17 +76,7 @@ class ArgosColorLegendItem(ColorLegendItem):
         if hasattr(imageItem, '_wasIntegerData'):
             return imageItem._wasIntegerData
         else:
-            return super(ArgosColorLegendItem, self)._imageItemHasIntegerData(imageItem)
-
-
-    def _updateHistogram(self):
-        """ Updates the histogram with data from the image.
-
-            Suppresses the numpy future warning in PyQtGraph.
-        """
-        with warnings.catch_warnings():
-            warnings.simplefilter(action='ignore', category=FutureWarning)
-            super(ArgosColorLegendItem, self)._updateHistogram()
+            return super(ArgosColorLegendItem, cls)._imageItemHasIntegerData(imageItem)
 
 
     def emitResetColorScaleSignal(self):

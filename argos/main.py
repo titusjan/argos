@@ -24,7 +24,14 @@ from __future__ import print_function
 # The browse function is imported by the argos package, which in turn is imported by setup.py.
 # If you import (for instance) numpy here, the setup.py will fail if numpy is not installed.
 
-import logging, sys, argparse, os, os.path
+import argparse
+import logging
+import os
+import os.path
+import sys
+
+logging.captureWarnings(True)
+
 from argos.info import DEBUGGING, PROJECT_NAME, VERSION, EXIT_CODE_RESTART, resource_directory
 
 from argos.widgets.misc import setApplicationQtStyle, setApplicationStyleSheet
