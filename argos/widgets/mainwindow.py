@@ -224,7 +224,7 @@ class MainWindow(QtWidgets.QMainWindow):
         #     fileMenu.addAction(action)
 
         fileMenu.addSeparator()
-        fileMenu.addAction("E&xit", self.argosApplication.quit, QtGui.QKeySequence.Quit)
+        fileMenu.addAction("E&xit", self.argosApplication.quit, 'Ctrl+Q')
 
         ### View Menu ###
 
