@@ -44,9 +44,10 @@ ICON_COLOR_SCIPY = ICON_COLOR_NUMPY
 class RtiRegItem(BaseRegItem):
     """ Class to keep track of a registered Repo Tree Item.
     """
-    FIELDS = BaseRegItem.FIELDS + ['iconColor', 'globs']
-    TYPES  = BaseRegItem.TYPES + [RegType.ColorStr, RegType.String]
-    LABELS = BaseRegItem.LABELS + ['Icon Color', 'Globs']
+    FIELDS  = BaseRegItem.FIELDS[:1] + ['iconColor', 'globs'] + BaseRegItem.FIELDS[1:]
+    TYPES   = BaseRegItem.TYPES[:1] + [RegType.ColorStr, RegType.String] + BaseRegItem.TYPES[1:]
+    LABELS  = BaseRegItem.LABELS[:1] + ['Icon Color', 'Globs'] + BaseRegItem.LABELS[1:]
+    STRETCH = BaseRegItem.STRETCH[:1] + [False, True] + BaseRegItem.STRETCH[1:]
 
     COL_DECORATION = 0  # Display Icon in the main column
 

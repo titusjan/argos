@@ -33,12 +33,15 @@ class BaseItem(object):
         It always must have a name, which is used as the identifier
     """
     FIELDS = []  # The fields that this item contains.
-    # FIELDS = ['debugCount', 'name', 'path']  # For debugging.
-
     LABELS = []  # Human readable label for each field. Should be overridden in descendants
+    STRETCH = [] # True -> the corresponding table column can stretch. False -> resize to contents.
+
+    # For debugging...
+    # FIELDS = ['debugCount', 'name', 'path']
+    # LABELS = FIELDS # For debugging.
+    # STRETCH = [True, False, True]
 
     COL_DECORATION = None   # Column number that contains the decoration. None for no icons
-
 
     _sequenceCounter = 0  # For debugging
 
@@ -64,8 +67,13 @@ class BaseItem(object):
 
         assert len(self.FIELDS) > 0
         if len(self.LABELS) != len(self.FIELDS):
-            raise AssertionError("Number of labels ({}) is not equal to number of labels ({})"
+            raise AssertionError("Number of labels ({}) is not equal to number of fields ({})"
                                  .format(len(self.LABELS), len(self.FIELDS)))
+
+        if len(self.STRETCH) != len(self.FIELDS):
+            raise AssertionError("Number of stretches ({}) is not equal to number of labels ({})"
+                                 .format(len(self.STRETCH), len(self.FIELDS)))
+
 
 
     def __repr__(self):
@@ -153,6 +161,14 @@ class BaseItemStore(object):
 
 
     @property
+    def canStretchPerColumn(self):
+        """ List of booleans, for each column indicating if it can strech.
+            True -> the corresponding table column can stretch. False -> resize to contents.
+        """
+        return self.ITEM_CLASS.STRETCH
+
+
+    @property
     def items(self):
         """ The registered class items.
         """
@@ -208,7 +224,7 @@ class BaseItemStore(object):
 
 class BaseTableModel(QtCore.QAbstractTableModel):
 
-    sigItemChanged = QtSignal(BaseItem)
+    sigItemChanged = QtSignal(BaseItem) # An item has changed.
 
     def __init__(self, store, parent=None):
         """ Constructor.
@@ -221,7 +237,6 @@ class BaseTableModel(QtCore.QAbstractTableModel):
         self._store = store
         self._fieldNames = self._store.fieldNames
         self._fieldLabels = self.store.fieldLabels
-
 
     @property
     def store(self):

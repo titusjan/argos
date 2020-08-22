@@ -36,16 +36,13 @@ class BaseTableView(ToggleColumnTableView):
     def __init__(self, model=None, parent=None):
         """ Constructor
 
-            :param model: a RegistryTableModel that maps the regItems
-            :param parent: the parent widget
+            :param BaseTableModelmodel: a RegistryTableModel that maps the regItems
+            :param QWidget parent: the parent widget
         """
         super(BaseTableView, self).__init__(parent)
 
-        if model is not None:
-            check_class(model, BaseTableModel)
-            self.setModel(model)
-        else:
-            assert False, "not yet implemented"
+        check_class(model, BaseTableModel)
+        self.setModel(model)
 
         self.setTextElideMode(QtCore.Qt.ElideMiddle) # Does not work nicely when editing cells.
         self.setAlternatingRowColors(True)
@@ -59,36 +56,21 @@ class BaseTableView(ToggleColumnTableView):
         self.setEditTriggers(Qiv.NoEditTriggers)
         self.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
 
-        verHeader = self.verticalHeader()
-        verHeader.setSectionsMovable(False)
-        verHeader.hide()
+        self.verHeader = self.verticalHeader()
+        self.verHeader.setSectionsMovable(False)
+        self.verHeader.hide()
 
-        horHeader = self.horizontalHeader()
-        horHeader.setDefaultAlignment(Qt.AlignVCenter | Qt.AlignLeft)
-        horHeader.setSectionResizeMode(QtWidgets.QHeaderView.Interactive) # don't set to stretch
-        horHeader.setStretchLastSection(True)
-        horHeader.setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.horHeader = self.horizontalHeader()
+        self.horHeader.setDefaultAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+        self.horHeader.setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.horHeader.setStretchLastSection(False)
 
-        # headerSizes = [200, 300, None]  # TODO: from model?
-        # # assert len(headerSizes) == model.columnCount(), \
-        # #   "Size mismatch {} != {}".format(len(headerSizes), model.columnCount())
-        #
-        # for col, headerSize in enumerate(headerSizes):
-        #     if headerSize:
-        #         horHeader.resizeSection(col, headerSize)
+        for col, canStretch in enumerate(model.store.canStretchPerColumn):
+            if canStretch:
+                self.horHeader.setSectionResizeMode(col, QtWidgets.QHeaderView.Stretch)
+            else:
+                self.horHeader.setSectionResizeMode(col, QtWidgets.QHeaderView.ResizeToContents)
 
-
-    # def resizeEvent(self, event):
-    #     """ Called when the table is resized. Automicially resizes the headers.
-    #
-    #         :param QtGui.QResizeEvent event: the resize event.
-    #     """
-    #     horHeader = self.horizontalHeader()
-    #     numCols = horHeader.count()
-    #
-    #     for col in range(numCols):
-    #         self.setColumnWidth(col, int(round(self.width() / numCols)))
-    #
 
 
     def getCurrentItem(self):

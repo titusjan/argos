@@ -30,9 +30,10 @@ class InspectorRegItem(BaseRegItem):
     """ Class to keep track of a registered Inspector.
         Has a create() method that functions as an Inspector factory.
     """
-    FIELDS = BaseRegItem.FIELDS + ['shortCut']
-    TYPES  = BaseRegItem.TYPES + [RegType.ShortCut]
-    LABELS = BaseRegItem.LABELS + ['Short Cut']
+    FIELDS  = BaseRegItem.FIELDS[:1] + ['shortCut'] + BaseRegItem.FIELDS[1:]
+    TYPES   = BaseRegItem.TYPES[:1] + [RegType.ShortCut] + BaseRegItem.TYPES[1:]
+    LABELS  = BaseRegItem.LABELS[:1] + ['Short Cut'] + BaseRegItem.LABELS[1:]
+    STRETCH = BaseRegItem.STRETCH[:1] + [False] + BaseRegItem.STRETCH[1:]
 
 
     def __init__(self, name='', absClassName='', pythonPath='', shortCut=''):

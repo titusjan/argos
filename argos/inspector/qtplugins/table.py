@@ -39,6 +39,7 @@ from argos.utils.misc import is_quoted
 
 logger = logging.getLogger(__name__)
 
+# TODO: is this the same as QHeaderView.setResizeContentsPrecision? (which is new since Qt 5.2)
 RESET_HEADERS_AT_SIZE = 10000   # If header has more elements, the headers size CTIs are disabled.
 OPTIMIZE_RESIZE_AT_SIZE = 1000  # If the table has more elements, only the current column/row are
                                 # resized and the others take the same size

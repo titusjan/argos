@@ -59,6 +59,7 @@ class BaseRegItem(BaseItem):
     FIELDS = ['name', 'absClassName', 'pythonPath']
     TYPES = [RegType.String, RegType.String, RegType.String]
     LABELS = ['Name', 'Class', 'Python Path']
+    STRETCH = [False, False, True]
 
     def __init__(self, name='', absClassName='', pythonPath=''):
         """ Constructor.
