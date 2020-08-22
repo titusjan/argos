@@ -20,8 +20,10 @@ from __future__ import print_function
 
 import copy
 import logging
+import os.path
 import sys
 
+from argos.info import icons_directory
 from argos.qt import QtCore, QtGui, QtWidgets, Qt, QtSlot
 from argos.qt.colorselect import ColorSelectWidget
 from argos.qt.shortcutedit import ShortCutEditor
@@ -130,8 +132,9 @@ class PluginsDialog(QtWidgets.QDialog):
         self.cancelButton = QtWidgets.QPushButton("Cancel")
         self.cancelButton.clicked.connect(self.reject)
 
-        self.resetButton = QtWidgets.QPushButton("Reset to Default...")
+        self.resetButton = QtWidgets.QPushButton("Reset Table to Defaults...")
         self.resetButton.clicked.connect(self.resetToDefaults)
+        self.resetButton.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'reset-l.svg')))
 
         # We use a button layout instead of a QButtonBox because there always will be a default
         # button (e.g. the Save button) that will light up, even if another widget has the focus.

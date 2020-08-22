@@ -22,7 +22,6 @@ TODO short term:
           can't be found at startup.
 
         - Html in details.
-        - (only?) Icons in add/remove move up/down buttons
 
         - Test
             - globs with path on windows

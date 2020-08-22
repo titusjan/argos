@@ -19,9 +19,11 @@
 """
 
 import logging
+import os.path
 
 from argos.utils.cls import type_name, check_class
 
+from argos.info import icons_directory
 from argos.reg.tabmodel import BaseTableModel
 from argos.qt import QtCore, QtGui, QtWidgets, Qt
 from argos.qt.togglecolumn import ToggleColumnTableView
@@ -72,7 +74,6 @@ class BaseTableView(ToggleColumnTableView):
                 self.horHeader.setSectionResizeMode(col, QtWidgets.QHeaderView.ResizeToContents)
 
 
-
     def getCurrentItem(self):
         """ Returns the item of the selected row, or None if none is selected
         """
@@ -113,20 +114,35 @@ class TableEditWidget(QtWidgets.QWidget):
         buttonLayout = QtWidgets.QVBoxLayout()
         self.mainLayout.addLayout(buttonLayout)
 
-        self.addButton = QtWidgets.QPushButton("Add")
+        iconDir = icons_directory()
+        iconSize = QtCore.QSize(20, 20)
+
+        self.addButton = QtWidgets.QPushButton()
+        self.addButton.setToolTip("Add new row.")
+        self.addButton.setIcon(QtGui.QIcon(os.path.join(iconDir, 'plus-sign-l.svg')))
+        self.addButton.setIconSize(iconSize)
         self.addButton.clicked.connect(self.addRow)
         buttonLayout.addWidget(self.addButton)
 
-        self.removeButton = QtWidgets.QPushButton("Remove")
+        self.removeButton = QtWidgets.QPushButton()
+        self.removeButton.setToolTip("Remove row.")
+        self.removeButton.setIcon(QtGui.QIcon(os.path.join(iconDir, 'minus-sign-l.svg')))
+        self.removeButton.setIconSize(iconSize)
         self.removeButton.clicked.connect(self.removeRow)
         buttonLayout.addWidget(self.removeButton)
         buttonLayout.addSpacing(25)
 
-        self.moveUpButton = QtWidgets.QPushButton("Move Up")
+        self.moveUpButton = QtWidgets.QPushButton()
+        self.moveUpButton.setToolTip("Move row up")
+        self.moveUpButton.setIcon(QtGui.QIcon(os.path.join(iconDir, 'circle-arrow-up-l.svg')))
+        self.moveUpButton.setIconSize(iconSize)
         self.moveUpButton.clicked.connect(lambda: self.moveRow(-1))
         buttonLayout.addWidget(self.moveUpButton)
 
-        self.moveDownButton = QtWidgets.QPushButton("Move Down")
+        self.moveDownButton = QtWidgets.QPushButton()
+        self.moveDownButton.setToolTip("Move row down")
+        self.moveDownButton.setIcon(QtGui.QIcon(os.path.join(iconDir, 'circle-arrow-down-l.svg')))
+        self.moveDownButton.setIconSize(iconSize)
         self.moveDownButton.clicked.connect(lambda: self.moveRow(+1))
         buttonLayout.addWidget(self.moveDownButton)
 

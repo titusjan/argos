@@ -83,6 +83,8 @@ class ArgosApplication(QtCore.QObject):
             logger.debug("Setting sys.excepthook to Argos exception handling")
             sys.excepthook = handleException
 
+        QtCore.qInstallMessageHandler(self.handleQtLogMessages)
+
         if DEBUGGING:
             self.qApplication.focusChanged.connect(self.focusChanged) # for debugging
 
@@ -218,6 +220,34 @@ class ArgosApplication(QtCore.QObject):
         """ Is called when the focus changes. Useful for debugging.
         """
         logger.debug("Focus changed from {} to {}".format(old, now))
+
+
+
+    @classmethod
+    def handleQtLogMessages(cls, qMsgType, context, msg):
+        """ Forwards Qt log messages to the python log system.
+
+            This ensures that they end up in application log files instead of just being printed to
+            stderr at application exit.
+
+            This function must be installed with QtCore.qInstallMessageHandler.
+            See https://doc.qt.io/qt-5/qtglobal.html#qInstallMessageHandler
+        """
+        # Still print the message to stderr, just like Qt does by default.
+        print(msg, file=sys.stderr, flush=True)
+
+        if qMsgType == QtCore.QtDebugMsg:
+            logger.debug(msg)
+        elif qMsgType == QtCore.QtInfoMsg:
+            logger.info(msg)
+        elif qMsgType == QtCore.QtWarningMsg:
+            logger.warning(msg)
+        elif qMsgType == QtCore.QtCriticalMsg:
+            logger.error(msg)
+        elif qMsgType == QtCore.QtFatalMsg:
+            logger.error(msg)
+        else:
+            logger.critical("Qt message of unknown type {}: {}".format(qMsgType, msg))
 
 
     def marshall(self):
