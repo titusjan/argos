@@ -21,8 +21,6 @@ TODO short term:
           and better errors can be shown in the inspector panel. E.g. if selected inspector
           can't be found at startup.
 
-        - Html in details.
-
         - Test
             - globs with path on windows
             - edit name of currently

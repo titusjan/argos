@@ -59,8 +59,9 @@ else:
     MONO_FONT = 'Courier'
     FONT_SIZE = 13
 
+COLOR_ERROR = '#FF0000' # red
 
 QCOLOR_REGULAR = QtGui.QColor('black')
 QCOLOR_NOT_IMPORTED = QtGui.QColor('grey')
-QCOLOR_ERROR = QtGui.QColor('red')
+QCOLOR_ERROR = QtGui.QColor(COLOR_ERROR)
 

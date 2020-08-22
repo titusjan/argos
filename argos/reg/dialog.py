@@ -30,8 +30,8 @@ from argos.qt.shortcutedit import ShortCutEditor
 from argos.reg.basereg import BaseRegistryModel, BaseRegistry, RegType
 from argos.reg.tabview import TableEditWidget
 from argos.utils.cls import check_class
-from argos.widgets.constants import MONO_FONT, FONT_SIZE
-from argos.widgets.constants import QCOLOR_REGULAR, QCOLOR_NOT_IMPORTED, QCOLOR_ERROR
+from argos.widgets.constants import MONO_FONT, FONT_SIZE, COLOR_ERROR
+#from argos.widgets.constants import QCOLOR_REGULAR, QCOLOR_NOT_IMPORTED, QCOLOR_ERROR
 
 logger = logging.getLogger(__name__)
 
@@ -115,8 +115,8 @@ class PluginsDialog(QtWidgets.QDialog):
         self.editor = QtWidgets.QTextEdit()
         self.editor.setReadOnly(True)
         self.editor.setFocusPolicy(Qt.NoFocus)
-        self.editor.setFont(font)
-        self.editor.setWordWrapMode(QtGui.QTextOption.NoWrap)
+        #self.editor.setFont(font)
+        self.editor.setWordWrapMode(QtGui.QTextOption.WordWrap)
         self.editor.clear()
         self.horSplitter.addWidget(self.editor)
 
@@ -257,23 +257,25 @@ class PluginsDialog(QtWidgets.QDialog):
         """ Updates the editor with contents of the currently selected regItem
         """
         self.editor.clear()
-        self.editor.setTextColor(QCOLOR_REGULAR)
 
         if regItem is None:
             return
 
-        header = "{}\n{}\n\n".format(regItem.name, len(regItem.name) * '=')
+        header = "<h2>{}</h2>".format(regItem.name)
 
         if regItem.successfullyImported is None:
-            self.editor.setTextColor(QCOLOR_NOT_IMPORTED)
-            self.editor.setPlainText(header + '<plugin not yet imported>')
+            html = header + 'Plugin not yet imported!'
+            self.editor.setHtml(wrapHtmlColor(html, COLOR_ERROR))
         elif regItem.successfullyImported is False:
-            self.editor.setTextColor(QCOLOR_ERROR)
-            self.editor.setPlainText("{}Unable to import plugin.\n\nError: {}"
-                                     .format(header, regItem.exception))
+            html = "{}Unable to import plugin.\n\nError: {}".format(header, regItem.exception)
+            self.editor.setHtml(wrapHtmlColor(html, COLOR_ERROR))
         elif regItem.descriptionHtml:
             self.editor.setHtml(header.replace('\n', '<br>') + regItem.descriptionHtml)
         else:
-            self.editor.setPlainText(header + regItem.docString)
+            self.editor.setHtml(header + regItem.docString)
 
 
+def wrapHtmlColor(html, color):
+    """ Wraps HTML in a span with a certain color
+    """
+    return '<span style="color:{}">{}</span>'.format(color, html)
