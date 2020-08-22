@@ -37,6 +37,7 @@ QCOLOR_ERROR = QtGui.QColor('red')
 class RegType(enum.Enum):
     String = 0
     ColorStr = 1
+    ShortCut = 2
 
 
 def nameToIdentifier(fullName):

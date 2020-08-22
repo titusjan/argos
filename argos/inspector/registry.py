@@ -20,7 +20,7 @@
 import logging
 
 from argos.info import DEBUGGING
-from argos.reg.basereg import BaseRegItem, BaseRegistry
+from argos.reg.basereg import BaseRegItem, BaseRegistry, RegType
 
 logger = logging.getLogger(__name__)
 
@@ -30,12 +30,24 @@ class InspectorRegItem(BaseRegItem):
     """ Class to keep track of a registered Inspector.
         Has a create() method that functions as an Inspector factory.
     """
+    FIELDS = BaseRegItem.FIELDS + ['shortCut']
+    TYPES  = BaseRegItem.TYPES + [RegType.ShortCut]
+    LABELS = BaseRegItem.LABELS + ['Short Cut']
 
-    def __init__(self, name='', absClassName='', pythonPath=''):
+
+    def __init__(self, name='', absClassName='', pythonPath='', shortCut=''):
         """ Constructor. See the ClassRegItem class doc string for the parameter help.
         """
         super(InspectorRegItem, self).__init__(name=name, absClassName=absClassName,
                                                pythonPath=pythonPath)
+        self._data['shortCut'] = shortCut
+
+
+    @property
+    def shortCut(self):
+        """ Keyboard short cut
+        """
+        return self._data['shortCut']
 
 
     @property
@@ -86,14 +98,18 @@ class InspectorRegistry(BaseRegistry):
         """ Returns a list with the default plugins in the inspector registry.
         """
         plugins = [
-            InspectorRegItem(DEFAULT_INSPECTOR,
-                             'argos.inspector.qtplugins.table.TableInspector'),
-            InspectorRegItem('Text',
-                             'argos.inspector.qtplugins.text.TextInspector'),
             InspectorRegItem('Line Plot',
-                             'argos.inspector.pgplugins.lineplot1d.PgLinePlot1d'),
+                             'argos.inspector.pgplugins.lineplot1d.PgLinePlot1d',
+                             shortCut='Ctrl+1'),
             InspectorRegItem('Image Plot',
-                             'argos.inspector.pgplugins.imageplot2d.PgImagePlot2d'),
+                             'argos.inspector.pgplugins.imageplot2d.PgImagePlot2d',
+                             shortCut='Ctrl+2'),
+            InspectorRegItem(DEFAULT_INSPECTOR,
+                             'argos.inspector.qtplugins.table.TableInspector',
+                             shortCut='Ctrl+3'),
+            InspectorRegItem('Text',
+                             'argos.inspector.qtplugins.text.TextInspector',
+                             shortCut='Ctrl+4'),
             ]
         if DEBUGGING:
             plugins.append(InspectorRegItem('Image Plot (Old)',

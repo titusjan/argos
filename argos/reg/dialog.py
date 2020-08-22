@@ -24,6 +24,7 @@ import sys
 
 from argos.qt import QtCore, QtGui, QtWidgets, Qt, QtSlot
 from argos.qt.colorselect import ColorSelectWidget
+from argos.qt.shortcutedit import ShortCutEditor
 from argos.reg.basereg import BaseRegistryModel, BaseRegistry, RegType
 from argos.reg.tabview import TableEditWidget
 from argos.utils.cls import check_class
@@ -90,6 +91,9 @@ class PluginsDialog(QtWidgets.QDialog):
 
             if regType == RegType.String:
                 editWidget = QtWidgets.QLineEdit()
+                self.mapper.addMapping(editWidget, col)
+            elif regType == RegType.ShortCut:
+                editWidget = ShortCutEditor()
                 self.mapper.addMapping(editWidget, col)
             elif regType == RegType.ColorStr:
                 editWidget = ColorSelectWidget()

@@ -237,11 +237,11 @@ class MainWindow(QtWidgets.QMainWindow):
         app = self.argosApplication
         action = self.configMenu.addAction("&File Format Plugins...",
             lambda: self.execPluginsDialog("File Formats", app.rtiRegistry))
-        if DEBUGGING:
-            action.setShortcut(QtGui.QKeySequence("Ctrl+P"))  # TODO: remove
 
         action = self.configMenu.addAction("&Inspector Plugins...",
             lambda: self.execPluginsDialog("Inspectors", app.inspectorRegistry))
+        if DEBUGGING:
+            action.setShortcut(QtGui.QKeySequence("Ctrl+P"))
 
         self.configMenu.addSeparator()
 
@@ -291,15 +291,18 @@ class MainWindow(QtWidgets.QMainWindow):
         actionGroup = QtWidgets.QActionGroup(parent)
         actionGroup.setExclusive(True)
 
-        shortCutNr = 1
         for item in self.argosApplication.inspectorRegistry.items:
             logger.debug("__createInspectorActionGroup item: {} {}".format(item.identifier, item._data))
             setAndDrawFn = partial(self.setAndDrawInspectorById, item.identifier)
             action = QtWidgets.QAction(item.name, self, triggered=setAndDrawFn, checkable=True)
             action.setData(item.identifier)
-            if shortCutNr <= 9 and "debug" not in item.identifier: # TODO: make configurable by the user
-                action.setShortcut(QtGui.QKeySequence("Ctrl+{}".format(shortCutNr)))
-                shortCutNr += 1
+            if item.shortCut:
+                try:
+                    keySeq = QtGui.QKeySequence(item.shortCut.strip())
+                except Exception as ex:
+                    logger.warning("Unable to create short cut from: '{}".format(item.shortCut))
+                else:
+                    action.setShortcut(QtGui.QKeySequence(keySeq))
 
             actionGroup.addAction(action)
 

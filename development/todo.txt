@@ -21,7 +21,6 @@ TODO short term:
 
         - Other fields:
             - icons colors for RTIs. (new color scheme?)
-            - short cuts for inspectors.
         - Make ErrorInspector at startup and error. So that RegItem is never empty
           and better errors can be shown in the inspector panel. E.g. if selected inspector
           can't be found at startup.
