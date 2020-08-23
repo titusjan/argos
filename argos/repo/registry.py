@@ -76,7 +76,7 @@ class RtiRegItem(BaseRegItem):
     def globList(self):
         """ Returns list of globs by splitting the globs string at the colons (:).
         """
-        return self._data['globs'].split(':')
+        return self._data['globs'].split(';')
 
 
     def pathNameMatchesGlobs(self, path):
@@ -85,7 +85,7 @@ class RtiRegItem(BaseRegItem):
             Matching is case-insensitive. See the Python fnmatch module for further info.
         """
         for glob in self.globList:
-            #logger.debug("  glob '{}' -> match = {}".format(glob, fnmatch(path, glob)))
+            logger.debug("  glob '{}' -> match = {}".format(glob, fnmatch(path, glob)))
             if fnmatch(path, glob):
                 return True
 
@@ -142,7 +142,7 @@ class RtiRegistry(BaseRegistry):
             Returns None if no class registered for the extension.
         """
         # Current implementation just returns the first rtiRegItem that contains the extension.
-        #logger.debug("{} getRtiRegItemByExtension, filePath: {}".format(self, filePath))
+        logger.debug("{} getRtiRegItemByExtension, filePath: {}".format(self, filePath))
         for rtiRegItem in self._items:
             if rtiRegItem.pathNameMatchesGlobs(filePath):
                 return rtiRegItem
@@ -179,7 +179,7 @@ class RtiRegistry(BaseRegistry):
         # Therefore put the defaults at the top of the list. The user can changed the order in the
         # plugin configuration dialog.
 
-        hdfGlobs = '*.hdf5:*.h5:*.h5e:*.he5' # hdf extension is for HDF-4
+        hdfGlobs = '*.hdf5;*.h5;*.h5e;*.he5' # hdf extension is for HDF-4
         return [
             RtiRegItem('HDF-5 file',
                        'argos.repo.rtiplugins.hdf5.H5pyFileRti',
@@ -194,7 +194,7 @@ class RtiRegistry(BaseRegistry):
             RtiRegItem('NetCDF file',
                        'argos.repo.rtiplugins.ncdf.NcdfFileRti',
                        iconColor=ICON_COLOR_NCDF4,
-                       globs='*.nc:*.nc4'),
+                       globs='*.nc;*.nc4'),
 
             RtiRegItem('Pandas HDF file',
                        'argos.repo.rtiplugins.pandasio.PandasHdfFileRti',
@@ -219,7 +219,7 @@ class RtiRegistry(BaseRegistry):
             RtiRegItem('NumPy text file',
                        'argos.repo.rtiplugins.numpyio.NumpyTextFileRti',
                        iconColor=ICON_COLOR_NUMPY,
-                       #globs=['*.txt:*.text'),
+                       #globs=['*.txt;*.text'),
                        globs='*.dat'),
 
             RtiRegItem('IDL save file',
@@ -240,8 +240,8 @@ class RtiRegistry(BaseRegistry):
             RtiRegItem('Pillow image',
                        'argos.repo.rtiplugins.pillowio.PillowFileRti',
                        iconColor=ICON_COLOR_PILLOW,
-                       globs='*.bmp:*.eps:*.im:*.gif:*.jpg:*.jpeg:*.msp:*.pcx:*.png:*.ppm:*.spi:'
-                             '*.tif:*.tiff:*.xbm:*.xv'),
+                       globs='*.bmp;*.eps;*.im;*.gif;*.jpg;*.jpeg;*.msp;*.pcx;*.png;*.ppm;*.spi:'
+                             '*.tif;*.tiff;*.xbm;*.xv'),
         ]
 
 

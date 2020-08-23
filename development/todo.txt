@@ -10,24 +10,12 @@ Argos philosophy:
 
 TODO short term:
 
-    pyqtgraph 0.11 testen
-
     close files on collapse.
 
-
-    Better plugin management.
-
-        - Test
-            - globs with path on windows
-            - Sifpy plugin on windows.
-
-
-    look at h5py 3.0
 
     log to text file.
     Why doesn't argos start from command line at work on my work laptop (Beast)?
     argos --help on Windows (Beast) doesn't seem to give output)
-    Ctrl-Q doesn't work in Windows
 
     Is it possible to use word wrap in plot titles?
 
@@ -85,7 +73,7 @@ TODO short term:
 
 TODO mid term:
 
-    Use globs instead of extensions to recognize file types. This allows for directoriy and partial names
+    look at h5py 3.0
 
     Make Rti.isFileFileFormat that opens a file and check if the RTI supports this.
         Call this only for RTIs that are visible in the tree (e.g. when the icons is queried by the model.
