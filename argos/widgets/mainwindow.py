@@ -764,6 +764,7 @@ class MainWindow(QtWidgets.QMainWindow):
         layoutCfg = dict(
             repoWidget = self.repoWidget.marshall(),
             configTreeHeaders =  self.configWidget.configTreeView.marshall(),
+            collectorHeaders = self.collector.tree.marshall(),
             winGeom = base64.b64encode(getWidgetGeom(self)).decode('ascii'),
             winState = base64.b64encode(getWidgetState(self)).decode('ascii')
         )
@@ -790,11 +791,11 @@ class MainWindow(QtWidgets.QMainWindow):
             except KeyError as ex:
                 logger.warning("No inspector with ID {!r}.: {}".format(curInspector, ex))
 
-
         layoutCfg = cfg.get('layout', {})
 
         self.repoWidget.unmarshall(layoutCfg.get('repoWidget', {}))
-        self.configWidget.configTreeView.unmarshall(layoutCfg.get('configTreeHeaders', {}))
+        self.configWidget.configTreeView.unmarshall(layoutCfg.get('configTreeHeaders', ''))
+        self.collector.tree.unmarshall(layoutCfg.get('collectorHeaders', ''))
 
         if 'winGeom' in layoutCfg:
             self.restoreGeometry(base64.b64decode(layoutCfg['winGeom']))

@@ -241,12 +241,18 @@ class Collector(BasePanel):
 
         # Create path label
         nodePath = '' if self.rti is None else self.rti.nodePath
-        pathItem = QtGui.QStandardItem(nodePath)
+        pathItem = model.item(row, 0)
+        if pathItem:
+            # Reusing path item. If we remove all items the column size will be lost.
+            pathItem.setText(nodePath)
+        else:
+            pathItem = QtGui.QStandardItem(nodePath)
+            pathItem.setEditable(False)
+            model.setItem(row, 0, pathItem)
+
         pathItem.setToolTip(nodePath)
-        pathItem.setEditable(False)
         if self.rti is not None:
             pathItem.setIcon(self.rti.decoration)
-        model.setItem(row, 0, pathItem)
 
         self._deleteSpinBoxes(row)
         self._populateComboBoxes(row)
