@@ -809,7 +809,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """ Opens a new window with the same inspector as the current window.
         """
         newWindow = self.argosApplication.addNewMainWindow(
-            cfg=self.marshall(), inspectorFullName=self.inspectorRegItem.fullName)
+            cfg=self.marshall(), inspectorFullName=self.inspectorRegItem.name)
 
         # Select the current item in the new window.
         currentItem, _currentIndex = self.repoWidget.repoTreeView.getCurrentItem()
