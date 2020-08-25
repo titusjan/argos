@@ -15,10 +15,10 @@ History
 *   If possible, only informative dimensions (i.e. length > 1) are selected in the collector
     comboboxes. (issue #9)
 *   Users can add/remove/configure plugins via the GUI.
-*   Grouped Details dock widgets together with repo viewer as they always apply to the selected item.
+*   Grouped the Details dock widgets together with repo viewer as they always apply to the selected item.
 *   Updated style and layout.
 *   Added --qt-style and --qss command line options. Using Qt Fusion style as default.
-*   Persistent settings are stored in json file instead of QSettings
+*   Persistent settings are stored in json file instead of QSettings.
 *   User can select config file that is used. Settings profiles are thus obsolete and removed.
 *   Open Exdir files read-only
 

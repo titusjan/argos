@@ -26,9 +26,6 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
     HEADERS = tuple('<first column') # override in descendants
     COL_DECORATION = None   # Column number that contains the decoration. None for no icons
 
-    # Can be connected to a QTreeView.update() as to update a single cell
-    #update = QtSignal(QtCore.QModelIndex) # Not used
-
     # Signal emitted when an item has been changed (e.g. by setData). This can be used to update
     # other widgets, whereas the dataChanged signal is used to update the treeView only. This
     # separation is introduced to break circular updates that would occur when the other widgets
@@ -36,6 +33,9 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
     # Inspired by the QStandardItemModel itemChanged signal but named sigItemChanged so that users
     # will see this is argos specific and thus find this definition more easily.
     sigItemChanged = QtSignal(BaseTreeItem)
+
+    # Emitted in removeAllChildrenAtIndex.
+    sigAllChildrenRemovedAtIndex = QtSignal(QtCore.QModelIndex)
 
     def __init__(self, parent=None):
 
@@ -58,7 +58,6 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         """ Returns the invisible root item, which contains no actual data
         """
         return self._invisibleRootTreeItem
-
 
 
     def setInvisibleRootItem(self, treeItem=None):
@@ -286,7 +285,6 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             return False
 
 
-
     def setItemData(self, item, column, value, role=Qt.EditRole):
         """ Sets the role data for the item at index to value.
 
@@ -381,7 +379,10 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         finally:
             self.endRemoveRows()
 
-        logger.debug("removeAllChildrenAtIndex completed")
+        logger.debug("Emitting sigChildrenRemovedAtIndex")
+        self.sigAllChildrenRemovedAtIndex.emit(parentIndex)
+
+        logger.debug("sigAllChildrenRemovedAtIndex completed")
 
 
     def deleteItemAtIndex(self, itemIndex):

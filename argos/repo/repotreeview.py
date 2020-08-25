@@ -203,6 +203,7 @@ class RepoTreeView(ArgosTreeView):
         selectionModel.currentChanged.connect(self.currentItemChanged)
 
         self.model().sigItemChanged.connect(self.repoTreeItemChanged)
+        self.model().sigAllChildrenRemovedAtIndex.connect(self.collapse)
 
 
     def finalize(self):
@@ -287,15 +288,15 @@ class RepoTreeView(ArgosTreeView):
     def openCurrentItem(self):
         """ Opens the current item in the repository.
         """
-        logger.debug("openCurrentItem")
+        logger.debug("openCurrentItem", stack_info=True)
         _currentItem, currentIndex = self.getCurrentItem()
         if not currentIndex.isValid():
             return
 
-        # Expanding the node will call indirectly call RepoTreeModel.fetchMore which will call
+        # Expanding the node will indirectly call RepoTreeModel.fetchMore which will call
         # BaseRti.fetchChildren, which will call BaseRti.open and thus open the current RTI.
         # BaseRti.open will emit the self.model.sigItemChanged signal, which is connected to
-        # RepoTreeView.onItemChanged.
+        # RepoTreeView.repoTreeItemChanged.
         self.expand(currentIndex)
 
 
@@ -310,29 +311,15 @@ class RepoTreeView(ArgosTreeView):
             return
 
         # First we remove all the children, this will close them as well.
+        # It will emit sigAllChildrenRemovedAtIndex, which is connected to the collapse method of all trees.
+        # Tt will thus collapse the current item in all trees. This is necessary, otherwise the children will be
+        # fetched immediately.
         self.model().removeAllChildrenAtIndex(currentIndex)
 
         # Close the current item. BaseRti.close will emit the self.model.sigItemChanged signal,
-        # which is connected to RepoTreeView.onItemChanged.
+        # which is connected to RepoTreeView.repoTreeItemChanged.
         currentItem.close()
-        self.dataChanged(currentIndex, currentIndex)
-        self.collapse(currentIndex) # otherwise the children will be fetched immediately
-                                    # Note that this will happen anyway if the item is open in
-                                    # in another view (TODO: what to do about this?)
 
-
-    # @QtSlot()
-    # def __not_used__removeCurrentFile(self):
-    #     """ Finds the root of of the current item, which represents a file,
-    #         and removes it from the list.
-    #     """
-    #     logger.debug("removeCurrentFile")
-    #     currentIndex = self.getRowCurrentIndex()
-    #     if not currentIndex.isValid():
-    #         return
-    #
-    #     topLevelIndex = self.model().findTopLevelItemIndex(currentIndex)
-    #     self.model().deleteItemAtIndex(topLevelIndex) # this will close the items resources.
 
 
     @QtSlot()
@@ -402,7 +389,7 @@ class RepoTreeView(ArgosTreeView):
             If the item is the currently selected item, the the collector (inspector) and
             metadata widgets are updated.
         """
-        logger.debug("onItemChanged: {}".format(rti))
+        logger.debug("repoTreeItemChanged: {}".format(rti))
         currentItem, _currentIndex = self.getCurrentItem()
 
         if rti == currentItem:

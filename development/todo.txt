@@ -42,8 +42,6 @@ TODO short term:
 
     HDF5 dataset with dimensions of size 0
 
-    Exporter to PNG
-
 
     Installed plugins dialog doesn't work if scipy is not installed.  (Test under Linux)
 
@@ -70,10 +68,15 @@ TODO short term:
 
     Test ExdirFieldRti
 
+    Copy all selected cells in table inspector during copy/paste
+
 
 TODO mid term:
 
     look at h5py 3.0
+
+    Exporter to PNG
+
 
     Make Rti.isFileFileFormat that opens a file and check if the RTI supports this.
         Call this only for RTIs that are visible in the tree (e.g. when the icons is queried by the model.
