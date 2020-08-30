@@ -214,7 +214,7 @@ class MainWindow(QtWidgets.QMainWindow):
         action.setShortcut(QtGui.QKeySequence("Ctrl+O"))
 
         self.openAsMenu = fileMenu.addMenu("Open As")
-        self.openAsMenu.aboutToShow.connect(self.repopulateOpenAsMenu)
+        self.openAsMenu.aboutToShow.connect(self._repopulateOpenAsMenu)
         fileMenu.addSeparator()
 
         # for action in self.repoWidget.repoTreeView.topLevelItemActionGroup.actions():
@@ -387,7 +387,7 @@ class MainWindow(QtWidgets.QMainWindow):
     ###########
 
 
-    def repopulateOpenAsMenu(self, *args, **kwargs):
+    def _repopulateOpenAsMenu(self, *args, **kwargs):
         """ Clear the window menu and fills it with the actions of the actionGroup
         """
         logger.debug("Called repopulateOpenAsMenu")
