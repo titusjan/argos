@@ -10,9 +10,6 @@ Argos philosophy:
 
 TODO short term:
 
-    close files on collapse.
-
-
     log to text file.
     Why doesn't argos start from command line at work on my work laptop (Beast)?
     argos --help on Windows (Beast) doesn't seem to give output)

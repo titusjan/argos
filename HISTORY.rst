@@ -20,6 +20,7 @@ History
 *   Added --qt-style and --qss command line options. Using Qt Fusion style as default.
 *   Persistent settings are stored in json file instead of QSettings.
 *   User can select config file that is used. Settings profiles are thus obsolete and removed.
+*   Collapsing an item in the data tree closes the underlying file or resources.
 *   Open Exdir files read-only
 
 0.2.2 (2020-03-28)

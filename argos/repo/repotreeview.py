@@ -27,7 +27,6 @@ from argos.repo.detailplugins.dim import DimensionsPane
 from argos.repo.detailplugins.prop import PropertiesPane
 from argos.repo.registry import globalRtiRegistry
 from argos.repo.repotreemodel import RepoTreeModel
-from argos.utils.misc import string_to_identifier
 from argos.widgets.argostreeview import ArgosTreeView
 from argos.widgets.constants import (LEFT_DOCK_WIDTH, COL_NODE_NAME_WIDTH,
                                         COL_SHAPE_WIDTH, COL_ELEM_TYPE_WIDTH,
@@ -188,19 +187,23 @@ class RepoTreeView(ArgosTreeView):
                                          triggered=self.reloadFileOfCurrentItem)
         self.addAction(reloadFileAction)
 
-        self.openItemAction = QtWidgets.QAction("Open Item", self,
-                                       #shortcut="Ctrl+Shift+C",
-                                       triggered=self.openCurrentItem)
+        self.openItemAction = QtWidgets.QAction("Open Item", self, triggered=self.openCurrentItem)
         self.addAction(self.openItemAction)
 
-        self.closeItemAction = QtWidgets.QAction("Close Item", self,
-                                        #shortcut="Ctrl+C", # Ctrl+C already taken for Copy
-                                        triggered=self.closeCurrentItem)
+        self.closeItemAction = QtWidgets.QAction("Close Item", self, triggered=self.closeCurrentItem)
         self.addAction(self.closeItemAction)
+
+        self.collapseItemAction = QtWidgets.QAction("Collapse Item", self, triggered=self.collapseCurrentItem)
+        self.addAction(self.collapseItemAction)
 
         # Connect signals
         selectionModel = self.selectionModel() # need to store reference to prevent crash in PySide
         selectionModel.currentChanged.connect(self.currentItemChanged)
+
+        # Close files on collapse. Note that, self.collapsed does NOT seem to be connected to self.collapse by default,
+        # so there is not conflict here. Also there is no need to connect to expand, this is automatic with the
+        # fetchMore mechanism
+        self.collapsed.connect(self.closeItem)
 
         self.model().sigItemChanged.connect(self.repoTreeItemChanged)
         self.model().sigAllChildrenRemovedAtIndex.connect(self.collapse)
@@ -288,7 +291,7 @@ class RepoTreeView(ArgosTreeView):
     def openCurrentItem(self):
         """ Opens the current item in the repository.
         """
-        logger.debug("openCurrentItem", stack_info=True)
+        logger.debug("openCurrentItem called")
         _currentItem, currentIndex = self.getCurrentItem()
         if not currentIndex.isValid():
             return
@@ -305,21 +308,56 @@ class RepoTreeView(ArgosTreeView):
         """ Closes the current item in the repository.
             All its children will be unfetched and closed.
         """
-        logger.debug("closeCurrentItem")
-        currentItem, currentIndex = self.getCurrentItem()
-        if not currentIndex.isValid():
+        self.closeItem(self.getRowCurrentIndex())
+
+
+    @QtSlot(QtCore.QModelIndex)
+    def closeItem(self, index):
+        """ Closes the item at the index and collapses the node
+        """
+        logger.debug("closeItem called")
+        if not index.isValid():
+            logger.debug("Index invalid (returning)")
             return
 
         # First we remove all the children, this will close them as well.
         # It will emit sigAllChildrenRemovedAtIndex, which is connected to the collapse method of all trees.
         # Tt will thus collapse the current item in all trees. This is necessary, otherwise the children will be
         # fetched immediately.
-        self.model().removeAllChildrenAtIndex(currentIndex)
+        self.model().removeAllChildrenAtIndex(index)
 
-        # Close the current item. BaseRti.close will emit the self.model.sigItemChanged signal,
+        # Close the item. BaseRti.close will emit the self.model.sigItemChanged signal,
         # which is connected to RepoTreeView.repoTreeItemChanged.
-        currentItem.close()
+        item = self.model().getItem(index)
+        logger.debug("Item: {}".format(item))
+        item.close()
 
+
+    def expand(self, index):
+        """ Expands current item. Updates context menu action.
+        """
+        super().expand(index)
+        self.collapseItemAction.setEnabled(self.isExpanded(index))
+
+
+    def collapse(self, index):
+        """ Collapses current item. Updates context menu action.
+        """
+        super().collapse(index)
+        self.collapseItemAction.setEnabled(self.isExpanded(index))
+
+
+    @QtSlot()
+    def collapseCurrentItem(self):
+        """ Closes the current item in the repository.
+            All its children will be unfetched and closed.
+        """
+        currentIndex = self.getRowCurrentIndex()
+        oldBlockState = self.blockSignals(True)  # Prevent automatically closing of item.
+        try:
+            self.collapse(currentIndex)
+        finally:
+            self.blockSignals(oldBlockState)
 
 
     @QtSlot()
@@ -406,7 +444,7 @@ class RepoTreeView(ArgosTreeView):
 
         hasCurrent = currentIndex.isValid()
         assert hasCurrent == (currentItem is not None), \
-            "If current idex is valid, currentIndex may not be None" # sanity check
+            "If current index is valid, currentIndex may not be None" # sanity check
 
         # Set the item in the collector, will will subsequently update the inspector.
         if hasCurrent:
@@ -419,6 +457,7 @@ class RepoTreeView(ArgosTreeView):
         self.currentItemActionGroup.setEnabled(hasCurrent)
         isTopLevel = hasCurrent and self.model().isTopLevelIndex(currentIndex)
         self.topLevelItemActionGroup.setEnabled(isTopLevel)
+        self.collapseItemAction.setEnabled(self.isExpanded(currentIndex))
         self.openItemAction.setEnabled(currentItem is not None
                                        and currentItem.hasChildren()
                                        and not currentItem.isOpen)

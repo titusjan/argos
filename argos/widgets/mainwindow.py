@@ -716,7 +716,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.repoWidget.repoTreeView.setFocus()
             return lastItem, lastIndex
         except Exception as ex:
-            logger.warning("Unable to select {!r} because: {}".format(path, ex))
+            logger.warning("Unable to select {!r} because: {}".format(path, ex), stack_info=not DEBUGGING)
             if DEBUGGING:
                 raise
             return None, None
