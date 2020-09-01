@@ -18,7 +18,6 @@
 """ Abstract base classes for modeling data tree items for use in the ConfigTreeModel
 """
 import logging, os
-from json import JSONEncoder, JSONDecoder, loads, dumps
 
 from argos.info import DEBUGGING, icons_directory
 from argos.qt import Qt, QtCore, QtGui, QtWidgets, QtSlot

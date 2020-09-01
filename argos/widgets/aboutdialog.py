@@ -72,6 +72,7 @@ class AboutDialog(QtWidgets.QDialog):
             moduleInfo = mi.ImportedModuleInfo(moduleInfo)
 
         line = "{:15s}: {}".format(moduleInfo.name, moduleInfo.verboseVersion)
+        logger.info("  {}".format(line))
         self.editor.appendPlainText(line)
         QtWidgets.QApplication.instance().processEvents()
 
@@ -83,6 +84,7 @@ class AboutDialog(QtWidgets.QDialog):
         self.progressLabel.setText("Retrieving package info...")
         self.editor.clear()
 
+        logger.info("Used packages:")
         self._addModuleInfo(mi.PythonModuleInfo())
         self._addModuleInfo(mi.QtModuleInfo())
 

@@ -33,7 +33,7 @@ import sys
 logging.captureWarnings(True)
 
 from argos.info import DEBUGGING, PROJECT_NAME, VERSION, EXIT_CODE_RESTART, resource_directory
-
+from argos.utils.logs import initLogging
 from argos.widgets.misc import setApplicationQtStyle, setApplicationStyleSheet
 
 logger = logging.getLogger('argos')
@@ -70,11 +70,11 @@ def browse(fileNames=None,
             styleSheet=styleSheet,
             settingsFile=settingsFile)
 
-        logger.info("Argos event loop finished with exit code: {}".format(exitCode))
+        logger.info("Argos finished with exit code: {}".format(exitCode))
         if exitCode != EXIT_CODE_RESTART:
             return exitCode
         else:
-            logger.critical("----- Restart requested. The Qt event loop will be restarted. -----\n")
+            logger.info("----- Restart requested. The Qt event loop will be restarted. -----\n")
 
 
 
@@ -160,8 +160,8 @@ def remove_process_serial_number(arg_list):
 def main():
     """ Starts Argos main window
     """
-    about_str = "{} version: {}".format(PROJECT_NAME, VERSION)
-    parser = argparse.ArgumentParser(description = about_str)
+    aboutStr = "{} version: {}".format(PROJECT_NAME, VERSION)
+    parser = argparse.ArgumentParser(description = aboutStr)
 
     parser.add_argument('fileNames', metavar='FILE', nargs='*',
                         help='Files or directories that will be loaded at start up.')
@@ -189,9 +189,13 @@ def main():
     parser.add_argument('-d', '--debugging-mode', dest='debugging', action = 'store_true',
         help="Run Argos in debugging mode. Useful during development.")
 
-    parser.add_argument('-l', '--log-level', dest='log_level', default='warning',
-        help="Log level. Only log messages with a level higher or equal than this will be printed. "
-             "Default: 'warning'",
+    parser.add_argument('--log-config', dest='logConfigFileName',
+                        help='Logging configuration file. If not set a default will be used.')
+
+    parser.add_argument('-l', '--log-level', dest='log_level', default='',
+        help="Log level. If set only log messages with a level higher or equal than this will be printed to "
+             "screen (stderr). Overrides the log level of the StreamHandlers in the --log-config. Does not alter the "
+             "logLevel for file handlers.",
         choices=('debug', 'info', 'warning', 'error', 'critical'))
 
     parser.add_argument('--version', action = 'store_true',
@@ -199,16 +203,21 @@ def main():
 
     args = parser.parse_args(remove_process_serial_number(sys.argv[1:]))
 
-    rootLogger = logging.getLogger()
-    if DEBUGGING:
-        logger.info("Setting log level to: {}".format(args.log_level.upper()))
-    rootLogger.setLevel(args.log_level.upper())
+
+    initLogging(args.logConfigFileName, args.log_level)
+    logger.info("######################################")
+    logger.info("####         Starting Argos       ####")
+    logger.info("######################################")
+    logger.info(aboutStr)
+
+    logger.debug("argv: {}".format(sys.argv))
+    logger.debug("PID: {}".format(os.getpid()))
 
     if DEBUGGING:
         logger.warning("Debugging flag is on!")
 
     if args.version:
-        print(about_str)
+        print(aboutStr)
         sys.exit(0)
 
     if args.list_inspectors:
@@ -217,7 +226,6 @@ def main():
 
     logger.info('Started {} {}'.format(PROJECT_NAME, VERSION))
     logger.info("Python version: {}".format(sys.version).replace('\n', ''))
-    #logger.info('Using: {}'.format('PyQt' if USE_PYQT else 'PySide'))
 
     # Imported here so this module can be imported without Qt being installed.
     from argos.qt.bindings import QT_API_NAME

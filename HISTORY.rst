@@ -13,13 +13,15 @@ History
 *   Added rectangle zoom mode in 1D line plot and 2D image plot inspectors (issue #8)
 *   Zooming can be also done by dragging while holding the right mouse button (issue #8)
 *   If possible, only informative dimensions (i.e. length > 1) are selected in the collector
-    comboboxes. (issue #9)
+    combo boxes. (issue #9)
 *   Users can add/remove/configure plugins via the GUI.
 *   Grouped the Details dock widgets together with repo viewer as they always apply to the selected item.
 *   Updated style and layout.
 *   Added --qt-style and --qss command line options. Using Qt Fusion style as default.
 *   Persistent settings are stored in json file instead of QSettings.
-*   User can select config file that is used. Settings profiles are thus obsolete and removed.
+*   Added -c command line option for specifying the general configuration file. Settings profiles are thus obsolete
+    and have been removed.
+*   Added --log-config command line option for specifying the logging configuration file.
 *   Collapsing an item in the data tree closes the underlying file or resources.
 *   Open Exdir files read-only
 

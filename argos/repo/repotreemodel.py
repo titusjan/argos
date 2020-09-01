@@ -25,6 +25,7 @@ from argos.repo.filesytemrtis import createRtiFromFileName
 from argos.repo.baserti import BaseRti
 from argos.repo.registry import ICON_COLOR_UNDEF, RtiRegItem
 from argos.utils.cls import to_string, type_name, check_class
+from argos.utils.dirs import normRealPath
 
 
 logger = logging.getLogger(__name__)
@@ -196,6 +197,7 @@ class RepoTreeModel(BaseTreeModel):
             Returns the index of the newly inserted RTI
         """
         check_class(rtiRegItem, RtiRegItem, allow_none=True)
+        fileName = normRealPath(fileName)
         logger.info("Loading data from: {!r}".format(fileName))
 
         # TODO: rtiRegItem.createRtiFromFileName?

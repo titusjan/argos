@@ -161,3 +161,15 @@ if __name__ == "__main__":
 
 
 
+def replaceStringsInDict(obj, old, new):
+    """ Recursively searches for a string in a dict and replaces a string by another
+    """
+    if isinstance(obj, dict):
+        return {key: replaceStringsInDict(value, old, new) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        return [replaceStringsInDict(value, old, new) for value in obj]
+    elif isinstance(obj, str):
+        return obj.replace(old, new)
+    else:
+        return obj
+
