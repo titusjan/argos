@@ -226,7 +226,7 @@ def main():
     from PyQt5 import QtWidgets
 
     from argos import info
-    from argos.utils.misc import make_log_format
+    from argos.utils.logs import make_log_format
     from argos.qt.misc import handleException
     from argos.reg.tabmodel import BaseTableModel, BaseItemStore, BaseItem
 
