@@ -93,16 +93,14 @@ THIS_MODULE_DIR = os.path.dirname(os.path.realpath(__file__))
 # }
 
 def findStreamHandlersInConfig():
-    """ Searches for a handlers of type StreamHandler in the root logger.
-
-        Raises key error if not found.
+    """ Searches for a handlers with 'stream' their name. Returns a list of handlers.
     """
-    foundHandlers = []
     rootLogger = logging.getLogger()
-    #logger.debug("Searching for operationalHandler in the root logger")
+    #logger.debug("Searching for Handlers in the root logger haveing 'stream' in their name")
+    foundHandlers = []
     for handler in rootLogger.handlers:
-        #logger.debug("  handler: {}".format(dir(handler.name)))
-        if isinstance(handler, logging.StreamHandler):
+        #logger.debug("  handler name: {}".format(handler.name))
+        if 'stream' in handler.name.lower():
             foundHandlers.append(handler)
 
     return foundHandlers
@@ -144,6 +142,7 @@ def initLogging(configFileName=None, streamLogLevel=None):
         #logging.disable(levelNr)
 
         for streamHandler in findStreamHandlersInConfig():
+            logger.critical("Setting log level to {} in handler: {} ".format(levelNr, streamHandler))
             streamHandler.setLevel(levelNr)
 
     logging.info("Initialized logging from: '{}'".format(normRealPath(configFileName)))

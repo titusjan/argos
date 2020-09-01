@@ -138,13 +138,6 @@ def printInspectors():
     for regItem in argosApp.inspectorRegistry.items:
         print(regItem.fullName)
 
-# TODO: better logging
-# def configBasicLogging(level = 'DEBUG'):
-#     """ Setup basic config logging.
-#     """
-#     fmt = '%(name)40s %(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-7s: %(message)s'
-#     logging.basicConfig(level=level, format=fmt)
-
 
 def remove_process_serial_number(arg_list):
     """ Creates a copy of a list (typically sys.argv) where the strings that
@@ -211,6 +204,7 @@ def main():
     logger.info(aboutStr)
 
     logger.debug("argv: {}".format(sys.argv))
+    logger.info("Main argos module file: {}".format(__file__))
     logger.debug("PID: {}".format(os.getpid()))
 
     if DEBUGGING:
