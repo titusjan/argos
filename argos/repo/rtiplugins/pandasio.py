@@ -351,7 +351,7 @@ class PandasCsvFileRti(PandasDataFrameRti):
     def _openResources(self):
         """ Uses pandas.read_cs to open the underlying file
         """
-        self._ndFrame = pd.read_csv(self._fileName)
+        self._ndFrame = pd.read_csv(self._fileName, comment='#')
 
 
     def _closeResources(self):

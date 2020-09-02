@@ -39,8 +39,8 @@ DATA & LIBS:
 	http://www.census.gov/population/international/data/countryrank/rank.php
 
 	# Selectors plugins
-	http://blaze.pydata.org/en/latest/
-	BColz
+	http://blaze.pydata.org/en/latest/  (# seems dead since 2018)
+	BColz                               (# seems dead since 2017)
 
 	# Plot and Mapping libs:
 	https://wiki.python.org/moin/NumericAndScientific/Plotting
@@ -82,3 +82,7 @@ DATA & LIBS:
 
     # Grams SPC
     https://en.wikipedia.org/wiki/SPC_file_format
+
+    # NASA NARR:
+    ftp://ftp.cdc.noaa.gov/Datasets/NARR/Dailies/monolevel/
+
