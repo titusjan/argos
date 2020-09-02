@@ -17,7 +17,7 @@
             "class": "logging.StreamHandler",
             "formatter": "screenFormatter",
             "stream": "ext://sys.stderr",
-            "level": "DEBUG"
+            "level": "WARNING"
         },
         "currentRunHandler": {
             "class": "logging.FileHandler",

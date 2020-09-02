@@ -142,7 +142,7 @@ def initLogging(configFileName=None, streamLogLevel=None):
         #logging.disable(levelNr)
 
         for streamHandler in findStreamHandlersInConfig():
-            logger.critical("Setting log level to {} in handler: {} ".format(levelNr, streamHandler))
+            logger.debug("Setting log level to {} in handler: {} ".format(levelNr, streamHandler))
             streamHandler.setLevel(levelNr)
 
     logging.info("Initialized logging from: '{}'".format(normRealPath(configFileName)))
