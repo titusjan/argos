@@ -23,6 +23,8 @@ import os.path
 import pprint
 import sys
 
+from datetime import datetime
+
 from argos.info import DEBUGGING, EXIT_CODE_SUCCESS
 from argos.inspector.registry import InspectorRegistry, DEFAULT_INSPECTOR
 from argos.qt import QtCore, QtWidgets, QtSlot
@@ -94,6 +96,8 @@ class ArgosApplication(QtCore.QObject):
 
         self._mainWindows = []
         self._settingsSaved = False  # boolean to prevent saving settings twice
+        self._recentFiles = []    # list of recently opened files ([timeStampe, fileName] per file).
+        self._maxRecentFiles = 10  # Maximum size of recent file
 
         #self.qApplication.lastWindowClosed.connect(self.quit)
         self.qApplication.aboutToQuit.connect(self.aboutToQuitHandler)
@@ -259,6 +263,8 @@ class ArgosApplication(QtCore.QObject):
                      if colorMap.meta_data.favorite]
         logger.debug("cmFavorites: {}".format(cfg['cmFavorites']))
 
+        cfg['recentFiles'] = self._recentFiles
+
         cfg['plugins'] = {}
         cfg['plugins']['inspectors'] = self.inspectorRegistry.marshall()
         cfg['plugins']['file-formats'] = self.rtiRegistry.marshall()
@@ -288,6 +294,8 @@ class ArgosApplication(QtCore.QObject):
         favKeys = cfg.get('cmFavorites', DEF_FAV_COLOR_MAPS)
         for colorMap in cmLib.color_maps:
             colorMap.meta_data.favorite = colorMap.key in favKeys
+
+        self._recentFiles = cfg.get('recentFiles', [])
 
         pluginCfg = cfg.get('plugins', {})
 
@@ -387,6 +395,33 @@ class ArgosApplication(QtCore.QObject):
         """
         for fileName in fileNames:
             self.repo.loadFile(fileName, rtiRegItem=None)
+
+
+    def getRecentFiles(self):
+        """ Adds the files to the list of recently opened files
+        """
+        return self._recentFiles
+
+
+    def addToRecentFiles(self, fileNames):
+        """ Adds the files to the list of recently opened files
+        """
+        # We only use the timestamp for sorting so we can store it as string. Easy to (un)marshall.
+        timeStamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        recentPaths = [elem[1] for elem in self._recentFiles]
+
+        for fileName in fileNames:
+            try:
+                existingIndex = recentPaths.index(fileName)
+            except ValueError:
+                self._recentFiles.append([timeStamp, fileName])
+            else:
+                # Only update timestamp if path already in de list.
+                self._recentFiles[existingIndex][0] = timeStamp
+
+        self._recentFiles.sort(reverse=True)
+        self._recentFiles = self._recentFiles[0:self._maxRecentFiles]
 
 
     def repopulateAllWindowMenus(self):

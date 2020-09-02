@@ -215,6 +215,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.openAsMenu = fileMenu.addMenu("Open As")
         self.openAsMenu.aboutToShow.connect(self._repopulateOpenAsMenu)
+
+        self.openRecentMenu = fileMenu.addMenu("Open Recent")
+        self.openRecentMenu.aboutToShow.connect(self._repopulateOpenRecentMenu)
+
         fileMenu.addSeparator()
 
         # for action in self.repoWidget.repoTreeView.topLevelItemActionGroup.actions():
@@ -385,6 +389,39 @@ class MainWindow(QtWidgets.QMainWindow):
     ###########
     # Methods #
     ###########
+
+
+    def _repopulateOpenRecentMenu(self, *args, **kwargs):
+        """ Clear the window menu and fills it with the actions of the actionGroup
+        """
+        logger.debug("Called _repopulateOpenRecentMenu")
+
+        for action in self.openRecentMenu.actions():
+            self.openRecentMenu.removeAction(action)
+
+        # Count duplicate basename. These will be added with their full path.
+        baseNameCount = {}
+        for _timeStamp, fileName in self._argosApplication.getRecentFiles():
+            _, baseName = os.path.split(fileName)
+            if baseName in baseNameCount:
+                baseNameCount[baseName] += 1
+            else:
+                baseNameCount[baseName] = 1
+
+        # List is already sorted when the files are added.
+        for _timeStamp, fileName in self._argosApplication.getRecentFiles():
+
+            def createTrigger():
+                "Function to create a closure with the regItem"
+                _fileName = fileName # keep reference in closure
+                return lambda: self.openFiles([fileName])
+
+            dirName, baseName = os.path.split(fileName)
+            fileLabel = fileName if baseNameCount[baseName] > 1 else baseName
+
+            action = QtWidgets.QAction(fileLabel, self, enabled=True, triggered=createTrigger())
+            action.setToolTip(fileName)
+            self.openRecentMenu.addAction(action)
 
 
     def _repopulateOpenAsMenu(self, *args, **kwargs):
@@ -663,6 +700,7 @@ class MainWindow(QtWidgets.QMainWindow):
             :param fileMode: is passed to the file dialog.
             :rtype fileMode: QtWidgets.QFileDialog.FileMode constant
         """
+        check_is_a_sequence(fileNames, allow_none=True)
         if fileNames is None:
             dialog = QtWidgets.QFileDialog(self, caption=caption)
 
@@ -682,7 +720,11 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 fileNames = []
 
+            # Only add files that were added via the dialog box (not via the command line).
+            self._argosApplication.addToRecentFiles(fileNames)
+
         fileRootIndex = None
+        logger.debug("Opening file names: {}".format(fileNames))
         for fileName in fileNames:
             fileRootIndex = self.argosApplication.repo.loadFile(fileName, rtiRegItem=rtiRegItem)
             self.repoWidget.repoTreeView.setExpanded(fileRootIndex, True)
@@ -717,8 +759,8 @@ class MainWindow(QtWidgets.QMainWindow):
             return lastItem, lastIndex
         except Exception as ex:
             logger.warning("Unable to select {!r} because: {}".format(path, ex), stack_info=not DEBUGGING)
-            if DEBUGGING:
-                raise
+            # if DEBUGGING:
+            #     raise
             return None, None
 
 

@@ -68,6 +68,8 @@ class BaseRti(AbstractLazyLoadTreeItem):
         # See https://julien.danjou.info/blog/2013/guide-python-static-class-abstract-methods
         #logger.debug("Trying to create object of class: {!r}".format(cls))
         basename = os.path.basename(os.path.realpath(fileName)) # strips trailing slashes
+        assert basename, "Empty basename ({!r}) from file: {}"\
+            .format(basename, os.path.realpath(fileName)) # TODO: can happen with root dir
         return cls(nodeName=basename, fileName=fileName, iconColor=iconColor)
 
 
