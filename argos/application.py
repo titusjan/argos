@@ -403,21 +403,22 @@ class ArgosApplication(QtCore.QObject):
         return self._recentFiles
 
 
-    def addToRecentFiles(self, fileNames):
+    def addToRecentFiles(self, fileNames, rtiRegItemName):
         """ Adds the files to the list of recently opened files
         """
         # We only use the timestamp for sorting so we can store it as string. Easy to (un)marshall.
         timeStamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        recentPaths = [elem[1] for elem in self._recentFiles]
+        # List of (fileName, rtiRegItemName) tuples to test if the new item already is in this list.
+        recentItems = [(item[1], item[2]) for item in self._recentFiles]
 
         for fileName in fileNames:
             try:
-                existingIndex = recentPaths.index(fileName)
+                existingIndex = recentItems.index((fileName, rtiRegItemName))
             except ValueError:
-                self._recentFiles.append([timeStamp, fileName])
+                self._recentFiles.append([timeStamp, fileName, rtiRegItemName])
             else:
-                # Only update timestamp if path already in de list.
+                # Only update timestamp if item is already in de list.
                 self._recentFiles[existingIndex][0] = timeStamp
 
         self._recentFiles.sort(reverse=True)

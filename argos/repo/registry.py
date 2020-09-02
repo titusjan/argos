@@ -41,6 +41,7 @@ ICON_COLOR_PILLOW = '#880088'
 ICON_COLOR_SCIPY = ICON_COLOR_NUMPY
 
 
+
 class RtiRegItem(BaseRegItem):
     """ Class to keep track of a registered Repo Tree Item.
     """
@@ -120,6 +121,8 @@ class RtiRegItem(BaseRegItem):
 
 
 
+
+
 class RtiRegistry(BaseRegistry):
     """ Class that can be used to register repository tree items (RTIs).
 
@@ -129,6 +132,9 @@ class RtiRegistry(BaseRegistry):
         filter in the getFileDialogFilter function.
     """
     ITEM_CLASS = RtiRegItem
+
+    DIRECTORY_REG_ITEM = RtiRegItem('Directory', 'argos.repo.filesytemrtis.DirectoryRti',
+                                    iconColor=ICON_COLOR_UNKNOWN)
 
     def __init__(self):
         """ Constructor
@@ -163,12 +169,8 @@ class RtiRegistry(BaseRegistry):
     def extraItemsForOpenAsMenu(self):
         """ Creates list of RtiRegItem to append to the 'open-as' and 'reload-as menus
         """
-        return [
-            # Add directory to the context menu so a an Exdir 'file' can be re-opened as a directory
-            RtiRegItem('Directory',
-                       'argos.repo.filesytemrtis.DirectoryRti',
-                       iconColor=ICON_COLOR_UNKNOWN)
-        ]
+        # Add directory to the context menu so a an Exdir 'file' can be re-opened as a directory
+        return [self.DIRECTORY_REG_ITEM]
 
 
     def getDefaultItems(self):

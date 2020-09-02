@@ -56,6 +56,7 @@ class RtiIconFactory(object):
     CLOSED = "closed"
 
     # Registered glyph names
+    TRANSPARENT = "transparent"  # Transparent icon to reserve space
     ERROR = "error"
     FOLDER = "folder"
     FILE = "file"
@@ -83,6 +84,7 @@ class RtiIconFactory(object):
 
         self.registerIcon(None, None) # no icon
         self.registerIcon("",   None) # no icon
+        self.registerIcon("transparent_1x1.svg", self.TRANSPARENT)
         self.registerIcon("warning-sign.svg", self.ERROR)
         self.registerIcon("folder-open.svg",  self.FOLDER, True)
         self.registerIcon("folder-close.svg", self.FOLDER, False)
@@ -178,6 +180,45 @@ class RtiIconFactory(object):
                     return None
 
         return self._icons[key]
+
+
+    def createIconFromSvg(self, svg, color=None, colorsToBeReplaced=None):
+        """ Creates a QIcon given an SVG string.
+
+            Optionally replaces the colors in colorsToBeReplaced by color.
+
+            :param svg: string containing Scalable Vector Graphics XML
+            :param color: '#RRGGBB' string (e.g. '#FF0000' for red)
+            :param colorsToBeReplaced: optional list of colors to be replaced by color
+                If None, it will be set to the fill colors of the snip-icon libary
+            :return: QtGui.QIcon
+        """
+        if colorsToBeReplaced is None:
+            colorsToBeReplaced = self.colorsToBeReplaced
+
+        if color:
+            for oldColor in colorsToBeReplaced:
+                svg = svg.replace(oldColor, color)
+
+        # From http://stackoverflow.com/questions/15123544/change-the-color-of-an-svg-in-qt
+        qByteArray = QtCore.QByteArray(svg.encode('utf-8'))
+        # qByteArray = QtCore.QByteArray() # the old PyQt way
+        # qByteArray.append(svg)
+
+        svgRenderer = QtSvg.QSvgRenderer(qByteArray)
+        icon = QtGui.QIcon()
+        for size in self.renderSizes:
+            pixMap = QtGui.QPixmap(QtCore.QSize(size, size))
+            pixMap.fill(Qt.transparent)
+            pixPainter = QtGui.QPainter(pixMap)
+            pixPainter.setRenderHint(QtGui.QPainter.TextAntialiasing, True)
+            pixPainter.setRenderHint(QtGui.QPainter.Antialiasing, True)
+            svgRenderer.render(pixPainter)
+            pixPainter.end()
+            icon.addPixmap(pixMap)
+
+        return icon
+
 
 
     def createIconFromSvg(self, svg, color=None, colorsToBeReplaced=None):

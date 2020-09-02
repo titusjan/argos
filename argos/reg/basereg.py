@@ -247,7 +247,9 @@ class BaseRegistry(BaseItemStore):
     def getItemById(self, identifier):
         """ Gets a registered item given its identifier. Returns None if not found.
         """
+        #logger.debug("Searching for '{}' in items".format(identifier))
         for item in self._items:
+            #logger.debug("    Item: {}".format(item.identifier))
             if item.identifier == identifier:
                 return item
 

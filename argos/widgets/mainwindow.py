@@ -39,7 +39,10 @@ from argos.inspector.errormsg import ErrorMsgInspector
 from argos.inspector.selectionpane import InspectorSelectionPane
 from argos.qt import Qt, QUrl, QtCore, QtGui, QtWidgets, QtSignal, QtSlot
 from argos.qt.misc import getWidgetGeom, getWidgetState
+from argos.reg.basereg import nameToIdentifier
 from argos.reg.dialog import PluginsDialog
+from argos.repo.iconfactory import RtiIconFactory
+from argos.repo.registry import RtiRegistry
 from argos.repo.repotreeview import RepoWidget
 from argos.repo.testdata import createArgosTestData
 from argos.utils.cls import check_class, check_is_a_sequence
@@ -395,32 +398,52 @@ class MainWindow(QtWidgets.QMainWindow):
         """ Clear the window menu and fills it with the actions of the actionGroup
         """
         logger.debug("Called _repopulateOpenRecentMenu")
+        rtiIconFactory = RtiIconFactory.singleton()
 
         for action in self.openRecentMenu.actions():
             self.openRecentMenu.removeAction(action)
 
         # Count duplicate basename. These will be added with their full path.
         baseNameCount = {}
-        for _timeStamp, fileName in self._argosApplication.getRecentFiles():
+        for _timeStamp, fileName, _rtiRegName in self._argosApplication.getRecentFiles():
             _, baseName = os.path.split(fileName)
             if baseName in baseNameCount:
                 baseNameCount[baseName] += 1
             else:
                 baseNameCount[baseName] = 1
 
-        # List is already sorted when the files are added.
-        for _timeStamp, fileName in self._argosApplication.getRecentFiles():
+        # List returned by getRecentFiles is already sorted.
+        for _timeStamp, fileName, rtiRegItemName in self._argosApplication.getRecentFiles():
+
+            regItemId = nameToIdentifier(rtiRegItemName)
+            rtiRegItem = self.argosApplication.rtiRegistry.getItemById(regItemId)
+
+            # Bit of a hack to use a Directory RegItem, which is not in the registry.
+            if rtiRegItem is None:
+                directoryRtiRegItem = self.argosApplication.rtiRegistry.DIRECTORY_REG_ITEM
+                if rtiRegItemName == 'Directory':
+                    rtiRegItem = directoryRtiRegItem
+
+            if rtiRegItem and not rtiRegItem.triedImport:
+                rtiRegItem.tryImportClass()
 
             def createTrigger():
                 "Function to create a closure with the regItem"
                 _fileName = fileName # keep reference in closure
-                return lambda: self.openFiles([fileName])
+                _rtiRegItem = rtiRegItem # keep reference in closure
+                return lambda: self.openFiles([fileName], rtiRegItem=rtiRegItem)
 
             dirName, baseName = os.path.split(fileName)
             fileLabel = fileName if baseNameCount[baseName] > 1 else baseName
 
             action = QtWidgets.QAction(fileLabel, self, enabled=True, triggered=createTrigger())
             action.setToolTip(fileName)
+            if rtiRegItem is not None:
+                action.setIcon(rtiRegItem.decoration)
+            else:
+                # Reserve space
+                action.setIcon(rtiIconFactory.getIcon(RtiIconFactory.TRANSPARENT, False))
+
             self.openRecentMenu.addAction(action)
 
 
@@ -707,9 +730,14 @@ class MainWindow(QtWidgets.QMainWindow):
             if rtiRegItem is None:
                 nameFilter = 'All files (*);;' # Default show all files.
                 nameFilter += self.argosApplication.rtiRegistry.getFileDialogFilter()
+                if fileMode == QtWidgets.QFileDialog.Directory:
+                    rtiRegItemName = 'Directory'
+                else:
+                    rtiRegItemName = ''
             else:
                 nameFilter = rtiRegItem.getFileDialogFilter()
                 nameFilter += ';;All files (*)'
+                rtiRegItemName = rtiRegItem.name
             dialog.setNameFilter(nameFilter)
 
             if fileMode:
@@ -721,7 +749,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 fileNames = []
 
             # Only add files that were added via the dialog box (not via the command line).
-            self._argosApplication.addToRecentFiles(fileNames)
+            self._argosApplication.addToRecentFiles(fileNames, rtiRegItemName)
 
         fileRootIndex = None
         logger.debug("Opening file names: {}".format(fileNames))
