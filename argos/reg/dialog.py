@@ -268,6 +268,8 @@ class PluginsDialog(QtWidgets.QDialog):
             self.editor.setHtml(wrapHtmlColor(html, COLOR_ERROR))
         elif regItem.successfullyImported is False:
             html = "{}Unable to import plugin.\n\nError: {}".format(header, regItem.exception)
+            if hasattr(regItem.exception, "traceBackString"):
+                html += "<pre>{}</pre>".format(regItem.exception.traceBackString)
             self.editor.setHtml(wrapHtmlColor(html, COLOR_ERROR))
         elif regItem.descriptionHtml:
             self.editor.setHtml(header.replace('\n', '<br>') + regItem.descriptionHtml)

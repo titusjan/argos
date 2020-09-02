@@ -1,0 +1,56 @@
+{
+    "version": 1,
+    "disable_existing_loggers": false,
+
+    "formatters": {
+        "fileFormatter": {
+            "format": "%(asctime)s.%(msecs)03d : pid = %(process)5d : %(filename)25s:%(lineno)-4d : %(levelname)-8s: %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S"
+        },
+        "screenFormatter": {
+            "format": "%(asctime)s.%(msecs)03d : %(filename)25s:%(lineno)-4d : %(levelname)-8s: %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S"
+        }
+    },
+    "handlers": {
+        "streamHandler": {
+            "class": "logging.StreamHandler",
+            "formatter": "screenFormatter",
+            "stream": "ext://sys.stderr",
+            "level": "WARNING"
+        },
+        "currentRunHandler": {
+            "class": "logging.FileHandler",
+            "formatter": "fileFormatter",
+            "filename": "@logDir@/last_run.log",
+            "encoding": "utf-8",
+            "delay": "true",
+            "mode": "w",
+            "level": "DEBUG"
+        },
+        "rotatingFileHandler": {
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "formatter": "fileFormatter",
+            "filename": "@logDir@/argos.log",
+            "backupCount": 5,
+            "when": "d",
+            "interval": 1,
+            "encoding": "utf-8",
+            "delay": "true",
+            "level": "DEBUG"
+        }
+    },
+    "root": {
+        "level": "WARNING",
+        "handlers": [
+            "streamHandler",
+            "currentRunHandler",
+            "rotatingFileHandler"
+        ]
+    },
+    "loggers": {
+        "argos": {
+            "level": "DEBUG"
+        }
+    }
+}

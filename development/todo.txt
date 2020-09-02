@@ -10,62 +10,76 @@ Argos philosophy:
 
 TODO short term:
 
+    New Features
+    ------------
+        Use glob module to expand path names on windows
 
-    Why doesn't argos start from command line at work on my work laptop (Beast)?
-    argos --help on Windows (Beast) doesn't seem to give output)
+        'open recent' in menu
 
-    Is it possible to use word wrap in plot titles?
+        Is it possible to use word wrap in plot titles?
 
-    'open recent' in menu
-    Zoom is reset when changing RGB in image (and other RTIs)
+        quickview tab
 
-    Why does /argos/ucar/IMAGE0002.nc/dataWidth have no shape?
+        cross hair in the middle of the pixel
 
-    -o/--open so that files after this command line option are opened.
-        Can probably replace the -s option
-        What happens if files occur twice when opening them?
+        Flip Y image Y-axis by default (done but not yet in Old image plot)
 
-    quickview tab
-    cross hair in the middle of the pixel
+        PgColorBar must be extendable at one side (bottom or top of the range)
 
-    Fixed font size in tables and trees so that windows10 with two monitors works. (setFixedPitch)
+        Copy all selected cells in table inspector during copy/paste
 
-    Waarom doet autorange het niet in rigolscan_partial?
+    Think about it
+    --------------
+        Zoom is reset when changing RGB in image (and other RTIs)
 
-    What if the H5 only has a dimension label?
+        -o/--open so that files after this command line option are opened.
+            Can probably replace the -s option
+            What happens if files occur twice when opening them?
 
-    Empty (Null) datasets and attributes
-    http://docs.h5py.org/en/latest/high/dataset.html#creating-and-reading-empty-or-null-datasets-and-attributes
+        Reset range when a variable with a new unit/abcissa is selected?
+            Hard to determine the new unit and dimensions.
+            Change if unit is new or combox dim is new.
+            Keep collector state (comboboxes, when the dimensions of the new RTI are the same as of the old)
 
-    HDF5 dataset with dimensions of size 0
+        Better color for rectangle zoom
+
+        Good message when no data is plotted. (/argos/ucar/IMAGE0002.nc/auditTrail)
+
+    Bugs and issues
+    ---------------
+        Fixed font size in tables and trees so that windows10 with two monitors works. (setFixedPitch)
+
+        Why does /argos/ucar/IMAGE0002.nc/dataWidth have no shape?
+
+        Waarom doet autorange het niet in rigolscan_partial?
+
+        What if the H5 only has a dimension label?
+
+        Empty (Null) datasets and attributes
+        http://docs.h5py.org/en/latest/high/dataset.html#creating-and-reading-empty-or-null-datasets-and-attributes
+
+        HDF5 dataset with dimensions of size 0
+
+        Installed plugins dialog doesn't work if scipy is not installed.  (Test under Linux)
+
+        WavFileRti._closeResources doesn't reset attribute correctly. Fix and check in other classes
+
+        Fix error: on Windows browsing a single drive (e.g. 'C:\') fails.
 
 
-    Installed plugins dialog doesn't work if scipy is not installed.  (Test under Linux)
+    Cleanup and release
+    -------------------
 
-	Reset range when a variable with a new unit/abcissa is selected?
-	    Hard to determine the new unit and dimensions.
-	    Change if unit is new or combox dim is new.
-	    Keep collector state (comboboxes, when the dimensions of the new RTI are the same as of the old)
+        Consistent use of capitals in table headers.
+
+        check if mid & long term todos are still needed
+
+        all log.warn -> log.warning
+
+        remove obsolete todo's in code.
 
 
-    Better color for rectangle zoom
-    Good message when no data is plotted. (/argos/ucar/IMAGE0002.nc/auditTrail)
 
-    Flip Y image Y-axis by default (done but not yet in Old image plot)
-
-    Consistent use of capitals in table headers.
-
-    check if mid & long term todos are still needed
-
-    all log.warn -> log.warning
-
-    Fix error: on Windows browsing a single drive (e.g. 'C:\') fails.
-
-    WavFileRti._closeResources doesn't reset attribute correctly. Fix and check in other classes
-
-    Test ExdirFieldRti
-
-    Copy all selected cells in table inspector during copy/paste
 
 
 TODO mid term:
@@ -99,6 +113,10 @@ TODO mid term:
         The less we do there, the less chance an error occurs.
 
     Editable defaults in config.
+
+    Test ExdirFieldRti
+
+
 
 TODO long term:
 

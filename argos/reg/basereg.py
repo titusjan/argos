@@ -18,6 +18,7 @@
 """
 import enum
 import logging, inspect, os, sys
+import traceback
 
 from argos.info import DEBUGGING
 from argos.utils.cls import import_symbol, check_is_a_string, type_name, check_class
@@ -202,16 +203,18 @@ class BaseRegItem(BaseItem):
         self._exception = None
         self._cls = None
         try:
-            for pyPath in self.pythonPath.split(':'):
+            for pyPath in self.pythonPath.split(';'):
                 if pyPath and pyPath not in sys.path:
                     logger.debug("Appending {!r} to the PythonPath.".format(pyPath))
                     sys.path.append(pyPath)
             self._cls = import_symbol(self.absClassName) # TODO: check class?
         except Exception as ex:
+            # Add traceback in human readable form to the exception for later printing.
+            # This is a hack for Python-2 to store the traceback later use. See https://stackoverflow.com/a/11415140/
+            ex.traceBackString = traceback.format_exc()
             self._exception = ex
             logger.warning("Unable to import {!r}: {}".format(self.absClassName, ex))
-            # if DEBUGGING:
-            #     raise
+            logger.debug("Traceback: {}".format(ex.traceBackString))
 
 
     def getClass(self, tryImport=True):
