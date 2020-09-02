@@ -27,6 +27,7 @@ from argos.info import DEBUGGING
 from argos.qt.treeitems import AbstractLazyLoadTreeItem
 from argos.repo.iconfactory import RtiIconFactory
 from argos.utils.cls import check_class, is_a_sequence, is_a_color_str
+from argos.utils.dirs import normRealPath
 
 logger = logging.getLogger(__name__)
 
@@ -67,9 +68,10 @@ class BaseRti(AbstractLazyLoadTreeItem):
         logger.debug("createFromFileName {}, {}, color={}".format(cls, fileName, iconColor))
         # See https://julien.danjou.info/blog/2013/guide-python-static-class-abstract-methods
         #logger.debug("Trying to create object of class: {!r}".format(cls))
-        basename = os.path.basename(os.path.realpath(fileName)) # strips trailing slashes
-        assert basename, "Empty basename ({!r}) from file: {}"\
-            .format(basename, os.path.realpath(fileName)) # TODO: can happen with root dir
+        basename = os.path.basename(normRealPath(fileName)) # strips trailing slashes
+        if not basename:
+            logger.warning("Empty file name in path: {}. Using '<root>' as root path.")
+            basename = '<root directory>'
         return cls(nodeName=basename, fileName=fileName, iconColor=iconColor)
 
 
