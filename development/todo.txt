@@ -14,13 +14,9 @@ TODO short term:
     ------------
         Use glob module to expand path names on windows
 
-        'open recent' in menu
-
         Is it possible to use word wrap in plot titles?
 
         quickview tab
-
-        Flip Y image Y-axis by default (done but not yet in Old image plot)
 
         PgColorBar must be extendable at one side (bottom or top of the range)
 

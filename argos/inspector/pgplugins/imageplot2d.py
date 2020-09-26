@@ -542,10 +542,9 @@ class PgImagePlot2d(AbstractInspector):
             if (self._hasValidData() and self.slicedArray is not None
                 and self.viewBox.sceneBoundingRect().contains(viewPos)):
 
-                # Calculate the row and column at the cursor. We use math.floor because the pixel
-                # corners of the image lie at integer values (and not the centers of the pixels).
+                # Calculate the row and column at the cursor.
                 scenePos = self.viewBox.mapSceneToView(viewPos)
-                row, col = math.floor(scenePos.y()), math.floor(scenePos.x())
+                row, col = round(scenePos.y()), round(scenePos.x())
                 row, col = int(row), int(col) # Needed in Python 2
                 nRows, nCols = self.slicedArray.shape
 

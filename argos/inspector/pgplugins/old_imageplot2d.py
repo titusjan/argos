@@ -154,7 +154,8 @@ class PgImagePlot2dCti(MainGroupCti):
         #yAxisCti.insertChild(PgAxisShowCti(imagePlotItem, 'left'))  # disabled, seems broken
         self.yAxisCti.insertChild(PgAxisLabelCti(imagePlotItem, 'left', self.pgImagePlot2d.collector,
             defaultData=1, configValues=[NO_LABEL_STR, "{y-dim} [index]"]))
-        self.yFlippedCti = self.yAxisCti.insertChild(PgAxisFlipCti(viewBox, Y_AXIS))
+        self.yFlippedCti = self.yAxisCti.insertChild(PgAxisFlipCti(
+            viewBox, Y_AXIS, defaultData=True))
         self.yAxisRangeCti = self.yAxisCti.insertChild(PgAxisRangeCti(viewBox, Y_AXIS))
 
         #### Color scale ####
@@ -521,10 +522,9 @@ class PgImagePlot2d(AbstractInspector):
             if (self._hasValidData() and self.slicedArray is not None
                 and self.viewBox.sceneBoundingRect().contains(viewPos)):
 
-                # Calculate the row and column at the cursor. We use math.floor because the pixel
-                # corners of the image lie at integer values (and not the centers of the pixels).
+                # Calculate the row and column at the cursor.
                 scenePos = self.viewBox.mapSceneToView(viewPos)
-                row, col = math.floor(scenePos.y()), math.floor(scenePos.x())
+                row, col = round(scenePos.y()), round(scenePos.x())
                 row, col = int(row), int(col) # Needed in Python 2
                 nRows, nCols = self.slicedArray.shape
 

@@ -120,6 +120,7 @@ def createArgosTestData():
     myDict['numbers'] = {'int': 5, 'float': -6.6, 'large float': 7e77,
                          '-inf': np.NINF, 'nan': np.nan, 'complex': 8-9j, 'decimal': Decimal(4.444)}
 
+    myDict['random'] = np.random.randn(8, 5)
     array = np.arange(240, dtype=np.float64).reshape(8, 30).transpose()
     #array[10, 4] = 7e77
     myDict['array'] = array
