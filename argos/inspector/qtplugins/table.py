@@ -33,6 +33,7 @@ from argos.info import DEBUGGING
 from argos.inspector.abstract import AbstractInspector
 from argos.qt import Qt, QtCore, QtGui, QtWidgets
 from argos.widgets.constants import MONO_FONT, FONT_SIZE
+from argos.widgets.argostableview import ArgosTableView
 from argos.utils.cls import check_class, check_is_a_string
 from argos.utils.cls import to_string, is_an_array
 from argos.utils.misc import is_quoted
@@ -218,7 +219,7 @@ class TableInspector(AbstractInspector):
         super(TableInspector, self).__init__(collector, parent=parent)
 
         self.model = TableInspectorModel(parent=self)
-        self.tableView = QtWidgets.QTableView()
+        self.tableView = ArgosTableView()
         self.contentsLayout.addWidget(self.tableView)
         self.tableView.setModel(self.model)
         self.tableView.setSelectionMode(QtWidgets.QTableView.ContiguousSelection)

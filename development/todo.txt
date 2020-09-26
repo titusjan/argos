@@ -20,7 +20,6 @@ TODO short term:
 
         PgColorBar must be extendable at one side (bottom or top of the range)
 
-        Copy all selected cells in table inspector during copy/paste
 
     Think about it
     --------------
