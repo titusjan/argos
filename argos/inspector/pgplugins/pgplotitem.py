@@ -45,8 +45,8 @@ class ArgosPgPlotItem(PlotItem):
         Overrides the autoBtnClicked method.
         Middle mouse click resets the axis.
 
-        The original PyQtGraph menu is disabled. All settings I want can be set using the config
-        tree; the other settings I don't want to support. Furthermore a context menu is created
+        The original PyQtGraph menu is disabled (all settings I want can be set using the config
+        tree; the other settings I don't want to support). Furthermore a context menu is created
         that allows the user to rescale the axes.
 
         Autorange is disabled as it is expected that the (viewbox of the) plot item will be

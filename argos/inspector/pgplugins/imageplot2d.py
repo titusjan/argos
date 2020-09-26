@@ -295,6 +295,7 @@ class PgImagePlot2d(AbstractInspector):
         self.viewBox.disableAutoRange(BOTH_AXES)
 
         self.imageItem = pg.ImageItem()
+        self.imageItem.setPos(-0.5, -0.5) # Center on pixels (see pg.ImageView.setImage source code)
         self.imagePlotItem.addItem(self.imageItem)
 
         self.colorLegendItem = ArgosColorLegendItem(self.imageItem)
@@ -483,8 +484,7 @@ class PgImagePlot2d(AbstractInspector):
                                                  np.nan, copyOnReplace=True)
 
         # Reset the axes ranges (via the config)
-        if (reason == UpdateReason.RTI_CHANGED or
-            reason == UpdateReason.COLLECTOR_COMBO_BOX):
+        if reason == UpdateReason.RTI_CHANGED or reason == UpdateReason.COLLECTOR_COMBO_BOX:
             self.config.xAxisRangeCti.autoRangeCti.data = True
             self.config.yAxisRangeCti.autoRangeCti.data = True
             #self.config.histColorRangeCti.autoRangeCti.data = True

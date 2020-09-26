@@ -277,6 +277,7 @@ class PgImagePlot2d(AbstractInspector):
         self.viewBox.disableAutoRange(BOTH_AXES)
 
         self.imageItem = pg.ImageItem()
+        self.imageItem.setPos(-0.5, -0.5) # Center on pixels (see pg.ImageView.setImage source code)
         self.imagePlotItem.addItem(self.imageItem)
 
         self.histLutItem = HistogramLUTItem() # what about GradientLegend?

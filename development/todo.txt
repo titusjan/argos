@@ -20,8 +20,6 @@ TODO short term:
 
         quickview tab
 
-        cross hair in the middle of the pixel
-
         Flip Y image Y-axis by default (done but not yet in Old image plot)
 
         PgColorBar must be extendable at one side (bottom or top of the range)
@@ -80,13 +78,14 @@ TODO short term:
 
 
 
-
-
 TODO mid term:
 
     look at h5py 3.0
 
     Exporter to PNG
+
+
+    Automated testing (check AppVeyor, Azure Pipelines, CircleCI and TravisCI)
 
 
     Make Rti.isFileFileFormat that opens a file and check if the RTI supports this.
