@@ -69,21 +69,25 @@ class DimensionsPane(DetailTablePane):
 
             nDims = currentRti.nDims
             dimNames = currentRti.dimensionNames
-            dimGroups = currentRti.dimensionGroupPaths
+            dimGroups = currentRti.dimensionPaths
             dimSizes = currentRti.arrayShape
 
             # Sanity check
             assert len(dimNames) == nDims, "dimNames size {} != {}".format(len(dimNames), nDims)
-            assert len(dimGroups) == nDims, "dimGroups size {} != {}".format(len(dimGroups), nDims)
             assert len(dimSizes) == nDims, "dimSizes size {} != {}".format(len(dimSizes), nDims)
 
             table.setRowCount(nDims)
-            for row, (dimName, dimSize, dimGroup) in enumerate(zip(dimNames, dimSizes, dimGroups)):
+            for row, (dimName, dimSize) in enumerate(zip(dimNames, dimSizes)):
                 table.setItem(row, self.COL_NAME, QtWidgets.QTableWidgetItem(dimName))
                 table.setItem(row, self.COL_SIZE, QtWidgets.QTableWidgetItem(str(dimSize)))
                 table.item(row, self.COL_SIZE).setTextAlignment(sizeAlignment)
-                table.setItem(row, self.COL_GROUP, QtWidgets.QTableWidgetItem(str(dimGroup)))
                 table.resizeRowToContents(row)
+
+            if dimGroups is not None:
+                assert len(dimGroups) == nDims, \
+                    "dimGroups size {} != {}".format(len(dimGroups), nDims)
+                for row, dimGroup in enumerate(dimGroups):
+                    table.setItem(row, self.COL_GROUP, QtWidgets.QTableWidgetItem(str(dimGroup)))
 
             verticalHeader.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
 

@@ -333,8 +333,8 @@ class NcdfVariableRti(BaseRti):
 
 #    TODO: how to get this?
 #    @property
-#    def dimensionGroupPaths(self):
-#        """ Returns a list with, for every dimension, the path of the group that contains it.
+#    def dimensionPaths(self):
+#        """ """ Returns a list with the full path names of the dimensions.
 #        """
 #        return [dim.group().path for dim in self._ncVar.dimensions.values()] # TODO: cache?
 #

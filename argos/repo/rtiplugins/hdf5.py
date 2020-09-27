@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 
-def dimNamesFromDataset(h5Dataset):
+def dimNamesFromDataset(h5Dataset, useBaseName=True):
     """ Constructs the dimension names given a h5py dataset.
 
         First looks in the dataset's dimension scales to see if it refers to another
@@ -50,7 +50,7 @@ def dimNamesFromDataset(h5Dataset):
             dimScaleLabel, dimScaleDataset = dimScales.items()[0]
             path = dimScaleDataset.name
             if path:
-                dimName = os.path.basename(path)
+                dimName = os.path.basename(path) if useBaseName else path
             elif dimScaleLabel: # This could potentially be long so it's our second choice
                 dimName = dimScaleLabel
             else:
@@ -326,6 +326,15 @@ class H5pyFieldRti(BaseRti):
 
 
     @property
+    def dimensionPaths(self):
+        """ Returns a list with the full path names of the dimensions.
+        """
+        nSubDims = len(self._subArrayShape)
+        subArrayDims = ['SubDim{}'.format(dimNr) for dimNr in range(nSubDims)]
+        return dimNamesFromDataset(self._h5Dataset, useBaseName=False) + subArrayDims
+
+
+    @property
     def unit(self):
         """ Returns the unit of the RTI by calling dataSetUnit on the underlying dataset
         """
@@ -436,6 +445,13 @@ class H5pyDatasetRti(BaseRti):
         """ Returns a list with the dimension names of the underlying HDF-5 dataset.
         """
         return dimNamesFromDataset(self._h5Dataset) # TODO: cache?
+
+
+    @property
+    def dimensionPaths(self):
+        """ Returns a list with the full path names of the dimensions.
+        """
+        return dimNamesFromDataset(self._h5Dataset, useBaseName=False)
 
 
     @property

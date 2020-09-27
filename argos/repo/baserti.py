@@ -346,12 +346,11 @@ class BaseRti(AbstractLazyLoadTreeItem):
 
 
     @property
-    def dimensionGroupPaths(self):
-        """ Returns a list with, for every dimension, the path of the group that contains it.
-            The default implementation returns an empty string for each dimension. Descendants
-            can override this.
+    def dimensionPaths(self):
+        """ Returns a list with the full path names of the dimensions.
+            The default implementation returns None. Descendants can override this.
         """
-        return ['' for _dimNr in range(self.nDims)] # TODO: cache?
+        return None
 
 
     @property
