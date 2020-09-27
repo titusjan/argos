@@ -19,7 +19,7 @@
 """
 import logging
 
-from argos.qt import QtWidgets, QtCore
+from argos.qt import QtWidgets, QtCore, Qt
 from argos.repo.detailpanes import DetailTablePane
 from argos.repo.repotreemodel import RepoTreeModel
 
@@ -71,9 +71,8 @@ class PropertiesPane(DetailTablePane):
                 nameItem = QtWidgets.QTableWidgetItem(propName)
                 nameItem.setToolTip(propName)
                 table.setItem(row, self.COL_PROP_NAME, nameItem)
-                propValue = repoModel.itemData(currentRti, row)
-                propItem = QtWidgets.QTableWidgetItem(propValue)
-                propItem.setToolTip(propValue)
+                propItem = QtWidgets.QTableWidgetItem(repoModel.itemData(currentRti, row))
+                propItem.setToolTip(repoModel.itemData(currentRti, row, role=Qt.ToolTipRole))
                 table.setItem(row, self.COL_VALUE, propItem)
                 table.resizeRowToContents(row)
 

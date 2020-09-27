@@ -35,9 +35,9 @@ class RepoTreeModel(BaseTreeModel):
         for QTreeViews. The underlying data is stored as repository tree items (BaseRti
         descendants).
     """
-    HEADERS = ["name", "path", "shape", "type", "unit", "missing data",
+    HEADERS = ["name", "path", "dimensions", "shape", "type", "unit", "missing data",
                "file name", "tree item", "is open", "exception"]
-    (COL_NODE_NAME, COL_NODE_PATH, COL_SHAPE, COL_ELEM_TYPE, COL_UNIT, COL_MISSING_DATA,
+    (COL_NODE_NAME, COL_NODE_PATH, COL_DIMS, COL_SHAPE, COL_ELEM_TYPE, COL_UNIT, COL_MISSING_DATA,
      COL_FILE_NAME, COL_RTI_TYPE, COL_IS_OPEN, COL_EXCEPTION) = range(len(HEADERS))
 
     COL_DECORATION = COL_NODE_NAME  # Column number that contains the icon. None for no icons
@@ -60,9 +60,14 @@ class RepoTreeModel(BaseTreeModel):
                 return treeItem.nodeName
             elif column == self.COL_NODE_PATH:
                 return treeItem.nodePath
+            elif column == self.COL_DIMS:
+                if treeItem.isSliceable:
+                    return " × ".join(str(elem) for elem in treeItem.dimensionNames)
+                else:
+                    return ""
             elif column == self.COL_SHAPE:
                 if treeItem.isSliceable:
-                    return " x ".join(str(elem) for elem in treeItem.arrayShape)
+                    return " × ".join(str(elem) for elem in treeItem.arrayShape)
                 else:
                     return ""
             elif column == self.COL_IS_OPEN:
@@ -94,9 +99,17 @@ class RepoTreeModel(BaseTreeModel):
                 return treeItem.nodePath # Also path when hovering over the name
             elif column == self.COL_NODE_PATH:
                 return treeItem.nodePath
+            elif column == self.COL_DIMS:
+                if treeItem.isSliceable:
+                    if treeItem.dimensionPaths is not None:
+                        return " ×\n".join(str(elem) for elem in treeItem.dimensionPaths)
+                    else:
+                        return " × ".join(str(elem) for elem in treeItem.dimensionNames)
+                else:
+                    return ""
             elif column == self.COL_SHAPE:
                 if treeItem.isSliceable:
-                    return " x ".join(str(elem) for elem in treeItem.arrayShape)
+                    return " × ".join(str(elem) for elem in treeItem.arrayShape)
                 else:
                     return ""
             elif column == self.COL_UNIT:
@@ -186,7 +199,6 @@ class RepoTreeModel(BaseTreeModel):
         else:
             return self.loadFile(fileName, rtiRegItem, position=position,
                                  parentIndex=fileRtiParentIndex)
-
 
 
     def loadFile(self, fileName, rtiRegItem,

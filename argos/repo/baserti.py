@@ -342,7 +342,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
             The default implementation returns ['Dim0', 'Dim1', ...] by default. Descendants can
             override this.
         """
-        return ['Dim{}'.format(dimNr) for dimNr in range(self.nDims)] # TODO: cache?
+        return ['dim-{}'.format(dimNr) for dimNr in range(self.nDims)] # TODO: cache?
 
 
     @property
