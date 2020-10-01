@@ -59,6 +59,8 @@ TODO short term:
 
         Fix error: on Windows browsing a single drive (e.g. 'C:\') fails.
 
+        Headers in attribute window are not Persistent
+
 
     Cleanup and release
     -------------------
