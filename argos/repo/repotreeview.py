@@ -68,9 +68,9 @@ class RepoWidget(BasePanel):
         self.mainSplitter.addWidget(self.tabWidget)
         self.mainSplitter.setCollapsible(1, True)
 
-        self.addDetailsPane(PropertiesPane(self.repoTreeView))
-        self.addDetailsPane(AttributesPane(self.repoTreeView))
-        self.addDetailsPane(DimensionsPane(self.repoTreeView))
+        self._propertiesPane = self.addDetailsPane(PropertiesPane(self.repoTreeView))
+        self._attributesPane = self.addDetailsPane(AttributesPane(self.repoTreeView))
+        self._dimensionsPane = self.addDetailsPane(DimensionsPane(self.repoTreeView))
 
         self.repoTreeView.sigRepoItemChanged.connect(self.repoItemChanged)
         self.tabWidget.currentChanged.connect(self.tabChanged)
@@ -80,10 +80,13 @@ class RepoWidget(BasePanel):
 
 
     def addDetailsPane(self, detailPane):
-        """ Adds a pane widget as a tab
+        """ Adds a pane widget as a tab.
+
+            Returns: detailPane so calls can be chained.
         """
         self.tabWidget.addTab(detailPane, detailPane.classLabel())
         self.detailDockPanes.append(detailPane)
+        return detailPane
 
 
     def marshall(self):
@@ -93,7 +96,11 @@ class RepoWidget(BasePanel):
             tabIndex = self.tabWidget.currentIndex(),
             splitterSizes = self.mainSplitter.sizes(),
             treeHeaders = self.repoTreeView.marshall(),
+            propertiesPane = self._propertiesPane.marshall(),
+            attributesPane = self._attributesPane.marshall(),
+            dimensionsPane = self._dimensionsPane.marshall(),
         )
+
         return cfg
 
 
@@ -106,7 +113,11 @@ class RepoWidget(BasePanel):
         if 'splitterSizes' in cfg:
             self.mainSplitter.setSizes(cfg['splitterSizes'])
 
-        self.repoTreeView.unmarshall(cfg.get('treeHeaders', {}))
+        self.repoTreeView.unmarshall(cfg.get('treeHeaders'))
+
+        self._propertiesPane.unmarshall(cfg.get('propertiesPane', {}))
+        self._attributesPane.unmarshall(cfg.get('attributesPane', {}))
+        self._dimensionsPane.unmarshall(cfg.get('dimensionsPane', {}))
 
 
     def repoItemChanged(self, rti):

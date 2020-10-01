@@ -102,6 +102,10 @@ class ToggleColumnMixIn(object):
     def unmarshall(self, dataStr):
         """ Initializes itself from a config dict form the persistent settings.
         """
+        if dataStr is None:
+            logger.debug("Tree headers state empty, so not restored: {}".format(self))
+            return
+
         headerBytes = base64.b64decode(dataStr)
         horizontal_header = self.horizontalHeader()
         header_restored = horizontal_header.restoreState(headerBytes)
