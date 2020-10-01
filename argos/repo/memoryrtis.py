@@ -26,6 +26,7 @@ from .baserti import BaseRti
 from argos.repo.iconfactory import RtiIconFactory
 from argos.utils.cls import (check_is_a_sequence, check_is_a_mapping, check_is_an_array,
                                 is_a_sequence, is_a_mapping, is_an_array, type_name)
+from argos.utils.defs import DIM_TEMPLATE, SUB_DIM_TEMPLATE
 from argos.utils.misc import NOT_SPECIFIED
 
 logger = logging.getLogger(__name__)
@@ -224,9 +225,9 @@ class FieldRti(BaseRti):
     def dimensionNames(self):
         """ Returns a list with the dimension names of the underlying NCDF variable
         """
-        mainArrayDims = ['Dim{}'.format(dimNr) for dimNr in range(self._array.ndim)]
+        mainArrayDims = [DIM_TEMPLATE.format(dimNr) for dimNr in range(self._array.ndim)]
         nSubDims = len(self._subArrayShape)
-        subArrayDims = ['SubDim{}'.format(dimNr) for dimNr in range(nSubDims)]
+        subArrayDims = [SUB_DIM_TEMPLATE.format(dimNr) for dimNr in range(nSubDims)]
         return mainArrayDims + subArrayDims
 
 
