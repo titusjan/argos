@@ -279,8 +279,6 @@ Gives error in image plot:
 
 NEXT VERSION:
 
-    Table headers in attributes/properties/dimensions are not persistent.
-
     Reload gives error for memory RTIs. TypeError: __init__() missing 1 required positional argument: 'dictionary'
         Disable reload? Better try to implement this similarly to the object browser.
         All memory RTIs constructors should probably have an obj parameter instead of the file_name.

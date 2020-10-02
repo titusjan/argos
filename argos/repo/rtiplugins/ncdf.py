@@ -27,6 +27,7 @@ from netCDF4 import Dataset, Variable, Dimension
 from argos.utils.cls import check_class
 from argos.repo.baserti import BaseRti
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
+from argos.utils.defs import SUB_DIM_TEMPLATE
 
 logger = logging.getLogger(__name__)
 
@@ -223,7 +224,7 @@ class NcdfFieldRti(BaseRti):
         """ Returns a list with the dimension names of the underlying NCDF variable
         """
         nSubDims = len(self._subArrayShape)
-        subArrayDims = ['SubDim{}'.format(dimNr) for dimNr in range(nSubDims)]
+        subArrayDims = [SUB_DIM_TEMPLATE.format(dimNr) for dimNr in range(nSubDims)]
         return list(self._ncVar.dimensions + tuple(subArrayDims))
 
 

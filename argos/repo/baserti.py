@@ -28,6 +28,7 @@ from argos.qt.treeitems import AbstractLazyLoadTreeItem
 from argos.repo.iconfactory import RtiIconFactory
 from argos.utils.cls import check_class, is_a_sequence, is_a_color_str
 from argos.utils.dirs import normRealPath
+from argos.utils.defs import DIM_TEMPLATE
 
 logger = logging.getLogger(__name__)
 
@@ -342,7 +343,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
             The default implementation returns ['Dim0', 'Dim1', ...] by default. Descendants can
             override this.
         """
-        return ['dim-{}'.format(dimNr) for dimNr in range(self.nDims)] # TODO: cache?
+        return [DIM_TEMPLATE.format(dimNr) for dimNr in range(self.nDims)] # TODO: cache?
 
 
     @property
@@ -369,35 +370,3 @@ class BaseRti(AbstractLazyLoadTreeItem):
         """
         return None
 
-
-#    @property
-#    def dimensionInfo(self):
-#        """ Returns a list with a DimensionInfo objects for each of the RTI's dimensions.
-#            The default Returns ['Dim0', 'Dim1', ...] by default. Descendants can override this.
-#        """
-#        return ['Dim{}'.format(dimNr) for dimNr in range(self.nDims)]
-#
-#
-#
-#class DimensionInfo(object):
-#    """ Stores attributes (name, size, etc) of a Dimension
-#    """
-#    def __init__(self, name, size):
-#        """ Constructor
-#        """
-#        self._name = name
-#        self._size = size
-#
-#    @property
-#    def name(self):
-#        """ The dimension name
-#        """
-#        return self._name
-#
-#    @property
-#    def size(self):
-#        """ The dimension size
-#        """
-#        return self._size
-#
-#

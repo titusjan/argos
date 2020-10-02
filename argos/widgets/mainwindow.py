@@ -429,9 +429,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
             def createTrigger():
                 "Function to create a closure with the regItem"
-                _fileName = fileName # keep reference in closure
+                _fileNames = [fileName] # keep reference in closure
                 _rtiRegItem = rtiRegItem # keep reference in closure
-                return lambda: self.openFiles([fileName], rtiRegItem=rtiRegItem)
+                return lambda: self.openFiles(_fileNames, rtiRegItem=_rtiRegItem)
 
             dirName, baseName = os.path.split(fileName)
             fileLabel = fileName if baseNameCount[baseName] > 1 else baseName

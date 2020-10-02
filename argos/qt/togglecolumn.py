@@ -102,10 +102,20 @@ class ToggleColumnMixIn(object):
     def unmarshall(self, dataStr):
         """ Initializes itself from a config dict form the persistent settings.
         """
+        if dataStr is None:
+            logger.debug("Tree headers state empty, so not restored: {}".format(self))
+            return
+
         headerBytes = base64.b64decode(dataStr)
-        header_restored = self.horizontalHeader().restoreState(headerBytes)
+        horizontal_header = self.horizontalHeader()
+        header_restored = horizontal_header.restoreState(headerBytes)
         if not header_restored:
             logger.warning("Tree headers state not restored: {}".format(self))
+
+        # update actions so context menus are (un)checked properly
+        for col, action in enumerate(horizontal_header.actions()):
+            isChecked = not horizontal_header.isSectionHidden(col)
+            action.setChecked(isChecked)
 
 
 class ToggleColumnTableWidget(QtWidgets.QTableWidget, ToggleColumnMixIn):

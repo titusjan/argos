@@ -27,7 +27,9 @@ import numpy as np
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.repo.baserti import BaseRti
 from argos.repo.filesytemrtis import createRtiFromFileName
-from argos.utils.cls import to_string, check_class, is_an_array
+from argos.repo.rtiplugins.hdf5 import dimNamesFromDataset  # We can reuse it, the exdir module follows the h5py API.
+from argos.utils.cls import check_class, is_an_array
+from argos.utils.defs import DIM_TEMPLATE, SUB_DIM_TEMPLATE
 from argos.utils.masks import maskedEqual
 
 
@@ -279,7 +281,7 @@ class ExdirFieldRti(BaseRti):
         """ Returns a list with the dimension names of the underlying NCDF variable
         """
         nSubDims = len(self._subArrayShape)
-        subArrayDims = ['SubDim{}'.format(dimNr) for dimNr in range(nSubDims)]
+        subArrayDims = [SUB_DIM_TEMPLATE.format(dimNr) for dimNr in range(nSubDims)]
         return dimNamesFromDataset(self._exdirDataset) + subArrayDims
 
 

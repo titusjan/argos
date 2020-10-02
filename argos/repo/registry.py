@@ -86,7 +86,7 @@ class RtiRegItem(BaseRegItem):
             Matching is case-insensitive. See the Python fnmatch module for further info.
         """
         for glob in self.globList:
-            logger.debug("  glob '{}' -> match = {}".format(glob, fnmatch(path, glob)))
+            #logger.debug("  glob '{}' -> match = {}".format(glob, fnmatch(path, glob)))
             if fnmatch(path, glob):
                 return True
 

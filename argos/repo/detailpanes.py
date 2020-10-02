@@ -107,6 +107,17 @@ class DetailBasePane(QtWidgets.QStackedWidget):
         pass
 
 
+    def marshall(self):
+        """ Returns a dictionary to save in the persistent settings
+        """
+        raise NotImplementedError("Not implemented. Please override")
+
+
+    def unmarshall(self, cfg):
+        """ Initializes itself from a config dict form the persistent settings.
+        """
+        raise NotImplementedError("Not implemented. Please override")
+
 
 class DetailTablePane(DetailBasePane):
     """ Base class for inspectors that consist of a single QTableWidget
@@ -137,3 +148,17 @@ class DetailTablePane(DetailBasePane):
         tableHeader = self.table.horizontalHeader()
         tableHeader.setSectionResizeMode(QtWidgets.QHeaderView.Interactive) # don't set to stretch
         tableHeader.setStretchLastSection(True)
+
+
+    def marshall(self):
+        """ Returns a dictionary to save in the persistent settings
+        """
+        cfg = dict(tableHeaders=self.table.marshall())
+        return cfg
+
+
+    def unmarshall(self, cfg):
+        """ Initializes itself from a config dict form the persistent settings.
+        """
+        self.table.unmarshall(cfg.get('tableHeaders'))
+

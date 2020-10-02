@@ -29,6 +29,7 @@ import numpy as np
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.repo.baserti import BaseRti
 from argos.utils.cls import to_string, check_class, is_an_array
+from argos.utils.defs import DIM_TEMPLATE, SUB_DIM_TEMPLATE
 from argos.utils.masks import maskedEqual
 
 logger = logging.getLogger(__name__)
@@ -45,7 +46,7 @@ def dimNamesFromDataset(h5Dataset, useBaseName=True):
     dimNames = [] # TODO: cache?
     for dimNr, dimScales in enumerate(h5Dataset.dims):
         if len(dimScales) == 0:
-            dimNames.append('Dim{}'.format(dimNr))
+            dimNames.append(DIM_TEMPLATE.format(dimNr))
         else:
             dimScaleLabel, dimScaleDataset = dimScales.items()[0]
             path = dimScaleDataset.name
@@ -54,7 +55,7 @@ def dimNamesFromDataset(h5Dataset, useBaseName=True):
             elif dimScaleLabel: # This could potentially be long so it's our second choice
                 dimName = dimScaleLabel
             else:
-                dimName = 'Dim{}'.format(dimNr)
+                dimName = DIM_TEMPLATE.format(dimNr)
 
             if len(dimScales) > 1:
                 logger.debug("More than one dimension scale found, using the first {}"
@@ -63,7 +64,7 @@ def dimNamesFromDataset(h5Dataset, useBaseName=True):
             dimNames.append(dimName)
         # else:
         #     # TODO: multiple scales for this dimension. What to do?
-        #     dimNames.append('Dim{}'.format(dimNr)) # For now, just number them
+        #     dimNames.append(DIM_TEMPLATE.format(dimNr)) # For now, just number them
 
     return dimNames
 
@@ -264,7 +265,7 @@ class H5pyFieldRti(BaseRti):
 
     def __getitem__(self, index):
         """ Called when using the RTI with an index (e.g. rti[0]).
-            Applies the index on the NCDF variable that contain this field and then selects the
+            Applies the index on the HDF dataset that contain this field and then selects the
             current field. In pseudo-code, it returns: self.ncVar[index][self.nodeName].
 
             If the field itself contains a sub-array it returns:
@@ -318,10 +319,10 @@ class H5pyFieldRti(BaseRti):
 
     @property
     def dimensionNames(self):
-        """ Returns a list with the dimension names of the underlying NCDF variable
+        """ Returns a list with the dimension names of the underlying HDF5 variable
         """
         nSubDims = len(self._subArrayShape)
-        subArrayDims = ['SubDim{}'.format(dimNr) for dimNr in range(nSubDims)]
+        subArrayDims = [SUB_DIM_TEMPLATE.format(dimNr) for dimNr in range(nSubDims)]
         return dimNamesFromDataset(self._h5Dataset) + subArrayDims
 
 
@@ -330,7 +331,7 @@ class H5pyFieldRti(BaseRti):
         """ Returns a list with the full path names of the dimensions.
         """
         nSubDims = len(self._subArrayShape)
-        subArrayDims = ['SubDim{}'.format(dimNr) for dimNr in range(nSubDims)]
+        subArrayDims = [SUB_DIM_TEMPLATE.format(dimNr) for dimNr in range(nSubDims)]
         return dimNamesFromDataset(self._h5Dataset, useBaseName=False) + subArrayDims
 
 

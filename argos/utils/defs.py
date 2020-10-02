@@ -20,6 +20,11 @@
 
 """
 
+# String formatting template for numbered dimension names
+DIM_TEMPLATE = "dim-{}"
+SUB_DIM_TEMPLATE = "subdim-{}"
+
+
 # TODO: QCompleter? See demos/spreadsheet/spreadsheetdelegate.py
 
 class InvalidInputError(Exception):
