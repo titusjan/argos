@@ -299,6 +299,9 @@ class BaseRti(AbstractLazyLoadTreeItem):
             The base function is abstract. Descendants should override this if they contain
             an array that can be sliced (i.e. self.isSliceable is True). It should then
             call __getitem__(index) on the underlying array data.
+
+            This may return a numpy array or scalars. Collector.getSlicedArray will convert this into an array
+            if case a scalar is expected.
         """
         raise NotImplemented("Override for slicable arrays")
 

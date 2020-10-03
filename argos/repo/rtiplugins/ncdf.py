@@ -248,7 +248,7 @@ class NcdfFieldRti(BaseRti):
 class NcdfVariableRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a NCDF variable.
     """
-    _defaultIconGlyph = RtiIconFactory.ARRAY
+    #_defaultIconGlyph = RtiIconFactory.ARRAY
 
     def __init__(self, ncVar, nodeName, fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor
@@ -271,6 +271,18 @@ class NcdfVariableRti(BaseRti):
 
 
     @property
+    def iconGlyph(self):
+        """ Returns the kind of the icon (e.g. RtiIconFactory.FILE, RtiIconFactory.ARRAY, etc).
+            The base implementation returns the default glyph of the class.
+            :rtype: string
+        """
+        if self.nDims == 0:
+            return RtiIconFactory.SCALAR
+        else:
+            return RtiIconFactory.ARRAY
+
+
+    @property
     def isSliceable(self):
         """ Returns True because the underlying data can be sliced.
         """
@@ -281,6 +293,7 @@ class NcdfVariableRti(BaseRti):
         """ Called when using the RTI with an index (e.g. rti[0]).
             Passes the index through to the underlying array.
         """
+        # Will always return an array, even for scalars (NetCDF variables without dimensions)
         return self._ncVar.__getitem__(index)
 
 

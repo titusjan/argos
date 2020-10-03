@@ -185,18 +185,14 @@ class H5pyScalarRti(BaseRti):
         """ Called when using the RTI with an index (e.g. rti[0]).
             The scalar will be wrapped in an array with one element so it can be inspected.
         """
-        array = np.array([self._h5Dataset[()]]) # slice with empty tuple
-        maskedArray = maskedEqual(array, self.missingDataValue)
-
-        assert maskedArray.shape == (1, ), "Scalar wrapper shape mismatch: {}".format(array.shape)
-        return maskedArray[index] # Use the index to ensure the slice has the correct shape
+        return self._h5Dataset[()]
 
 
     @property
     def arrayShape(self):
-        """ Returns the shape of the wrapper array. Will always be the tuple (1, )
+        """ Returns the shape of the wrapper array. Will always be an empty tuple()
         """
-        return (1, )
+        return tuple()
 
 
     @property

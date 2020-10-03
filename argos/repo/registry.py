@@ -86,7 +86,7 @@ class RtiRegItem(BaseRegItem):
             Matching is case-insensitive. See the Python fnmatch module for further info.
         """
         for glob in self.globList:
-            #logger.debug("  glob '{}' -> match = {}".format(glob, fnmatch(path, glob)))
+            logger.debug("  glob '{}' -> match = {}".format(glob, fnmatch(path, glob)))
             if fnmatch(path, glob):
                 return True
 
@@ -242,7 +242,7 @@ class RtiRegistry(BaseRegistry):
             RtiRegItem('Pillow image',
                        'argos.repo.rtiplugins.pillowio.PillowFileRti',
                        iconColor=ICON_COLOR_PILLOW,
-                       globs='*.bmp;*.eps;*.im;*.gif;*.jpg;*.jpeg;*.msp;*.pcx;*.png;*.ppm;*.spi:'
+                       globs='*.bmp;*.eps;*.im;*.gif;*.jpg;*.jpeg;*.msp;*.pcx;*.png;*.ppm;*.spi;'
                              '*.tif;*.tiff;*.xbm;*.xv'),
         ]
 

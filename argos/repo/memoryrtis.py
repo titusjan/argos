@@ -109,16 +109,14 @@ class ScalarRti(BaseRti):
         """ Called when using the RTI with an index (e.g. rti[0]).
             The scalar will be wrapped in an array with one element so it can be inspected.
         """
-        array = np.array([self._scalar])
-        assert array.shape == (1, ), "Scalar wrapper shape mismatch: {}".format(array.shape)
-        return array[index] # Use the index to ensure the slice has the correct shape
+        return self._scalar
 
 
     @property
     def arrayShape(self):
-        """ Returns the shape of the wrapper array. Will always be the tuple (1, )
+        """ Returns the shape of the wrapper array. Will always be an empty tuple()
         """
-        return (1, )
+        return tuple()
 
 
     @property

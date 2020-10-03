@@ -44,7 +44,7 @@ FAKE_DIM_OFFSET = 1000  # Fake dimensions start here (so all arrays must have a 
 
 class Collector(BasePanel):
     """ Widget for collecting the selected data.
-        Consists of a tree to collect the VisItems, plus some buttons to add or remove then.
+        Consists of a table to collect the RtiItems
 
         The CollectorTree only stores the items, the intelligence is located in the Collector
         itself.
@@ -536,7 +536,6 @@ class Collector(BasePanel):
         # interpreted as an index. With a tuple, array[(exp1, exp2, ..., expN)] is equivalent to
         # array[exp1, exp2, ..., expN].
         # See: http://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
-        logger.debug("Array slice list: {}".format(str(sliceList)))
         slicedArray = self.rti[tuple(sliceList)]
 
         # Make a copy to prevent inspectors from modifying the underlying array.
@@ -548,7 +547,9 @@ class Collector(BasePanel):
         # array). We convert this scalar to a zero-dimensional Numpy array so that inspectors
         # always get an array (having the same number of dimensions as the dimensionality of the
         # inspector, i.e. the number of comboboxes).
-        if self.maxCombos == 0:
+        # Also scalar RTIs, which have nDim == 0, can return a scalar which must be converted.
+        # TODO: perhaps always convert to array.
+        if self.maxCombos == 0 or self.rti.nDims == 0:
             slicedArray = ma.MaskedArray(slicedArray)
 
         # Post-condition type check

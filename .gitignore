@@ -98,3 +98,4 @@ ENV/
 *.pdf
 *.json
 .idea/
+tests/test_data/

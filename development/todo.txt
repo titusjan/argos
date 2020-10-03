@@ -6,6 +6,10 @@ Argos philosophy:
     -   Argos shall remain a stand-alone tool and not become a part of other projects such as
         IPython or Spyder.
 
+    PyQtGraph:
+        - Mouse buttons
+        - Zoom buttons
+        - ExceptHook
 
 
 TODO short term:
@@ -43,8 +47,6 @@ TODO short term:
     ---------------
         Fixed font size in tables and trees so that windows10 with two monitors works. (setFixedPitch)
 
-        Why does /argos/ucar/IMAGE0002.nc/dataWidth have no shape?
-
         Waarom doet autorange het niet in rigolscan_partial?
 
         What if the H5 only has a dimension label?
@@ -59,13 +61,15 @@ TODO short term:
         WavFileRti._closeResources doesn't reset attribute correctly. Fix and check in other classes
 
         Fix error: on Windows browsing a single drive (e.g. 'C:\') fails.
-        
-        Items in header context menu are not checked while header is visible in table. 
+
+        Items in header context menu are not checked while header is visible in table.
         Checking and then unchecking fixes the issue.
-        
+
+        Closing an RTI redraws all RTIs below it, which is ugly. Simply collapsing them does not.
+
         When starting Argos (installed with pip -e (on my Windows laptop)) it can't be started from outside it's conda environment.
         E.g. starting from a regular cmd shell gives.
-        
+
             C:\Users\Kenter>C:\Users\Kenter\Miniconda3\envs\argosdev\Scripts\argos.exe
             Traceback (most recent call last):
               File "C:\Users\Kenter\Miniconda3\envs\argosdev\Scripts\argos-script.py", line 33, in <module>
@@ -312,6 +316,10 @@ SOLVED or WON'T FIX
         ValueError: axes don't match array
         #This is because the settings is a scalar (when opened in HDF5)
 
+    Why does /argos/ucar/IMAGE0002.nc/dataWidth have no shape?
+        Because it is a scalar, which is perfectly valid in NetCDF.
+        I can't open this file in h5py though (file signature not found). This seems a h5py problem because it can be
+        opened with HDFView.
 
     Seems to have the wrong data in hdf-5. Same issue as at KNMI
         /argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/engDat.nc/DETECTOR4/swir_settings
