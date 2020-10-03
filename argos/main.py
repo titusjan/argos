@@ -157,7 +157,8 @@ def main():
     parser = argparse.ArgumentParser(description = aboutStr)
 
     parser.add_argument('fileNames', metavar='FILE', nargs='*',
-                        help='Files or directories that will be loaded at start up.')
+        help="""Files or directories that will be loaded at start up. Accepts unix-like glob patterns, even on Windows.
+                E.g.: 'argos *.h5' opens all files with the h5 extension in the current directory.""")
 
     parser.add_argument('-i', '--inspector', dest='inspector',
         help="""The identifier or fullName of the inspector that will be opened at start up.
@@ -173,7 +174,7 @@ def main():
     parser.add_argument('--qt-style', dest='qtStyle', help='Qt style. E.g.: fusion')
 
     parser.add_argument('--qss', dest='styleSheet',
-                        help='Name of Qt Style Sheet file. If not set a default will be used.')
+                        help='Name of Qt Style Sheet file. If not set, the Argos default style sheet will be used.')
 
     parser.add_argument('-c', '--config-file', metavar='FILE', dest='settingsFile',
         help="Configuration file with persistent settings. When using a relative path the settings "
@@ -186,9 +187,9 @@ def main():
                         help='Logging configuration file. If not set a default will be used.')
 
     parser.add_argument('-l', '--log-level', dest='log_level', default='',
-        help="Log level. If set only log messages with a level higher or equal than this will be printed to "
-             "screen (stderr). Overrides the log level of the StreamHandlers in the --log-config. Does not alter the "
-             "logLevel for file handlers.",
+        help="Log level. If set, only log messages with a level higher or equal than this will be printed to "
+             "screen (stderr). Overrides the log level of the StreamHandlers in the --log-config file. Does not alter "
+             "the log level of log handlers that write to a file.",
         choices=('debug', 'info', 'warning', 'error', 'critical'))
 
     parser.add_argument('--version', action = 'store_true',

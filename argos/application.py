@@ -18,6 +18,7 @@
 """ Version and other info for this program
 """
 import json
+import glob
 import logging
 import os.path
 import pprint
@@ -223,8 +224,8 @@ class ArgosApplication(QtCore.QObject):
     def focusChanged(self, old, now):
         """ Is called when the focus changes. Useful for debugging.
         """
-        logger.debug("Focus changed from {} to {}".format(old, now))
-
+        #logger.debug("Focus changed from {} to {}".format(old, now))
+        pass
 
 
     @classmethod
@@ -389,12 +390,17 @@ class ArgosApplication(QtCore.QObject):
             self.saveSettings()
 
 
-    def loadFiles(self, fileNames):
+    def loadFiles(self, filePatterns):
         """ Loads files into the repository as repo tree items of class rtiClass.
             Auto-detects using the extensions when rtiClass is None
+
+            :param filePatterns: list of file names or unix like file expansions (globs),
+                For example filePatterns = ['my_file.nc, 'your_file.nc']
+                For example filePatterns = ['*.h5']
         """
-        for fileName in fileNames:
-            self.repo.loadFile(fileName, rtiRegItem=None)
+        for filePattern in filePatterns:
+            for fileName in glob.glob(filePattern):
+                self.repo.loadFile(fileName, rtiRegItem=None)
 
 
     def getRecentFiles(self):

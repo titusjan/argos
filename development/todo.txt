@@ -12,9 +12,6 @@ TODO short term:
 
     New Features
     ------------
-        Use glob module to expand path names on windows
-
-        Is it possible to use word wrap in plot titles?
 
         quickview tab
 
@@ -37,6 +34,10 @@ TODO short term:
         Better color for rectangle zoom
 
         Good message when no data is plotted. (/argos/ucar/IMAGE0002.nc/auditTrail)
+
+        Is is possible to do interpolation in image scan so that lines in \spectral\cube.h5\intensities are visible?
+
+        Better probe labels. Use dimension names in probe name. E.g. myvalue = 5.22 @ pos (dim-1, dim-2) = (13, 4)
 
     Bugs and issues
     ---------------

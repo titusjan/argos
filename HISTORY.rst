@@ -19,6 +19,7 @@ History
 *   Grouped the Details dock widgets together with repo viewer as they always apply to the selected item.
 *   Updated style and layout.
 *   Added --qt-style and --qss command line options. Using Qt Fusion style as default.
+*   Accepts unix-like patterns on the Windows command line. E.g. 'argos *.h5' opens all files with the h5 extension.
 *   Persistent settings are stored in json file instead of QSettings.
 *   Added -c command line option for specifying the general configuration file. Settings profiles are thus obsolete
     and have been removed.
