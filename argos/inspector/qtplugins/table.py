@@ -65,7 +65,7 @@ def makeReplacementField(formatSpec, altFormatSpec='', testValue=None):
             https://docs.python.org/3/library/string.html#format-string-syntax
             https://docs.python.org/3/library/string.html#format-specification-mini-language
 
-        If the formatSpec does not contain a a color or exclamation mark, a colon is prepended.
+        If the formatSpec does not contain a colon or exclamation mark, a colon is prepended.
 
         If the formatSpec starts and end in quotes (single or double) only the quotes are removed,
         no curly braces or colon charactes are added. This allows users to define a format spec.

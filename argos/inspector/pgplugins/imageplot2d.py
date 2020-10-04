@@ -465,7 +465,7 @@ class PgImagePlot2d(AbstractInspector):
 
         # -- Valid plot data from here on --
 
-        # PyQtGraph doesn't handle masked array so we convert the masked values to Nans. Missing
+        # PyQtGraph doesn't handle masked arrays so we convert the masked values to Nans. Missing
         # data values are replaced by NaNs. The PyQtGraph image plot shows this as the color at the
         # lowest end of the color scale. Unfortunately we cannot choose a missing-value color, but
         # at least the Nans do not influence for the histogram and color range.

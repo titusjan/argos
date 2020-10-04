@@ -10,6 +10,8 @@ Argos philosophy:
         - Mouse buttons
         - Zoom buttons
         - ExceptHook
+        - Handle Nans
+        - Handle masked arrays
 
 
 TODO short term:
@@ -45,11 +47,16 @@ TODO short term:
 
     Bugs and issues
     ---------------
+        Warning on pgctis.py:381  : WARNING : New target range is not finite. Plot range not updated --> info
+
         Fixed font size in tables and trees so that windows10 with two monitors works. (setFixedPitch)
 
         Waarom doet autorange het niet in rigolscan_partial?
 
-        What if the H5 only has a dimension label?
+        What if the H5 only has a dimension label? 2020-10-04. What is this?
+
+        What if they have multiple dimension scales?
+            /argos/mini_scanner_output/multiple_dimension_scales.h5
 
         Empty (Null) datasets and attributes
         http://docs.h5py.org/en/latest/high/dataset.html#creating-and-reading-empty-or-null-datasets-and-attributes
@@ -362,3 +369,7 @@ SOLVED or WON'T FIX
             xz:             5.2.2-1          --> 5.2.3-0
             zlib:           1.2.8-3          --> 1.2.11-0
 
+    /argos/ucar/madis-hydro.nc/firstOverflow
+        Gives the correct mask, but the underlying data is set to 0.0 by netCDF4 python Module.
+        HDFView shows the value to be the same as the fillValue (-1).
+        The file can't be opened with h5py 2.10.0 (libhdf5: 1.10.6). Gives: file signature not found

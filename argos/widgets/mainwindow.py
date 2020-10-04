@@ -973,9 +973,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
             # Subtrees that will be visited. At the moment only data on my development PC.
             #rootNodes = ['/argos/icm/S5P_ICM_CA_UVN_20120919T051721_20120919T065655_01890_01_001000_20151002T140000.h5']
-            #rootNodes = ['/argos/martin', '/argos/images', '/argos/Mini Scanner Output', '/myDict']
-            rootNodes = ['/argos/exdir', '/argos/martin', '/argos/images', '/myDict']
+            #rootNodes = ['/argos/martin', '/argos/images', '/argos/mini_scanner_output', '/myDict']
+            rootNodes = ['/argos/exdir', '/argos/martin', '/argos/images', '/argos/ucar', '/myDict']
             #rootNodes = ['/myDict']
+            #rootNodes = ['/argos/mini_scanner_output']  # TODO
 
             #/argos/trop/S5P_NRTI_L2__AER_LH_20150821T201929_20150821T202429_45862_01_000000_20170506T003521.nc/PRODUCT/dim_surface_albedo
             #/argos/trop/2015_03_16T16_32_16_MonA/after_dccorr_l1bavg/trl1brb8g.lx.nc/BAND8/ICID_30683_GROUP_00001/OBSERVATIONS/measurement_flags
@@ -984,15 +985,28 @@ class MainWindow(QtWidgets.QMainWindow):
             #rootNodes = ['/argos/trop/2015_03_16T16_32_16_MonA/after_dccorr_l1bavg/trl1brb8g.lx.nc/BAND8/ICID_30683_GROUP_00001']
 
             # Skip nodes that give known, unfixable errors, or that take a long time to load.
-            skipPaths = [
-                '/myDict/numbers/-inf', '/myDict/numbers/nan', '/myDict/age', '/myDict/numbers/int',
-                '/myDict/numbers/large float', # These give errors in 2D image plot
-                '/myDict/structured_arr4', # gives ValueError: Unable to transform (63, 63) to dtype [('r', '|u1'), ('', '|V1'), ('b', '|u1')]
-                '/argos/Mini Scanner Output/multiple_dimension_scales.h5/samples_raw', # TODO:
-                '/argos/images/eclipseclouds_tamo_2017_geo.tif',
+
+            skipLong = [ # Skip nodes that that take a long time to load.
                 '/argos/images/peter_karpov',
-                '/argos/trop/2015_03_16T16_32_16_MonA/after_dccorr_l1bavg/trl1brb8g.lx.nc/BAND8/ICID_30683_GROUP_00001/INSTRUMENT/'
+                '/argos/images/eclipseclouds_tamo_2017_geo.tif',
             ]
+            skipError = [
+                #'/myDict/numbers/-inf', '/myDict/numbers/nan', '/myDict/age', '/myDict/numbers/int', # These seem to work now
+                #'/myDict/numbers/large float', # These give errors in 2D image plot
+                #'/myDict/structured_arr4', # gives ValueError: Unable to transform (63, 63) to dtype [('r', '|u1'), ('', '|V1'), ('b', '|u1')]
+                '/argos/mini_scanner_output/multiple_dimension_scales.h5', # TODO:
+            ]
+
+            from argos.inspector.qtplugins.text import TextInspector
+            from argos.inspector.pgplugins.lineplot1d import PgLinePlot1d
+            if isinstance(self._inspector, TextInspector):
+                skipError.append('/myDict/pandas/multi-index/index')  # Gives TypeError: len() of unsized object. Unclear whe. # TODO
+                skipError.append('/myDict/structured_masked_arr2'),  # Fails with ma.copy: 'numpy.void' object has no attribute '_update_from'
+            elif isinstance(self._inspector, PgLinePlot1d):
+                skipError.append(' /argos/ucar/madis-hydro.nc/firstOverflow'),  # Fails with ma.copy: 'numpy.void' object has no attribute '_update_from'
+
+
+            skipPaths = skipLong + skipError
         else:
             skipPaths = []
 

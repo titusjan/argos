@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 class ConsistencyError(Exception):
-    """ Raised when the mask of an ArrayWithMask object has an inconsitstent shape."""
+    """ Raised when the mask of an ArrayWithMask object has an inconsistent shape."""
     pass
 
 
