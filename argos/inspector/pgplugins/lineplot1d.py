@@ -204,7 +204,14 @@ class PgLinePlot1d(AbstractInspector):
 
         # PyQtGraph doesn't handle masked arrays so we convert the masked values to Nans (missing
         # data values are replaced by NaNs). The PyQtGraph line plot omits the Nans, which is great.
-        self.slicedArray.replaceMaskedValueWithNan()  # will convert data to float if int
+        # Update: in newer version of Qt the Nans are no longer printed, see PyQtGraph issue 1057,
+        # https://github.com/pyqtgraph/pyqtgraph/issues/1057
+        # When showing lines we therefore don't replace the Nans and let the setData connect parameter be responsible
+        # for omitting the masked data. When showing only symbols the masked values are replaced. When both symbols
+        # wnd lines are shown the resulting plot is incorrect as the masked values are not replaced and thus displayed
+        # as point. This is unfortunate but can't be helped until the issue is resolved in PyQtGraph.
+        if not self.config.plotDataItemCti.lineCti.configValue:
+            self.slicedArray.replaceMaskedValueWithNan()  # will convert data to float if int
 
         self.plotItem.clear()
 

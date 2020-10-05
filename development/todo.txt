@@ -12,6 +12,7 @@ Argos philosophy:
         - ExceptHook
         - Handle Nans
         - Handle masked arrays
+        - Warning QApplication created before...
 
 
 TODO short term:
@@ -47,6 +48,16 @@ TODO short term:
 
     Bugs and issues
     ---------------
+        Vervang Nans in crosshairs
+        Version copyOnReplace
+        Gebruik 'finite' ?
+
+
+
+        "/argos/ucar/madis-hydro.nc//firstOverflow" linePlot readonly error
+
+        /myDict/array_masked gives only symbols in 1D lineplot. So invisible connecting lines (on Bommel)
+
         Warning on pgctis.py:381  : WARNING : New target range is not finite. Plot range not updated --> info
 
         Fixed font size in tables and trees so that windows10 with two monitors works. (setFixedPitch)
@@ -373,3 +384,6 @@ SOLVED or WON'T FIX
         Gives the correct mask, but the underlying data is set to 0.0 by netCDF4 python Module.
         HDFView shows the value to be the same as the fillValue (-1).
         The file can't be opened with h5py 2.10.0 (libhdf5: 1.10.6). Gives: file signature not found
+
+    Nans are not plotted. Is issue with Qt/PyQtGraph
+        https://github.com/pyqtgraph/pyqtgraph/issues/1057

@@ -576,6 +576,12 @@ class PgImagePlot2d(AbstractInspector):
                             connected = (np.zeros_like(rowData)
                                          if self.slicedArray.mask else connected)
 
+                        # Replace mask by Nans. Only doing when not showing lines to hack around PyQtGraph issue 1057
+                        # See comment in PgLinePlot1d._drawContents for a more detailed explaination
+                        if not self.config.crossPenCti.lineCti.configValue:
+                            rowData = replaceMaskedValueWithFloat(rowData, np.logical_not(connected),
+                                                                  np.nan, copyOnReplace=True)
+
                         # Replace infinite value with nans because PyQtGraph can't handle them
                         rowData = replaceMaskedValueWithFloat(rowData, np.isinf(rowData),
                                                               np.nan, copyOnReplace=True)
@@ -619,6 +625,12 @@ class PgImagePlot2d(AbstractInspector):
                         else:
                             connected = (np.zeros_like(colData)
                                          if self.slicedArray.mask else connected)
+
+                        # Replace mask by Nans. Only doing when not showing lines to hack around PyQtGraph issue 1057
+                        # See comment in PgLinePlot1d._drawContents for a more detailed explaination
+                        if not self.config.crossPenCti.lineCti.configValue:
+                            colData = replaceMaskedValueWithFloat(colData, np.logical_not(connected),
+                                                                  np.nan, copyOnReplace=True)
 
                         # Replace infinite value with nans because PyQtGraph can't handle them
                         colData = replaceMaskedValueWithFloat(colData, np.isinf(colData),
