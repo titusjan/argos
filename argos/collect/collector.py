@@ -28,6 +28,7 @@ from argos.qt import Qt, QtWidgets, QtGui, QtCore, QtSignal, QtSlot
 from argos.repo.baserti import BaseRti
 from argos.utils.cls import check_class, check_is_a_sequence, check_is_an_array, is_an_array
 from argos.utils.masks import ArrayWithMask
+from argos.utils.moduleinfo import versionStrToTuple
 from argos.widgets.constants import TOP_DOCK_HEIGHT, DOCK_SPACING, DOCK_MARGIN
 from argos.widgets.misc import BasePanel
 
@@ -540,7 +541,10 @@ class Collector(BasePanel):
 
         # Make a copy to prevent inspectors from modifying the underlying array.
         if copy:
-            slicedArray = ma.copy(slicedArray)
+            if versionStrToTuple(np.__version__) >= (1,19,0):
+                slicedArray = np.copy(slicedArray, subok=True)  # Fixes issue #8
+            else:
+                slicedArray = ma.copy(slicedArray)
 
         # If there are no comboboxes the sliceList will contain no Slices objects, only ints. Then
         # the resulting slicedArray will be a usually a scalar (only structured fields may yield an

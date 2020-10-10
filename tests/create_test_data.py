@@ -54,6 +54,10 @@ def createNetCdfTestData():
         scalar = rootgrp.createVariable('my_scalar','i4',)
         scalar[:] = 66
 
+        maskedScalar = rootgrp.createVariable('masked_scalar','i4', fill_value=-99)
+        maskedScalar.description = "A scalar set to the fill value"
+        maskedScalar[:] = -99
+
 
 
 def createTestData(outputDir):

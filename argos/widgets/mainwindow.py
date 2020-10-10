@@ -29,6 +29,8 @@ import pstats
 import time
 from functools import partial
 
+import numpy as np
+
 from argos.collect.collector import Collector
 from argos.config.abstractcti import AbstractCti
 from argos.config.configtreemodel import ConfigTreeModel
@@ -48,6 +50,7 @@ from argos.repo.testdata import createArgosTestData
 from argos.utils.cls import check_class, check_is_a_sequence
 from argos.utils.dirs import argosConfigDirectory, argosLogDirectory
 from argos.utils.misc import string_to_identifier
+from argos.utils.moduleinfo import versionStrToTuple
 from argos.widgets.aboutdialog import AboutDialog
 from argos.widgets.constants import CENTRAL_MARGIN, CENTRAL_SPACING
 from argos.widgets.misc import processEvents
@@ -999,13 +1002,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
             # Don't import plugins at module level.
             from argos.inspector.qtplugins.text import TextInspector
-            from argos.inspector.pgplugins.lineplot1d import PgLinePlot1d
+            from argos.inspector.pgplugins.imageplot2d import PgImagePlot2d
 
             if isinstance(self._inspector, TextInspector):
                 skipError.append('/myDict/pandas/multi-index/index')  # Gives TypeError: len() of unsized object. Unclear whe. # TODO
                 skipError.append('/myDict/structured_masked_arr2'),  # Fails with ma.copy: 'numpy.void' object has no attribute '_update_from'
-            elif isinstance(self._inspector, PgLinePlot1d):
-                skipError.append(' /argos/ucar/madis-hydro.nc/firstOverflow'),  # Fails with ma.copy: 'numpy.void' object has no attribute '_update_from'
+            elif isinstance(self._inspector, PgImagePlot2d) or isinstance(self._inspector, PgImagePlot2d):
+                if versionStrToTuple(np.__version__) < (1,19,0):
+                    # Fails with ma.copy: 'numpy.void' object has no attribute '_update_from'
+                    skipError.append('/argos/ucar/madis-hydro.nc/firstOverflow'),
 
 
             skipPaths = skipLong + skipError
