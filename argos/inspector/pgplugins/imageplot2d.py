@@ -577,7 +577,8 @@ class PgImagePlot2d(AbstractInspector):
                                          if self.slicedArray.mask else connected)
 
                         # Replace mask by Nans. Only doing when not showing lines to hack around PyQtGraph issue 1057
-                        # See comment in PgLinePlot1d._drawContents for a more detailed explaination
+                        # See comment in PgLinePlot1d._drawContents for a more detailed explanation
+                        # TODO: reuse imageItem data array when this hack is no longer necessary
                         if not self.config.crossPenCti.lineCti.configValue:
                             rowData = replaceMaskedValueWithFloat(rowData, np.logical_not(connected),
                                                                   np.nan, copyOnReplace=True)
@@ -587,6 +588,8 @@ class PgImagePlot2d(AbstractInspector):
                                                               np.nan, copyOnReplace=True)
 
                         horPlotDataItem = self.config.crossPenCti.createPlotDataItem()
+                        # TODO: try to use connect='finite' when the hack above is no longer necessary. In that case
+                        # test with array_masked test data
                         horPlotDataItem.setData(rowData, connect=connected)
                         self.horCrossPlotItem.addItem(horPlotDataItem)
 
@@ -627,7 +630,7 @@ class PgImagePlot2d(AbstractInspector):
                                          if self.slicedArray.mask else connected)
 
                         # Replace mask by Nans. Only doing when not showing lines to hack around PyQtGraph issue 1057
-                        # See comment in PgLinePlot1d._drawContents for a more detailed explaination
+                        # See comment in PgLinePlot1d._drawContents for a more detailed explanation
                         if not self.config.crossPenCti.lineCti.configValue:
                             colData = replaceMaskedValueWithFloat(colData, np.logical_not(connected),
                                                                   np.nan, copyOnReplace=True)

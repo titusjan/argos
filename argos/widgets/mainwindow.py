@@ -997,8 +997,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 '/argos/mini_scanner_output/multiple_dimension_scales.h5', # TODO:
             ]
 
+            # Don't import plugins at module level.
             from argos.inspector.qtplugins.text import TextInspector
             from argos.inspector.pgplugins.lineplot1d import PgLinePlot1d
+
             if isinstance(self._inspector, TextInspector):
                 skipError.append('/myDict/pandas/multi-index/index')  # Gives TypeError: len() of unsized object. Unclear whe. # TODO
                 skipError.append('/myDict/structured_masked_arr2'),  # Fails with ma.copy: 'numpy.void' object has no attribute '_update_from'

@@ -46,17 +46,12 @@ TODO short term:
 
         Better probe labels. Use dimension names in probe name. E.g. myvalue = 5.22 @ pos (dim-1, dim-2) = (13, 4)
 
+        Sliders next to spin boxes in collector.
+
     Bugs and issues
     ---------------
-        Vervang Nans in crosshairs
-        Version copyOnReplace
-        Gebruik 'finite' ?
-
-
-
         "/argos/ucar/madis-hydro.nc//firstOverflow" linePlot readonly error
 
-        /myDict/array_masked gives only symbols in 1D lineplot. So invisible connecting lines (on Bommel)
 
         Warning on pgctis.py:381  : WARNING : New target range is not finite. Plot range not updated --> info
 
@@ -120,6 +115,9 @@ TODO short term:
 
         Also, installing with python setup.py install gives
                 FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\Kenter\\Miniconda3\\envs\\argosdev\\Lib\\site-packages\\argos-0.3.0rc2-py3.8.egg\\argos\\utils\\default_logging.json'
+
+        Hamburger menu button in table headers to show/hide rows? Zebra striping?
+        The problem is that the currently selected RTI is poorly visible when the data tree loses focus. Fix with CSS?
 
     Cleanup and release
     -------------------
