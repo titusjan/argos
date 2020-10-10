@@ -50,7 +50,6 @@ TODO short term:
 
     Bugs and issues
     ---------------
-        "/argos/ucar/madis-hydro.nc//firstOverflow" linePlot readonly error
 
 
         Warning on pgctis.py:381  : WARNING : New target range is not finite. Plot range not updated --> info
@@ -59,24 +58,11 @@ TODO short term:
 
         Waarom doet autorange het niet in rigolscan_partial?
 
-        What if the H5 only has a dimension label? 2020-10-04. What is this?
-
-        What if they have multiple dimension scales?
-            /argos/mini_scanner_output/multiple_dimension_scales.h5
-
-        Empty (Null) datasets and attributes
-        http://docs.h5py.org/en/latest/high/dataset.html#creating-and-reading-empty-or-null-datasets-and-attributes
-
         HDF5 dataset with dimensions of size 0
 
         Installed plugins dialog doesn't work if scipy is not installed.  (Test under Linux)
 
         WavFileRti._closeResources doesn't reset attribute correctly. Fix and check in other classes
-
-        Fix error: on Windows browsing a single drive (e.g. 'C:\') fails.
-
-        Items in header context menu are not checked while header is visible in table.
-        Checking and then unchecking fixes the issue.
 
         Closing an RTI redraws all RTIs below it, which is ugly. Simply collapsing them does not.
 
@@ -151,8 +137,6 @@ TODO mid term:
 
     Histogram / statistics inspector.
 
-    Better log config
-
     Look at QSizePolicy::setControlType
 
     Default outlier percentage op 0.1%?
@@ -169,6 +153,15 @@ TODO mid term:
 
     Test ExdirFieldRti
 
+
+
+    Bugs and issues
+    ---------------
+
+        What if the H5 only has a dimension label? 2020-10-04. What is this?
+
+        What if they have multiple dimension scales?
+            /argos/mini_scanner_output/multiple_dimension_scales.h5
 
 
 TODO long term:
