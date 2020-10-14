@@ -70,6 +70,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # Emitted when the inspector has changed.
     sigInspectorChanged = QtSignal(object)  # InspectorRegItem or None
+    sigShowMessage = QtSignal(str) # Message to the user in the inspector-selection panel
 
     def __init__(self, argosApplication):
         """ Constructor
@@ -127,6 +128,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.collector.sigContentsChanged.disconnect(self.collectorContentsChanged)
         self._configTreeModel.sigItemChanged.disconnect(self.configContentsChanged)
         self.sigInspectorChanged.disconnect(self.inspectorSelectionPane.updateFromInspectorRegItem)
+        self.sigShowMessage.disconnect(self.inspectorSelectionPane.showMessage)
+        self._collector.sigShowMessage.disconnect(self.sigShowMessage)
 
         if PROFILING:
             logger.info("Saving profiling information to {}"
@@ -141,6 +144,8 @@ class MainWindow(QtWidgets.QMainWindow):
         """ Creates the UI widgets.
         """
         self._collector = Collector(self.windowNumber)
+        self._collector.sigShowMessage.connect(self.sigShowMessage)
+
         self.configWidget = ConfigWidget(self._configTreeModel)
         self.repoWidget = RepoWidget(self.argosApplication.repo, self.collector)
 
@@ -166,8 +171,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.inspectorSelectionPane = InspectorSelectionPane(self.inspectorActionGroup)
         self.topLayout.addWidget(self.inspectorSelectionPane)
-        self.topLayout.addStretch()
         self.sigInspectorChanged.connect(self.inspectorSelectionPane.updateFromInspectorRegItem)
+        self.sigShowMessage.connect(self.inspectorSelectionPane.showMessage)
 
         showInspectorMenuAction = QtWidgets.QAction("ShowInspectorMenu", self,
             triggered=self.inspectorSelectionPane.menuButton.showMenu, checkable=False)
@@ -689,6 +694,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.drawInspectorContents(reason=UpdateReason.CONFIG_CHANGED,
                                    origin=configTreeItem)
 
+    def showMessage(self, msg):
+        """ Shows a message to the user in the panel above the inspector
+        """
+        self.inspectorSelectionPane.showMessage(msg)
+
 
     def drawInspectorContents(self, reason, origin=None):
         """ Draws all contents of this window's inspector.
@@ -697,12 +707,15 @@ class MainWindow(QtWidgets.QMainWindow):
             :param reason: string describing the reason for the redraw.
                 Should preferably be one of the UpdateReason enumeration class, but new values may
                 be used (which are then ignored by existing inspectors).
-            :param origin: object with extra infor on the reason
+            :param origin: object with extra info on the reason
         """
         logger.debug("")
         logger.debug("-------- Drawing inspector of window: {} --------".format(self.windowTitle()))
         if PROFILING:
             self._profiler.enable()
+
+        #self.showMessage(reason)
+        self.showMessage('')  # clear message
 
         self.inspector.updateContents(reason=reason, initiator=origin)
 

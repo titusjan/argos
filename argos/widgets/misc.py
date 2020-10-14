@@ -27,6 +27,26 @@ from argos.qt import QtWidgets
 logger = logging.getLogger(__name__)
 
 
+def setWidgetSizePolicy(widget, hor=None, ver=None):
+    """ Sets horizontal and/or vertical size policy on a widget
+    """
+    sizePolicy = widget.sizePolicy()
+    logger.info("widget {} size policy Befor: {} {}"
+                 .format(widget, sizePolicy.horizontalPolicy(), sizePolicy.verticalPolicy()))
+
+    if hor is not None:
+        sizePolicy.setHorizontalPolicy(hor)
+
+    if ver is not None:
+        sizePolicy.setVerticalPolicy(ver)
+
+    widget.setSizePolicy(sizePolicy)
+
+    sizePolicy = widget.sizePolicy()
+    logger.info("widget {} size policy AFTER: {} {}"
+                 .format(widget, sizePolicy.horizontalPolicy(), sizePolicy.verticalPolicy()))
+
+
 def processEvents():
     """ Processes all pending events for the calling thread until there are no more events to
         process.

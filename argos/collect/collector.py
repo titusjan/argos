@@ -50,6 +50,7 @@ class Collector(BasePanel):
         itself.
     """
     sigContentsChanged = QtSignal(str) # one of the UpdateReason values.
+    sigShowMessage = QtSignal(str)
 
     def __init__(self, windowNumber):
         """ Constructor
@@ -521,6 +522,8 @@ class Collector(BasePanel):
         #logger.debug("getSlicedArray() called")
 
         if not self.rtiIsSliceable:
+            if self._rti:
+                self.sigShowMessage.emit("Item is not an array: {}".format(self.rti.nodePath))
             return None
 
         # The dimensions that are selected in the combo boxes will be set to slice(None),
