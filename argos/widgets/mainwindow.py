@@ -91,6 +91,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._collector = None
         self._inspector = ErrorMsgInspector(
             self._collector, "No inspector yet. Please select one from the menu.")
+        self._inspector.sigShowMessage.connect(self.sigShowMessage)
         self._inspectorRegItem = None # The registered inspector item a InspectorRegItem)
 
         self._argosApplication = argosApplication
@@ -130,6 +131,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sigInspectorChanged.disconnect(self.inspectorSelectionPane.updateFromInspectorRegItem)
         self.sigShowMessage.disconnect(self.inspectorSelectionPane.showMessage)
         self._collector.sigShowMessage.disconnect(self.sigShowMessage)
+        self._inspector.sigShowMessage.disconnect(self.sigShowMessage)
 
         if PROFILING:
             logger.info("Saving profiling information to {}"
@@ -603,11 +605,10 @@ class MainWindow(QtWidgets.QMainWindow):
         logger.debug("Disabling updates.")
         self.setUpdatesEnabled(False)
         try:
-            #centralLayout = self.centralWidget().layout()
-
             # Delete old inspector
             self._storeInspectorState(oldInspectorRegItem, oldInspector)
 
+            oldInspector.sigShowMessage.disconnect(self.sigShowMessage)
             oldInspector.finalize()
             self.wrapperLayout.removeWidget(oldInspector)
             oldInspector.deleteLater()
@@ -631,6 +632,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.configWidget.configTreeView.expandBranch()
                     self.collector.clearAndSetComboBoxes(self.inspector.axesNames())
 
+                self._inspector.sigShowMessage.connect(self.sigShowMessage)
                 self.wrapperLayout.addWidget(self.inspector)
             finally:
                 self.collector.blockSignals(oldBlockState)

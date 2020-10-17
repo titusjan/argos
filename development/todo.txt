@@ -116,6 +116,8 @@ TODO short term:
 
         remove obsolete todo's in code.
 
+        check plugin descriptions / docstrings
+
 
 
 TODO mid term:

@@ -37,8 +37,8 @@ from argos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, NO_LABEL_STR,
                                               setXYAxesAutoRangeOn, PgAxisLabelCti,
                                               PgAxisLogModeCti, PgAxisRangeCti, PgPlotDataItemCti)
 from argos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
-from argos.utils.cls import (array_has_real_numbers, check_class, fill_values_to_nan,
-                                is_an_array, check_is_an_array, to_string)
+from argos.utils.cls import array_has_real_numbers, check_class, is_an_array, to_string
+from argos.utils.cls import array_kind_label
 from argos.utils.masks import replaceMaskedValue
 
 
@@ -173,15 +173,10 @@ class PgLinePlot1d(AbstractInspector):
         return tuple(['X'])
 
 
-    def _hasValidData(self):
-        """ Returns True if the inspector has data that can be plotted.
-        """
-        return self.slicedArray is not None and array_has_real_numbers(self.slicedArray.data)
-
-
     def _clearContents(self):
         """ Clears the  the inspector widget when no valid input is available.
         """
+        self.slicedArray = None
         self.titleLabel.setText('')
         self.plotItem.clear()
         self.plotItem.setLabel('left', '')
@@ -196,9 +191,16 @@ class PgLinePlot1d(AbstractInspector):
         """
         self.slicedArray = self.collector.getSlicedArray()
 
-        if not self._hasValidData():
+        slicedArray = self.collector.getSlicedArray()
+        if slicedArray is None:
             self._clearContents()
-            raise InvalidDataError("No data available or it does not contain real numbers")
+            raise InvalidDataError()  # Don't show message, to common.
+        elif not array_has_real_numbers(slicedArray.data):
+            self._clearContents()
+            raise InvalidDataError(
+                "Selected item contains {} data.".format(array_kind_label(slicedArray.data)))
+        else:
+            self.slicedArray = slicedArray
 
         # -- Valid plot data from here on --
 
@@ -257,7 +259,7 @@ class PgLinePlot1d(AbstractInspector):
             self.probeLabel.setText("")
             self.probeDataItem.clear()
 
-            if (self._hasValidData() and self.config.probeCti.configValue and
+            if (self.config.probeCti.configValue and self.slicedArray is not None and
                 self.viewBox.sceneBoundingRect().contains(viewPos)):
 
                 scenePos = self.viewBox.mapSceneToView(viewPos)

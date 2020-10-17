@@ -40,6 +40,7 @@ from argos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from argos.inspector.pgplugins.pghistlutitem import HistogramLUTItem
 from argos.qt import Qt, QtCore, QtGui, QtSlot
 from argos.utils.cls import array_has_real_numbers, check_class, is_an_array, to_string
+from argos.utils.cls import array_kind_label
 from argos.utils.masks import replaceMaskedValueWithFloat, nanPercentileOfSubsampledArrayWithMask, ArrayWithMask
 
 logger = logging.getLogger(__name__)
@@ -370,16 +371,11 @@ class PgImagePlot2d(AbstractInspector):
         return tuple(['Y', 'X'])
 
 
-    def _hasValidData(self):
-        """ Returns True if the inspector has data that can be plotted.
-        """
-        return self.slicedArray is not None and array_has_real_numbers(self.slicedArray.data)
-
-
     def _clearContents(self):
         """ Clears the contents when no valid data is available
         """
         logger.debug("Clearing inspector contents")
+        self.slicedArray = None
         self.titleLabel.setText('')
 
         # Don't clear the imagePlotItem, the imageItem is only added in the constructor.
@@ -443,9 +439,16 @@ class PgImagePlot2d(AbstractInspector):
 
         self.slicedArray = self.collector.getSlicedArray()
 
-        if not self._hasValidData():
+        slicedArray = self.collector.getSlicedArray()
+        if slicedArray is None:
             self._clearContents()
-            raise InvalidDataError("No data available or it does not contain real numbers")
+            raise InvalidDataError()  # Don't show message, to common.
+        elif not array_has_real_numbers(slicedArray.data):
+            self._clearContents()
+            raise InvalidDataError(
+                "Selected item contains {} data.".format(array_kind_label(slicedArray.data)))
+        else:
+            self.slicedArray = slicedArray
 
         # -- Valid plot data from here on --
 
@@ -519,8 +522,7 @@ class PgImagePlot2d(AbstractInspector):
             self.horCrossPlotItem.clear()
             self.verCrossPlotItem.clear()
 
-            if (self._hasValidData() and self.slicedArray is not None
-                and self.viewBox.sceneBoundingRect().contains(viewPos)):
+            if self.slicedArray is not None and self.viewBox.sceneBoundingRect().contains(viewPos):
 
                 # Calculate the row and column at the cursor.
                 scenePos = self.viewBox.mapSceneToView(viewPos)
