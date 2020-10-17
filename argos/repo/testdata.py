@@ -155,6 +155,10 @@ def createArgosTestData():
     myDict['structured_arr3'] = np.array([(1.5,2.5,(2.0, )),(3.,4.,(5., )),(1.,3.,(2.,))],
                                          dtype=[('1st','f4'),('2nd',np.float32),('3rd','f4',(2,))])
 
+    myDict['empty_array1D'] = np.ones(shape=(0, ))
+    myDict['empty_array2D'] = np.ones(shape=(0, 6))
+    myDict['empty_array3D'] = np.ones(shape=(10, 0, 6))
+
     # A structured array with offsets and titles
     dt4 = np.dtype({'names': ['r','b'], 'formats': ['u1', 'u1'], 'offsets': [0, 2]})
                     #'titles': ['Red pixel', 'Blue pixel']})

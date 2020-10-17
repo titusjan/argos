@@ -1,0 +1,37 @@
+URLs to 3rd party packages that might be interesting for Argos
+===============================================================
+
+# Misc
+http://pandas-datareader.readthedocs.org/en/latest/remote_data.html#google-finance
+http://www.reddit.com/r/Python/comments/2vn1yz/what_is_the_best_way_to_create_deb_package_from/
+
+
+# Tagged tiff files
+https://pypi.org/project/tifffile/
+
+# Selectors plugins
+http://blaze.pydata.org/en/latest/  (# seems dead since 2018)
+BColz                               (# seems dead since 2017)
+
+# Plot and Mapping libs:
+https://wiki.python.org/moin/NumericAndScientific/Plotting
+http://pygal.org/chart_types/#idworldmap-charts
+http://docs.enthought.com/chaco/quickstart.html
+http://scikit-image.org/docs/dev/auto_examples/plot_canny.html
+http://vispy.org/
+https://www.getdatajoy.com/examples/python-plots/vector-fields
+
+# color palette
+http://tools.medialab.sciences-po.fr/iwanthue/tutorial.php
+http://vis4.net/blog/posts/avoid-equidistant-hsv-colors/
+http://soliton.vm.bytemark.co.uk/pub/cpt-city/
+https://vis4.net/blog/posts/mastering-multi-hued-color-scales/
+https://gka.github.io/palettes/#colors=lightyellow,orange,deeppink,darkred|steps=10|bez=1|coL=1   # create own scales, very nice
+http://stanford.edu/~mwaskom/software/seaborn/tutorial/color_palettes.html
+
+# Grib
+http://mirador.gsfc.nasa.gov/cgi-bin/mirador/granlist.pl?page=1&location=(-90,-180),(90,180)&dataSet=NLDAS_FOR0125_H&version=001&allversion=001&startTime=2005-08-03T00:00:01Z&endTime=2005-08-03T23:59:59Z&keyword=NLDAS_FOR0125_H&prodpg=http://disc.gsfc.nasa.gov/datacollection/NLDAS_FOR0125_H_V001.html&longname=NLDAS%20Forcing%20Data%20L4%20Hourly%200.125%20x%200.125%20degree%20V001&CGISESSID=18bd3c7fb47ceeb1e5c1e9f8139efd0c
+http://mirador.gsfc.nasa.gov/cgi-bin/mirador/presentNavigation.pl?tree=scienceArea&CGISESSID=18bd3c7fb47ceeb1e5c1e9f8139efd0c&CURRENT_CONTEXT=scienceArea
+
+# Grams SPC
+https://en.wikipedia.org/wiki/SPC_file_format

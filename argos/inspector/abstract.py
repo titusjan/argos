@@ -20,7 +20,7 @@
 import logging
 from argos.config.groupcti import MainGroupCti
 from argos.info import DEBUGGING
-from argos.qt import QtWidgets, QtSlot
+from argos.qt import QtWidgets, QtSignal
 from argos.utils.cls import type_name, check_class
 from argos.widgets.constants import DOCK_SPACING, DOCK_MARGIN
 from argos.widgets.display import MessageDisplay
@@ -73,6 +73,8 @@ class AbstractInspector(QtWidgets.QStackedWidget):
     _fullName = "base" # see the fullName() class method for explanation
     ERROR_PAGE_IDX = 0
     CONTENTS_PAGE_IDX = 1
+
+    sigShowMessage = QtSignal(str)
 
     def __init__(self, collector, parent=None):
         """ Constructor.
@@ -209,7 +211,10 @@ class AbstractInspector(QtWidgets.QStackedWidget):
             logger.debug("refreshFromTarget finished successfully")
 
         except InvalidDataError as ex:
-            logger.info("Unable to draw the inspector contents: {}".format(ex))
+            logger.info("Unable to draw the inspector contents: '{}'".format(ex))
+            if str(ex):
+                # Execption message can be empty in common cases. Don't clear message label then.
+                self.sigShowMessage.emit(str(ex))
 
         except Exception as ex:
             if DEBUGGING:  # TODO: enable

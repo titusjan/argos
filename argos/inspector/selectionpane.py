@@ -19,10 +19,11 @@
 """
 import logging
 
-from argos.qt import QtWidgets, QtSlot
+from argos.qt import QtWidgets, QtSlot, Qt
 
 from argos.inspector.registry import InspectorRegItem
 from argos.widgets.constants import DOCK_MARGIN, DOCK_SPACING
+from argos.widgets.misc import setWidgetSizePolicy
 
 logger = logging.getLogger(__name__)
 
@@ -36,27 +37,39 @@ class InspectorSelectionPane(QtWidgets.QFrame):
     def __init__(self, inspectorActionGroup, parent=None):
         super(InspectorSelectionPane, self).__init__(parent=parent)
 
-        #self.setFrameShape(QtWidgets.QFrame.Box)
-        self.mainLayout = QtWidgets.QHBoxLayout()
-        self.mainLayout.setSpacing(DOCK_SPACING)
-        self.mainLayout.setContentsMargins(DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN)
-        self.setLayout(self.mainLayout)
-
-        # self.label = QtWidgets.QLabel("Current inspector")
-        # self.layout.addWidget(self.label)
-
+        # self.setFrameShape(QtWidgets.QFrame.Box)
         self.menuButton = QtWidgets.QPushButton(NO_INSPECTOR_LABEL)
         self.menuButton.setMinimumWidth(10)
-        self.mainLayout.addWidget(self.menuButton)
 
         inspectorMenu = QtWidgets.QMenu("Change Inspector", parent=self.menuButton)
         for action in inspectorActionGroup.actions():
             inspectorMenu.addAction(action)
         self.menuButton.setMenu(inspectorMenu)
 
-        sizePolicy = self.sizePolicy()
-        sizePolicy.setVerticalPolicy(QtWidgets.QSizePolicy.Fixed)
-        self.setSizePolicy(sizePolicy)
+        self.messageLabel = QtWidgets.QLabel("")
+        self.messageLabel.setFrameStyle(QtWidgets.QFrame.Panel)
+        self.messageLabel.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.messageLabel.setTextInteractionFlags(Qt.TextSelectableByMouse)
+
+        self.mainLayout = QtWidgets.QHBoxLayout()
+        self.mainLayout.setContentsMargins(DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN, DOCK_MARGIN)
+        self.setLayout(self.mainLayout)
+
+        self.mainLayout.addWidget(self.menuButton, stretch=0)
+        self.mainLayout.addWidget(self.messageLabel, stretch=1)
+
+        setWidgetSizePolicy(self.menuButton, hor=QtWidgets.QSizePolicy.Minimum)
+        setWidgetSizePolicy(self.messageLabel, hor=QtWidgets.QSizePolicy.Ignored)
+        setWidgetSizePolicy(
+            self, hor=QtWidgets.QSizePolicy.MinimumExpanding, ver=QtWidgets.QSizePolicy.Fixed)
+
+
+    def showMessage(self, msg):
+        """ Sets the message label to a message text
+        """
+        logger.debug("Show message to user: '{}'".format(msg))
+        self.messageLabel.setText(msg)
+        self.messageLabel.setToolTip(msg)
 
 
     @QtSlot(InspectorRegItem)

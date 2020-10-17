@@ -348,26 +348,36 @@ def array_is_structured(array):
     return bool(array.dtype.names)
 
 
+KIND_LABEL = dict(
+    b = 'boolean',
+    i = 'signed integer',
+    u = 'unsigned integer',
+    f = 'floating-point',
+    c = 'complex floating-point',
+    m = 'timedelta',
+    M = 'datetime',
+    O = 'object',
+    S = 'byte/string',
+    U = 'unicode',
+    V = 'compound', # is more clear to end users than 'void'
+)
+
+
+def array_kind_label(array):
+    """ Returns short string describing the array data type kind
+    """
+    return KIND_LABEL[array.dtype.kind]
+
+
 def array_has_real_numbers(array):
     """ Uses the dtype kind of the numpy array to determine if it represents real numbers.
 
         That is, the array kind should be one of: i u f
 
         Possible dtype.kind values.
-            b 	boolean
-            i 	signed integer
-            u 	unsigned integer
-            f 	floating-point
-            c 	complex floating-point
-            m 	timedelta
-            M 	datetime
-            O 	object
-            S 	(byte-)string
-            U 	Unicode
-            V 	void
+
     """
     kind = array.dtype.kind
-    assert kind in 'biufcmMOSUV', "Unexpected array kind: {}".format(kind)
     return kind in 'iuf'
 
 

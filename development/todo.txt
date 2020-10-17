@@ -24,6 +24,7 @@ TODO short term:
 
         PgColorBar must be extendable at one side (bottom or top of the range)
 
+        chunks in properties tab
 
     Think about it
     --------------
@@ -37,7 +38,8 @@ TODO short term:
             Hard to determine the new unit and dimensions.
             Change if unit is new or combox dim is new.
             Keep collector state (comboboxes, when the dimensions of the new RTI are the same as of the old)
-            Aparently the color scan is not reset between changes.
+            Test with tata cube.h5
+            Apparently the color scan is not reset between changes.
                 Test with grib\NLDAS_FOR0125_H.A20050803.2300.001.nc
 
         Better color for rectangle zoom
@@ -123,6 +125,8 @@ TODO short term:
 
         remove obsolete todo's in code.
 
+        check plugin descriptions / docstrings
+
 
 
 TODO mid term:
@@ -130,6 +134,8 @@ TODO mid term:
     Exporter to PNG
 
     Automated testing (check AppVeyor, Azure Pipelines, CircleCI and TravisCI)
+
+    Create HDF5 test data from: https://portal.hdfgroup.org/display/HDF5/Other+Examples
 
     Make Rti.isFileFileFormat that opens a file and check if the RTI supports this.
         Call this only for RTIs that are visible in the tree (e.g. when the icons is queried by the model.
@@ -152,7 +158,7 @@ TODO mid term:
             ICID_30683_GROUP_00001/INSTRUMENT/housekeeping_data
         The less we do there, the less chance an error occurs.
 
-    Editable defaults in config.
+    Editable defaults in config tree.
 
     Test ExdirFieldRti
 

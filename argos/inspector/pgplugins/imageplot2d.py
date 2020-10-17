@@ -44,6 +44,7 @@ from argos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from argos.qt import Qt, QtCore, QtGui, QtSlot
 
 from argos.utils.cls import array_has_real_numbers, check_class, is_an_array, to_string
+from argos.utils.cls import array_kind_label
 from argos.utils.masks import (ArrayWithMask, replaceMaskedValueWithFloat,
                                nanPercentileOfSubsampledArrayWithMask)
 
@@ -381,16 +382,11 @@ class PgImagePlot2d(AbstractInspector):
         return tuple(['Y', 'X'])
 
 
-    def _hasValidData(self):
-        """ Returns True if the inspector has data that can be plotted.
-        """
-        return self.slicedArray is not None and array_has_real_numbers(self.slicedArray.data)
-
-
     def _clearContents(self):
         """ Clears the contents when no valid data is available
         """
         logger.debug("Clearing inspector contents")
+        self.slicedArray = None
         self.titleLabel.setText('')
 
         # Don't clear the imagePlotItem, the imageItem is only added in the constructor.
@@ -457,13 +453,30 @@ class PgImagePlot2d(AbstractInspector):
                 self.verPlotAdded = False
                 gridLayout.activate()
 
-        self.slicedArray = self.collector.getSlicedArray()
-
-        if not self._hasValidData():
+        slicedArray = self.collector.getSlicedArray()
+        if slicedArray is None:
             self._clearContents()
-            raise InvalidDataError("No data available or it does not contain real numbers")
+            raise InvalidDataError()  # Don't show message, to common.
+        elif not array_has_real_numbers(slicedArray.data):
+            self._clearContents()
+            raise InvalidDataError(
+                "Selected item contains {} data.".format(array_kind_label(slicedArray.data)))
+        else:
+            self.slicedArray = slicedArray
 
         # -- Valid plot data from here on --
+
+        if self.config.crossPlotGroupCti.checkState != Qt.Unchecked:
+            tempPlotDataItem = self.config.crossPenCti.createPlotDataItem()
+            if tempPlotDataItem.opts['pen'] is None and tempPlotDataItem.opts['symbol'] is None:
+                self.sigShowMessage.emit(
+                    "The cross-hair pen 'line' and 'symbol' config options are both unchecked!")
+
+        numElem = np.prod(self.slicedArray.data.shape)
+        if numElem == 0:
+            self.sigShowMessage.emit("Current slice is empty.")  # Not expected to happen.
+        elif numElem == 1:
+            self.sigShowMessage.emit("Current slice contains only a single data point.")
 
         # PyQtGraph doesn't handle masked arrays so we convert the masked values to Nans. Missing
         # data values are replaced by NaNs. The PyQtGraph image plot shows this as the color at the
@@ -539,8 +552,7 @@ class PgImagePlot2d(AbstractInspector):
             self.horCrossPlotItem.clear()
             self.verCrossPlotItem.clear()
 
-            if (self._hasValidData() and self.slicedArray is not None
-                and self.viewBox.sceneBoundingRect().contains(viewPos)):
+            if self.slicedArray is not None and self.viewBox.sceneBoundingRect().contains(viewPos):
 
                 # Calculate the row and column at the cursor.
                 scenePos = self.viewBox.mapSceneToView(viewPos)
@@ -592,6 +604,7 @@ class PgImagePlot2d(AbstractInspector):
                         # test with array_masked test data
                         horPlotDataItem.setData(rowData, connect=connected)
                         self.horCrossPlotItem.addItem(horPlotDataItem)
+
 
                         # Vertical line in hor-cross plot
                         crossLineShadow90 = pg.InfiniteLine(angle=90, movable=False,

@@ -149,7 +149,7 @@ def initLogging(configFileName=None, streamLogLevel=None):
     logging.info("Default location of log files: '{}'".format(logDir))
 
 
-def log_dictionary(dictionary, msg='', logger=None, level='debug', item_prefix='  '):
+def log_dictionary(dictionary, msg='', logger=None, level='debug', item_prefix='    '):
     """ Writes a log message with key and value for each item in the dictionary.
 
         :param dictionary: the dictionary to be logged
