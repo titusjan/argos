@@ -15,6 +15,7 @@ from __future__ import absolute_import
 # TODO: still can't make a wheel even following the instructions in the link below.
 # http://stackoverflow.com/questions/26664102/why-can-i-not-create-a-wheel-in-pyt
 
+import os
 import sys
 
 def err(*args, **kwargs):
@@ -72,7 +73,8 @@ setup(
     license = "GPLv3",
     url=info.PROJECT_URL,
     packages = find_packages(),
-    package_data = {'': ['HISTORY.rst'], info.PACKAGE_NAME: ['img/argos.css', 'img/snipicons/*']},
+    package_data = {'': ['HISTORY.rst'],
+                    info.PACKAGE_NAME: ['img/argos.css', 'img/snipicons/*', 'utils/default_logging.json']},
     entry_points={'console_scripts': ['argos = argos.main:main'],
                   'gui_scripts': ['argosw = argos.main:main']},
     install_requires = install_requires,
@@ -94,11 +96,13 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Topic :: Software Development',
         'Topic :: Scientific/Engineering',
         'Topic :: Utilities',
     ],
-    keywords = 'NCDF HDF plotting graphs',
+    keywords = 'NetCDF HDF5 plotting graphs',
     #test_suite='tests',
     #tests_require=test_requirements
 )

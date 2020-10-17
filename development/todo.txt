@@ -37,6 +37,8 @@ TODO short term:
             Hard to determine the new unit and dimensions.
             Change if unit is new or combox dim is new.
             Keep collector state (comboboxes, when the dimensions of the new RTI are the same as of the old)
+            Aparently the color scan is not reset between changes.
+                Test with grib\NLDAS_FOR0125_H.A20050803.2300.001.nc
 
         Better color for rectangle zoom
 
@@ -48,9 +50,12 @@ TODO short term:
 
         Sliders next to spin boxes in collector.
 
+        Hamburger menu button in table headers to show/hide rows? Zebra striping?
+        The problem is that the currently selected RTI is poorly visible when the data tree loses focus. Fix with CSS?
+
+
     Bugs and issues
     ---------------
-
 
         Warning on pgctis.py:381  : WARNING : New target range is not finite. Plot range not updated --> info
 
@@ -59,8 +64,6 @@ TODO short term:
         Waarom doet autorange het niet in rigolscan_partial?
 
         HDF5 dataset with dimensions of size 0
-
-        Installed plugins dialog doesn't work if scipy is not installed.  (Test under Linux)
 
         WavFileRti._closeResources doesn't reset attribute correctly. Fix and check in other classes
 
@@ -102,8 +105,12 @@ TODO short term:
         Also, installing with python setup.py install gives
                 FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\Kenter\\Miniconda3\\envs\\argosdev\\Lib\\site-packages\\argos-0.3.0rc2-py3.8.egg\\argos\\utils\\default_logging.json'
 
-        Hamburger menu button in table headers to show/hide rows? Zebra striping?
-        The problem is that the currently selected RTI is poorly visible when the data tree loses focus. Fix with CSS?
+        See:
+            #https://stackoverflow.com/questions/42025173/best-way-to-execute-a-python-script-in-a-given-conda-environment
+            conda_env = os.environ.get('CONDA_DEFAULT_ENV')
+            print("Conda environment: {}".format(conda_env))
+            assert conda_env == 'narf'
+
 
     Cleanup and release
     -------------------
@@ -120,13 +127,9 @@ TODO short term:
 
 TODO mid term:
 
-    look at h5py 3.0
-
     Exporter to PNG
 
-
     Automated testing (check AppVeyor, Azure Pipelines, CircleCI and TravisCI)
-
 
     Make Rti.isFileFileFormat that opens a file and check if the RTI supports this.
         Call this only for RTIs that are visible in the tree (e.g. when the icons is queried by the model.
