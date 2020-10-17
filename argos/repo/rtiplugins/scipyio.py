@@ -144,7 +144,7 @@ class WavFileRti(ArrayRti):
         """ Closes the underlying resources
         """
         self._array = None
-        self.attributes = {}
+        self.attributes.clear()
 
 
     def _fetchAllChildren(self):

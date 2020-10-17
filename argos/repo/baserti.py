@@ -331,7 +331,6 @@ class BaseRti(AbstractLazyLoadTreeItem):
         return ""
 
 
-    # TODO: setter?
     @property
     def attributes(self):
         """ The attribute dictionary.

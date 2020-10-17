@@ -14,6 +14,13 @@ Argos philosophy:
         - Handle masked arrays
         - Warning QApplication created before...
 
+    PgColorBar:
+        - Default extent = 100 % of pixels
+        - Clear histogram when image is set to empty. (clear color scale?)
+
+    CmLib:
+        Comboboxes for catalog and category
+        Show somehow the number of color scales
 
 TODO short term:
 
@@ -43,8 +50,7 @@ TODO short term:
                 Test with grib\NLDAS_FOR0125_H.A20050803.2300.001.nc
 
         Better color for rectangle zoom
-
-        Good message when no data is plotted. (/argos/ucar/IMAGE0002.nc/auditTrail)
+        Inferno as default color map?
 
         Is is possible to do interpolation in image scan so that lines in \spectral\cube.h5\intensities are visible?
 
@@ -59,15 +65,9 @@ TODO short term:
     Bugs and issues
     ---------------
 
-        Warning on pgctis.py:381  : WARNING : New target range is not finite. Plot range not updated --> info
-
         Fixed font size in tables and trees so that windows10 with two monitors works. (setFixedPitch)
 
         Waarom doet autorange het niet in rigolscan_partial?
-
-        HDF5 dataset with dimensions of size 0
-
-        WavFileRti._closeResources doesn't reset attribute correctly. Fix and check in other classes
 
         Closing an RTI redraws all RTIs below it, which is ugly. Simply collapsing them does not.
 

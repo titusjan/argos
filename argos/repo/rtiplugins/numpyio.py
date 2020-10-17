@@ -63,6 +63,7 @@ class NumpyTextFileRti(ArrayRti):
         """ Closes the underlying resources
         """
         self._array = None
+        self.attributes.clear()
 
 
     def _fetchAllChildren(self):
