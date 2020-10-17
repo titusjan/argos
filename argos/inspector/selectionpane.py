@@ -67,8 +67,7 @@ class InspectorSelectionPane(QtWidgets.QFrame):
     def showMessage(self, msg):
         """ Sets the message label to a message text
         """
-        if msg:
-            logger.debug("Show message to user: {}".format(msg))
+        logger.debug("Show message to user: '{}'".format(msg))
         self.messageLabel.setText(msg)
         self.messageLabel.setToolTip(msg)
 

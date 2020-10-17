@@ -204,6 +204,12 @@ class PgLinePlot1d(AbstractInspector):
 
         # -- Valid plot data from here on --
 
+        numElem = np.prod(self.slicedArray.data.shape)
+        if numElem == 0:
+            self.sigShowMessage.emit("Current slice is empty.")  # Not expected to happen.
+        elif numElem == 1:
+            self.sigShowMessage.emit("Current slice contains only a single data point.")
+
         # PyQtGraph doesn't handle masked arrays so we convert the masked values to Nans (missing
         # data values are replaced by NaNs). The PyQtGraph line plot omits the Nans, which is great.
         self.slicedArray.replaceMaskedValueWithNan()  # will convert data to float if int
@@ -229,6 +235,9 @@ class PgLinePlot1d(AbstractInspector):
 
         plotDataItem = self.config.plotDataItemCti.createPlotDataItem()
         plotDataItem.setData(self.slicedArray.data, connect=connected)
+
+        if plotDataItem.opts['pen'] is None and plotDataItem.opts['symbol'] is None:
+            self.sigShowMessage.emit("The 'line' and 'symbol' config options are both unchecked!")
 
         self.plotItem.addItem(plotDataItem)
 

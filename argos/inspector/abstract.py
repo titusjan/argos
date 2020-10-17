@@ -211,9 +211,10 @@ class AbstractInspector(QtWidgets.QStackedWidget):
             logger.debug("refreshFromTarget finished successfully")
 
         except InvalidDataError as ex:
-            logger.info("Unable to draw the inspector contents: {}".format(ex))
-            self.sigShowMessage.emit(str(ex))
-            # Unable to draw the inspector contents: No data available or it does not contain real numbers
+            logger.info("Unable to draw the inspector contents: '{}'".format(ex))
+            if str(ex):
+                # Execption message can be empty in common cases. Don't clear message label then.
+                self.sigShowMessage.emit(str(ex))
 
         except Exception as ex:
             if DEBUGGING:  # TODO: enable

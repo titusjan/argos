@@ -452,6 +452,18 @@ class PgImagePlot2d(AbstractInspector):
 
         # -- Valid plot data from here on --
 
+        if self.config.crossPlotGroupCti.checkState != Qt.Unchecked:
+            tempPlotDataItem = self.config.crossPenCti.createPlotDataItem()
+            if tempPlotDataItem.opts['pen'] is None and tempPlotDataItem.opts['symbol'] is None:
+                self.sigShowMessage.emit(
+                    "The cross-hair pen 'line' and 'symbol' config options are both unchecked!")
+
+        numElem = np.prod(self.slicedArray.data.shape)
+        if numElem == 0:
+            self.sigShowMessage.emit("Current slice is empty.")  # Not expected to happen.
+        elif numElem == 1:
+            self.sigShowMessage.emit("Current slice contains only a single data point.")
+
         # PyQtGraph doesn't handle masked array so we convert the masked values to Nans. Missing
         # data values are replaced by NaNs. The PyQtGraph image plot shows this as the color at the
         # lowest end of the color scale. Unfortunately we cannot choose a missing-value color, but

@@ -521,9 +521,18 @@ class Collector(BasePanel):
         """
         #logger.debug("getSlicedArray() called")
 
+        if not self._rti:
+            self.sigShowMessage.emit("No item selected.")
+            return None
+
         if not self.rtiIsSliceable:
-            if self._rti:
-                self.sigShowMessage.emit("Item is not an array: {}".format(self.rti.nodePath))
+            # This is very common so we don't show a message so the user isn't flooded.
+            # Also this can have many different causes (compound data, lists, etc_ so it's
+            # difficult to show a good, descriptive message.
+            return None
+
+        if np.prod(self._rti.arrayShape) == 0:
+            self.sigShowMessage.emit("Selected item has zero array elements.")
             return None
 
         # The dimensions that are selected in the combo boxes will be set to slice(None),
