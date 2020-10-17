@@ -127,7 +127,12 @@ def createArgosTestData():
 
     myDict['ones'] = np.ones_like(array)
 
-    masked_array = ma.arange(2400, dtype=np.float16).reshape(60, 40)
+    x = np.arange(60)
+    parabola = 0.02 * np.square(x)
+    myDict['parabola'] = parabola
+
+    #masked_array = ma.arange(2400, dtype=np.float16).reshape(60, 40)
+    masked_array = np.transpose(ma.ones(shape=(40, 60)) * parabola)
     masked_array[:, 0:7] = ma.masked
     masked_array[15:45, 10:17] = ma.masked
     myDict['array_masked'] = masked_array

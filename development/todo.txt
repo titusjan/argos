@@ -10,6 +10,9 @@ Argos philosophy:
         - Mouse buttons
         - Zoom buttons
         - ExceptHook
+        - Handle Nans
+        - Handle masked arrays
+        - Warning QApplication created before...
 
 
 TODO short term:
@@ -45,27 +48,23 @@ TODO short term:
 
         Better probe labels. Use dimension names in probe name. E.g. myvalue = 5.22 @ pos (dim-1, dim-2) = (13, 4)
 
+        Sliders next to spin boxes in collector.
+
     Bugs and issues
     ---------------
+
+
+        Warning on pgctis.py:381  : WARNING : New target range is not finite. Plot range not updated --> info
+
         Fixed font size in tables and trees so that windows10 with two monitors works. (setFixedPitch)
 
         Waarom doet autorange het niet in rigolscan_partial?
-
-        What if the H5 only has a dimension label?
-
-        Empty (Null) datasets and attributes
-        http://docs.h5py.org/en/latest/high/dataset.html#creating-and-reading-empty-or-null-datasets-and-attributes
 
         HDF5 dataset with dimensions of size 0
 
         Installed plugins dialog doesn't work if scipy is not installed.  (Test under Linux)
 
         WavFileRti._closeResources doesn't reset attribute correctly. Fix and check in other classes
-
-        Fix error: on Windows browsing a single drive (e.g. 'C:\') fails.
-
-        Items in header context menu are not checked while header is visible in table.
-        Checking and then unchecking fixes the issue.
 
         Closing an RTI redraws all RTIs below it, which is ugly. Simply collapsing them does not.
 
@@ -105,6 +104,9 @@ TODO short term:
         Also, installing with python setup.py install gives
                 FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\Kenter\\Miniconda3\\envs\\argosdev\\Lib\\site-packages\\argos-0.3.0rc2-py3.8.egg\\argos\\utils\\default_logging.json'
 
+        Hamburger menu button in table headers to show/hide rows? Zebra striping?
+        The problem is that the currently selected RTI is poorly visible when the data tree loses focus. Fix with CSS?
+
     Cleanup and release
     -------------------
 
@@ -140,8 +142,6 @@ TODO mid term:
 
     Histogram / statistics inspector.
 
-    Better log config
-
     Look at QSizePolicy::setControlType
 
     Default outlier percentage op 0.1%?
@@ -158,6 +158,15 @@ TODO mid term:
 
     Test ExdirFieldRti
 
+
+
+    Bugs and issues
+    ---------------
+
+        What if the H5 only has a dimension label? 2020-10-04. What is this?
+
+        What if they have multiple dimension scales?
+            /argos/mini_scanner_output/multiple_dimension_scales.h5
 
 
 TODO long term:
@@ -367,3 +376,10 @@ SOLVED or WON'T FIX
             xz:             5.2.2-1          --> 5.2.3-0
             zlib:           1.2.8-3          --> 1.2.11-0
 
+    /argos/ucar/madis-hydro.nc/firstOverflow
+        Gives the correct mask, but the underlying data is set to 0.0 by netCDF4 python Module.
+        HDFView shows the value to be the same as the fillValue (-1).
+        The file can't be opened with h5py 2.10.0 (libhdf5: 1.10.6). Gives: file signature not found
+
+    Nans are not plotted. Is issue with Qt/PyQtGraph
+        https://github.com/pyqtgraph/pyqtgraph/issues/1057

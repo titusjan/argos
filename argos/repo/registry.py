@@ -21,6 +21,7 @@ import os.path
 
 from fnmatch import fnmatch
 
+from argos.info import DEBUGGING
 from argos.reg.basereg import BaseRegItem, BaseRegistry, RegType
 from argos.repo.iconfactory import RtiIconFactory
 from argos.utils.cls import check_class, is_a_color_str
@@ -86,7 +87,8 @@ class RtiRegItem(BaseRegItem):
             Matching is case-insensitive. See the Python fnmatch module for further info.
         """
         for glob in self.globList:
-            logger.debug("  glob '{}' -> match = {}".format(glob, fnmatch(path, glob)))
+            if DEBUGGING:
+                logger.debug("  glob '{}' -> match = {}".format(glob, fnmatch(path, glob)))
             if fnmatch(path, glob):
                 return True
 

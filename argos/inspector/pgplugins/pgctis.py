@@ -378,7 +378,7 @@ class AbstractRangeCti(GroupCti):
         targetRange = self.calculateRange()
         #logger.debug("axisRange: {}, padding={}".format(targetRange, padding))
         if not np.all(np.isfinite(targetRange)):
-            logger.warning("New target range is not finite. Plot range not updated")
+            logger.debug("New target range is not finite. Plot range not updated")
             return
 
         self.setTargetRange(targetRange, padding=padding)

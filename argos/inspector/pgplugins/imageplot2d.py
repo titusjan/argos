@@ -478,7 +478,7 @@ class PgImagePlot2d(AbstractInspector):
         elif numElem == 1:
             self.sigShowMessage.emit("Current slice contains only a single data point.")
 
-        # PyQtGraph doesn't handle masked array so we convert the masked values to Nans. Missing
+        # PyQtGraph doesn't handle masked arrays so we convert the masked values to Nans. Missing
         # data values are replaced by NaNs. The PyQtGraph image plot shows this as the color at the
         # lowest end of the color scale. Unfortunately we cannot choose a missing-value color, but
         # at least the Nans do not influence for the histogram and color range.
@@ -588,11 +588,20 @@ class PgImagePlot2d(AbstractInspector):
                             connected = (np.zeros_like(rowData)
                                          if self.slicedArray.mask else connected)
 
+                        # Replace mask by Nans. Only doing when not showing lines to hack around PyQtGraph issue 1057
+                        # See comment in PgLinePlot1d._drawContents for a more detailed explanation
+                        # TODO: reuse imageItem data array when this hack is no longer necessary
+                        if not self.config.crossPenCti.lineCti.configValue:
+                            rowData = replaceMaskedValueWithFloat(rowData, np.logical_not(connected),
+                                                                  np.nan, copyOnReplace=True)
+
                         # Replace infinite value with nans because PyQtGraph can't handle them
                         rowData = replaceMaskedValueWithFloat(rowData, np.isinf(rowData),
                                                               np.nan, copyOnReplace=True)
 
                         horPlotDataItem = self.config.crossPenCti.createPlotDataItem()
+                        # TODO: try to use connect='finite' when the hack above is no longer necessary. In that case
+                        # test with array_masked test data
                         horPlotDataItem.setData(rowData, connect=connected)
                         self.horCrossPlotItem.addItem(horPlotDataItem)
 
@@ -632,6 +641,12 @@ class PgImagePlot2d(AbstractInspector):
                         else:
                             connected = (np.zeros_like(colData)
                                          if self.slicedArray.mask else connected)
+
+                        # Replace mask by Nans. Only doing when not showing lines to hack around PyQtGraph issue 1057
+                        # See comment in PgLinePlot1d._drawContents for a more detailed explanation
+                        if not self.config.crossPenCti.lineCti.configValue:
+                            colData = replaceMaskedValueWithFloat(colData, np.logical_not(connected),
+                                                                  np.nan, copyOnReplace=True)
 
                         # Replace infinite value with nans because PyQtGraph can't handle them
                         colData = replaceMaskedValueWithFloat(colData, np.isinf(colData),

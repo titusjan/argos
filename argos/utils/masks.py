@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 class ConsistencyError(Exception):
-    """ Raised when the mask of an ArrayWithMask object has an inconsitstent shape."""
+    """ Raised when the mask of an ArrayWithMask object has an inconsistent shape."""
     pass
 
 
@@ -194,12 +194,7 @@ class ArrayWithMask(object):
     def replaceMaskedValue(self, replacementValue):
         """ Replaces values where the mask is True with the replacement value.
         """
-        if self.mask is False:
-            pass
-        elif self.mask is True:
-            self.data[:] = replacementValue
-        else:
-            self.data[self.mask] = replacementValue
+        self.data = replaceMaskedValue(self.data, self.mask, replacementValue)
 
 
     def replaceMaskedValueWithNan(self):
@@ -208,19 +203,7 @@ class ArrayWithMask(object):
             Will change the data type to float if the data is an integer.
             If the data is not a float (or int) the function does nothing.
         """
-        kind = self.data.dtype.kind
-        if kind == 'i' or kind == 'u': # signed/unsigned int
-            self.data = self.data.astype(np.float, casting='safe')
-
-        if self.data.dtype.kind != 'f':
-            return # only replace for floats
-
-        if self.mask is False:
-            pass
-        elif self.mask is True:
-            self.data[:] = np.NaN
-        else:
-            self.data[self.mask] = np.NaN
+        replaceMaskedValueWithFloat(self.data, self.mask, np.nan, copyOnReplace=False)
 
 
 #############
