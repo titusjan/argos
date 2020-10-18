@@ -35,6 +35,7 @@ logging.captureWarnings(True)
 
 from argos.info import DEBUGGING, PROJECT_NAME, VERSION, EXIT_CODE_RESTART, resource_directory
 from argos.utils.logs import initLogging
+#from argos.utils.misc import remove_process_serial_number
 from argos.widgets.misc import setApplicationQtStyle, setApplicationStyleSheet
 
 logger = logging.getLogger('argos')

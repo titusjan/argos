@@ -98,15 +98,14 @@ TODO short term:
                 raise ImportError("unable to find Qt5Core.dll on PATH")
             ImportError: unable to find Qt5Core.dll on PATH
 
-        Also, installing with python setup.py install gives
-                FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\Kenter\\Miniconda3\\envs\\argosdev\\Lib\\site-packages\\argos-0.3.0rc2-py3.8.egg\\argos\\utils\\default_logging.json'
-
         See:
             #https://stackoverflow.com/questions/42025173/best-way-to-execute-a-python-script-in-a-given-conda-environment
             conda_env = os.environ.get('CONDA_DEFAULT_ENV')
             print("Conda environment: {}".format(conda_env))
             assert conda_env == 'narf'
 
+
+        Remove all argos imports from the top of main.py and add it again __init__.py
 
     Cleanup and release
     -------------------

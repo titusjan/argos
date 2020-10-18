@@ -75,8 +75,9 @@ setup(
     packages = find_packages(),
     package_data = {'': ['HISTORY.rst'],
                     info.PACKAGE_NAME: ['img/argos.css', 'img/snipicons/*', 'utils/default_logging.json']},
-    entry_points={'console_scripts': ['argos = argos.main:main'],
-                  'gui_scripts': ['argosw = argos.main:main']},
+    entry_points={'gui_scripts': ['argosw = argos.main:main'],
+                  'console_scripts': ['argos = argos.main:main',
+                                      'argos_make_wrappers = argos.argos_make_wrappers:main']},
     install_requires = install_requires,
     zip_safe = False,
     classifiers = [
