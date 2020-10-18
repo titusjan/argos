@@ -44,6 +44,7 @@ TODO short term:
             Test with tata cube.h5
             Apparently the color scan is not reset between changes.
                 Test with grib\NLDAS_FOR0125_H.A20050803.2300.001.nc
+                and mini_scanner_output/acceptance1.h5/samples/(re & im)
 
         Better color for rectangle zoom
         Inferno as default color map?
@@ -53,6 +54,9 @@ TODO short term:
         Better probe labels. Use dimension names in probe name. E.g. myvalue = 5.22 @ pos (dim-1, dim-2) = (13, 4)
 
         Sliders next to spin boxes in collector.
+            - Expand last column
+            - Fix update of slices in plot title.
+            - Don't show post fix
 
         Hamburger menu button in table headers to show/hide rows? Zebra striping?
         The problem is that the currently selected RTI is poorly visible when the data tree loses focus. Fix with CSS?

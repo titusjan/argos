@@ -22,17 +22,20 @@ import logging, os
 import numpy as np
 import numpy.ma as ma
 
-from argos.collect.collectortree import CollectorTree, CollectorSpinBox
+from argos.collect.collectortree import CollectorTree, CollectorSpinBox, SpinSlider
 from argos.inspector.abstract import UpdateReason
 from argos.qt import Qt, QtWidgets, QtGui, QtCore, QtSignal, QtSlot
 from argos.repo.baserti import BaseRti
-from argos.utils.cls import check_class, check_is_a_sequence, check_is_an_array, is_an_array
+from argos.utils.cls import check_class, check_is_a_sequence, check_is_an_array
 from argos.utils.masks import ArrayWithMask
 from argos.utils.moduleinfo import versionStrToTuple
 from argos.widgets.constants import TOP_DOCK_HEIGHT, DOCK_SPACING, DOCK_MARGIN
 from argos.widgets.misc import BasePanel
 
+
 logger = logging.getLogger(__name__)
+
+USE_SLIDER = True  # SpinSliders or only Spinboxes
 
 FAKE_DIM_NAME = '-'     # The name of the fake dimension with length 1
 FAKE_DIM_OFFSET = 1000  # Fake dimensions start here (so all arrays must have a smaller ndim)
@@ -66,9 +69,10 @@ class Collector(BasePanel):
         self.COL_FIRST_COMBO = 1     # Column that contains the first (left most) combobox
         self.AXIS_POST_FIX = "-axis" # Added to the axis label to give the combobox labels.
         self._axisNames = []         # Axis names. Correspond to the independent variables
-        self._fullAxisNames = []       # Will be set in clearAndSetComboBoxes
+        self._fullAxisNames = []     # Will be set in clearAndSetComboBoxes
         self._comboBoxes = []        # Will be set in clearAndSetComboBoxes
         self._spinBoxes = []         # Will be set in createSpinBoxes
+        self._spinSliders = []       # Will be set in createSpinBoxes
 
         self.layout = QtWidgets.QHBoxLayout(self)
         self.layout.setSpacing(DOCK_SPACING)
@@ -424,15 +428,26 @@ class Collector(BasePanel):
             spinBox.setMaximum(dimSize - 1)
             spinBox.setSingleStep(1)
             spinBox.setValue(dimSize // 2) # select the middle of the slice
-            spinBox.setPrefix("{}: ".format(self._rti.dimensionNames[dimNr]))
-            spinBox.setSuffix("/{}".format(spinBox.maximum()))
+            spinBox.setPrefix("{} = ".format(self._rti.dimensionNames[dimNr]))
             spinBox.setProperty("dim_nr", dimNr)
             #spinBox.adjustSize() # necessary?
+
+            if not USE_SLIDER:
+                spinBox.setSuffix("/{}".format(spinBox.maximum()))
+
+            if dimSize == 1:
+                spinBox.setEnabled(False)
 
             # This must be done after setValue to prevent emitting too many signals
             spinBox.valueChanged[int].connect(self._spinboxValueChanged)
 
-            tree.setIndexWidget(model.index(row, col), spinBox)
+            if USE_SLIDER:
+                spinSlider = SpinSlider(spinBox, layoutContentsMargins = (0, 0, 5, 0))
+                self._spinSliders.append(spinSlider)
+                tree.setIndexWidget(model.index(row, col), spinSlider)
+            else:
+                tree.setIndexWidget(model.index(row, col), spinBox)
+
             col += 1
 
         # Resize the spinbox columns to their new contents

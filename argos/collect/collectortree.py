@@ -23,6 +23,7 @@ import logging
 from argos.qt import Qt, QtCore, QtGui, QtWidgets, QtSlot
 from argos.qt.togglecolumn import ToggleColumnTreeView
 from argos.widgets.constants import COLLECTOR_TREE_ICON_SIZE
+from argos.utils.cls import check_class
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +58,7 @@ class CollectorTree(ToggleColumnTreeView):
 
         self.setAlternatingRowColors(True)
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
-        self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
         self.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.setAnimated(True)
         self.setAllColumnsShowFocus(True)
@@ -176,3 +177,51 @@ class CollectorSpinBox(QtWidgets.QSpinBox):
         return result
 
 
+class SpinSlider(QtWidgets.QWidget):
+    """ A SpinBox and Slider widgets next to each other.
+
+        The layout will be created. It can be accessed as self.layout
+    """
+    #sigValueChanged = QtSignal(int)
+
+    def __init__(self,
+                 spinBox,
+                 slider = None,
+                 layoutSpacing = None,
+                 layoutContentsMargins = (0, 0, 0, 0),
+                 parent=None):
+        """ Constructor.
+
+            The settings (min, max, enabled, etc) from the SpinBox will be used for the slider
+            as well. That is, the spin box is the master.
+        """
+        super(SpinSlider, self).__init__(parent=parent)
+
+        check_class(spinBox, QtWidgets.QSpinBox, allow_none=True)
+        check_class(slider, QtWidgets.QSlider, allow_none=True)
+
+        self.layout = QtWidgets.QHBoxLayout(self)
+        self.layout.setContentsMargins(*layoutContentsMargins)
+        if layoutSpacing is not None:
+            self.layout.setSpacing(layoutSpacing)
+
+        if spinBox is None:
+            self.spinbox = QtWidgets.QSpinBox()
+        else:
+            self.spinbox = spinBox
+
+        if slider is None:
+            self.slider = QtWidgets.QSlider(Qt.Horizontal)
+        else:
+            self.slider = slider
+
+        self.slider.setMinimum(self.spinbox.minimum())
+        self.slider.setMaximum(self.spinbox.maximum())
+        self.slider.setValue(self.spinbox.value())
+        self.slider.setEnabled(self.spinbox.isEnabled())
+
+        self.layout.addWidget(self.spinbox, stretch=0)
+        self.layout.addWidget(self.slider, stretch=1)
+
+        self.spinbox.valueChanged.connect(self.slider.setValue)
+        self.slider.valueChanged.connect(self.spinbox.setValue)
