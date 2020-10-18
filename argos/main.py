@@ -25,6 +25,7 @@ from __future__ import print_function
 # If you import (for instance) numpy here, the setup.py will fail if numpy is not installed.
 
 import argparse
+import glob
 import logging
 import os
 import os.path
@@ -44,8 +45,8 @@ logging.basicConfig(level='DEBUG', stream=sys.stderr,
 
 # We are not using **kwargs here so IDEs can see which parameters are expected.
 def browse(fileNames=None,
-           inspectorFullName=None,
            select=None,
+           inspectorFullName=None,
            qtStyle=None,
            styleSheet=None,
            settingsFile=None):
@@ -54,8 +55,9 @@ def browse(fileNames=None,
         Calls _browse() in a while loop to enable pseudo restarts in case the registry was edited.
 
         :param fileNames: List of file names that will be added to the repository
-        :param inspectorFullName: The full path name of the inspector that will be loaded
         :param select: a path of the repository item that will selected at start up.
+            Overrides 'open' parameter.
+        :param inspectorFullName: The full path name of the inspector that will be loaded
         :param qtStyle: name of qtStyle (E.g. fusion).
         :param styleSheet: a path to an optional Qt Cascading Style Sheet.
         :param settingsFile: file with persistent settings. If None a default will be used.
@@ -64,8 +66,8 @@ def browse(fileNames=None,
         logger.info("Starting browse window...")
         exitCode = _browse(
             fileNames=fileNames,
-            inspectorFullName=inspectorFullName,
             select=select,
+            inspectorFullName=inspectorFullName,
             qtStyle=qtStyle,
             styleSheet=styleSheet,
             settingsFile=settingsFile)
@@ -79,8 +81,8 @@ def browse(fileNames=None,
 
 
 def _browse(fileNames=None,
-            inspectorFullName=None,
             select=None,
+            inspectorFullName=None,
             qtStyle=None,
             styleSheet=None,
             settingsFile=None):
@@ -159,8 +161,16 @@ def main():
     parser = argparse.ArgumentParser(description = aboutStr)
 
     parser.add_argument('fileNames', metavar='FILE', nargs='*',
-        help="""Files or directories that will be loaded at start up. Accepts unix-like glob patterns, even on Windows.
-                E.g.: 'argos *.h5' opens all files with the h5 extension in the current directory.""")
+        help="""Files or directories that will be loaded at start up. Accepts unix-like glob
+                patterns, even on Windows. E.g.: 'argos *.h5' opens all files with the h5 extension
+                in the current directory.""")
+
+    parser.add_argument('-o', '--open', dest='openFile',
+        help="""File or directory that will be loaded and selected at start-up.""")
+
+    parser.add_argument('-s', '--select', dest='selectPath',
+        help="""Full path name of an item in the data tree that will be selected at start-up.
+                E.g. 'file/var/fieldname'. Overrides -o option.""")
 
     parser.add_argument('-i', '--inspector', dest='inspector',
         help="""The identifier or fullName of the inspector that will be opened at start up.
@@ -169,14 +179,11 @@ def main():
     parser.add_argument('--list-inspectors', dest='list_inspectors', action = 'store_true',
         help="""Prints a list of available inspectors for the -i option, and exits.""")
 
-    parser.add_argument('-s', '--select', dest='selectPath',
-        help="""Full path name of a repository tree item that will be selected at start-up.
-                E.g. 'file/var/fieldname'""")
-
     parser.add_argument('--qt-style', dest='qtStyle', help='Qt style. E.g.: fusion')
 
     parser.add_argument('--qss', dest='styleSheet',
-                        help='Name of Qt Style Sheet file. If not set, the Argos default style sheet will be used.')
+                        help="Name of Qt Style Sheet file. If not set, the Argos default style "
+                             "sheet will be used.")
 
     parser.add_argument('-c', '--config-file', metavar='FILE', dest='settingsFile',
         help="Configuration file with persistent settings. When using a relative path the settings "
@@ -189,9 +196,10 @@ def main():
                         help='Logging configuration file. If not set a default will be used.')
 
     parser.add_argument('-l', '--log-level', dest='log_level', default='',
-        help="Log level. If set, only log messages with a level higher or equal than this will be printed to "
-             "screen (stderr). Overrides the log level of the StreamHandlers in the --log-config file. Does not alter "
-             "the log level of log handlers that write to a file.",
+        help="Log level. If set, only log messages with a level higher or equal than this will be "
+             "printed to screen (stderr). Overrides the log level of the StreamHandlers in the "
+             "--log-config file. Does not alter the log level of log handlers that write to a "
+             "file.",
         choices=('debug', 'info', 'warning', 'error', 'critical'))
 
     parser.add_argument('--version', action = 'store_true',
@@ -242,11 +250,23 @@ def main():
     else:
         styleSheet = os.path.abspath(styleSheet)
 
+    # Process -o option. Don't do this in browse. In the future we might be able to call browse()
+    # from IPython. Decide at that point how to best pass these parameters.
+    fileNames = []
+    for fileName in args.fileNames:
+        fileNames.extend(glob.glob(fileName))
+    if args.openFile and args.openFile not in fileNames:
+        fileNames.insert(0, args.openFile)
+
+    if args.openFile and not args.selectPath:
+        selectPath = os.path.basename(args.openFile)
+    else:
+        selectPath = args.selectPath
 
     # Browse will create an ArgosApplication with one MainWindow
-    browse(fileNames = args.fileNames,
+    browse(fileNames = fileNames,
            inspectorFullName=args.inspector,
-           select=args.selectPath,
+           select=selectPath,
            qtStyle=qtStyle,
            styleSheet=styleSheet,
            settingsFile=args.settingsFile)

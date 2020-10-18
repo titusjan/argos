@@ -37,10 +37,6 @@ TODO short term:
     --------------
         Zoom is reset when changing RGB in image (and other RTIs)
 
-        -o/--open so that files after this command line option are opened.
-            Can probably replace the -s option
-            What happens if files occur twice when opening them?
-
         Reset range when a variable with a new unit/abcissa is selected?
             Hard to determine the new unit and dimensions.
             Change if unit is new or combox dim is new.
