@@ -379,7 +379,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """ The full name of the inspector registry item that has been selected.
             E.g. 'Qt/Table'. Can be None (e.g. at start-up).
         """
-        return self._inspectorRegItem.fullName if self._inspectorRegItem else None
+        return self._inspectorRegItem.name if self._inspectorRegItem else None
 
     @property
     def inspector(self):

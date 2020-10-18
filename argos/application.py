@@ -282,7 +282,7 @@ class ArgosApplication(QtCore.QObject):
     def unmarshall(self, cfg, inspectorFullName):
         """ Initializes itself from a config dict form the persistent settings.
 
-            :param inspectorFullName: If given a window with this inspector is created.
+            :param inspectorFullName: If not None a window with this inspector is created.
             If an inspector window with this inspector is created from the config file, this
             parameter is ignored.
         """
@@ -357,7 +357,7 @@ class ArgosApplication(QtCore.QObject):
     def loadSettings(self, inspectorFullName):
         """ Loads the settings from file and populates the application object from it.
 
-            :param inspectorFullName: If given a window with this inspector is created.
+            :param inspectorFullName: If not None, a window with this inspector is created.
                 If an inspector window with this inspector is created from the config file, this
                 parameter is ignored.
         """

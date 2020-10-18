@@ -67,8 +67,6 @@ TODO short term:
 
         Fixed font size in tables and trees so that windows10 with two monitors works. (setFixedPitch)
 
-        Waarom doet autorange het niet in rigolscan_partial?
-
         Closing an RTI redraws all RTIs below it, which is ugly. Simply collapsing them does not.
 
         When starting Argos (installed with pip -e (on my Windows laptop)) it can't be started from outside it's conda environment.

@@ -127,16 +127,18 @@ def _browse(fileNames=None,
     return argosApp.execute()
 
 
-def printInspectors():
+def printInspectors(settingsFile):
     """ Prints a list of inspectors
     """
     # Imported here so this module can be imported without Qt being installed.
     from argos.application import ArgosApplication
 
-    argosApp = ArgosApplication()
-    argosApp.loadOrInitRegistries()
+    argosApp = ArgosApplication(settingsFile)
+    argosApp.loadSettings(None)
+
+    print("# Argos' registered inspectors")
     for regItem in argosApp.inspectorRegistry.items:
-        print(regItem.fullName)
+        print(regItem.name)
 
 
 def remove_process_serial_number(arg_list):
@@ -197,27 +199,27 @@ def main():
 
     args = parser.parse_args(remove_process_serial_number(sys.argv[1:]))
 
-
     initLogging(args.logConfigFileName, args.log_level)
-    logger.info("######################################")
-    logger.info("####         Starting Argos       ####")
-    logger.info("######################################")
-    logger.info(aboutStr)
-
-    logger.debug("argv: {}".format(sys.argv))
-    logger.info("Main argos module file: {}".format(__file__))
-    logger.debug("PID: {}".format(os.getpid()))
-
-    if DEBUGGING:
-        logger.warning("Debugging flag is on!")
 
     if args.version:
         print(aboutStr)
         sys.exit(0)
 
     if args.list_inspectors:
-        printInspectors()
+        printInspectors(args.settingsFile)
         sys.exit(0)
+
+    logger.info("######################################")
+    logger.info("####         Starting Argos       ####")
+    logger.info("######################################")
+    logger.info(aboutStr)
+
+    logger.debug("argv: {}".format(sys.argv))
+    logger.debug("Main argos module file: {}".format(__file__))
+    logger.debug("PID: {}".format(os.getpid()))
+
+    if DEBUGGING:
+        logger.warning("Debugging flag is on!")
 
     logger.info('Started {} {}'.format(PROJECT_NAME, VERSION))
     logger.info("Python version: {}".format(sys.version).replace('\n', ''))
