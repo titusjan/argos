@@ -65,46 +65,6 @@ TODO short term:
 
         Closing an RTI redraws all RTIs below it, which is ugly. Simply collapsing them does not.
 
-        When starting Argos (installed with pip -e (on my Windows laptop)) it can't be started from outside it's conda environment.
-        E.g. starting from a regular cmd shell gives.
-
-            C:\Users\Kenter>C:\Users\Kenter\Miniconda3\envs\argosdev\Scripts\argos.exe
-            Traceback (most recent call last):
-              File "C:\Users\Kenter\Miniconda3\envs\argosdev\Scripts\argos-script.py", line 33, in <module>
-                sys.exit(load_entry_point('argos', 'console_scripts', 'argos')())
-              File "C:\Users\Kenter\Miniconda3\envs\argosdev\Scripts\argos-script.py", line 25, in importlib_load_entry_point
-                return next(matches).load()
-              File "C:\Users\Kenter\Miniconda3\envs\argosdev\lib\importlib\metadata.py", line 77, in load
-                module = import_module(match.group('module'))
-              File "C:\Users\Kenter\Miniconda3\envs\argosdev\lib\importlib\__init__.py", line 127, in import_module
-                return _bootstrap._gcd_import(name[level:], package, level)
-              File "<frozen importlib._bootstrap>", line 1014, in _gcd_import
-              File "<frozen importlib._bootstrap>", line 991, in _find_and_load
-              File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
-              File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
-              File "<frozen importlib._bootstrap_external>", line 783, in exec_module
-              File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
-              File "c:\users\kenter\documents\src\argos\argos\main.py", line 37, in <module>
-                from argos.widgets.misc import setApplicationQtStyle, setApplicationStyleSheet
-              File "c:\users\kenter\documents\src\argos\argos\widgets\misc.py", line 25, in <module>
-                from argos.qt import QtWidgets
-              File "c:\users\kenter\documents\src\argos\argos\qt\__init__.py", line 23, in <module>
-                from argos.qt.bindings import Qt, QUrl, QtCore, QtGui, QtWidgets, QtSvg, QtSignal, QtSlot
-              File "c:\users\kenter\documents\src\argos\argos\qt\bindings.py", line 43, in <module>
-                import PyQt5
-              File "C:\Users\Kenter\Miniconda3\envs\argosdev\lib\site-packages\PyQt5\__init__.py", line 41, in <module>
-                find_qt()
-              File "C:\Users\Kenter\Miniconda3\envs\argosdev\lib\site-packages\PyQt5\__init__.py", line 33, in find_qt
-                raise ImportError("unable to find Qt5Core.dll on PATH")
-            ImportError: unable to find Qt5Core.dll on PATH
-
-        See:
-            #https://stackoverflow.com/questions/42025173/best-way-to-execute-a-python-script-in-a-given-conda-environment
-            conda_env = os.environ.get('CONDA_DEFAULT_ENV')
-            print("Conda environment: {}".format(conda_env))
-            assert conda_env == 'narf'
-
-
         Remove all argos imports from the top of main.py and add it again __init__.py
 
     Cleanup and release

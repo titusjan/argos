@@ -23,6 +23,7 @@ from __future__ import print_function
 # Do not do any imports here that (indirectly) import any dependencies (PyQt, numpy, etc)
 # The browse function is imported by the argos package, which in turn is imported by setup.py.
 # If you import (for instance) numpy here, the setup.py will fail if numpy is not installed.
+# Therefore we do all imports from the argos package in the funtions here.
 
 import argparse
 import glob
@@ -33,10 +34,6 @@ import sys
 
 logging.captureWarnings(True)
 
-from argos.info import DEBUGGING, PROJECT_NAME, VERSION, EXIT_CODE_RESTART, resource_directory
-from argos.utils.logs import initLogging
-#from argos.utils.misc import remove_process_serial_number
-from argos.widgets.misc import setApplicationQtStyle, setApplicationStyleSheet
 
 logger = logging.getLogger('argos')
 
@@ -63,6 +60,9 @@ def browse(fileNames=None,
         :param styleSheet: a path to an optional Qt Cascading Style Sheet.
         :param settingsFile: file with persistent settings. If None a default will be used.
     """
+    # Import in functions. See comments at the top for more details
+    from argos.info import EXIT_CODE_RESTART
+
     while True:
         logger.info("Starting browse window...")
         exitCode = _browse(
@@ -89,10 +89,12 @@ def _browse(fileNames=None,
             settingsFile=None):
     """ Execute browse a single time
     """
-    # Imported here so this module can be imported without Qt being installed.
+    # Import in functions. See comments at the top for more details.
+    from argos.info import DEBUGGING
     from argos.qt import QtWidgets, QtCore
     from argos.application import ArgosApplication
     from argos.repo.testdata import createArgosTestData
+    from argos.widgets.misc import setApplicationQtStyle, setApplicationStyleSheet
 
     argosApp = ArgosApplication(settingsFile)
     argosApp.loadSettings(inspectorFullName)  # TODO: call in constructor?
@@ -144,20 +146,14 @@ def printInspectors(settingsFile):
         print(regItem.name)
 
 
-def remove_process_serial_number(arg_list):
-    """ Creates a copy of a list (typically sys.argv) where the strings that
-        start with '-psn_0_' are removed.
-
-        These are the process serial number used by the OS-X open command
-        to bring applications to the front. They clash with argparse.
-        See: http://hintsforums.macworld.com/showthread.php?t=11978
-    """
-    return [arg for arg in arg_list if not arg.startswith("-psn_0_")]
-
-
 def main():
     """ Starts Argos main window
     """
+    # Import in functions. See comments at the top for more details
+    from argos.info import DEBUGGING, PROJECT_NAME, VERSION, EXIT_CODE_RESTART, resource_directory
+    from argos.utils.logs import initLogging
+    from argos.utils.misc import remove_process_serial_number
+
     aboutStr = "{} version: {}".format(PROJECT_NAME, VERSION)
     parser = argparse.ArgumentParser(description = aboutStr)
 
