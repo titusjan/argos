@@ -40,11 +40,10 @@ TODO short term:
         Reset range when a variable with a new unit/abcissa is selected?
             Hard to determine the new unit and dimensions.
             Change if unit is new or combox dim is new.
+
             Keep collector state (comboboxes, when the dimensions of the new RTI are the same as of the old)
             Test with tata cube.h5
-            Apparently the color scan is not reset between changes.
-                Test with grib\NLDAS_FOR0125_H.A20050803.2300.001.nc
-                and mini_scanner_output/acceptance1.h5/samples/(re & im)
+
             "Reset ranges" button
             Auto reset checkbox
 

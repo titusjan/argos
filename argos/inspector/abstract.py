@@ -213,7 +213,7 @@ class AbstractInspector(QtWidgets.QStackedWidget):
         except InvalidDataError as ex:
             logger.info("Unable to draw the inspector contents: '{}'".format(ex))
             if str(ex):
-                # Execption message can be empty in common cases. Don't clear message label then.
+                # Exception message can be empty in common cases. Don't clear message label then.
                 self.sigShowMessage.emit(str(ex))
 
         except Exception as ex:

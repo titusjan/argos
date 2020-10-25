@@ -500,8 +500,7 @@ class PgImagePlot2d(AbstractInspector):
         if reason == UpdateReason.RTI_CHANGED or reason == UpdateReason.COLLECTOR_COMBO_BOX:
             self.config.xAxisRangeCti.autoRangeCti.data = True
             self.config.yAxisRangeCti.autoRangeCti.data = True
-            #self.config.histColorRangeCti.autoRangeCti.data = True
-            #self.config.histRangeCti.autoRangeCti.data = True
+            self.config.colorLegendCti.autoRangeCti.data = True
             self.config.horCrossPlotRangeCti.autoRangeCti.data = True
             self.config.verCrossPlotRangeCti.autoRangeCti.data = True
 
