@@ -256,6 +256,17 @@ class PgImagePlot2dCti(MainGroupCti):
         setXYAxesAutoRangeOn(self, self.verCrossPlotRangeCti, self.yAxisRangeCti, axisNumber)
 
 
+    def resetRangesToDefault(self):
+        """ Resets range settings to the default data.
+        """
+        self.xAxisRangeCti.autoRangeCti.data = True
+        self.yAxisRangeCti.autoRangeCti.data = True
+        self.histColorRangeCti.autoRangeCti.data = True
+        self.histRangeCti.autoRangeCti.data = True
+        self.horCrossPlotRangeCti.autoRangeCti.data = True
+        self.verCrossPlotRangeCti.autoRangeCti.data = True
+
+
 
 class PgImagePlot2d(AbstractInspector):
     """ Inspector that contains a PyQtGraph 2-dimensional image plot.
@@ -483,14 +494,8 @@ class PgImagePlot2d(AbstractInspector):
                                                  np.nan, copyOnReplace=True)
 
         # Reset the axes ranges (via the config)
-        if (reason == UpdateReason.RTI_CHANGED or
-            reason == UpdateReason.COLLECTOR_COMBO_BOX):
-            self.config.xAxisRangeCti.autoRangeCti.data = True
-            self.config.yAxisRangeCti.autoRangeCti.data = True
-            self.config.histColorRangeCti.autoRangeCti.data = True
-            self.config.histRangeCti.autoRangeCti.data = True
-            self.config.horCrossPlotRangeCti.autoRangeCti.data = True
-            self.config.verCrossPlotRangeCti.autoRangeCti.data = True
+        if self._resetRequired(reason, initiator):
+            self.config.resetRangesToDefault()
 
         # PyQtGraph uses the following dimension order: T, X, Y, Color.
         # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0}

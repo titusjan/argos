@@ -231,3 +231,11 @@ class ConfigTreeModel(BaseTreeModel):
         self.sigItemChanged.emit(self.invisibleRootTreeItem) # Updates the inspector
 
 
+    def resetAllRanges(self):
+        """ Resets all (axit/color/ect) range items in the tree to their default
+        """
+        logger.debug("Resetting all settings")
+        self.invisibleRootTreeItem.resetRangesToDefault()
+        self.emitDataChanged(self.invisibleRootTreeItem)     # Updates the tree
+        self.sigItemChanged.emit(self.invisibleRootTreeItem) # Updates the inspector
+

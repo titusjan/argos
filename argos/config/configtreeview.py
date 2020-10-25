@@ -55,13 +55,19 @@ class ConfigWidget(BasePanel):
         self.buttonLayout = QtWidgets.QHBoxLayout()
         self.mainLayout.addLayout(self.buttonLayout)
 
-        self.resetButton = QtWidgets.QPushButton("Reset All")
-        self.resetButton.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'reset-l.svg')))
+        self.resetRangesButton = QtWidgets.QPushButton("Reset Ranges")
+        self.resetRangesButton.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'reset-l.svg')))
+
+        self.resetAllButton = QtWidgets.QPushButton("Reset All")
+        self.resetAllButton.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'reset-l.svg')))
+
         self.buttonLayout.addStretch()
-        self.buttonLayout.addWidget(self.resetButton)
+        self.buttonLayout.addWidget(self.resetRangesButton)
+        self.buttonLayout.addWidget(self.resetAllButton)
         self.buttonLayout.addStretch()
 
-        self.resetButton.clicked.connect(self.configTreeView.resetAllSettings)
+        self.resetRangesButton.clicked.connect(self.configTreeView.resetAllRanges)
+        self.resetAllButton.clicked.connect(self.configTreeView.resetAllSettings)
 
 
 
@@ -154,3 +160,11 @@ class ConfigTreeView(ArgosTreeView):
         logger.debug("Resetting all settings")
 
         self.configTreeModel.resetAllSettings()
+
+
+    def resetAllRanges(self):
+        """ Resets all (axis/color/etc) range settings.
+        """
+        logger.debug("Resetting all range settings")
+
+        self.configTreeModel.resetAllRanges()

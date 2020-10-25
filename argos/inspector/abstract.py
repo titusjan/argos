@@ -228,6 +228,12 @@ class AbstractInspector(QtWidgets.QStackedWidget):
             logger.debug("---- updateContents finished successfully")
 
 
+    def _resetRequired(self, reason, _initiator=None):
+        """ Uses reason parameter (and optionally the _initiator) to determine axis must be reset.
+        """
+        return reason == UpdateReason.RTI_CHANGED or reason == UpdateReason.COLLECTOR_COMBO_BOX
+
+
     def _drawContents(self, reason=None, initiator=None):
         """ Is called by updateContents to do the actual drawing.
             Descendants should override _drawContents and not worry about exceptions;

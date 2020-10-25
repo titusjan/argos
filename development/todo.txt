@@ -35,6 +35,10 @@ TODO short term:
 
     Think about it
     --------------
+        RTI_CHANGED         = "repo tree item changed"
+        COLLECTOR_COMBO_BOX = "collector combobox changed"
+        COLLECTOR_SPIN_BOX  = "collector spinbox changed"
+
         Zoom is reset when changing RGB in image (and other RTIs)
 
         Reset range when a variable with a new unit/abcissa is selected?

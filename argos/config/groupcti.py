@@ -122,4 +122,9 @@ class MainGroupCti(GroupCti):
         return self._foregroundBrush
 
 
+    def resetRangesToDefault(self):
+        """ Resets range settings to the default data.
 
+            The base implementation does nothing. Descendants should override
+        """
+        pass

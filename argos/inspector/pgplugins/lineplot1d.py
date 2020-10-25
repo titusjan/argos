@@ -117,6 +117,15 @@ class PgLinePlot1dCti(MainGroupCti):
         setXYAxesAutoRangeOn(self, self.xAxisRangeCti, self.yAxisRangeCti, axisNumber)
 
 
+    def resetRangesToDefault(self):
+        """ Resets range settings to the default data.
+        """
+        # self.yAxisRangeCti.setAutoRangeOn() doesn't work as refreshBlocked is True
+        # TODO: can refreshBlocked maybe only block the signals to prevent loops?
+        self.xAxisRangeCti.autoRangeCti.data = True
+        self.yAxisRangeCti.autoRangeCti.data = True
+
+
 
 class PgLinePlot1d(AbstractInspector):
     """ Inspector that contains a PyQtGraph 1-dimensional line plot
@@ -224,13 +233,8 @@ class PgLinePlot1d(AbstractInspector):
         self.plotItem.clear()
 
         # Reset the axes ranges (via the config)
-        if (reason == UpdateReason.RTI_CHANGED or
-            reason == UpdateReason.COLLECTOR_COMBO_BOX):
-
-            # self.config.yAxisRangeCti.setAutoRangeOn() doesn't work as refreshBlocked is True
-            # TODO: can refreshBlocked maybe only block the signals to prevent loops?
-            self.config.xAxisRangeCti.autoRangeCti.data = True
-            self.config.yAxisRangeCti.autoRangeCti.data = True
+        if self._resetRequired(reason, initiator):
+            self.config.resetRangesToDefault()
 
         self.titleLabel.setText(self.configValue('title').format(**self.collector.rtiInfo))
 
