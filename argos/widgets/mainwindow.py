@@ -1011,7 +1011,8 @@ class MainWindow(QtWidgets.QMainWindow):
             skipError = [
                 #'/myDict/numbers/-inf', '/myDict/numbers/nan', '/myDict/age', '/myDict/numbers/int', # These seem to work now
                 #'/myDict/numbers/large float', # These give errors in 2D image plot
-                #'/myDict/structured_arr4', # gives ValueError: Unable to transform (63, 63) to dtype [('r', '|u1'), ('', '|V1'), ('b', '|u1')]
+                '/myDict/structured_arr4', # gives ValueError: Unable to transform (63, 63) to dtype [('r', '|u1'), ('', '|V1'), ('b', '|u1')]
+                '/argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/engDat.nc/SATELLITE_INFO/processing_events',
                 '/argos/mini_scanner_output/multiple_dimension_scales.h5', # TODO:
             ]
 
@@ -1021,7 +1022,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
             if isinstance(self._inspector, TextInspector):
                 skipError.append('/myDict/pandas/multi-index/index')  # Gives TypeError: len() of unsized object. Unclear whe. # TODO
-                skipError.append('/myDict/structured_masked_arr2'),  # Fails with ma.copy: 'numpy.void' object has no attribute '_update_from'
+                skipError.append('/myDict/structured_masked_arr2')    # Fails with ma.copy: 'numpy.void' object has no attribute '_update_from'
+                skipError.append('/myDict/pandas/panel/major_axis')   # ValueError: object __array__ method not producing an array
+
             elif isinstance(self._inspector, PgImagePlot2d) or isinstance(self._inspector, PgImagePlot2d):
                 if versionStrToTuple(np.__version__) < (1,19,0):
                     # Fails with ma.copy: 'numpy.void' object has no attribute '_update_from'

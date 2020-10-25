@@ -20,6 +20,8 @@ from __future__ import print_function
 
 import logging
 
+import numpy as np
+
 from argos.qt import Qt, QtCore, QtGui, QtWidgets, QtSlot
 from argos.qt.togglecolumn import ToggleColumnTreeView
 from argos.widgets.constants import COLLECTOR_TREE_ICON_SIZE
@@ -30,7 +32,6 @@ logger = logging.getLogger(__name__)
 # Qt classes have many ancestors
 #pylint: disable=R0901
 
-#TODO: do we still need this as a separate class?
 class CollectorTree(ToggleColumnTreeView):
     """ Tree widget for collecting the selected data. Includes an internal tree model.
 
@@ -81,23 +82,65 @@ class CollectorTree(ToggleColumnTreeView):
         #self.addHeaderContextMenu(checked=checked, enabled=enabled, checkable={})
 
 
-    def resizeColumnsToContents(self, startCol=None, stopCol=None):
-        """ Resizes all columns to the contents
+    def resizeColumnsFromContents(self, startCol=None):
+        """ Resize columns depending on their contents.
+
+            The width of the first column (showing the path) will not be changed
+            The columns containg combo boxes will be set to the size hints of these combo boxes
+            The remaining width (if any) is devided over the spin boxes.
         """
+        logger.debug("\n\n\n________________ resizeColumnsToContents ________________")
         numCols = self.model().columnCount()
         startCol = 0 if startCol is None else max(startCol, 0)
-        stopCol  = numCols if stopCol is None else min(stopCol, numCols)
 
+        # Set columns with comboboxes to their size hints
         row = 0
-        for col in range(startCol, stopCol):
+        header = self.header()
+        for col in range(startCol, numCols):
             indexWidget = self.indexWidget(self.model().index(row, col))
-
             if indexWidget:
-                contentsWidth = indexWidget.sizeHint().width()
-            else:
-                contentsWidth = self.header().sectionSizeHint(col)
+                if isinstance(indexWidget, QtWidgets.QComboBox):
+                    header.resizeSection(col, indexWidget.sizeHint().width())
 
-            self.header().resizeSection(col, contentsWidth)
+        # Collect size hints of spin boxes and indices of all other columns.
+        indexSpin = []
+        indexNonSpin = []
+        spinBoxSizeHints = []
+        for col in range(0, numCols):
+            indexWidget = self.indexWidget(self.model().index(row, col))
+            if indexWidget:
+                if isinstance(indexWidget, (QtWidgets.QSpinBox, SpinSlider)):
+                    spinBoxSizeHints.append(indexWidget.sizeHint().width())
+                    indexSpin.append(col)
+                else:
+                    indexNonSpin.append(col)
+            else:
+                indexNonSpin.append(col)
+
+        if len(indexSpin) == 0:
+            return
+
+        headerWidth = self.header().width()
+        spinBoxTotalSizeHints = np.sum(np.array(spinBoxSizeHints))
+        colWidths = np.array([self.header().sectionSize(idx) for idx in range(numCols)])
+        nonSpinBoxTotalWidth = np.sum(colWidths[indexNonSpin])
+        remainingTotal = headerWidth - nonSpinBoxTotalWidth - spinBoxTotalSizeHints
+        extraWidthPerSpinBox = max(remainingTotal / len(indexSpin), 0)
+
+        logger.debug("Header width              : {}".format(headerWidth))
+        logger.debug("Column widthss            : {}".format(colWidths))
+        logger.debug("Width of non-spinboxes    : {}".format(nonSpinBoxTotalWidth))
+        logger.debug("Total size hint spinboxes : {}".format(spinBoxTotalSizeHints))
+        logger.debug("Remaining width to divide : {}".format(remainingTotal))
+        logger.debug("Extra width per spin box  : {}".format(extraWidthPerSpinBox))
+
+        # Divide the remaining width equally over the spin boxes. If the remaining total is less
+        # then zero, just set the widths to the size hints (a horizontal scrollbar will appear).
+        logger.debug("Dividing the remaining width equally over the spinboxes.")
+        for nr, idx in enumerate(indexSpin):
+            newWidth = spinBoxSizeHints[nr] + extraWidthPerSpinBox
+            logger.debug("    col {} -> size {}".format(idx, newWidth))
+            header.resizeSection(idx, newWidth)
 
 
 
@@ -124,7 +167,6 @@ class CollectorSpinBox(QtWidgets.QSpinBox):
         orgSizeHint = super(CollectorSpinBox, self).sizeHint()
 
         self.ensurePolished()
-        d = self
         fm = QtGui.QFontMetrics(self.fontMetrics())
 
         # This was h = d.edit.sizeHint().height(), but that didn't work. In the end we set the
@@ -134,19 +176,19 @@ class CollectorSpinBox(QtWidgets.QSpinBox):
 
         # QLatin1Char seems not to be implemented.
         # Using regular string literals and hope for the best
-        s = d.prefix() + d.textFromValue(d.minimum()) + d.suffix() + ' '
+        s = self.prefix() + self.textFromValue(self.minimum()) + self.suffix() + ' '
 
         # We disabled truncating the string here!!
         #s = s[:18]
         w = max(w, fm.width(s))
 
-        s = d.prefix() + d.textFromValue(d.maximum()) + d.suffix() + ' '
+        s = self.prefix() + self.textFromValue(self.maximum()) + self.suffix() + ' '
 
         # We disabled truncating the string here!!
         #s = s[:18]
         w = max(w, fm.width(s))
-        if len(d.specialValueText()):
-            s = d.specialValueText()
+        if len(self.specialValueText()):
+            s = self.specialValueText()
             w = max(w, fm.width(s))
 
         w += 2 # cursor blinking space
@@ -157,13 +199,13 @@ class CollectorSpinBox(QtWidgets.QSpinBox):
         extra = QtCore.QSize(35, 6)
 
         opt.rect.setSize(hint + extra)
-        extra += hint - self.style().subControlRect(QtWidgets.QStyle.CC_SpinBox, opt,
-                                                    QtWidgets.QStyle.SC_SpinBoxEditField, self).size()
+        extra += hint - self.style().subControlRect(
+            QtWidgets.QStyle.CC_SpinBox, opt, QtWidgets.QStyle.SC_SpinBoxEditField, self).size()
 
         # get closer to final result by repeating the calculation
         opt.rect.setSize(hint + extra)
-        extra += hint - self.style().subControlRect(QtWidgets.QStyle.CC_SpinBox, opt,
-                                                    QtWidgets.QStyle.SC_SpinBoxEditField, self).size()
+        extra += hint - self.style().subControlRect(
+            QtWidgets.QStyle.CC_SpinBox, opt, QtWidgets.QStyle.SC_SpinBoxEditField, self).size()
         hint += extra
 
         opt.rect = self.rect()

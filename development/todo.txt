@@ -45,6 +45,9 @@ TODO short term:
             Apparently the color scan is not reset between changes.
                 Test with grib\NLDAS_FOR0125_H.A20050803.2300.001.nc
                 and mini_scanner_output/acceptance1.h5/samples/(re & im)
+            "Reset ranges" button
+            Auto reset checkbox
+
 
         Better color for rectangle zoom
         Inferno as default color map?

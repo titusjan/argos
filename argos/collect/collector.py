@@ -265,7 +265,7 @@ class Collector(BasePanel):
         self._createSpinBoxes(row)
         self._updateRtiInfo()
 
-        self.tree.resizeColumnsToContents(startCol=self.COL_FIRST_COMBO)
+        self.tree.resizeColumnsFromContents(startCol=self.COL_FIRST_COMBO)
 
         logger.debug("{} sigContentsChanged signal (_updateWidgets)"
                       .format("Blocked" if self.signalsBlocked() else "Emitting"))
@@ -451,7 +451,7 @@ class Collector(BasePanel):
             col += 1
 
         # Resize the spinbox columns to their new contents
-        self.tree.resizeColumnsToContents(startCol=self.COL_FIRST_COMBO + self.maxCombos)
+        self.tree.resizeColumnsFromContents(startCol=self.COL_FIRST_COMBO + self.maxCombos)
 
 
     def _deleteSpinBoxes(self, row):
