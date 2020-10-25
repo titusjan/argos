@@ -515,6 +515,8 @@ class Collector(BasePanel):
             spinBox = self.sender()
         assert spinBox, "spinBox not defined and not the sender"
 
+        self._updateRtiInfo()
+
         logger.debug("{} sigContentsChanged signal (spinBox)"
                       .format("Blocked" if self.signalsBlocked() else "Emitting"))
         self.sigContentsChanged.emit(UpdateReason.COLLECTOR_SPIN_BOX)
@@ -683,7 +685,7 @@ class Collector(BasePanel):
 
 
     def _updateRtiInfo(self):
-        """ Updates the _rtiInfo property when a new RTI is set or the comboboxes value change.
+        """ Updates the _rtiInfo property when a new RTI is set or spin/comboboxes change value .
         """
         logger.debug("Updating self._rtiInfo")
         # Info about the dependent dimension

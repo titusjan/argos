@@ -86,10 +86,10 @@ class CollectorTree(ToggleColumnTreeView):
         """ Resize columns depending on their contents.
 
             The width of the first column (showing the path) will not be changed
-            The columns containg combo boxes will be set to the size hints of these combo boxes
+            The columns containing combo boxes will be set to the size hints of these combo boxes
             The remaining width (if any) is devided over the spin boxes.
         """
-        logger.debug("ResizeColumnsToContents called.")
+        logger.debug("resizeColumnsFromContents called.")
         numCols = self.model().columnCount()
         startCol = 0 if startCol is None else max(startCol, 0)
 

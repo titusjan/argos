@@ -15,6 +15,8 @@ History
 *   Zooming can be also done by dragging while holding the right mouse button (issue #8)
 *   If possible, only informative dimensions (i.e. length > 1) are selected in the collector
     combo boxes. (issue #9)
+*   Sliders next to the spinboxes in the collector panel
+*   Fix: slices are updated in plot title when spinbox values change.
 *   Users can add/remove/configure plugins via the GUI.
 *   Grouped the Details dock widgets together with repo viewer as they always apply to the selected item.
 *   Updated style and layout.

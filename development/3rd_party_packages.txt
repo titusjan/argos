@@ -5,6 +5,14 @@ URLs to 3rd party packages that might be interesting for Argos
 http://pandas-datareader.readthedocs.org/en/latest/remote_data.html#google-finance
 http://www.reddit.com/r/Python/comments/2vn1yz/what_is_the_best_way_to_create_deb_package_from/
 
+fits format http://fits.gsfc.nasa.gov/ (astropy)
+geotiff format (attributes). (https://aws.amazon.com/public-data-sets/landsat/)
+grib format: https://github.com/jswhit/pygrib
+bufr format: https://en.wikipedia.org/wiki/BUFR
+http://scitools.org.uk/iris/ ((CF-)netCDF, GRIB, and PP files.
+Cartopy: http://scitools.org.uk/cartopy/docs/latest/ (shape files)
+Holoviews: https://holoviews.org/
+
 
 # Tagged tiff files
 https://pypi.org/project/tifffile/

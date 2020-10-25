@@ -56,11 +56,6 @@ TODO short term:
 
         Better probe labels. Use dimension names in probe name. E.g. myvalue = 5.22 @ pos (dim-1, dim-2) = (13, 4)
 
-        Sliders next to spin boxes in collector.
-            - Expand last column
-            - Fix update of slices in plot title.
-            - Don't show post fix
-
         Hamburger menu button in table headers to show/hide rows? Zebra striping?
         The problem is that the currently selected RTI is poorly visible when the data tree loses focus. Fix with CSS?
 
@@ -188,13 +183,6 @@ TODO Long term or nice to have:
 	thinks how to stretch last line when toggling columns on/off (recalc column size?)
 	let repo tree view work with multiple selected items
 	example RTI using XML file.
-	fits format http://fits.gsfc.nasa.gov/ (astropy)
-	geotiff format (attributes). (https://aws.amazon.com/public-data-sets/landsat/)
-	grib format: https://github.com/jswhit/pygrib
-	bufr format: https://en.wikipedia.org/wiki/BUFR
-	http://scitools.org.uk/iris/ ((CF-)netCDF, GRIB, and PP files.
-	Cartopy: http://scitools.org.uk/cartopy/docs/latest/ (shape files)
-	Holoviews: http://ioam.github.io/holoviews
 
 	Change settings file from menu?
 	Plugin management window
