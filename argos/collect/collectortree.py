@@ -89,7 +89,7 @@ class CollectorTree(ToggleColumnTreeView):
             The columns containg combo boxes will be set to the size hints of these combo boxes
             The remaining width (if any) is devided over the spin boxes.
         """
-        logger.debug("\n\n\n________________ resizeColumnsToContents ________________")
+        logger.debug("ResizeColumnsToContents called.")
         numCols = self.model().columnCount()
         startCol = 0 if startCol is None else max(startCol, 0)
 
@@ -106,14 +106,13 @@ class CollectorTree(ToggleColumnTreeView):
         indexSpin = []
         indexNonSpin = []
         spinBoxSizeHints = []
+        spinBoxMaximums = []
         for col in range(0, numCols):
             indexWidget = self.indexWidget(self.model().index(row, col))
-            if indexWidget:
-                if isinstance(indexWidget, (QtWidgets.QSpinBox, SpinSlider)):
-                    spinBoxSizeHints.append(indexWidget.sizeHint().width())
-                    indexSpin.append(col)
-                else:
-                    indexNonSpin.append(col)
+            if indexWidget and isinstance(indexWidget, (QtWidgets.QSpinBox, SpinSlider)):
+                spinBoxSizeHints.append(indexWidget.sizeHint().width())
+                spinBoxMaximums.append(indexWidget.spinbox.maximum())
+                indexSpin.append(col)
             else:
                 indexNonSpin.append(col)
 
@@ -121,25 +120,32 @@ class CollectorTree(ToggleColumnTreeView):
             return
 
         headerWidth = self.header().width()
+        spinBoxSizeHints = np.array(spinBoxSizeHints)
         spinBoxTotalSizeHints = np.sum(np.array(spinBoxSizeHints))
         colWidths = np.array([self.header().sectionSize(idx) for idx in range(numCols)])
         nonSpinBoxTotalWidth = np.sum(colWidths[indexNonSpin])
-        remainingTotal = headerWidth - nonSpinBoxTotalWidth - spinBoxTotalSizeHints
-        extraWidthPerSpinBox = max(remainingTotal / len(indexSpin), 0)
+        remainingTotal = max(0, headerWidth - nonSpinBoxTotalWidth - spinBoxTotalSizeHints)
 
-        logger.debug("Header width              : {}".format(headerWidth))
-        logger.debug("Column widthss            : {}".format(colWidths))
-        logger.debug("Width of non-spinboxes    : {}".format(nonSpinBoxTotalWidth))
-        logger.debug("Total size hint spinboxes : {}".format(spinBoxTotalSizeHints))
-        logger.debug("Remaining width to divide : {}".format(remainingTotal))
-        logger.debug("Extra width per spin box  : {}".format(extraWidthPerSpinBox))
+        spinBoxWeights = np.maximum(0.5, np.log10(np.array(spinBoxMaximums)))
+        normSpinBoxWeights = spinBoxWeights / np.sum(spinBoxWeights)
+        extraWidthPerSpinBox = remainingTotal * normSpinBoxWeights
+        newSpinBoxWidths = spinBoxSizeHints + extraWidthPerSpinBox
 
-        # Divide the remaining width equally over the spin boxes. If the remaining total is less
-        # then zero, just set the widths to the size hints (a horizontal scrollbar will appear).
-        logger.debug("Dividing the remaining width equally over the spinboxes.")
-        for nr, idx in enumerate(indexSpin):
-            newWidth = spinBoxSizeHints[nr] + extraWidthPerSpinBox
-            logger.debug("    col {} -> size {}".format(idx, newWidth))
+        logger.debug("Dividing the remaining width over the spinboxes.")
+        logger.debug("Header width               : {}".format(headerWidth))
+        logger.debug("Column widths              : {}".format(colWidths))
+        logger.debug("Width of non-spinboxes     : {}".format(nonSpinBoxTotalWidth))
+        logger.debug("Total size hint spinboxes  : {}".format(spinBoxTotalSizeHints))
+        logger.debug("Remaining width to divide  : {}".format(remainingTotal))
+        logger.debug("Spinbox maximums           : {}".format(spinBoxMaximums))
+        logger.debug("Normalized spinbox weights : {}".format(normSpinBoxWeights))
+        logger.debug("Extra width per spin box   : {}".format(extraWidthPerSpinBox))
+        logger.debug("New spinbox widths         : {}".format(newSpinBoxWidths))
+
+        # Divide the remaining width over the spin boxes using the log(nrElements) as weights.
+        # If the remaining total is less than zero, just set the widths to the size hints (a
+        # horizontal scrollbar will appear).
+        for idx, newWidth in zip(indexSpin, newSpinBoxWidths):
             header.resizeSection(idx, newWidth)
 
 
@@ -193,7 +199,7 @@ class CollectorSpinBox(QtWidgets.QSpinBox):
 
         w += 2 # cursor blinking space
 
-        w -= 20 # The spinboxes seemed to wide. Made a bit smaller by Pepijn.
+        w -= 15 # The spinboxes seemed to wide. Made a bit smaller by Pepijn.
 
         opt = QtWidgets.QStyleOptionSpinBox()
         self.initStyleOption(opt)
