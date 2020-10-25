@@ -858,10 +858,10 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
         cfg = dict(
+            configWidget = self.configWidget.marshall(),
             curInspector = self.inspectorRegItem.identifier if self.inspectorRegItem else '',
             inspectors = self._inspectorStates,
             layout = layoutCfg,
-
         )
         return cfg
 
@@ -869,6 +869,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def unmarshall(self, cfg):
         """ Initializes itself from a config dict form the persistent settings.
         """
+        self.configWidget.unmarshall(cfg.get('configWidget', {}))
+
         self._inspectorStates = cfg.get('inspectors', {})
 
         curInspector = cfg.get('curInspector')
@@ -1024,6 +1026,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 skipError.append('/myDict/pandas/multi-index/index')  # Gives TypeError: len() of unsized object. Unclear whe. # TODO
                 skipError.append('/myDict/structured_masked_arr2')    # Fails with ma.copy: 'numpy.void' object has no attribute '_update_from'
                 skipError.append('/myDict/pandas/panel/major_axis')   # ValueError: object __array__ method not producing an array
+                skipError.append('/argos/gstp-rad/2014-04-29_FEL-350/2014-04-29T11_53_38Nothing m2.h5/radiometer_configuration/wheel_configuration') # AttributeError: 'bytes' object has no attribute 'dtype'
 
             elif isinstance(self._inspector, PgImagePlot2d) or isinstance(self._inspector, PgImagePlot2d):
                 if versionStrToTuple(np.__version__) < (1,19,0):

@@ -23,7 +23,7 @@ import logging
 import os.path
 
 from argos.info import DEBUGGING, icons_directory
-from argos.qt import QtCore, QtGui, QtWidgets, QtSlot
+from argos.qt import Qt, QtCore, QtGui, QtWidgets, QtSlot
 from argos.widgets.argostreeview import ArgosTreeView
 from argos.widgets.constants import RIGHT_DOCK_WIDTH, DOCK_SPACING, DOCK_MARGIN
 from argos.widgets.misc import BasePanel
@@ -55,6 +55,9 @@ class ConfigWidget(BasePanel):
         self.buttonLayout = QtWidgets.QHBoxLayout()
         self.mainLayout.addLayout(self.buttonLayout)
 
+        self.autoCheckBox = QtWidgets.QCheckBox("Auto")
+        self.autoCheckBox.setChecked(True)
+
         self.resetRangesButton = QtWidgets.QPushButton("Reset Ranges")
         self.resetRangesButton.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'reset-l.svg')))
 
@@ -62,12 +65,30 @@ class ConfigWidget(BasePanel):
         self.resetAllButton.setIcon(QtGui.QIcon(os.path.join(icons_directory(), 'reset-l.svg')))
 
         self.buttonLayout.addStretch()
+        self.buttonLayout.addWidget(self.autoCheckBox)
         self.buttonLayout.addWidget(self.resetRangesButton)
         self.buttonLayout.addWidget(self.resetAllButton)
         self.buttonLayout.addStretch()
 
+        self.autoCheckBox.stateChanged.connect(self.configTreeView.onAutoResetChanged)
         self.resetRangesButton.clicked.connect(self.configTreeView.resetAllRanges)
         self.resetAllButton.clicked.connect(self.configTreeView.resetAllSettings)
+
+
+    def marshall(self):
+        """ Returns a dictionary to save in the persistent settings
+        """
+        cfg = dict(
+            autoRange = self.autoCheckBox.isChecked()
+        )
+        return cfg
+
+
+    def unmarshall(self, cfg):
+        """ Initializes itself from a config dict form the persistent settings.
+        """
+        if 'autoRange' in cfg:
+            self.autoCheckBox.setChecked(cfg['autoRange'])
 
 
 
@@ -154,11 +175,17 @@ class ConfigTreeView(ArgosTreeView):
             self.expandBranch(index=childIndex, expanded=expanded)
 
 
+    def onAutoResetChanged(self, state):
+        """ Called when the auto-reset checkbox has changed
+        """
+        logger.debug("onAutoResetChanged: {}".format(bool(state)))
+        self.configTreeModel.autoReset = bool(state)
+
+
     def resetAllSettings(self):
         """ Resets all settings
         """
         logger.debug("Resetting all settings")
-
         self.configTreeModel.resetAllSettings()
 
 
@@ -166,5 +193,4 @@ class ConfigTreeView(ArgosTreeView):
         """ Resets all (axis/color/etc) range settings.
         """
         logger.debug("Resetting all range settings")
-
         self.configTreeModel.resetAllRanges()

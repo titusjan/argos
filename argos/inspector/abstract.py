@@ -231,7 +231,8 @@ class AbstractInspector(QtWidgets.QStackedWidget):
     def _resetRequired(self, reason, _initiator=None):
         """ Uses reason parameter (and optionally the _initiator) to determine axis must be reset.
         """
-        return reason == UpdateReason.RTI_CHANGED or reason == UpdateReason.COLLECTOR_COMBO_BOX
+        return (self.config.model.autoReset and
+                (reason == UpdateReason.RTI_CHANGED or reason == UpdateReason.COLLECTOR_COMBO_BOX))
 
 
     def _drawContents(self, reason=None, initiator=None):

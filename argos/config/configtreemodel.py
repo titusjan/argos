@@ -21,7 +21,7 @@ import logging
 
 from argos.qt import Qt, QtCore, QtSlot
 from argos.qt.treemodels import BaseTreeModel
-from argos.config.groupcti import GroupCti
+from argos.config.groupcti import MainGroupCti
 from argos.utils.cls import type_name
 
 
@@ -44,7 +44,10 @@ class ConfigTreeModel(BaseTreeModel):
         """ Constructor
         """
         super(ConfigTreeModel, self).__init__(parent=parent)
-        self._invisibleRootTreeItem = GroupCti(self.INVISIBLE_ROOT_NAME)
+
+        self._autoReset = True
+
+        self._invisibleRootTreeItem = MainGroupCti(self.INVISIBLE_ROOT_NAME)
         self._invisibleRootTreeItem.model = self
         #self.dataChanged.connect(self.debug)
         self._refreshBlocked = False
@@ -220,6 +223,20 @@ class ConfigTreeModel(BaseTreeModel):
         logger.debug("Setting refreshBlocked from {} to {}".format(wasBlocked, blocked))
         self._refreshBlocked = blocked
         return wasBlocked
+
+
+    @property
+    def autoReset(self):
+        """ Indicates that the modeul will be (oartially) reset when the RTI or combo change
+        """
+        return self._autoReset
+
+
+    @autoReset.setter
+    def autoReset(self, value):
+        """ Indicates that the modeul will be (oartially) reset when the RTI or combo change
+        """
+        self._autoReset = value
 
 
     def resetAllSettings(self):

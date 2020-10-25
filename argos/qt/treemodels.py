@@ -63,7 +63,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
     def setInvisibleRootItem(self, treeItem=None):
          """ SetsReplaces the invisible root item, which contains no actual data
 
-             If baseRti is None itis set to a place holder BaseTreeItem.
+             If baseRti is None it is set to a place holder BaseTreeItem.
              Note that this resets the model
          """
          treeItem = BaseTreeItem(nodeName=INVISIBLE_ROOT_NAME) if treeItem is None else treeItem
