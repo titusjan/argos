@@ -176,13 +176,13 @@ class CollectorSpinBox(QtWidgets.QSpinBox):
 
         # QLatin1Char seems not to be implemented.
         # Using regular string literals and hope for the best
-        s = self.prefix() + self.textFromValue(self.minimum()) + self.suffix() + ' '
+        s = self.prefix() + self.textFromValue(self.minimum()) + self.suffix() #+ ' '
 
         # We disabled truncating the string here!!
         #s = s[:18]
         w = max(w, fm.width(s))
 
-        s = self.prefix() + self.textFromValue(self.maximum()) + self.suffix() + ' '
+        s = self.prefix() + self.textFromValue(self.maximum()) + self.suffix() #+ ' '
 
         # We disabled truncating the string here!!
         #s = s[:18]
@@ -192,6 +192,8 @@ class CollectorSpinBox(QtWidgets.QSpinBox):
             w = max(w, fm.width(s))
 
         w += 2 # cursor blinking space
+
+        w -= 20 # The spinboxes seemed to wide. Made a bit smaller by Pepijn.
 
         opt = QtWidgets.QStyleOptionSpinBox()
         self.initStyleOption(opt)
