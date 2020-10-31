@@ -17,6 +17,7 @@
 
 """ Abstract base classes for modeling data tree items for use in the ConfigTreeModel
 """
+import enum
 import logging, os
 
 from argos.info import DEBUGGING, icons_directory
@@ -30,6 +31,15 @@ logger = logging.getLogger(__name__)
 ###########
 # Classes #
 ###########
+
+
+class ResetMode(enum.Enum):
+    All = "all"
+    Ranges = "ranges"
+
+
+DEFAULT_RESET_MODE = ResetMode.Ranges
+
 
 class AbstractCti(BaseTreeItem):
     """ TreeItem for use in a ConfigTreeModel. (CTI = Config Tree Item)

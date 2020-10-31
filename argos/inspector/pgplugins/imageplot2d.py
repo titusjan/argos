@@ -432,6 +432,11 @@ class PgImagePlot2d(AbstractInspector):
             The reason parameter is used to determine if the axes will be reset (the initiator
             parameter is ignored). See AbstractInspector.updateContents for their description.
         """
+
+        # If auto-reset is true, reset config complete or partially, depending on the mode.
+        if self._resetRequired(reason, initiator):
+            self.resetConfig()
+
         self.crossPlotRow = None # reset because the sliced array shape may change
         self.crossPlotCol = None # idem dito
 
@@ -505,10 +510,6 @@ class PgImagePlot2d(AbstractInspector):
         # print the actual value.
         imageArray = replaceMaskedValueWithFloat(imageArray, np.isinf(self.slicedArray.data),
                                                  np.nan, copyOnReplace=True)
-
-        # Reset the axes ranges (via the config)
-        if self._resetRequired(reason, initiator):
-            self.config.resetRangesToDefault()
 
         # PyQtGraph uses the following dimension order: T, X, Y, Color.
         # We need to transpose the slicedArray ourselves because axes = {'x':1, 'y':0}

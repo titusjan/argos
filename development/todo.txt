@@ -54,6 +54,7 @@ TODO short term:
 
         Better color for rectangle zoom
         Inferno as default color map?
+        Smaller text edit in color config
 
         Is is possible to do interpolation in image scan so that lines in \spectral\cube.h5\intensities are visible?
 
@@ -61,7 +62,6 @@ TODO short term:
 
         Hamburger menu button in table headers to show/hide rows? Zebra striping?
         The problem is that the currently selected RTI is poorly visible when the data tree loses focus. Fix with CSS?
-
 
     Bugs and issues
     ---------------

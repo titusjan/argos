@@ -27,11 +27,12 @@ from functools import partial
 
 from argos.qt import QtCore, QtGui, QtSlot
 from argos.info import DEBUGGING
+from argos.config.abstractcti import ResetMode
 from argos.config.groupcti import MainGroupCti
 from argos.config.boolcti import BoolCti
 from argos.config.choicecti import ChoiceCti
 
-from argos.inspector.abstract import AbstractInspector, InvalidDataError, UpdateReason
+from argos.inspector.abstract import AbstractInspector, InvalidDataError
 from argos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, NO_LABEL_STR,
                                               defaultAutoRangeMethods, PgGridCti, PgAxisCti,
                                               setXYAxesAutoRangeOn, PgAxisLabelCti,
@@ -198,6 +199,11 @@ class PgLinePlot1d(AbstractInspector):
             The reason parameter is used to determine if the axes will be reset (the initiator
             parameter is ignored). See AbstractInspector.updateContents for their description.
         """
+
+        # If auto-reset is true, reset config complete or partially, depending on the mode.
+        if self._resetRequired(reason, initiator):
+            self.resetConfig()
+
         self.slicedArray = self.collector.getSlicedArray()
 
         slicedArray = self.collector.getSlicedArray()
@@ -231,10 +237,6 @@ class PgLinePlot1d(AbstractInspector):
             self.slicedArray.replaceMaskedValueWithNan()  # will convert data to float if int
 
         self.plotItem.clear()
-
-        # Reset the axes ranges (via the config)
-        if self._resetRequired(reason, initiator):
-            self.config.resetRangesToDefault()
 
         self.titleLabel.setText(self.configValue('title').format(**self.collector.rtiInfo))
 

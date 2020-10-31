@@ -106,6 +106,11 @@ class TextInspector(AbstractInspector):
             See AbstractInspector.updateContents for their description.
         """
         logger.debug("TextInspector._drawContents: {}".format(self))
+
+        # If auto-reset is true, reset config complete or partially, depending on the mode.
+        if self._resetRequired(reason, initiator):
+            self.resetConfig()
+
         self._clearContents()
 
         slicedArray = self.collector.getSlicedArray()

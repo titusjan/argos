@@ -21,8 +21,9 @@ import logging
 
 from argos.qt import Qt, QtCore, QtSlot
 from argos.qt.treemodels import BaseTreeModel
+from argos.config.abstractcti import ResetMode, DEFAULT_RESET_MODE
 from argos.config.groupcti import MainGroupCti
-from argos.utils.cls import type_name
+from argos.utils.cls import type_name, check_class
 
 
 logger = logging.getLogger(__name__)
@@ -46,6 +47,7 @@ class ConfigTreeModel(BaseTreeModel):
         super(ConfigTreeModel, self).__init__(parent=parent)
 
         self._autoReset = True
+        self._resetMode = DEFAULT_RESET_MODE
 
         self._invisibleRootTreeItem = MainGroupCti(self.INVISIBLE_ROOT_NAME)
         self._invisibleRootTreeItem.model = self
@@ -227,16 +229,31 @@ class ConfigTreeModel(BaseTreeModel):
 
     @property
     def autoReset(self):
-        """ Indicates that the modeul will be (oartially) reset when the RTI or combo change
+        """ Indicates that the model will be (oartially) reset when the RTI or combo change
         """
         return self._autoReset
 
 
     @autoReset.setter
     def autoReset(self, value):
-        """ Indicates that the modeul will be (oartially) reset when the RTI or combo change
+        """ Indicates that the model will be (oartially) reset when the RTI or combo change
         """
         self._autoReset = value
+
+
+    @property
+    def resetMode(self):
+        """ Determines what is reset if autoReset is True (either axes or all settings)
+        """
+        return self._resetMode
+
+
+    @resetMode.setter
+    def resetMode(self, value):
+        """ Determines what is reset if autoReset is True (either axes or all settings)
+        """
+        check_class(value, ResetMode)
+        self._resetMode = value
 
 
     def resetAllSettings(self):

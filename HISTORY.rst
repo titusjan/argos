@@ -17,6 +17,7 @@ History
     combo boxes. (issue #9)
 *   Sliders next to the spinboxes in the collector panel
 *   Fix: slices are updated in plot title when spinbox values change.
+*   Fix: when table headers autosize was enabled, restarting argos could be slow for large tables.
 *   Users can add/remove/configure plugins via the GUI.
 *   Grouped the Details dock widgets together with repo viewer as they always apply to the selected item.
 *   Updated style and layout.

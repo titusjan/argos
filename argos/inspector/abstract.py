@@ -18,6 +18,7 @@
 """ Base class for inspectors
 """
 import logging
+from argos.config.abstractcti import ResetMode
 from argos.config.groupcti import MainGroupCti
 from argos.info import DEBUGGING
 from argos.qt import QtWidgets, QtSignal
@@ -233,6 +234,19 @@ class AbstractInspector(QtWidgets.QStackedWidget):
         """
         return (self.config.model.autoReset and
                 (reason == UpdateReason.RTI_CHANGED or reason == UpdateReason.COLLECTOR_COMBO_BOX))
+
+
+    def resetConfig(self):
+        """ Resets config depending on the config reset mode.
+        """
+        resetMode = self.config.model.resetMode
+        if resetMode == ResetMode.All:
+            self.config.resetToDefault()
+        elif resetMode == ResetMode.Ranges:
+            self.config.resetRangesToDefault()
+        else:
+            raise ValueError("Unexpected config mode")
+
 
 
     def _drawContents(self, reason=None, initiator=None):

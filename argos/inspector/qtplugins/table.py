@@ -210,6 +210,15 @@ class TableInspectorCti(MainGroupCti):
             self.autoColWidthCti.enable = True
 
 
+    def resetRangesToDefault(self):
+        """ Resets columns auto height and width
+        """
+        self.defaultColWidthCti.resetToDefault()
+        self.defaultRowHeightCti.resetToDefault()
+        self.autoColWidthCti.resetToDefault()
+        self.autoRowHeightCti.resetToDefault()
+
+
 
 class TableInspector(AbstractInspector):
     """ Shows the sliced array in a table.
@@ -273,6 +282,10 @@ class TableInspector(AbstractInspector):
         """
         logger.debug("TableInspector._drawContents: {}".format(self))
 
+        # If auto-reset is true, reset config complete or partially, depending on the mode.
+        if self._resetRequired(reason, initiator):
+            self.resetConfig()
+
         oldTableIndex = self.tableView.currentIndex()
         if oldTableIndex.isValid():
             selectionWasValid = True # Defensive programming, keep old value just in case
@@ -282,6 +295,12 @@ class TableInspector(AbstractInspector):
             selectionWasValid = False
             oldRow = 0
             oldCol = 0
+
+        # Temporarily set header sizes fixed when populating the model (mayy be slow otherwise)
+        verHeader = self.tableView.verticalHeader()
+        horHeader = self.tableView.horizontalHeader()
+        verHeader.setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
+        horHeader.setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
 
         self.model.updateState(self.collector.getSlicedArray(),
                                self.collector.rtiInfo,
@@ -312,7 +331,6 @@ class TableInspector(AbstractInspector):
         # Update the model font from the font config item (will call self.setFont)
         self.config.updateTarget()
 
-        verHeader = self.tableView.verticalHeader()
         if (self.config.autoRowHeightCti.configValue
             and self.model.rowCount() < RESET_HEADERS_AT_SIZE):
 
@@ -323,7 +341,6 @@ class TableInspector(AbstractInspector):
             else:
                 # ResizeToContents can be very slow because it gets all rows.
                 # Work around: resize only first row and columns and apply this to all rows/cols
-                # TODO: perhaps use SizeHintRole?
                 logger.warning("Performance work around: for tables with more than 1000 cells " +
                                "only the current row is resized and the others use that size.")
                 verHeader.setSectionResizeMode(QtWidgets.QHeaderView.Interactive)
@@ -335,7 +352,6 @@ class TableInspector(AbstractInspector):
             verHeader.setDefaultSectionSize(self.config.defaultRowHeightCti.configValue)
             verHeader.reset()
 
-        horHeader = self.tableView.horizontalHeader()
         if (self.config.autoColWidthCti.configValue
             and self.model.columnCount() < RESET_HEADERS_AT_SIZE):
 
@@ -346,7 +362,6 @@ class TableInspector(AbstractInspector):
             else:
                 # ResizeToContents can be very slow because it gets all rows.
                 # Work around: resize only first row and columns and apply this to all rows/cols
-                # TODO: perhaps use SizeHintRole?
                 logger.warning("Performance work around: for tables with more than 1000 cells " +
                                "only the current column is resized and the others use that size.")
                 horHeader.setSectionResizeMode(QtWidgets.QHeaderView.Interactive)
@@ -408,6 +423,7 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
 
             Will be called from the tableInspector._drawContents.
         """
+        logger.debug("TableInspectorModel.updateState called")
         self.beginResetModel()
         try:
             # The sliced array can be a masked array or a (regular) numpy array.
