@@ -196,6 +196,24 @@ class MainWindow(QtWidgets.QMainWindow):
         self.collector.sigContentsChanged.connect(self.collectorContentsChanged)
         self._configTreeModel.sigItemChanged.connect(self.configContentsChanged)
 
+        # Populate table headers menu
+        self.__addTableHeadersSubMenu("Data", self.repoWidget.repoTreeView)
+        self.__addTableHeadersSubMenu("Settings", self.configWidget.configTreeView)
+        self.__addTableHeadersSubMenu(
+            "Properties", self.repoWidget.propertiesPane.table)
+        self.__addTableHeadersSubMenu(
+            "Attributes", self.repoWidget.attributesPane.table)
+        self.__addTableHeadersSubMenu(
+            "Dimensions", self.repoWidget.dimensionsPane.table)
+
+
+    def __addTableHeadersSubMenu(self, menuTitle, treeView):
+        """ Adds a sub menu to the View | Table Headers menu with actions to show/hide columns
+        """
+        subMenu = self.tableHeadersMenu.addMenu(menuTitle)
+        for action in treeView.getHeaderContextMenuActions():
+            subMenu.addAction(action)
+
 
     def __setupMenus(self):
         """ Sets up the main menu.
@@ -246,12 +264,14 @@ class MainWindow(QtWidgets.QMainWindow):
         ### View Menu ###
 
         self.viewMenu = menuBar.addMenu("&View")
-        self.panelsMenu = self.viewMenu.addMenu("&Panels")
-        self.viewMenu.addSeparator()
 
         self.inspectorActionGroup = self.__createInspectorActionGroup(self)
         for action in self.inspectorActionGroup.actions():
             self.viewMenu.addAction(action)
+
+        self.viewMenu.addSeparator()
+        self.panelsMenu = self.viewMenu.addMenu("&Panels")
+        self.tableHeadersMenu = self.viewMenu.addMenu("&Table Headers")
 
         ### Config Menu ###
         self.configMenu = menuBar.addMenu("Configure")

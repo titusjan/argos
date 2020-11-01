@@ -40,8 +40,10 @@ TODO short term:
 
         Better probe labels. Use dimension names in probe name. E.g. myvalue = 5.22 @ pos (dim-1, dim-2) = (13, 4)
 
-        Hamburger menu button in table headers to show/hide rows? Zebra striping?
+        Zebra striping?
         The problem is that the currently selected RTI is poorly visible when the data tree loses focus. Fix with CSS?
+
+        cornerButtonEnabled
 
     Bugs and issues
     ---------------

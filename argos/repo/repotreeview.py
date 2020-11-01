@@ -68,9 +68,9 @@ class RepoWidget(BasePanel):
         self.mainSplitter.addWidget(self.tabWidget)
         self.mainSplitter.setCollapsible(1, True)
 
-        self._propertiesPane = self.addDetailsPane(PropertiesPane(self.repoTreeView))
-        self._attributesPane = self.addDetailsPane(AttributesPane(self.repoTreeView))
-        self._dimensionsPane = self.addDetailsPane(DimensionsPane(self.repoTreeView))
+        self.propertiesPane = self.addDetailsPane(PropertiesPane(self.repoTreeView))
+        self.attributesPane = self.addDetailsPane(AttributesPane(self.repoTreeView))
+        self.dimensionsPane = self.addDetailsPane(DimensionsPane(self.repoTreeView))
 
         self.repoTreeView.sigRepoItemChanged.connect(self.repoItemChanged)
         self.tabWidget.currentChanged.connect(self.tabChanged)
@@ -96,9 +96,9 @@ class RepoWidget(BasePanel):
             tabIndex = self.tabWidget.currentIndex(),
             splitterSizes = self.mainSplitter.sizes(),
             treeHeaders = self.repoTreeView.marshall(),
-            propertiesPane = self._propertiesPane.marshall(),
-            attributesPane = self._attributesPane.marshall(),
-            dimensionsPane = self._dimensionsPane.marshall(),
+            propertiesPane = self.propertiesPane.marshall(),
+            attributesPane = self.attributesPane.marshall(),
+            dimensionsPane = self.dimensionsPane.marshall(),
         )
 
         return cfg
@@ -115,9 +115,9 @@ class RepoWidget(BasePanel):
 
         self.repoTreeView.unmarshall(cfg.get('treeHeaders'))
 
-        self._propertiesPane.unmarshall(cfg.get('propertiesPane', {}))
-        self._attributesPane.unmarshall(cfg.get('attributesPane', {}))
-        self._dimensionsPane.unmarshall(cfg.get('dimensionsPane', {}))
+        self.propertiesPane.unmarshall(cfg.get('propertiesPane', {}))
+        self.attributesPane.unmarshall(cfg.get('attributesPane', {}))
+        self.dimensionsPane.unmarshall(cfg.get('dimensionsPane', {}))
 
 
     def repoItemChanged(self, rti):
