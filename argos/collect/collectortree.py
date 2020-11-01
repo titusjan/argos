@@ -110,7 +110,7 @@ class CollectorTree(ToggleColumnTreeView):
         for col in range(0, numCols):
             indexWidget = self.indexWidget(self.model().index(row, col))
             if indexWidget and isinstance(indexWidget, (QtWidgets.QSpinBox, SpinSlider)):
-                spinBoxSizeHints.append(indexWidget.sizeHint().width())
+                spinBoxSizeHints.append(indexWidget.spinbox.sizeHint().width())
                 spinBoxMaximums.append(indexWidget.spinbox.maximum())
                 indexSpin.append(col)
             else:
