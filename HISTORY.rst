@@ -11,6 +11,8 @@ History
 *   Extensive database of color maps and color map picker (CmLib).
 *   Directories are listed in alphabetical order.
 *   Image inspector: cross hair and axis ticks are displayed in the middle of the pixels.
+*   Image inspector: added 'auto down-sample' config option (on by default).
+    This improves performance for large images and reduces aliasing.
 *   Added rectangle zoom mode in 1D line plot and 2D image plot inspectors (issue #8)
 *   Zooming can be also done by dragging while holding the right mouse button (issue #8)
 *   If possible, only informative dimensions (i.e. length > 1) are selected in the collector

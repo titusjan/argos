@@ -188,6 +188,10 @@ class PgImagePlot2dCti(MainGroupCti):
             PgColorLegendCti(pgImagePlot2d.colorLegendItem, colorAutoRangeFunctions,
                              nodeName="range"))
 
+        # If True, the image is automatically downsampled to match the screen resolution. This
+        # improves performance for large images and reduces aliasing. If autoDownsample is not
+        # specified, then ImageItem will choose whether to downsample the image based on its size.
+        self.autoDownSampleCti = self.insertChild(BoolCti('auto down sample', True))
         self.zoomModeCti = self.insertChild(BoolCti('rectangle zoom mode', False))
 
         ### Probe and cross-hair plots ###
@@ -519,6 +523,7 @@ class PgImagePlot2d(AbstractInspector):
         # Set the _wasIntegerData to True if the original data type was a signed or unsigned. This
         # allows the ArgosColorLegendItem to make histogram bins as if it were an integer
         self.imageItem._wasIntegerData = self.slicedArray.data.dtype.kind in 'ui'
+        self.imageItem.setAutoDownsample(self.config.autoDownSampleCti.configValue)
         self.imageItem.setImage(imageArray, autoLevels=False)  # Do after _wasIntegerData is set!
 
         self.imagePlotItem.setRectangleZoomOn(self.config.zoomModeCti.configValue)

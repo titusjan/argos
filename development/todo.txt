@@ -35,28 +35,10 @@ TODO short term:
 
     Think about it
     --------------
-        RTI_CHANGED         = "repo tree item changed"
-        COLLECTOR_COMBO_BOX = "collector combobox changed"
-        COLLECTOR_SPIN_BOX  = "collector spinbox changed"
-
-        Zoom is reset when changing RGB in image (and other RTIs)
-
-        Reset range when a variable with a new unit/abcissa is selected?
-            Hard to determine the new unit and dimensions.
-            Change if unit is new or combox dim is new.
-
-            Keep collector state (comboboxes, when the dimensions of the new RTI are the same as of the old)
-            Test with tata cube.h5
-
-            "Reset ranges" button
-            Auto reset checkbox
-
 
         Better color for rectangle zoom
         Inferno as default color map?
         Smaller text edit in color config
-
-        Is is possible to do interpolation in image scan so that lines in \spectral\cube.h5\intensities are visible?
 
         Better probe labels. Use dimension names in probe name. E.g. myvalue = 5.22 @ pos (dim-1, dim-2) = (13, 4)
 
