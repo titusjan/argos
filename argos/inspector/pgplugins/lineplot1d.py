@@ -294,7 +294,11 @@ class PgLinePlot1d(AbstractInspector):
                 else:
                     valueStr = to_string(data[index], masked=self.slicedArray.maskAt(index),
                                          maskFormat='&lt;masked&gt;')
-                    self.probeLabel.setText("pos = {!r}, value = {}".format(index, valueStr))
+
+                    self.probeLabel.setText("{} = {:d} \u21e8 {} = {}"
+                                            .format(self.collector.rtiInfo['x-dim'], index,
+                                                    self.collector.rtiInfo['name'], valueStr))
+
                     if np.isfinite(data[index]):
                         self.crossLineVerShadow.setVisible(True)
                         self.crossLineVerShadow.setPos(index)

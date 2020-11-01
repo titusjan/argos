@@ -579,7 +579,10 @@ class PgImagePlot2d(AbstractInspector):
                     valueStr = to_string(self.slicedArray.data[index],
                                          masked=self.slicedArray.maskAt(index),
                                          maskFormat='&lt;masked&gt;')
-                    txt = "pos = ({:d}, {:d}), value = {}".format(row, col, valueStr)
+
+                    txt = "({}, {}) = ({:d}, {:d}) \u21e8 {} = {}"\
+                        .format(self.collector.rtiInfo['x-dim'], self.collector.rtiInfo['y-dim'],
+                                col, row, self.collector.rtiInfo['name'], valueStr)
                     self.probeLabel.setText(txt)
 
                     # Show cross section at the cursor pos in the line plots

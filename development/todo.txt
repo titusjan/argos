@@ -38,8 +38,6 @@ TODO short term:
         Inferno as default color map?
         Smaller text edit in color config
 
-        Better probe labels. Use dimension names in probe name. E.g. myvalue = 5.22 @ pos (dim-1, dim-2) = (13, 4)
-
         Zebra striping?
         The problem is that the currently selected RTI is poorly visible when the data tree loses focus. Fix with CSS?
 
