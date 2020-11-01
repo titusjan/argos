@@ -20,6 +20,8 @@
 
 """
 
+CONTIGUOUS = 'contiguous'  # contiguous chunking
+
 # String formatting template for numbered dimension names
 DIM_TEMPLATE = "dim-{}"
 SUB_DIM_TEMPLATE = "subdim-{}"

@@ -23,13 +23,12 @@
 
 import logging, os
 import h5py
-import numpy as np
 
 
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.repo.baserti import BaseRti
 from argos.utils.cls import to_string, check_class, is_an_array
-from argos.utils.defs import DIM_TEMPLATE, SUB_DIM_TEMPLATE
+from argos.utils.defs import DIM_TEMPLATE, SUB_DIM_TEMPLATE, CONTIGUOUS
 from argos.utils.masks import maskedEqual
 
 logger = logging.getLogger(__name__)
@@ -306,6 +305,14 @@ class H5pyFieldRti(BaseRti):
 
 
     @property
+    def chunking(self):
+        """ List with chunk sizes if chunked storage is used. Or 'contiguous' for contiguous storage
+        """
+        chunks = self._h5Dataset.chunks
+        return CONTIGUOUS if chunks is None else chunks
+
+
+    @property
     def elementTypeName(self):
         """ String representation of the element type.
         """
@@ -421,6 +428,14 @@ class H5pyDatasetRti(BaseRti):
         """ Returns the shape of the underlying array.
         """
         return self._h5Dataset.shape
+
+
+    @property
+    def chunking(self):
+        """ List with chunk sizes if chunked storage is used. Or 'contiguous' for contiguous storage
+        """
+        chunks = self._h5Dataset.chunks
+        return CONTIGUOUS if chunks is None else chunks
 
 
     @property

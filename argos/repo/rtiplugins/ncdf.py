@@ -27,7 +27,7 @@ from netCDF4 import Dataset, Variable, Dimension
 from argos.utils.cls import check_class
 from argos.repo.baserti import BaseRti
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
-from argos.utils.defs import SUB_DIM_TEMPLATE
+from argos.utils.defs import SUB_DIM_TEMPLATE, CONTIGUOUS
 
 logger = logging.getLogger(__name__)
 
@@ -185,6 +185,14 @@ class NcdfFieldRti(BaseRti):
 
 
     @property
+    def chunking(self):
+        """ List with chunk sizes if chunked storage is used. Or 'contiguous' for contiguous storage
+        """
+        chunks = self._ncVar.chunking()  # can return None even if documentation says not.
+        return CONTIGUOUS if chunks is None else chunks
+
+
+    @property
     def elementTypeName(self):
         """ String representation of the element type.
         """
@@ -324,6 +332,14 @@ class NcdfVariableRti(BaseRti):
         """ Returns the unit attribute of the underlying ncdf variable
         """
         return ncVarUnit(self._ncVar)
+
+
+    @property
+    def chunking(self):
+        """ List with chunk sizes if chunked storage is used. Or 'contiguous' for contiguous storage
+        """
+        chunks = self._ncVar.chunking()  # can return None even if documentation says not.
+        return CONTIGUOUS if chunks is None else chunks
 
 
     @property

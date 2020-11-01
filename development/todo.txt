@@ -31,8 +31,6 @@ TODO short term:
 
         PgColorBar must be extendable at one side (bottom or top of the range)
 
-        chunks in properties tab
-
     Think about it
     --------------
 

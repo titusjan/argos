@@ -36,9 +36,9 @@ class RepoTreeModel(BaseTreeModel):
         descendants).
     """
     HEADERS = ["name", "path", "dimensions", "shape", "type", "unit", "missing data",
-               "file name", "tree item", "is open", "exception"]
+               "chunking", "file name", "tree item", "is open", "exception"]
     (COL_NODE_NAME, COL_NODE_PATH, COL_DIMS, COL_SHAPE, COL_ELEM_TYPE, COL_UNIT, COL_MISSING_DATA,
-     COL_FILE_NAME, COL_RTI_TYPE, COL_IS_OPEN, COL_EXCEPTION) = range(len(HEADERS))
+     COL_CHUNKING, COL_FILE_NAME, COL_RTI_TYPE, COL_IS_OPEN, COL_EXCEPTION) = range(len(HEADERS))
 
     COL_DECORATION = COL_NODE_NAME  # Column number that contains the icon. None for no icons
 
@@ -83,6 +83,8 @@ class RepoTreeModel(BaseTreeModel):
                 return treeItem.fileName if hasattr(treeItem, 'fileName') else ''
             elif column == self.COL_UNIT:
                 return treeItem.unit
+            elif column == self.COL_CHUNKING:
+                return treeItem.chunksString
             elif column == self.COL_MISSING_DATA:
                 return to_string(treeItem.missingDataValue, noneFormat='') # empty str for Nones
             elif column == self.COL_RTI_TYPE:
@@ -114,6 +116,8 @@ class RepoTreeModel(BaseTreeModel):
                     return ""
             elif column == self.COL_UNIT:
                 return treeItem.unit
+            elif column == self.COL_CHUNKING:
+                return treeItem.chunksString
             elif column == self.COL_MISSING_DATA:
                 return to_string(treeItem.missingDataValue, noneFormat='') # empty str for Nones
             elif column == self.COL_RTI_TYPE:

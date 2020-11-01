@@ -22,8 +22,10 @@ History
 *   Fix: when table headers autosize was enabled, restarting argos could be slow for large tables.
 *   Users can add/remove/configure plugins via the GUI.
 *   Grouped the Details dock widgets together with repo viewer as they always apply to the selected item.
+*   Properties tab shows chunking information for HDF5 and NetCDF data.
 *   Updated style and layout.
 *   Added --qt-style and --qss command line options. Using Qt Fusion style as default.
+*   Displays informative message in case the plot remains empty.
 *   Accepts unix-like patterns on the Windows command line. E.g. 'argos *.h5' opens all files with the h5 extension.
 *   Persistent settings are stored in json file instead of QSettings.
 *   Added -c command line option for specifying the general configuration file. Settings profiles are thus obsolete

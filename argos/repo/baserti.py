@@ -325,6 +325,26 @@ class BaseRti(AbstractLazyLoadTreeItem):
 
 
     @property
+    def chunking(self):
+        """ List with chunk sizes if chunked storage is used. Or 'contiguous' for contiguous storage
+
+            By default the empty string is returned, meaning chunking is not applicable for this RTI
+        """
+        return ""
+
+
+    @property
+    def chunksString(self):
+        """ String representation of the chunk sizes. For convenience.
+        """
+        chunking = self.chunking
+        if isinstance(chunking, str):
+            return chunking
+        else:
+            return " × ".join(str(elem) for elem in chunking)
+
+
+    @property
     def elementTypeName(self):
         """ String representation of the element type.
         """
