@@ -41,16 +41,10 @@ TODO short term:
         Zebra striping?
         The problem is that the currently selected RTI is poorly visible when the data tree loses focus. Fix with CSS?
 
-        cornerButtonEnabled
-
     Bugs and issues
     ---------------
 
         Fixed font size in tables and trees so that windows10 with two monitors works. (setFixedPitch)
-
-        Closing an RTI redraws all RTIs below it, which is ugly. Simply collapsing them does not.
-
-        Remove all argos imports from the top of main.py and add it again __init__.py
 
     Cleanup and release
     -------------------
@@ -70,6 +64,8 @@ TODO short term:
 TODO mid term:
 
     Exporter to PNG
+
+    Copy/paste all cells from the table inspector
 
     Automated testing (check AppVeyor, Azure Pipelines, CircleCI and TravisCI)
 
@@ -104,6 +100,8 @@ TODO mid term:
 
     Bugs and issues
     ---------------
+
+        Reload item doesn't work with memoryctis.MappingRti (and perhaps other memory RTIs)
 
         What if the H5 only has a dimension label? 2020-10-04. What is this?
 

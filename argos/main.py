@@ -23,7 +23,7 @@ from __future__ import print_function
 # Do not do any imports here that (indirectly) import any dependencies (PyQt, numpy, etc)
 # The browse function is imported by the argos package, which in turn is imported by setup.py.
 # If you import (for instance) numpy here, the setup.py will fail if numpy is not installed.
-# Therefore we do all imports from the argos package in the funtions here.
+# Therefore we do all imports from the argos package in the functions here.
 
 import argparse
 import glob

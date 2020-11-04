@@ -992,10 +992,16 @@ class MainWindow(QtWidgets.QMainWindow):
     def myTest(self):
         """ Function for small ad-hoc tests
         """
-        logger.info("myTest function called")
-        logger.debug("Current inspector after: {}, {}".format(self.inspectorRegItem, self.inspector))
-        self.setInspectorById('')
-        logger.debug("Current inspector after: {}, {}".format(self.inspectorRegItem, self.inspector))
+        logger.info("--------- myTest function called --------------------")
+
+        repoTreeView = self.repoWidget.repoTreeView
+        curItem, curIdx = repoTreeView.getCurrentItem()
+
+        #repoTreeView.closeItem(self.getRowCurrentIndex())
+        repoTreeView.collapse(curIdx)
+        repoTreeView.closeItem(curIdx)
+
+        #self.repoWidget.repoTreeView.closeCurrentItem2()
 
 
     def testWalkCurrentNode(self):

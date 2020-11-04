@@ -329,9 +329,9 @@ class RepoTreeView(ArgosTreeView):
             return
 
         # First we remove all the children, this will close them as well.
-        # It will emit sigAllChildrenRemovedAtIndex, which is connected to the collapse method of all trees.
-        # Tt will thus collapse the current item in all trees. This is necessary, otherwise the children will be
-        # fetched immediately.
+        # It will emit sigAllChildrenRemovedAtIndex, which is connected to the collapse method of
+        # all trees. It will thus collapse the current item in all trees. This is necessary,
+        # otherwise the children will be fetched immediately.
         self.model().removeAllChildrenAtIndex(index)
 
         # Close the item. BaseRti.close will emit the self.model.sigItemChanged signal,

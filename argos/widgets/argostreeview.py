@@ -75,7 +75,11 @@ class ArgosTreeView(ToggleColumnTreeView):
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
         self.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
-        self.setAnimated(True)
+
+        # Setting animated to False because closing an RTI (instead of simply collapsing it) with
+        # animation on is very ugly. Closing entails removing children from the tree. In that case
+        # all the items below the closed node are then redrawn, which results in a lot of flicker.
+        self.setAnimated(False)
         self.setAllColumnsShowFocus(True)
         self.setIconSize(TREE_ICON_SIZE)
 

@@ -194,7 +194,7 @@ class RepoTreeModel(BaseTreeModel):
         if rtiRegItem is None:
             # Do NOT autodetect but use the class from the the RTI that's being replaced.
             rtiClass = type(fileRti)
-
+            logger.debug("Recreating class from previous RTI class: {}".format(rtiClass))
             repoTreeItem = rtiClass.createFromFileName(fileName, fileRti.iconColor)
 
             assert repoTreeItem.parentItem is None, "repoTreeItem {!r}".format(repoTreeItem)
