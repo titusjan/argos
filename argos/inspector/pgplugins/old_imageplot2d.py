@@ -538,7 +538,7 @@ class PgImagePlot2d(AbstractInspector):
             show_data_point = False # shows the data point as a circle in the cross hair plots
             self.crossPlotRow, self.crossPlotCol = None, None
 
-            self.probeLabel.setText("<span style='color: #808080'>no data at cursor</span>")
+            self.probeLabel.setText("<span style='color: #808080'>No data at cursor</span>")
             self.crossLineHorizontal.setVisible(False)
             self.crossLineVertical.setVisible(False)
             self.crossLineHorShadow.setVisible(False)

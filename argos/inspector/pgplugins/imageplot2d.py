@@ -39,7 +39,7 @@ from argos.inspector.pgplugins.pgctis import (
     X_AXIS, Y_AXIS, BOTH_AXES, NO_LABEL_STR, defaultAutoRangeMethods, PgAxisLabelCti,
     PgAxisCti, PgAxisFlipCti, PgAspectRatioCti, PgAxisRangeCti, PgGridCti,
     PgColorMapCti, PgColorLegendCti, PgColorLegendLabelCti, PgShowHistCti,
-    setXYAxesAutoRangeOn, PgPlotDataItemCti)
+    PgShowDragLinesCti, setXYAxesAutoRangeOn, PgPlotDataItemCti)
 from argos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from argos.qt import Qt, QtCore, QtGui, QtSlot
 
@@ -174,14 +174,17 @@ class PgImagePlot2dCti(MainGroupCti):
 
         self.colorCti = self.insertChild(PgAxisCti('color scale'))
 
-        self.colorCti.insertChild(PgColorMapCti(self.pgImagePlot2d.colorLegendItem))
-
         self.colorCti.insertChild(PgColorLegendLabelCti(
             pgImagePlot2d.colorLegendItem, self.pgImagePlot2d.collector, defaultData=1,
             configValues=[NO_LABEL_STR, "{name} {unit}", "{path} {unit}",
                           "{name}", "{path}", "{raw-unit}"]))
 
-        self.showHistCti = self.colorCti.insertChild(PgShowHistCti(pgImagePlot2d.colorLegendItem))
+        self.colorCti.insertChild(PgColorMapCti(self.pgImagePlot2d.colorLegendItem))
+
+        self.showHistCti = self.colorCti.insertChild(
+            PgShowHistCti(pgImagePlot2d.colorLegendItem))
+        self.showDragLinesCti = self.colorCti.insertChild(
+            PgShowDragLinesCti(pgImagePlot2d.colorLegendItem))
 
         colorAutoRangeFunctions = defaultAutoRangeMethods(self.pgImagePlot2d)
         self.colorLegendCti = self.colorCti.insertChild(
@@ -554,7 +557,7 @@ class PgImagePlot2d(AbstractInspector):
             show_data_point = False # shows the data point as a circle in the cross hair plots
             self.crossPlotRow, self.crossPlotCol = None, None
 
-            self.probeLabel.setText("<span style='color: #808080'>no data at cursor</span>")
+            self.probeLabel.setText("<span style='color: #808080'>No data at cursor</span>")
             self.crossLineHorizontal.setVisible(False)
             self.crossLineVertical.setVisible(False)
             self.crossLineHorShadow.setVisible(False)

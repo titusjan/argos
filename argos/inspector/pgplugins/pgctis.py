@@ -615,6 +615,30 @@ class PgShowHistCti(BoolCti):
         self.colorLegendItem.showHistogram(self.configValue)
 
 
+class PgShowDragLinesCti(BoolCti):
+    """ BoolCti that shows/hides the drag lines a color bar.
+    """
+    def __init__(self, colorLegendItem, nodeName='show drag lines',
+                 defaultData=True, expanded=False):
+        """ Constructor.
+            The target axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
+        """
+        super(PgShowDragLinesCti, self).__init__(nodeName,
+                                                 defaultData=defaultData, expanded=expanded)
+
+        self.marginCti = self.insertChild(
+            IntCti("margins", 40, minValue=0, maxValue=250, stepSize=5))
+
+        check_class(colorLegendItem, ColorLegendItem)
+        self.colorLegendItem = colorLegendItem
+
+
+    def _updateTargetFromNode(self):
+        """ Applies the configuration to its target axis
+        """
+        self.colorLegendItem.showDragLines(self.configValue)
+        self.colorLegendItem.setEdgeMargins(self.marginCti.configValue)
+
 
 class PgGradientEditorItemCti(ChoiceCti):
     """ Lets the user select one of the standard color scales in a GradientEditorItem

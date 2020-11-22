@@ -289,7 +289,7 @@ class PgLinePlot1d(AbstractInspector):
                 data = self.slicedArray.data
 
                 if not 0 <= index < len(data):
-                    txt = "<span style='color: grey'>no data at cursor</span>"
+                    txt = "<span style='color: grey'>No data at cursor</span>"
                     self.probeLabel.setText(txt)
                 else:
                     valueStr = to_string(data[index], masked=self.slicedArray.maskAt(index),
