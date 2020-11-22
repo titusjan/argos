@@ -410,12 +410,13 @@ class PgImagePlot2d(AbstractInspector):
         self.imageItem.clear()
         if hasattr(self.imageItem, '_wasIntegerData'):
             del self.imageItem._wasIntegerData
-        #self.colorLegendItem.setLevels((0, 10))
-        self.colorLegendItem.onImageChanged()  # Clears histogram
+
+        # Unfortunately PyQtGraph doesn't emit this signal when the image is cleared.
+        self.imageItem.sigImageChanged.emit()
 
         self.imagePlotItem.setLabel('left', '')
         self.imagePlotItem.setLabel('bottom', '')
-
+        self.colorLegendItem.setLabel('')
         # Set the histogram range and levels to finite values to prevent futher errors if this
         # function was called after an exception in self.drawContents
         #self.histLutItem.setHistogramRange(0, 100)
