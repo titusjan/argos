@@ -77,7 +77,7 @@ def fontFamilyIndex(qFont, families):
         if False and DEBUGGING:
             raise
         else:
-            logger.warn("{} not found in font families, using default.".format(qFont.family()))
+            logger.warning("{} not found in font families, using default.".format(qFont.family()))
             return families.index(qFont.defaultFamily())
 
 
@@ -92,7 +92,7 @@ def fontWeightIndex(qFont, weights):
         if False and DEBUGGING:
             raise
         else:
-            logger.warn("{} not found in font weights, using normal.".format(qFont.weight()))
+            logger.warning("{} not found in font weights, using normal.".format(qFont.weight()))
             return weights.index(QtGui.QFont.Normal)
 
 
@@ -351,7 +351,7 @@ class FontCti(AbstractCti):
             success = qFont.fromString(dct['data'])
             if not success:
                 msg = "Unable to create QFont from string {!r}".format(dct['data'])
-                logger.warn(msg)
+                logger.warning(msg)
                 if DEBUGGING:
                     raise ValueError(msg)
             self.data = qFont

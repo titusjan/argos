@@ -506,7 +506,7 @@ class ExdirGroupRti(BaseRti):
                         exdirChild, nodeName=childName, fileName=self.fileName,
                         iconColor=self.iconColor))
             else:
-                logger.warn("Ignored {}. It has an unexpected Exdir type: {}"
+                logger.warning("Ignored {}. It has an unexpected Exdir type: {}"
                             .format(childName, type(exdir)))
 
         return childItems

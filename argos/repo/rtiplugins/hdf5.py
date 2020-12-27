@@ -546,7 +546,7 @@ class H5pyGroupRti(BaseRti):
                 #logger.debug("Ignored DataType item: {}".format(childName))
                 pass
             else:
-                logger.warn("Ignored {}. It has an unexpected HDF-5 type: {}"
+                logger.warning("Ignored {}. It has an unexpected HDF-5 type: {}"
                             .format(childName, type(h5Child)))
 
         return childItems

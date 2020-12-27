@@ -102,7 +102,7 @@ class ConfigItemDelegate(QtWidgets.QStyledItemDelegate):
         try:
             data = editor.getData()
         except InvalidInputError as ex:
-            logger.warn(ex)
+            logger.warning(ex)
         else:
             # The value is set via the model so that signals are emitted
             logger.debug("ConfigItemDelegate.setModelData: {}".format(data))

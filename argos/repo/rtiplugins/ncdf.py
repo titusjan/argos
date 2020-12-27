@@ -40,7 +40,7 @@ def ncVarAttributes(ncVar):
     except Exception as ex:
         # Due to some internal error netCDF4 may raise an AttributeError or KeyError,
         # depending on its version.
-        logger.warn("Unable to read the attributes from {}. Reason: {}"
+        logger.warning("Unable to read the attributes from {}. Reason: {}"
                     .format(ncVar.name, ex))
         return {}
 

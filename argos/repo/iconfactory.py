@@ -142,7 +142,7 @@ class RtiIconFactory(object):
         try:
             fileName = self._registry[(glyph, isOpen)]
         except KeyError:
-            logger.warn("Unregistered icon glyph: {} (open={})".format(glyph, isOpen))
+            logger.warning("Unregistered icon glyph: {} (open={})".format(glyph, isOpen))
             from argos.utils.logs import log_dictionary
             log_dictionary(self._registry, "registry", logger=logger)
             raise
@@ -173,7 +173,7 @@ class RtiIconFactory(object):
             except Exception as ex:
                 # It's preferable to show no icon in case of an error rather than letting
                 # the application fail. Icons are a (very) nice to have.
-                logger.warn("Unable to read icon: {}".format(ex))
+                logger.warning("Unable to read icon: {}".format(ex))
                 if DEBUGGING:
                     raise
                 else:

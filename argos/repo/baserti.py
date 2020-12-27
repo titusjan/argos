@@ -218,7 +218,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
                 self.open() # Will set self._exception in case of failure
 
             if not self.isOpen:
-                logger.warn("Opening item failed during fetch (aborted)")
+                logger.warning("Opening item failed during fetch (aborted)")
                 return [] # no need to continue if opening failed.
 
             childItems = []

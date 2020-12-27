@@ -175,7 +175,7 @@ class ScientificDoubleSpinBox(QtWidgets.QDoubleSpinBox):
             self.setValue(newValue)
         except Exception:
             # TODO: does this ever happen? Better validation (e.g. catch underflows)
-            logger.warn("Unable to set spinbox to: {!r}".format(newValue))
+            logger.warning("Unable to set spinbox to: {!r}".format(newValue))
             self.setValue(oldValue)
 
 

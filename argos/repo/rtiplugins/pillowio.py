@@ -48,7 +48,7 @@ class PillowBandRti(SliceRti):
             msg = "Expected 2D image. Got: {}".format(self._array.ndim)
             if DEBUGGING:
                 raise ValueError(msg)
-            logger.warn(msg)
+            logger.warning(msg)
             return super(PillowBandRti, self).dimensionNames
         else:
             return ['Y', 'X']
@@ -107,7 +107,7 @@ class PillowFileRti(ArrayRti):
         """
         bands = self._bands
         if len(bands) != self._array.shape[-1]:
-            logger.warn("No bands added, bands != last_dim_lenght ({} !: {})"
+            logger.warning("No bands added, bands != last_dim_lenght ({} !: {})"
                         .format(len(bands), self._array.shape[-1]))
             return []
 
@@ -145,6 +145,6 @@ class PillowFileRti(ArrayRti):
             msg = "Expected 3D image. Got: {}".format(self._array.ndim)
             if DEBUGGING:
                 raise ValueError(msg)
-            logger.warn(msg)
+            logger.warning(msg)
             return super(PillowFileRti, self).dimensionNames
 

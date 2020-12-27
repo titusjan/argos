@@ -33,11 +33,6 @@ TODO short term:
     Think about it
     --------------
 
-        
-
-        Zebra striping?
-        The problem is that the currently selected RTI is poorly visible when the data tree loses focus. Fix with CSS?
-
     Bugs and issues
     ---------------
 
@@ -59,6 +54,9 @@ TODO short term:
 
 
 TODO mid term:
+
+    Zebra striping?
+    The problem is that the currently selected RTI is poorly visible when the data tree loses focus. Fix with CSS?
 
     Exporter to PNG
 

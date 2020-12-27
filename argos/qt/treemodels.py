@@ -192,18 +192,18 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
 
         if not (0 <= row < parentItem.nChildren()):
             # Can happen when deleting the last child.
-            #logger.warn("Index row {} invalid for parent item: {}".format(row, parentItem))
+            #logger.warning("Index row {} invalid for parent item: {}".format(row, parentItem))
             return QtCore.QModelIndex()
 
         if not (0 <= column < self.columnCount()):
-            #logger.warn("Index column {} invalid for parent item: {}".format(column, parentItem))
+            #logger.warning("Index column {} invalid for parent item: {}".format(column, parentItem))
             return QtCore.QModelIndex()
 
         childItem = parentItem.child(row)
         if childItem:
             return self.createIndex(row, column, childItem)
         else:
-            logger.warn("No child item found at row {} for parent item: {}".format(row, parentItem))
+            logger.warning("No child item found at row {} for parent item: {}".format(row, parentItem))
             return QtCore.QModelIndex()
 
 
