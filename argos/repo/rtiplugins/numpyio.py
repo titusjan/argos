@@ -81,12 +81,11 @@ class NumpyTextFileRti(ArrayRti):
 
 
 class NumpyBinaryFileRti(ArrayRti):
-    """ Reads a Numpy array from a binary file (.npy) using numpy.load().
+    """ Reads a single Numpy array from a binary file (.npy) using numpy.load().
 
-        The file must have been saved with numpy.save() and therefore contain a single arrays.
-        A TypeError is raised if this is not the case.
+        The file must have been saved with numpy.save() A TypeError is raised if this is not the
 
-        The allow_pickle is set to False, no object arrays can be read.
+        The allow_pickle is set to False, therefore no object arrays can be read.
     """
     _defaultIconGlyph = RtiIconFactory.FILE
 
@@ -122,12 +121,12 @@ class NumpyBinaryFileRti(ArrayRti):
 
 
 class NumpyCompressedFileRti(MappingRti):
-    """ Reads arrays from a Numpy zip file (.npz) using numpy.load().
+    """ Reads one ore more arrays from a Numpy zip file (.npz) using numpy.load().
 
-        The file must have been saved with numpy.savez() and therefore contain multiple arrays.
-        A TypeError is raised if this is not the case.
+        The file must have been saved with numpy.savez() A TypeError is raised if this is not the
+        case.
 
-        The allow_pickle is set to False, no object arrays can be read.
+        The allow_pickle is set to False, therefore no object arrays can be read.
     """
     _defaultIconGlyph = RtiIconFactory.FILE
 

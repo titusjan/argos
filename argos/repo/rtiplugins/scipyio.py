@@ -30,14 +30,12 @@ logger = logging.getLogger(__name__)
 
 
 class MatlabFileRti(MappingRti):
-    """ Read data from an MATLAB file
-
-        Uses scipy.io.loadmat to read the file.
+    """ Read data from a MATLAB file using the scipy.io.loadmat function.
 
         Note: v4 (Level 1.0), v6 and v7 to 7.2 matfiles are supported.
 
-        You will need an HDF5 python library to read matlab 7.3 format mat files, because SciPy
-        does not supply one; they do not implement the HDF5 / 7.3 interface.
+        From version 7.3 onward matfiles are stored in HDF-5 format. You can read them with the
+        Argos hDF-5 plugin (which uses on h5py)
     """
     _defaultIconGlyph = RtiIconFactory.FILE
 
@@ -69,10 +67,10 @@ class MatlabFileRti(MappingRti):
 
 
 class IdlSaveFileRti(MappingRti):
-    """ Can read data from an IDL 'save file'.
+    """ ReadS data from an IDL 'save file'.
 
         Uses scipy.io.readsav to read the file. This reads all data at once when the file
-        is open (in contrast to lazy loading each node separately). It therefor may take a while
+        is open (in contrast to lazy loading each node separately). Therefore, it may take a while
         to read a large save-file. During this time the application is not responsive!
     """
     _defaultIconGlyph = RtiIconFactory.FILE
@@ -105,10 +103,10 @@ class IdlSaveFileRti(MappingRti):
 
 
 class WavFileRti(ArrayRti):
-    """ Can read data from an WAV file.
+    """ Read data from a WAV file using the scipy.io.wavfile.read function
 
-        Uses scipy.io.wavfile.read to read the file. Tries first to read with memory mapping, if
-        that fails the file is tried to be read without memory mapping(
+        First tries to read with memory mapping, if that fails it tries to read the file without
+        memory mapping.
     """
     _defaultIconGlyph = RtiIconFactory.FILE
 

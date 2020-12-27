@@ -114,7 +114,7 @@ class PluginsDialog(QtWidgets.QDialog):
 
         self.editor = QtWidgets.QTextEdit()
         self.editor.setReadOnly(True)
-        self.editor.setFocusPolicy(Qt.NoFocus)
+        #self.editor.setFocusPolicy(Qt.NoFocus) # Allow focus so that user can copy text from it.
         #self.editor.setFont(font)
         self.editor.setWordWrapMode(QtGui.QTextOption.WordWrap)
         self.editor.clear()
@@ -274,7 +274,7 @@ class PluginsDialog(QtWidgets.QDialog):
         elif regItem.descriptionHtml:
             self.editor.setHtml(header.replace('\n', '<br>') + regItem.descriptionHtml)
         else:
-            self.editor.setHtml(header + regItem.docString)
+            self.editor.setHtml(header + regItem.docString.replace('\n', '<br>'))
 
 
 def wrapHtmlColor(html, color):

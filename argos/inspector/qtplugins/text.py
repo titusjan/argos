@@ -61,7 +61,7 @@ class TextInspectorCti(MainGroupCti):
 
 
 class TextInspector(AbstractInspector):
-    """ Inspector that contains a QPlainTextEdit that shows one element at the time.
+    """ Displays the data of a single array element in a large text-widget.
 
         This is useful when the data under inspection is a large, multi-line text string.
     """

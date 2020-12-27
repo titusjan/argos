@@ -279,6 +279,8 @@ class MainWindow(QtWidgets.QMainWindow):
         app = self.argosApplication
         action = self.configMenu.addAction("&File Format Plugins...",
             lambda: self.execPluginsDialog("File Formats", app.rtiRegistry))
+        # if DEBUGGING:
+        #     action.setShortcut(QtGui.QKeySequence("Ctrl+P"))
 
         action = self.configMenu.addAction("&Inspector Plugins...",
             lambda: self.execPluginsDialog("Inspectors", app.inspectorRegistry))

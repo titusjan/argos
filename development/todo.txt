@@ -42,8 +42,6 @@ TODO short term:
 
         remove obsolete todo's in code.
 
-        check plugin descriptions / docstrings
-
         check Linux, Windows, MacOs.
         Check Python 2.7
 

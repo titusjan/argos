@@ -362,7 +362,7 @@ class PandasCsvFileRti(PandasDataFrameRti):
 
 
 class PandasHdfFileRti(BaseRti):
-    """ Repository Tree Item (RTI) that contains Pandas data stored as HDF-5.
+    """ Reads Pandas data stored in a HDF-5 file.
     """
     _defaultIconGlyph = RtiIconFactory.FILE
 

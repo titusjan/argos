@@ -292,7 +292,9 @@ class PgImagePlot2dCti(MainGroupCti):
 
 
 class PgImagePlot2d(AbstractInspector):
-    """ Inspector that contains a PyQtGraph 2-dimensional image plot.
+    """ Draws an image plot of a two-dimensional array (slice).
+
+        Plotting is done with the PyQtGraph package. See www.pyqtgraph.org.
     """
 
     def __init__(self, collector, parent=None):

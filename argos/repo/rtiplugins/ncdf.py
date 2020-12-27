@@ -18,6 +18,7 @@
 """ Repository Tree Items (RTIs) for netCDF data.
 
     It uses the netCDF4 package to open netCDF files.
+
     See http://unidata.github.io/netcdf4-python/
 """
 
@@ -443,7 +444,7 @@ class NcdfGroupRti(BaseRti):
 
 
 class NcdfFileRti(NcdfGroupRti):
-    """ Reads a NetCDF file using the netCDF4 module.
+    """ Reads a NetCDF file using the netCDF4 package.
 
         See http://unidata.github.io/netcdf4-python/
     """

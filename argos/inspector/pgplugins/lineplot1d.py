@@ -129,7 +129,9 @@ class PgLinePlot1dCti(MainGroupCti):
 
 
 class PgLinePlot1d(AbstractInspector):
-    """ Inspector that contains a PyQtGraph 1-dimensional line plot
+    """ Draws a line plot of a one-dimensional array (slice).
+
+        Plotting is done with the PyQtGraph package. See www.pyqtgraph.org.
     """
     def __init__(self, collector, parent=None):
         """ Constructor. See AbstractInspector constructor for parameters.

@@ -221,7 +221,7 @@ class TableInspectorCti(MainGroupCti):
 
 
 class TableInspector(AbstractInspector):
-    """ Shows the sliced array in a table.
+    """ Displays the array data in a table.
     """
     def __init__(self, collector, parent=None):
 
