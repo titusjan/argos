@@ -29,15 +29,12 @@ TODO short term:
 
         quickview tab
 
-        PgColorBar must be extendable at one side (bottom or top of the range)
 
     Think about it
     --------------
 
         Better color for rectangle zoom
-        Inferno as default color map?
-        Smaller text edit in color config
-
+        
         Zebra striping?
         The problem is that the currently selected RTI is poorly visible when the data tree loses focus. Fix with CSS?
 
