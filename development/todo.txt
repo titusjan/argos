@@ -33,8 +33,8 @@ TODO short term:
     Think about it
     --------------
 
-        Better color for rectangle zoom
         
+
         Zebra striping?
         The problem is that the currently selected RTI is poorly visible when the data tree loses focus. Fix with CSS?
 

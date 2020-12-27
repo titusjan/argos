@@ -81,6 +81,12 @@ class ArgosPgPlotItem(PlotItem):
         viewBox.disableAutoRange(BOTH_AXES)
         viewBox.mouseClickEvent = lambda ev: self._axesMouseClickEvent(ev, BOTH_AXES)
 
+        # Color of zoom-rectangle.
+        alpha = 100
+        greyVal = 160
+        viewBox.rbScaleBox.setPen(pg.mkPen((0, 0, 0, alpha), width=2))
+        viewBox.rbScaleBox.setBrush(pg.mkBrush(greyVal, greyVal, greyVal, alpha))
+
         # Add mouseClickEvent event handlers to the X and Y axis. This allows for resetting
         # the scale of each axes separately by middle mouse clicking the axis.
         for xAxisItem in (self.getAxis('bottom'), self.getAxis('top')):
