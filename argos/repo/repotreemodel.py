@@ -35,8 +35,8 @@ class RepoTreeModel(BaseTreeModel):
         for QTreeViews. The underlying data is stored as repository tree items (BaseRti
         descendants).
     """
-    HEADERS = ["name", "path", "dimensions", "shape", "type", "unit", "missing data",
-               "chunking", "file name", "tree item", "is open", "exception"]
+    HEADERS = ["Name", "Path", "Dimensions", "Shape", "Type", "Unit", "Missing data",
+               "Chunking", "File name", "Item class", "Is open", "Error"]
     (COL_NODE_NAME, COL_NODE_PATH, COL_DIMS, COL_SHAPE, COL_ELEM_TYPE, COL_UNIT, COL_MISSING_DATA,
      COL_CHUNKING, COL_FILE_NAME, COL_RTI_TYPE, COL_IS_OPEN, COL_EXCEPTION) = range(len(HEADERS))
 

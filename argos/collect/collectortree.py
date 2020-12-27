@@ -38,9 +38,6 @@ class CollectorTree(ToggleColumnTreeView):
         NOTE: this class is not meant to be used directly but is 'private' to the Collector().
         That is, plugins should interact with the Collector class, not the CollectorTree()
     """
-    HEADERS = ["item path", "item name"] # TODO: this can't be right. Is this even used?
-    (COL_ITEM_PATH, COL_ITEM_NAME) = range(len(HEADERS))
-
 
     def __init__(self, parent):
         """ Constructor
@@ -74,7 +71,7 @@ class CollectorTree(ToggleColumnTreeView):
         treeHeader.setSectionResizeMode(QtWidgets.QHeaderView.Interactive) # don't set to stretch
 
         labels = [''] * model.columnCount()
-        labels[0] = "path"
+        labels[0] = "Path"
         model.setHorizontalHeaderLabels(labels)
 
         #enabled = dict((name, False) for name in self.HEADERS)

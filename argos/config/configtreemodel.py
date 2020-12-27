@@ -32,7 +32,7 @@ class ConfigTreeModel(BaseTreeModel):
     """ An implementation QAbstractItemModel that offers access to configuration data for QTreeViews.
         The underlying data is stored as config tree items (AbstractCti descendants)
     """
-    HEADERS = ["name", "path", "value", "default value", "tree item", "debug info"]
+    HEADERS = ["Name", "Path", "Value", "Default value", "Item class", "Debug info"]
     (COL_NODE_NAME, COL_NODE_PATH,
      COL_VALUE, COL_DEF_VALUE,
      COL_CTI_TYPE, COL_DEBUG) = range(len(HEADERS))

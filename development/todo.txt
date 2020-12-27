@@ -18,9 +18,6 @@ Argos philosophy:
         - Default extent = 100 % of pixels
         - Clear histogram when image is set to empty. (clear color scale?)
 
-    CmLib:
-        Comboboxes for catalog and category
-        Show somehow the number of color scales
 
 TODO short term:
 
@@ -41,17 +38,14 @@ TODO short term:
     Cleanup and release
     -------------------
 
-        Consistent use of capitals in table headers.
-
         check if mid & long term todos are still needed
-
-        all log.warn -> log.warning
 
         remove obsolete todo's in code.
 
         check plugin descriptions / docstrings
 
-
+        check Linux, Windows, MacOs.
+        Check Python 2.7
 
 TODO mid term:
 

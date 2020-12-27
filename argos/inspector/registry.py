@@ -32,7 +32,7 @@ class InspectorRegItem(BaseRegItem):
     """
     FIELDS  = BaseRegItem.FIELDS[:1] + ['shortCut'] + BaseRegItem.FIELDS[1:]
     TYPES   = BaseRegItem.TYPES[:1] + [RegType.ShortCut] + BaseRegItem.TYPES[1:]
-    LABELS  = BaseRegItem.LABELS[:1] + ['Short Cut'] + BaseRegItem.LABELS[1:]
+    LABELS  = BaseRegItem.LABELS[:1] + ['Short cut'] + BaseRegItem.LABELS[1:]
     STRETCH = BaseRegItem.STRETCH[:1] + [False] + BaseRegItem.STRETCH[1:]
 
 
