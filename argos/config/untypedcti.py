@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 
-class UntypedCti(AbstractCti): # TODO: rename to ReadOnlyCti?
+class UntypedCti(AbstractCti):
     """ Config Tree Item to store a any type of data as long as it can be edited with a QLineEdit.
 
         Typically it's better to use 'typed' CTIs, where the data is always internally stored in
@@ -38,7 +38,7 @@ class UntypedCti(AbstractCti): # TODO: rename to ReadOnlyCti?
         """ Constructor. For the parameters see the AbstractCti constructor documentation.
         """
         super(UntypedCti, self).__init__(nodeName, defaultData)
-        self.doc = doc # TODO: all CTIs
+        self.doc = doc
 
     def _enforceDataType(self, value):
         """ Since UntypedCti can store any type of data no conversion will be done.

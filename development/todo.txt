@@ -38,10 +38,6 @@ TODO short term:
     Cleanup and release
     -------------------
 
-        check if mid & long term todos are still needed
-
-        remove obsolete todo's in code.
-
         check Linux, Windows, MacOs.
         Check Python 2.7
 
@@ -106,9 +102,6 @@ TODO long term:
 
     Matplotlib inspector
 
-    Better PyQtGraph histogram/color bar.
-        Submit bug reports on
-
    	Combine property, dimension and attribute tables dock windows in a tree in a single dockwindow.
    	    Config values.
 
@@ -131,7 +124,6 @@ Collectors:
 
 
 Handle Exception:
-	Raise with old exception handler.
 	Quit button.
 	Resize message box.
 
@@ -139,8 +131,6 @@ Test:
 	Memory leaks?
 
 TODO Long term or nice to have:
-
-    Reset buttons on groupCTI always visible?
 
     Downsample large slices (e.g. read a 300 MB wav file into a table or lineplot.)
 
@@ -157,8 +147,6 @@ TODO Long term or nice to have:
 	clean-up the settings reading/writing
 	Qt::SizeHintRole in toggleTreeView?
 	http://snorf.net/blog/2014/08/09/validating-user-input-in-pyqt4-using-qvalidator/
-	Register plugins without having to restart (merge ClassRegistry and RegistryTableModel).
-	http://pythonhosted.org/setuptools/setuptools.html#dynamic-discovery-of-services-and-plugins
 
     Look at Qt::ItemIsAutoTristate and Qt::ItemIsUserTristate
 

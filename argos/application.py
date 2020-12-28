@@ -377,7 +377,7 @@ class ArgosApplication(QtCore.QObject):
         except Exception as ex:
             logger.error("Error {} while reading settings file: {}"
                            .format(ex, self._settingsFile))
-            raise # in case of a syntax error it's probably best to exit. TODO: default cfg?
+            raise # in case of a syntax error it's probably best to exit.
 
         self.unmarshall(cfg, inspectorFullName)  # Always call unmarshall.
 

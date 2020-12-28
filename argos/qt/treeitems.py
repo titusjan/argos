@@ -60,19 +60,6 @@ class BaseTreeItem(object):
         """
         self._model = value
 
-#    @property
-#    def modelIndex(self): # TODO: needed?
-#        """ Returns the index in the ConfigTreeModel that refers to this item.
-#        """
-#        assert self._model, "Model not set for {}".format(self)
-#        return self._model.indexFromItem(self)
-
-#     Seems to be out of data and not used anymore
-#     def emitDataChanged(self):
-#         """ Causes the model associated with this item to emit a dataChanged() signal for this item.
-#         """
-#         assert self._model, "Model not set for {}".format(self)
-#         return self._model.itemChanged(self)
 
     @property
     def decoration(self):

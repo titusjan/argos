@@ -149,7 +149,6 @@ class RepoTreeView(ArgosTreeView):
         selected item (see notes in ArgosTreeView documentation for details).
     """
     # sigRepoItemChanged parameter is BaseRti or None when no RTI is selected, or the model is empty
-    # TODO: implement Noneable(BaseRti) type, or something like that?
     sigRepoItemChanged = QtSignal(object)
 
     def __init__(self, repoTreeModel, collector, parent=None):
@@ -183,8 +182,6 @@ class RepoTreeView(ArgosTreeView):
         #self.setIconSize(QtCore.QSize(16, 16))
 
         # Add actions
-        self.topLevelItemActionGroup = QtWidgets.QActionGroup(self) # TODO: not used anymore?
-        self.topLevelItemActionGroup.setExclusive(False)
         self.currentItemActionGroup = QtWidgets.QActionGroup(self)
         self.currentItemActionGroup.setExclusive(False)
 
@@ -464,7 +461,6 @@ class RepoTreeView(ArgosTreeView):
         # Update context menus in the repo tree
         self.currentItemActionGroup.setEnabled(hasCurrent)
         isTopLevel = hasCurrent and self.model().isTopLevelIndex(currentIndex)
-        self.topLevelItemActionGroup.setEnabled(isTopLevel)
         self.collapseItemAction.setEnabled(self.isExpanded(currentIndex))
         self.openItemAction.setEnabled(currentItem is not None
                                        and currentItem.hasChildren()

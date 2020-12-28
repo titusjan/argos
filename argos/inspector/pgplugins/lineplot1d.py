@@ -121,8 +121,6 @@ class PgLinePlot1dCti(MainGroupCti):
     def resetRangesToDefault(self):
         """ Resets range settings to the default data.
         """
-        # self.yAxisRangeCti.setAutoRangeOn() doesn't work as refreshBlocked is True
-        # TODO: can refreshBlocked maybe only block the signals to prevent loops?
         self.xAxisRangeCti.autoRangeCti.data = True
         self.yAxisRangeCti.autoRangeCti.data = True
 

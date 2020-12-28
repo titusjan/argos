@@ -259,7 +259,7 @@ class ArrayRti(BaseRti):
             :type array: numpy.ndarray or None
         """
         super(ArrayRti, self).__init__(nodeName=nodeName, iconColor=iconColor, fileName=fileName)
-        check_is_an_array(array, allow_none=True) # TODO: what about masked arrays?
+        check_is_an_array(array, allow_none=True)
         self._array = array
         self._attributes = {} if attributes is None else attributes
 
@@ -491,7 +491,6 @@ class MappingRti(BaseRti):
 
         if self.hasChildren():
             for key, value in sorted(self._dictionary.items()):
-                # TODO: pass the attributes to the children? (probably not)
                 childItem = _createFromObject(value, nodeName=str(key), iconColor=self.iconColor,
                                               fileName=self.fileName)
                 childItems.append(childItem)

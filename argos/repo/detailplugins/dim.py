@@ -30,7 +30,7 @@ class DimensionsPane(DetailTablePane):
     """ Shows the dimensions of the selected repo tree item.
 
         Each RTI that is sliceable has a number of dimensions. Each dimension has a size.
-        For some types of RTIs (e.g. NcdfVariableRTIs), the dimension represented stored by another, (TODO: implement)
+        For some types of RTIs (e.g. NcdfVariableRTIs), the dimension represented stored by another,
         dedicated RTI. In that case the dimension has a name and path. Otherwise, for example with
         an ArrayRti, the names of the dimensions will be: 'dim0', 'dim1', etc.
     """

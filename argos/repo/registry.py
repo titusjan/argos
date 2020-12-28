@@ -252,7 +252,7 @@ class RtiRegistry(BaseRegistry):
 # The RTI registry is implemented as a singleton. This is necessary because
 # in DirectoryRti._fetchAllChildren we need access to the registry.
 # TODO: think of an elegant way to access the ArgosApplication.registry from there.
-# TODO: Make use of the lib.cls.Singleton mixin
+# TODO: Make use of the lib.cls.Singleton mixin (or metaclass when Python 3)
 def createGlobalRegistryFunction():
     """ Closure to create the RtiRegistry singleton
     """

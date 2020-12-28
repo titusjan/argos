@@ -55,19 +55,6 @@ class ConfigTreeModel(BaseTreeModel):
         self._refreshBlocked = False
 
 
-    @QtSlot(QtCore.QModelIndex, QtCore.QModelIndex)
-    def debug(self, topLeftIndex, bottomRightIndex):
-        """ Temporary debug to test the dataChanged signal. TODO: remove.
-        """
-        if topLeftIndex.isValid() and bottomRightIndex.isValid():
-            topRow = topLeftIndex.row()
-            bottomRow = bottomRightIndex.row()
-            for row in range(topRow, bottomRow + 1):
-                index = topLeftIndex.sibling(row, 0)
-                childItem = self.getItem(index)
-                logger.debug("Data changed in: {}".format(childItem.nodePath))
-
-
     def flags(self, index):
         """ Returns the item flags for the given index.
         """
@@ -204,8 +191,6 @@ class ConfigTreeModel(BaseTreeModel):
         """ Emits the data changed for the model indices (all columns) for this treeItem
         """
         indexLeft, indexRight = self.indexTupleFromItem(treeItem)
-        checkItem = self.getItem(indexLeft)
-        #assert checkItem is treeItem, "{} != {}".format(checkItem, treeItem) # TODO: remove
         self.dataChanged.emit(indexLeft, indexRight)
 
 

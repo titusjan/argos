@@ -252,12 +252,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         fileMenu.addSeparator()
 
-        # for action in self.repoWidget.repoTreeView.topLevelItemActionGroup.actions():
-        #     fileMenu.addAction(action)
-        #
-        # for action in self.repoWidget.repoTreeView.currentItemActionGroup.actions():
-        #     fileMenu.addAction(action)
-
         fileMenu.addSeparator()
         fileMenu.addAction("E&xit", self.argosApplication.quit, 'Ctrl+Q')
 

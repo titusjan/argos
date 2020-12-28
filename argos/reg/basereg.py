@@ -207,7 +207,7 @@ class BaseRegItem(BaseItem):
                 if pyPath and pyPath not in sys.path:
                     logger.debug("Appending {!r} to the PythonPath.".format(pyPath))
                     sys.path.append(pyPath)
-            self._cls = import_symbol(self.absClassName) # TODO: check class?
+            self._cls = import_symbol(self.absClassName)
         except Exception as ex:
             # Add traceback in human readable form to the exception for later printing.
             # This is a hack for Python-2 to store the traceback later use. See https://stackoverflow.com/a/11415140/

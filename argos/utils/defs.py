@@ -27,8 +27,6 @@ DIM_TEMPLATE = "dim-{}"
 SUB_DIM_TEMPLATE = "subdim-{}"
 
 
-# TODO: QCompleter? See demos/spreadsheet/spreadsheetdelegate.py
-
 class InvalidInputError(Exception):
     """ Exception raised when the input is invalid after editing
     """

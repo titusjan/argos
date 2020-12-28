@@ -17,11 +17,8 @@
 
 """ Repository items (RTIs) for browsing the file system
 """
-# TODO: rename this file to filesystemrtis (with an extra 's'). Update in registry as well
-
 import logging, os
 from argos.repo.baserti import BaseRti
-from argos.qt import QtWidgets
 from argos.repo.iconfactory import RtiIconFactory
 from argos.repo.registry import globalRtiRegistry, ICON_COLOR_UNKNOWN
 

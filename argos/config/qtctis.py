@@ -108,7 +108,7 @@ class ColorCti(AbstractCti):
     def _enforceDataType(self, data):
         """ Converts to str so that this CTI always stores that type.
         """
-        qColor = QtGui.QColor(data)    # TODO: store a RGB string?
+        qColor = QtGui.QColor(data)
         if not qColor.isValid():
             raise ValueError("Invalid color specification: {!r}".format(data))
         return qColor
@@ -431,7 +431,7 @@ class FontCtiEditor(AbstractCtiEditor):
         """ Provides the main editor widget with a data to manipulate.
         """
         # Set the data in the 'editor_data' property of the pickButton to that getData
-        # can pass the same value back into the CTI. # TODO: use a member?
+        # can pass the same value back into the CTI.
         self.pickButton.setProperty("editor_data", data)
 
 

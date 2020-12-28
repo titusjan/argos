@@ -142,7 +142,7 @@ class RepoTreeModel(BaseTreeModel):
         return parentItem.canFetchChildren()
 
 
-    def fetchMore(self, parentIndex):  # TODO: Make LazyLoadRepoTreeModel?
+    def fetchMore(self, parentIndex):
         """ Fetches any available data for the items with the parent specified by the parent index.
         """
         parentItem = self.getItem(parentIndex)
@@ -152,7 +152,6 @@ class RepoTreeModel(BaseTreeModel):
         if not parentItem.canFetchChildren():
             return
 
-        # TODO: implement InsertItems to optimize?
         for childItem in parentItem.fetchChildren():
             self.insertItem(childItem, parentIndex=parentIndex)
 
@@ -216,7 +215,6 @@ class RepoTreeModel(BaseTreeModel):
         fileName = normRealPath(fileName)
         logger.info("Loading data from: {!r}".format(fileName))
 
-        # TODO: rtiRegItem.createRtiFromFileName?
         rtiClass = rtiRegItem.getClass(tryImport=True) if rtiRegItem else None
         if rtiClass is None:
             repoTreeItem = createRtiFromFileName(fileName)

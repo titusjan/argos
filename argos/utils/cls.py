@@ -315,7 +315,7 @@ def check_is_a_sequence(var, allow_none=False):
 
 
 def is_a_mapping(var, allow_none=False):
-    """ Returns True if var is a dictionary # TODO: ordered dict
+    """ Returns True if var is a dictionary
     """
     return isinstance(var, dict) or (var is None and allow_none)
 
@@ -422,7 +422,7 @@ def check_is_a_color_str(var, allow_none=False):
 # Type info #
 #############
 
-# TODO: get_class_name and type_name the same? Not for old style classes
+# TODO: get_class_name and type_name the same? Not for old style classes. Fix when only using Python 3
 # #http://stackoverflow.com/questions/1060499/difference-between-typeobj-and-obj-class
 
 def type_name(var):
@@ -448,6 +448,7 @@ def get_full_class_name(obj):
 #############
 
 # TODO: use importlib.import_module?
+# Perhaps in Python 3. As long as the code below works there is no need to change it.
 def import_symbol(full_symbol_name):
     """ Imports a symbol (e.g. class, variable, etc) from a dot separated name.
         Can be used to create a class whose type is only known at run-time.

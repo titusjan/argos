@@ -314,7 +314,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
 
     # Originally from the editabletreemodel example but added the altItem parameter to force
     # callers to specify request the an alternative in case of an invalid index.
-    # TODO: rename to ItemFromIndex to be consistent with QStandardItemModel?
+    # The equivalent function in the QStandardItemModel is itemFromIndex.
     def getItem(self, index, altItem=None):
         """ Returns the TreeItem for the given index. Returns the altItem if the index is invalid.
         """

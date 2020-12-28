@@ -168,7 +168,7 @@ class AbstractInspector(QtWidgets.QStackedWidget):
         return self.config.findByNodePath(nodePath).configValue
 
 
-    def updateContents(self, reason=None, initiator=None): # TODO: reason mandatory?
+    def updateContents(self, reason=None, initiator=None):
         """ Tries to draw the widget contents with the updated RTI.
             Shows the error page in case an exception is raised while drawing the contents.
             Descendants should override _drawContents, not updateContents.
@@ -201,7 +201,7 @@ class AbstractInspector(QtWidgets.QStackedWidget):
 
                 # Update the config tree from the (possibly) new state of the PgLinePlot1d inspector,
                 # e.g. the axis range may have changed while drawing.
-                # self.config.updateTarget() # TODO: enable this here (instead of doing it in the inspector._drawContents when needed)?
+                # self.config.updateTarget() # TODO: perhaps enable this here (instead of doing it in the inspector._drawContents when needed)?
             finally:
                 self.config.model.setRefreshBlocked(wasBlocked)
 
@@ -217,8 +217,8 @@ class AbstractInspector(QtWidgets.QStackedWidget):
                 # Exception message can be empty in common cases. Don't clear message label then.
                 self.sigShowMessage.emit(str(ex))
 
-        except Exception as ex:
-            if DEBUGGING:  # TODO: enable
+        except Exception as ex:####
+            if DEBUGGING:
                 raise
             logger.error("Error while drawing the inspector: {} ----".format(ex))
             logger.exception(ex)
