@@ -270,7 +270,7 @@ class AbstractRangeCti(GroupCti):
     def _forceRefreshMinMax(self):
         """ Refreshes the min max config values from the axes' state.
         """
-        #logger.debug("_forceRefreshMinMax", stack_info=True)
+        #logger.debug("_forceRefreshMinMax")
 
         # Set the precision from by looking how many decimals are needed to show the difference
         # between the minimum and maximum, given the maximum. E.g. if min = 0.04 and max = 0.07,

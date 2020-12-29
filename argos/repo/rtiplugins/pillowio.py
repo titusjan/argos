@@ -17,6 +17,8 @@
 
 """ Uses the Python Imaging Library (Pillow) to open an image
 """
+from __future__ import absolute_import
+
 import logging
 import numpy as np
 

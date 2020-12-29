@@ -344,14 +344,14 @@ class RepoTreeView(ArgosTreeView):
     def expand(self, index):
         """ Expands current item. Updates context menu action.
         """
-        super().expand(index)
+        super(RepoTreeView, self).expand(index)
         self.collapseItemAction.setEnabled(self.isExpanded(index))
 
 
     def collapse(self, index):
         """ Collapses current item. Updates context menu action.
         """
-        super().collapse(index)
+        super(RepoTreeView, self).collapse(index)
         self.collapseItemAction.setEnabled(self.isExpanded(index))
 
 

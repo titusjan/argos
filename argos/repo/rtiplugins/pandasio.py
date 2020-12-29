@@ -19,6 +19,8 @@
 
     See: http://pandas.pydata.org/
 """
+from __future__ import absolute_import
+
 import logging
 import numpy as np
 import pandas as pd

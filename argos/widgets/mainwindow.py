@@ -279,13 +279,13 @@ class MainWindow(QtWidgets.QMainWindow):
         app = self.argosApplication
         action = self.configMenu.addAction("&File Format Plugins...",
             lambda: self.execPluginsDialog("File Formats", app.rtiRegistry))
-        # if DEBUGGING:
-        #     action.setShortcut(QtGui.QKeySequence("Ctrl+P"))
+        if DEBUGGING:
+            action.setShortcut(QtGui.QKeySequence("Ctrl+P"))
 
         action = self.configMenu.addAction("&Inspector Plugins...",
             lambda: self.execPluginsDialog("Inspectors", app.inspectorRegistry))
-        if DEBUGGING:
-            action.setShortcut(QtGui.QKeySequence("Ctrl+P"))
+        # if DEBUGGING:
+        #     action.setShortcut(QtGui.QKeySequence("Ctrl+P"))
 
         self.configMenu.addSeparator()
 
@@ -826,7 +826,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.repoWidget.repoTreeView.setFocus()
             return lastItem, lastIndex
         except Exception as ex:
-            logger.warning("Unable to select {!r} because: {}".format(path, ex), stack_info=not DEBUGGING)
+            logger.warning("Unable to select {!r} because: {}".format(path, ex))
             # if DEBUGGING:
             #     raise
             return None, None

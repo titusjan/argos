@@ -18,6 +18,8 @@
 """ Repository tree items that are read using import routines of Scipy
     See http://docs.scipy.org/doc/scipy-0.16.0/reference/io.html
 """
+from __future__ import absolute_import
+
 import logging, os
 import scipy
 import scipy.io

@@ -202,7 +202,7 @@ class PluginsDialog(QtWidgets.QDialog):
         # Copy contents from copy back to the original registry
         self._orgRegistry.clear()
         self._orgRegistry.unmarshall(self._registry.marshall())
-        super().accept()
+        super(PluginsDialog, self).accept()
 
 
     def resetToDefaults(self):

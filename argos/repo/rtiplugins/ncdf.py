@@ -21,6 +21,7 @@
 
     See http://unidata.github.io/netcdf4-python/
 """
+from __future__ import absolute_import
 
 import logging, types
 from netCDF4 import Dataset, Variable, Dimension

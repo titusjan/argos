@@ -17,6 +17,8 @@
 
 """ Version and other info for this program
 """
+from __future__ import print_function
+
 import json
 import glob
 import logging

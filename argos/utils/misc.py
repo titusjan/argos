@@ -20,6 +20,7 @@
 import logging, sys
 logger = logging.getLogger(__name__)
 
+from argos.utils.cls import is_a_string
 
 class NotSpecified(object):
     """ Class for NOT_SPECIFIED constant.
@@ -94,7 +95,7 @@ def replaceStringsInDict(obj, old, new):
         return {key: replaceStringsInDict(value, old, new) for key, value in obj.items()}
     elif isinstance(obj, list):
         return [replaceStringsInDict(value, old, new) for value in obj]
-    elif isinstance(obj, str):
+    elif is_a_string(obj):
         return obj.replace(old, new)
     else:
         return obj
