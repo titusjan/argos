@@ -246,7 +246,7 @@ def main():
     window = TableEditWidget(tableModel=model)
     window.show()
 
-    exitCode = app.exec()
+    exitCode = app.exec_()
 
     print("edited store")
     pprint(store.marshall())

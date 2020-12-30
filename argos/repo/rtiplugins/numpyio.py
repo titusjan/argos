@@ -17,6 +17,8 @@
 
 """ Stores for representing data that is read from text files.
 """
+from __future__ import absolute_import
+
 import logging, os
 import numpy as np
 

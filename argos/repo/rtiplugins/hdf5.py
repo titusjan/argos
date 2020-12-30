@@ -20,6 +20,7 @@
     It uses the h5py package to open HDF-5 files.
     See http://www.h5py.org/
 """
+from __future__ import absolute_import
 
 import logging, os
 import h5py
