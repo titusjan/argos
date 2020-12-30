@@ -29,13 +29,13 @@ SUB_DIM_TEMPLATE = "subdim-{}"
 
 # Use different unicode character per platform as it looks better.
 if sys.platform == 'linux':
-    RIGHT_ARROW = "\u21e8"
+    RIGHT_ARROW = "\u2794"
 elif sys.platform == 'win32' or sys.platform == 'cygwin':
     RIGHT_ARROW = "\u2794"
 elif sys.platform == 'darwin':
-    RIGHT_ARROW = "\u21e8"
+    RIGHT_ARROW = "\u279E"
 else:
-    RIGHT_ARROW = "\u21e8"
+    RIGHT_ARROW = "\u2794"
 
 
 class InvalidInputError(Exception):
