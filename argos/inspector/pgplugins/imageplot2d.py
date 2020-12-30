@@ -27,8 +27,6 @@ import pyqtgraph as pg
 from functools import partial
 from collections import OrderedDict
 
-from cmlib import CmLibModel
-
 from argos.info import DEBUGGING
 from argos.config.boolcti import BoolCti, BoolGroupCti
 from argos.config.choicecti import ChoiceCti
@@ -45,6 +43,7 @@ from argos.qt import Qt, QtCore, QtGui, QtSlot
 
 from argos.utils.cls import array_has_real_numbers, check_class, is_an_array, to_string
 from argos.utils.cls import array_kind_label
+from argos.utils.defs import RIGHT_ARROW
 from argos.utils.masks import (ArrayWithMask, replaceMaskedValueWithFloat,
                                nanPercentileOfSubsampledArrayWithMask)
 
@@ -586,9 +585,9 @@ class PgImagePlot2d(AbstractInspector):
                                          masked=self.slicedArray.maskAt(index),
                                          maskFormat='&lt;masked&gt;')
 
-                    txt = "({}, {}) = ({:d}, {:d}) \u21e8 {} = {}"\
-                        .format(self.collector.rtiInfo['x-dim'], self.collector.rtiInfo['y-dim'],
-                                col, row, self.collector.rtiInfo['name'], valueStr)
+                    txt = "({}, {}) = ({:d}, {:d}) {} {} = {}".format(
+                        self.collector.rtiInfo['x-dim'], self.collector.rtiInfo['y-dim'],
+                        col, row, RIGHT_ARROW, self.collector.rtiInfo['name'], valueStr)
                     self.probeLabel.setText(txt)
 
                     # Show cross section at the cursor pos in the line plots

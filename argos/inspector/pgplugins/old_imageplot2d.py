@@ -19,7 +19,7 @@
 """
 from __future__ import division, print_function
 
-import logging, math
+import logging
 import numpy as np
 import pyqtgraph as pg
 
@@ -41,6 +41,7 @@ from argos.inspector.pgplugins.pghistlutitem import HistogramLUTItem
 from argos.qt import Qt, QtCore, QtGui, QtSlot
 from argos.utils.cls import array_has_real_numbers, check_class, is_an_array, to_string
 from argos.utils.cls import array_kind_label
+from argos.utils.defs import RIGHT_ARROW
 from argos.utils.masks import replaceMaskedValueWithFloat, nanPercentileOfSubsampledArrayWithMask, ArrayWithMask
 
 logger = logging.getLogger(__name__)
@@ -569,9 +570,9 @@ class PgImagePlot2d(AbstractInspector):
                                          masked=self.slicedArray.maskAt(index),
                                          maskFormat='&lt;masked&gt;')
 
-                    txt = "({}, {}) = ({:d}, {:d}) \u21e8 {} = {}"\
-                        .format(self.collector.rtiInfo['x-dim'], self.collector.rtiInfo['y-dim'],
-                                col, row, self.collector.rtiInfo['name'], valueStr)
+                    txt = "({}, {}) = ({:d}, {:d}) {} {} = {}".format(
+                        self.collector.rtiInfo['x-dim'], self.collector.rtiInfo['y-dim'],
+                        col, row, RIGHT_ARROW, self.collector.rtiInfo['name'], valueStr)
                     self.probeLabel.setText(txt)
 
                     # Show cross section at the cursor pos in the line plots

@@ -27,7 +27,6 @@ from functools import partial
 
 from argos.qt import QtCore, QtGui, QtSlot
 from argos.info import DEBUGGING
-from argos.config.abstractcti import ResetMode
 from argos.config.groupcti import MainGroupCti
 from argos.config.boolcti import BoolCti
 from argos.config.choicecti import ChoiceCti
@@ -40,7 +39,7 @@ from argos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, NO_LABEL_STR,
 from argos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from argos.utils.cls import array_has_real_numbers, check_class, is_an_array, to_string
 from argos.utils.cls import array_kind_label
-from argos.utils.masks import replaceMaskedValue
+from argos.utils.defs import RIGHT_ARROW
 
 
 logger = logging.getLogger(__name__)
@@ -295,9 +294,9 @@ class PgLinePlot1d(AbstractInspector):
                     valueStr = to_string(data[index], masked=self.slicedArray.maskAt(index),
                                          maskFormat='&lt;masked&gt;')
 
-                    self.probeLabel.setText("{} = {:d} \u21e8 {} = {}"
-                                            .format(self.collector.rtiInfo['x-dim'], index,
-                                                    self.collector.rtiInfo['name'], valueStr))
+                    self.probeLabel.setText("{} = {:d} {} {} = {}".format(
+                        self.collector.rtiInfo['x-dim'], index, RIGHT_ARROW,
+                        self.collector.rtiInfo['name'], valueStr))
 
                     if np.isfinite(data[index]):
                         self.crossLineVerShadow.setVisible(True)
