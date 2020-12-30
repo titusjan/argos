@@ -334,9 +334,9 @@ class ExdirDatasetRti(BaseRti):
         self._exdirDataset = exdirDataset
         self._isStructured = bool(self._exdirDataset.dtype.names)
 
-
-        fileNames = os.listdir(os.path.abspath(self._exdirDataset.directory))
-        absFileNames = [os.path.join(self._exdirDataset.directory, fn) for fn in fileNames]
+        exdirDir = str(self._exdirDataset.directory) # convert to string for Python 3.5
+        fileNames = os.listdir(os.path.abspath(exdirDir))
+        absFileNames = [os.path.join(exdirDir, fn) for fn in fileNames]
         self._hasRaws = sum([os.path.isdir(f) for f in absFileNames]) > 0
 
     def hasChildren(self):
@@ -411,8 +411,9 @@ class ExdirDatasetRti(BaseRti):
 
         # Add raw directories
         if self._hasRaws:
-            fileNames = os.listdir(os.path.abspath(self._exdirDataset.directory))
-            absFileNames = [os.path.join(self._exdirDataset.directory, fn) for fn in fileNames]
+            exdirDir = str(self._exdirDataset.directory) # convert to string for Python 3.5
+            fileNames = os.listdir(os.path.abspath(exdirDir))
+            absFileNames = [os.path.join(exdirDir, fn) for fn in fileNames]
 
             for fileName, absFileName in zip(fileNames, absFileNames):
                 if os.path.isdir(absFileName) and not fileName.startswith('.'):
@@ -445,10 +446,10 @@ class ExdirRawRti(BaseRti):
         assert self.canFetchChildren(), "canFetchChildren must be True"
 
         childItems = []
-
-        absPaths = os.path.abspath(self._exdirRaw.directory)
+        exdirDir = str(self._exdirRaw.directory) # convert to string for Python 3.5
+        absPaths = os.path.abspath(exdirDir)
         fileNames = os.listdir(absPaths)
-        absFileNames = [os.path.join(self._exdirRaw.directory, fn) for fn in fileNames]
+        absFileNames = [os.path.join(exdirDir, fn) for fn in fileNames]
 
         for fileName, absFileName in zip(fileNames, absFileNames):
             if not fileName.startswith('.'):
