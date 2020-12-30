@@ -636,8 +636,11 @@ class PgShowDragLinesCti(BoolCti):
     def _updateTargetFromNode(self):
         """ Applies the configuration to its target axis
         """
-        self.colorLegendItem.showDragLines(self.configValue)
-        self.colorLegendItem.setEdgeMargins(self.marginCti.configValue)
+        try:
+            self.colorLegendItem.showDragLines(self.configValue)
+            self.colorLegendItem.setEdgeMargins(self.marginCti.configValue)
+        except AttributeError as ex:
+            logger.warning("Please update cmlib to latest version. No drag lines: {}".format(ex))
 
 
 class PgGradientEditorItemCti(ChoiceCti):
