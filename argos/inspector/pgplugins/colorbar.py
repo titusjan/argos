@@ -53,10 +53,11 @@ class ArgosColorLegendItem(ColorLegendItem):
     sigResetColorScale = QtSignal()  # Signal the inspectors to reset the color scale
 
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, histHeightPercentile=99.0, **kwargs):
         """ Constructor
         """
-        super(ArgosColorLegendItem, self).__init__(*args, **kwargs)
+        super(ArgosColorLegendItem, self).__init__(
+            *args, histHeightPercentile=histHeightPercentile, **kwargs)
         self.resetColorScaleAction = QtWidgets.QAction("Reset Color Range", self)
         self.resetColorScaleAction.triggered.connect(self.emitResetColorScaleSignal)
         self.resetColorScaleAction.setToolTip("Reset the range of the color scale.")
