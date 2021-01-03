@@ -24,7 +24,7 @@ DEBUGGING = ('-d' in sys.argv or '--debug' in sys.argv)
 TESTING = True # add some test menu options
 PROFILING = False# and DEBUGGING
 
-VERSION = '0.3.0.rc2'
+VERSION = '0.3.0.rc3'
 REPO_NAME = "argos"
 SCRIPT_NAME = "argos"
 PACKAGE_NAME = "argos"
@@ -39,7 +39,7 @@ ORGANIZATION_DOMAIN = "titusjan.nl"
 EXIT_CODE_SUCCESS = 0
 EXIT_CODE_ERROR = 1
 EXIT_CODE_COMMAND_ARGS = 2
-EXIT_CODE_RESTART = 66 # Indicates the progoram must be 'restarted'
+EXIT_CODE_RESTART = 66 # Indicates the program is being 'restarted'
 
 
 # TODO: move to utils locations

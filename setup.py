@@ -6,7 +6,9 @@ from __future__ import absolute_import
 #   python setup.py sdist
 #   twine upload dist/argos-0.2.0rc1.tar.gz
 # or better
+#   rm -rf build dist
 #   python setup.py bdist_wheel
+#   twine check dist/*
 #   twine upload dist/argos-x.y.z-py3-none-any.whl
 
 # If you get invalid command 'bdist_wheel', you must install the 'wheel' package first.
@@ -55,19 +57,22 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 install_requires = [
     #"PyQt5 >= 5.6.0", # Don't require PyQt. See comment above
-    "cmlib",
+    "cmlib",  # Needed, even if no plugins are installed.
     "numpy >= 1.11",
     # Argos will technically work without pyqtgraph and h5py, but with very limited functionality.
     # "pyqtgraph >= 0.10",
     # "h5py >= 2.6"
 ]
 
+long_description = readme + '\n\n' + history
+print(long_description)
 
 setup(
     name = info.REPO_NAME,
     version = info.VERSION,
     description = info.SHORT_DESCRIPTION,
     long_description = readme + '\n\n' + history,
+    long_description_content_type = 'text/x-rst',
     author = info.AUTHOR,
     author_email = info.EMAIL,
     license = "GPLv3",
@@ -99,6 +104,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Topic :: Software Development',
         'Topic :: Scientific/Engineering',
         'Topic :: Utilities',
