@@ -170,8 +170,7 @@ def main():
                 E.g. 'file/var/fieldname'. Overrides -o option.""")
 
     parser.add_argument('-i', '--inspector', dest='inspector',
-        help="""The identifier or fullName of the inspector that will be opened at start up.
-                E.g. 'Qt/Table'""")
+        help="""The name of the inspector that will be opened at start up. E.g. Table""")
 
     parser.add_argument('--list-inspectors', dest='list_inspectors', action = 'store_true',
         help="""Prints a list of available inspectors for the -i option, and exits.""")

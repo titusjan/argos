@@ -2,9 +2,9 @@ Argos
 ==========
 
 Argos is a GUI for viewing and exploring scientific data, written in Python and Qt. It has a
-plug-in architecture that allows it to be extended to read new data formats. At the moment
-plug-ins are included to read HDF-5, NetCDF-4, WAV, Exdir, numpy binary files and various image formats,
-but a plug-in could be written for any data that can be expressed as a Numpy array.
+plug-in architecture that allows it to be extended to read new data formats. At the moment plug-ins
+are included to read HDF-5, NetCDF-4, WAV, Exdir, numpy binary files and various image formats, but
+a plug-in could be written for any data that can be expressed as a Numpy array.
 
 ### Installing Argos
 
@@ -49,18 +49,12 @@ After installation, Argos can be started from the command-line with
 
 where `[FILE [FILE ...]]` are zero or more files or directories you want to view.
 
-Argos remembers some persistent settings such as window position and size. If, for some reason,
-you want Argos to reset to its initial state, you can use the `--reset` option.
-
-```
-    %> argos --reset
-```
-
 For a complete list of command line options, run argos with `-h'.
 
 ```
     %> argos -h
 ```
+
 
 #### Trouble shooting
 
@@ -71,30 +65,52 @@ try to start argos as follows to get more information
     %> python -m argos.main
 ```
 
+#### Resetting Argos
+
+At start-up, Argos reads some persistent settings (window position and size, plot settings, etc)
+from a configuration file so that you can continue where you left off the previous session.
+
+If, for some reason, you want Argos to reset to its initial state, you can simply delete this
+config file  before starting Argos (please make a backup just in case). Argos will then start with
+the original configuration.
+
+The configuration file is called `settings.json` by default. It's location is platform dependent:
+
+```
+	Windows: C:\Users\<user>\AppData\Local\titusjan\argos
+	MacOS: ~/Library/Preferences/titusjan/argos
+	Linux: ~/.config/titusjan/argos
+```
+
+Note that this directory might be hidden. For convenience you can open this directory in a
+file browser by selecting `Configure | Show Config Files...` from the Argos main menu.
+
 
 ### Using Argos
 
 The Argos main window consists of a central panel that holds a visualization, and of smaller
 windows that surround the main pannel. The smaller windows can be moved around by dragging them at
 their title bar. They can be separated from the main window or can be docked at an at another
-position. Collectively they are called the dock windows. You can open and close them via the `View`
-main menu.
+position. Collectively they are called the dock panels. You can show and hide them via the
+`View | Panels` main menu (although there is typically no need to do so).
 
 ![argos_screen_shot](docs/screen_shots/argos_gui.png)
 
-The main panel is called the (data) Inspector. From the `Inspector` main menu you can select a
+The main panel is called the (data) Inspector. From the `View` main menu you can select a
 different type: line plot, image plot, table, or text inspector. The current inspector type is
-shown in the `Current inspector` dock window (in the upper left corner in the screen shot). If you
-want to have more than one inspector open at the same time, you can select `New Window` from the
+shown in the menu button above the inspector panel. Clicking this button (or pressing ctrl-I)
+bring is an alternative way of selecting a different inspector.
+
+If you want to have multple inspectors open at the same time, you can select `New Window` from the
 `File` menu.
 
 
 #### Selecting Data
 
-The HDF-5 file that is used in the screenshot and in the examples below can be
+Note: the HDF-5 file that is used in the screenshot and in the examples below can be
 downloaded  [here](http://www.hdfeos.org/zoo/index_openGESDISC_Examples.php#OMI) (2.4 MB).
 
-The `Data Repository` dock window gives the list of files and directories that are available for
+The `Data` dock panel gives the list of files and directories that are loaded and are available for
 inspection. The repository has the form of a tree, or more precisely a list of trees (a forest).
 You can add files by selecting the `Open Files` from the `File` menu, and add directories with the
 `Browse Directory` option. Argos uses the file extension to determine which plug-in to use for
@@ -103,97 +119,117 @@ opening the file. The icon color of the tree items indicates which plug-in was u
 raises an error while opening a file, it will get a red triangle as icon (hover over the item to
 get a tool-tip with the error message).
 
-Expanding the items in the tree will automatically open the underlying files. However, collapsing
-an item will not close the the tree item, as is indicated by the icon remaining the same. To close
-the underlying file, right-click the corresponding tree item and select `Close Item` from the
-context menu. This context menu also contains some other operations that work on that tree item,
-which hopefully are clear from their description.
+Expanding the items in the tree will automatically open the underlying files. Collapsing
+an item will close the file again. Right-clicking the item will bring forward a context menu that
+makes it possible to collapse the item without closing the underlying file, to reload the file, or
+to open the file with a different plugin.
 
 Note that the data repository is shared between all Argos main windows. That is, opening a file
-will add a new item to the `Data Repository` tree of all open windows.
+will add a new item to the `Data` tree of all open windows.
 
 
 #### Slicing Data
 
-Selecting an item in the repository will automatically place it in the `Data Collector` table.
-If the item contains data that can be converted to an array, combobox and spinbox widgets will
-appear in the table. These enable you to specify a slice of the array that the inspector will then
-visualize.
+Selecting an item in the tree will automatically place it in the `Collector` table at the bottom
+right of the windows. If the item contains numerical data that can be converted to an array,
+combobox and spinbox widgets will appear in the table. These enable you to specify a slice of the
+array that the inspector will then visualize.
 
 In the screen shot for instance, the `ColumnAmountO3` HDF-5 dataset is selected
 and placed in the collector. This is a two-dimensional dataset, it contains a world wide
-distribution of ozone in the atmosphere. The first dimension corresponds to latitude, the second to
-longitude. These dimensions have no name since the dataset has no associated
+distribution of ozone in the atmosphere. The first dimension corresponds to longitude, the second to
+latidue. These dimensions have no name since the dataset has no associated
 [dimension scales](http://docs.h5py.org/en/latest/high/dims.html). Therefore, Argos just calls
-them `Dim0` and `Dim1`.
+them `dim-0` and `dim-1`.
 
-The inspector in the screen shot is a `2D Image Plot`. This is a two-dimensional inspector so there
+The inspector in the screen shot is an `Image Plot`. This is a two-dimensional inspector so there
 will appear two comboboxes in the table: the first specifies which dimension will be mapped onto
-the Y-axis (`Dim0` in the example) and the second determines the data dimension that is mapped to
+the Y-axis (`dim-0` in the example) and the second determines the data dimension that is mapped to
 the X-axis.
 
 ![collector_2d](docs/screen_shots/collector_2d.png)
 
-Now imagine that your inspector is a `1D Line Plot` inspector. As the name
-implies this has only one independent variable (the X-axis). The data is two-dimensional so only a
-sub-slice of the dataset can be visualized. The collector will now contain a combobox for
-specifying which data dimension will be layed along the X-axis, and a spinbox for selecting the
-index of the other dimension. Below you see the case that the line plot will draw row 360, or in
-Numpy notation: `ColumnAmountO3[360, :]`. By default Argos will put the first array dimension(s) in
-the spinbox(es), and select the fasted changing array dimension(s) in the combobox(es).
+When you select the `Line Plot` inspector from the View menu or the Inspector button, the selected
+data will be drawn as a line plot. A line plot can only show one-dimenstional data, but because
+since the example data is two-dimensional only a sub-slice of the dataset can be visualized. The
+collector will therefore contain a combobox for specifying which data dimension will be layed along
+the X-axis, and a spinbox-slider combination for selecting the index of the other dimension. Below
+you see the case that the line plot will draw row 360 (note that the plot title will contain
+`ColumnAmountO3[360, :]`).
 
 ![collector_1d](docs/screen_shots/collector_1d.png)
 
+By default Argos will put the first array dimension(s) in the spinbox(es), and select the fasted
+changing array dimension(s) in the combobox(es).
 
-#### Inspecting Data
+#### Inspecting Data and Configuring the Visualization
 
-The `Application Settings` dock window, located to the right of the inspector, contains settings
-for configuring the current inspector. If you click on a config value, an appropriate widget
-will appear for editing, together with a reset button <img src="argos/img/snipicons/reset-l.svg" width="16" height="16">
-that will reset the config value to its default when clicked. The settings are hierarchical so that
-related settings can be grouped together in a brance. Branches also have a reset button, so for 
-instance by clicking on the reset button of the `y-axis` config value branch, all settings
-pertaining to the Y-axis are reset. The reset button in the dark gray bar at the top, the one that
-says `2D image plot` in the screen shot, will reset all config values of that inspector.
+The `Settings` dock panel, located at the top right, contains settings for configuring the current
+inspector. If you click on a config value, an appropriate widget will appear for editing, together
+with a reset button <img src="argos/img/snipicons/reset-l.svg" width="16" height="16"> that will
+reset the config value to its default when clicked.
 
-A few of the config settings are explained below. It is not a complete list, many of the settings
+The settings are hierarchical so that related settings are grouped together in a branche. Branches
+also have a reset button that resets the complete branch. For instance by clicking on the reset
+button of the `y-axis` config value branch, all settings pertaining to the Y-axis are reset.
+
+<img src="docs/screen_shots/settings.png" width="350">
+
+Note that some branches are collapsed by default to hide the infrequently used settings and reduce
+clutter. For instance the `cross-hair` item can be expanded for further tweaking of the cross-hair
+plots.
+
+When you click on the `Reset Ranges` button at the bottom of the Settings panel, all settings that
+are related to the data range (such as the range of the axes and the color scale) are reset to their
+default values.  This gives you a convenient way to go back to viewing all the data after zooming in.
+Pressing `Ctrl-0` has the same effect.
+
+If the `auto` checkbox is checked, the _Range_ settings are automatically reset every time you
+select a new item in the Data tree or select a new axis in drop-down box in the data Collector
+panel. Normally this is desired behavior because a new dataset or axis will have a totally different
+data range. Unchecking the auto scale checkbox allows you to retain the axes range settings
+in case you are switching to a related dataset with the same data extent.
+
+If you want to reset all inspector setttings you can click on the triangle next to the `Reset
+Range` button and select `Reset All` in the context menu that appears. The menu also allow you to
+change the default action of the button.
+
+<img src="docs/screen_shots/reset_menu.png" width="250">
+
+A few of the inspector settings are explained below. It is not a complete list, many of the settings
 will be clear from their name. I also urge you to experiment yourself by just trying new values.
-You can always go back by resetting the configuration of the complete inspector with the reset
-button in the dark grey row at the top. Note that some branches are collapsed by default to hide
-the infrequently used configuration options. For instance the `auto-range` item can be expanded for
-further tweaking of the auto-range method.
+You can always go back by using the 'Reset All` option as described above.
 
-##### 1D Line Plot Inspector
+##### Line Plot Inspector
 
-The `1D Line Plot` inspector contains a single line plot, which uses 
+The `Line Plot` inspector contains a single line plot, which uses
 [PyQtGraph](http://www.pyqtgraph.org/) the underlying plot engine.
- 
-You can move (pan) the plot by dragging it while holding the left mouse button. Dragging with the 
-right mouse buttong zooms in or out. If you drag while your mouse cursor is above the X or Y axis, 
-panning and zooming will be only done in that direction. Zooming can also be done by scrolling your 
-mouse-wheel while the cursor is above the plot or axes. In addition, you can employ a rectangle 
-zoom mode by checking the `rectangle zoom mode` checkbox in the the settings pane. In this mode 
-dragging with the left button will draw a rectangle, which will subsequently be used as the new 
-plot range. 
 
-To reset the plot range you can click the middle mouse button anywhere on the plot (or one of the 
-axes). You can also reset it by clicking the small button labeled 'A' in the lower left corner of 
-the figure. Finally, right clicking on the plot will pop up a context menu from which the plot 
-range can also be reset. 
+You can move (pan) the plot by dragging it while holding the left mouse button. Dragging with the
+right mouse button zooms in or out. If you drag while your mouse cursor is above the X or Y axis,
+panning and zooming will be only done in that direction. Zooming can also be done by scrolling your
+mouse-wheel while the cursor is above the plot or axes. In addition, you can employ a rectangle
+zoom mode by checking the `rectangle zoom mode` checkbox in the the settings panel. In this mode
+dragging with the left button will draw a rectangle, which will subsequently be used as the new
+plot range.
 
-If the axis auto-range mode is on, the axis' range is calculated from the data. By default this is 
-delegated to PyQtGraph, but by setting the `y-axis/range/autorange/method` option, you can let the 
-auto-range method discard a percentage of the outliers. 
+To reset the plot range you can click the middle mouse button anywhere on the plot (or one of the
+axes). You can also reset it by clicking the small button labeled 'A' in the lower left corner of
+the figure. Finally, right clicking on the plot will pop up a context menu from which the plot
+range can also be reset.
+
+If the axis auto-range mode is on, the axis' range is calculated from the data. By default this is
+delegated to PyQtGraph, but by setting the `y-axis/range/autorange/method` option, you can let the
+auto-range method discard a certain percentage of the outliers.
 
 If the axis auto-range mode is off, you can set the axis' range manually in the `range/min` and
-
 `range/max` options. The range will remain fixed if you select a new slice with the spinbox.
 Autorange will be turned off as soon as you zoom or pan the data. You can turn it on again in the
 `range/autorange` option, or by resetting the axis' plot range as described above.
 
 The plot title can be modified with the `title` config option via an editable combobox widget. You
 can enter any title you want but be aware that the title may be incorrect as soon as you pick a
-new variable from the repository. Therefore a few properties can be written in between braces.
+new item from the repository. Therefore a few properties can be written in between braces.
 These will then be updated dynamically whenever a new repo item is picked. For example, `{name}`
 will be substituted with the name of the selected item.
 
@@ -216,34 +252,52 @@ The editable comboboxes will remember entered values. If you want to remove an i
 combobox, highlight it in and then press delete. You can also press CTRL-delete while you are
 editing to remove the current item.
 
-The `pen` branch holds config items that determine how the plot curve is drawn. Make sure you have
-at least one of the `line` and `symbol` checkmarks checked, or the curve will be invisible.
-Anti-aliasing is turned on by default. This can be slow, especially in combination with a
-line width other than 1.0, so if you have large plots you might want to turn it off.
+The `pen` settings branch holds config items that determine how the plot curve is drawn. Make sure
+you have at least one of the `line` and `symbol` checkmarks checked, or the curve will be
+invisible. Anti-aliasing is turned on by default. This can be slow, especially in combination with
+a line width other than 1.0, so if you have large plots you might want to turn it off.
 
-##### 2D Image Plot Inspector
+##### Image Plot Inspector
 
-This inspector shows an image plot and optional cross-hair line plots that show cross sections of 
-the data at the cursor (see screen shot).
+This inspector shows an image plot and optional cross-hair line plots that show cross sections of
+the data at the cursor (see the screen shot at the top of this document).
 
-Panning, zooming and setting the plot titles work in the same manner as for the 1D Line Plot 
-inspector. Next to that, the image plot has a `color range` that determines the minimum and maximum
-values of the color scale. The color range too can be in auto-range mode, or can be set
-manually. On the left side of the plot, you can see the color range visualized as the blue
-rectangle between the color bar and the values. You can drag the rectangle to shift the
-range and make the image lighter or darker. You can also drag ene of the edges of the rectangle and
-thus change the contrast of the rendered image.
+Panning, zooming and setting the plot titles work in the same manner as for the Line Plot
+inspector. Next to that, the image plot has a `color scale` that determines the minimum and maximum
+values of the color scale. It's range, too, can be in auto-range mode, or can be set manually.
 
-Inside the blue rectange you see a side-ways histogram, which gives an indication of how many
-pixels have a certain value. This may assist you in choosing the best color range. By dragging the
-numbers of the color scale you can pan the histogram. Using your mouse wheel while the cursor is
-above the histogram will zoom in or out. The precise values of the histogram range can be seen in
-the `histogram range` item in the config tree. Just like the other range-settings this has an
-auto-range mode that can be turned on or off.
+<img src="docs/screen_shots/color_legend.png" width="161">
+
+The range of the color scale can also be manipulated by panning and zooming the color scale as follows:
+
+* **Pan the range:** Drag the scale up or down with the left mouse button to move the color range.
+This changes the intensity of the colorized image.
+* **Zoom the range:** Drag the scale using the right mouse button, or scroll with the mousewheel
+when the cursor is above the scale. This makes the extent of the scale larger or smaller and so
+changes the contrast of the colorized image.
+* **Change the range at one side only:** Hover the cursor over one of the dashed vertical lines
+(located at the edges of the color bar) until it becomes wider and the cursor changes. Then drag
+the line up or down. The range will change only at that end-point while the other end-point remains
+the same. Note that the _drag lines_ might be hidden with the `show draglines` setting but they
+still will appear if the cursor hovers above them. The `show draglines/margins` option allows you
+to increase white space arround the color bar so that you have more room for dragging.
+* **Reset the range:** Click the middle mouse button (or mouse wheel) while the cursor is above the
+scale to reset the color range.
+
+Next to the color scale you see a side-ways histogram, which gives an indication of how many pixels
+have a certain value. This may assist you in choosing the best color range. The histogram can be
+hidden by unchecking the `color scale/show histogram` setting.
+
+Argos comes with a large collection of color maps. The current color  map can be changed in the
+`color scale/color map` setting. The drop-down box contains a small selection of user-favorite
+color maps. The elipsis button (`…`) next to will bring forward a dialog window which contains a
+table with all the available color maps. You can add color maps to the favorites by checking the
+check box in the left most column of the table (labeled ★). See the [CmLib
+documentation](https://github.com/titusjan/cmlib#cmlib) for more details.
 
 By checking the `cross hair` config option you can bring up two line plots to the side of the
-figure (see the screen shot above). A horizontal and vertical line are drawn at the cursor position
-and the plots will contain a cross-section of the values along those lines.
+figure (see the screen shot at the top). A horizontal and vertical line are drawn at the cursor
+position and the plots will contain a cross-section of the values along those lines.
 
 ##### Table Inspector
 
@@ -255,7 +309,7 @@ for large tables.  So, as an optimization, if the table has more than 1000 eleme
 currently selected cell is used to calculate the height and width, and this is applied to all other
 cells. If a table has more than 10000 rows or columns, auto resizing is disabled.
 
-If your selected repository item is a structured array, i.e. an array having fields, all fields are
+If your selected data item is a structured array, i.e. an array having fields, all fields are
 displayed in a separate column by default. If you uncheck the `separate fields` checkbox, all
 fields of are combined in a single cell as follows: `(field1, field2, ...)`.
 
@@ -266,12 +320,12 @@ rational, or complex numbers; and any data that is not a string or a number is f
 `other types` format code. For instance, setting the `other numbers` to `.2e` will display all
 floating point data in scientific notation with two digits behind the decimal point.
 
-The format codes must be a `format_spec` from the new-style Python formatting. You can think of 
-them as new-style formatting codes, but without the braces and the colon. If you want to use a 
-complete format string, i.e. _with_ the braces and the colon, you must put your format string 
-between quotes. For example, using `'hello {:.2e}'` will prepend "hello" to the data values. Take 
+The format codes must be a `format_spec` from the new-style Python formatting. You can think of
+them as new-style formatting codes, but without the braces and the colon. If you want to use a
+complete format string, i.e. _with_ the braces and the colon, you must put your format string
+between quotes. For example, using `'hello {:.2e}'` will prepend "hello" to the data values. Take
 a look at the [Format Specification Mini-Language](https://docs.python.org/3/library/string.html#format-specification-mini-language)
-from the Python documentation to see what's possible. 
+from the Python documentation to see what's possible.
 
 ##### Text Inspector
 
@@ -286,17 +340,13 @@ text inspector.
 
 #### Viewing Metadata
 
-Below the repository window (in the lower left corner of the screen shot) are three dock windows 
-that are layed out on top of each other, and which can be brought to front by clicking their 
-respective tab. They are for displaying meta data of the item that is currently selected in the 
-data repository (note: not the item in the data collector).
+At the bottom of the Data panel, in the lower left corner of the screen shot, are two tabs that
+contain meta data of the item that is currently selected in the tree.
 
-The `Dimensions` dock window lists the dimension names and sizes of arrays. The `Attributes` window lists
-the HDF or NetCDF attributes of a group or dataset/variable. Other file formats may contain similar
-meta data, which is then also displayed here.
+The `Attributes` tab lists the attributes of items from HDF or NetCDF files. Other file formats may
+contain similar meta data, which is then also displayed here.
 
-The `Properties` window contains a list of properties, such as the shape and element-type of the
-selected item. In contrast to the `Attributes` this list is fixed, all repo items always have the
+The `Properties` tab contains a list of properties, such as the shape and element-type of the
+selected item. In contrast to the `Attributes` this list is fixed; all data items always have the
 same list of properties (although their contents may be empty). These properties, by the way, can
-be added as columns in the data repository. By default only the `name` property is shown;
-right-click on the repository tree header to add extra columns.
+be added as columns in the Data tree via `View | Table Headers | Data` in the main menu.
