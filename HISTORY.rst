@@ -7,6 +7,8 @@ History
 0.3.0 (2021-01-03)
 ------------------
 
+Note that version 0.3 will be the last release that supports Python 2.
+
 *   New legend in 2D image inspector
 *   Extensive database of color maps and color map picker (CmLib).
 *   Directories are listed in alphabetical order.

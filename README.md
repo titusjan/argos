@@ -13,24 +13,15 @@ use the [Anaconda Python distribution](https://www.continuum.io/downloads), as i
 of Argos' depencencies installed.
 
 Argos requires at least [PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro) and
-[Numpy](http://www.numpy.org). It is strongly recommended to also install
-[PyQtGraph](https://pyqtgraph.org) (version 0.10.0 or higher), which is required to visualize the
-data as image plots or line plots. Without PyQtGraph the data can only be examined as tables or
-text.
+[Numpy](http://www.numpy.org) and [CmLib](https://github.com/titusjan/cmlib). It is strongly
+recommended to also install [PyQtGraph](https://pyqtgraph.org) and
+[PgColorBar](https://github.com/titusjan/pgcolorbar), which are required to visualize the data as
+image plots or line plots. Without them the data can only be examined as tables or text.
 
-Provided you use Python 3.5 or higher, you can install PyQt5 with `pip`. Otherwise you can download
-it at the [Riverbank site](https://www.riverbankcomputing.com/software/pyqt/download5).
+The following dependencies are **optional**. You only need to install them if you want to read the
+corresponding file formats.
 
-    %> pip install PyQt5
-    %> pip install numpy
-    %> pip install pyqtgraph
-    %> pip install argos
-
-The following dependencies are optional. You only need to install them if you want to read the
-corresponding file formats. They can be installed with `pip install <package>` or downloaded from
-their respective website.
-
-| Python package                                       | File formats                    |
+| Optional Python package                              | File formats                    |
 |------------------------------------------------------|---------------------------------|
 | [h5py](http://www.h5py.org)                          | HDF-5                           |
 | [netCDF4](http://unidata.github.io/netcdf4-python/)  | NetCDF (v3 and v4)              |
@@ -38,6 +29,39 @@ their respective website.
 | [scipy](https://www.scipy.org/)                      | Matlab & IDL save-files. WAV    |
 | [pandas](http://pandas.pydata.org/)                  | Comma-separated files           |
 | [exdir](https://github.com/CINPLA/exdir)             | Exdir                           |
+
+
+#### Installing Argos with Pip
+
+Provided you use Python 3.5 or higher, you can install PyQt5 with `pip`. Otherwise you can download
+it at the [Riverbank site](https://www.riverbankcomputing.com/software/pyqt/download5).
+
+    %> pip install PyQt5
+    %> pip install numpy
+    %> pip install pyqtgraph
+    %> pip install cmlib
+    %> pip install pgcolorbar
+    %> pip install argos
+
+After that, install the optional dependencies with `pip install <package>`.
+
+#### Installing Argos with Anaconda
+
+At the time of writing there is no conda package for Argos yet, so Argos itself should be installed
+with Pip. It is recommended [here](https://www.anaconda.com/blog/using-pip-in-a-conda-environment)
+and [here](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-pkgs.html#installing-non-conda-packages)
+to install Python packages with `conda` where possible and only fall back to `pip` if the package
+isn't available on Anaconda. Therefore use:
+
+    %> conda install pyqt
+    %> conda install numpy
+    %> conda install pyqtgraph
+    %> pip install cmlib
+    %> pip install pgcolorbar
+    %> pip install argos
+
+After that, install the optional dependencies with `conda install <package>` (or
+`pip install <package>` for exdir).
 
 ### Starting Argos
 
@@ -88,18 +112,18 @@ file browser by selecting `Configure | Show Config Files...` from the Argos main
 
 ### Using Argos
 
-The Argos main window consists of a central panel that holds a visualization, and of smaller
-windows that surround the main pannel. The smaller windows can be moved around by dragging them at
+The Argos main window consists of a central panel that holds a visualization, and some smaller
+windows that surround the main pannel. The smaller windows can be moved around by dragging them by
 their title bar. They can be separated from the main window or can be docked at an at another
 position. Collectively they are called the dock panels. You can show and hide them via the
 `View | Panels` main menu (although there is typically no need to do so).
 
 ![argos_screen_shot](docs/screen_shots/argos_gui.png)
 
-The main panel is called the (data) Inspector. From the `View` main menu you can select a
-different type: line plot, image plot, table, or text inspector. The current inspector type is
-shown in the menu button above the inspector panel. Clicking this button (or pressing ctrl-I)
-bring is an alternative way of selecting a different inspector.
+The main panel is called the (data) Inspector. From the `View` main menu you can select one of the
+following insspector types: _Line Plot_, _Image Plot_, _Table_, or _Text_ inspector. The current
+inspector type is shown in the menu button above the inspector panel. Clicking this button (or
+pressing ctrl-I) is an alternative way of selecting a different inspector.
 
 If you want to have multple inspectors open at the same time, you can select `New Window` from the
 `File` menu.
@@ -107,11 +131,13 @@ If you want to have multple inspectors open at the same time, you can select `Ne
 
 #### Selecting Data
 
-Note: the HDF-5 file that is used in the screenshot and in the examples below can be
+Note: the HDF5 file that is used in the screenshot and in the examples below can be
 downloaded  [here](http://www.hdfeos.org/zoo/index_openGESDISC_Examples.php#OMI) (2.4 MB).
+More (NetCDF4) example data can be found at the UCAR site
+[here](https://www.unidata.ucar.edu/software/netcdf/examples/files.html).
 
-The `Data` dock panel gives the list of files and directories that are loaded and are available for
-inspection. The repository has the form of a tree, or more precisely a list of trees (a forest).
+The `Data` dock panel displays the list of files and directories that are loaded and are available
+for inspection. The repository has the form of a tree, or more precisely a list of trees (a forest).
 You can add files by selecting the `Open Files` from the `File` menu, and add directories with the
 `Browse Directory` option. Argos uses the file extension to determine which plug-in to use for
 opening the file. The icon color of the tree items indicates which plug-in was used. With the
@@ -122,7 +148,7 @@ get a tool-tip with the error message).
 Expanding the items in the tree will automatically open the underlying files. Collapsing
 an item will close the file again. Right-clicking the item will bring forward a context menu that
 makes it possible to collapse the item without closing the underlying file, to reload the file, or
-to open the file with a different plugin.
+to open the file with a different plug-in.
 
 Note that the data repository is shared between all Argos main windows. That is, opening a file
 will add a new item to the `Data` tree of all open windows.
@@ -131,19 +157,19 @@ will add a new item to the `Data` tree of all open windows.
 #### Slicing Data
 
 Selecting an item in the tree will automatically place it in the `Collector` table at the bottom
-right of the windows. If the item contains numerical data that can be converted to an array,
-combobox and spinbox widgets will appear in the table. These enable you to specify a slice of the
-array that the inspector will then visualize.
+right of the windows. If the item contains numerical data, drop-down and spinbox widgets will appear
+in the table. These enable you to specify a slice of the data that the inspector will then
+visualize.
 
-In the screen shot for instance, the `ColumnAmountO3` HDF-5 dataset is selected
-and placed in the collector. This is a two-dimensional dataset, it contains a world wide
-distribution of ozone in the atmosphere. The first dimension corresponds to longitude, the second to
-latidue. These dimensions have no name since the dataset has no associated
-[dimension scales](http://docs.h5py.org/en/latest/high/dims.html). Therefore, Argos just calls
-them `dim-0` and `dim-1`.
+In the screen shot for example, the `ColumnAmountO3` HDF-5 dataset is selected and placed in the
+collector. This is a two-dimensional data array, it contains a world wide distribution of ozone in
+the atmosphere. The first dimension corresponds to longitude, the second to latidue. These
+dimensions have no name since the dataset has no associated [dimension
+scales](http://docs.h5py.org/en/latest/high/dims.html). Therefore, Argos just calls them `dim-0`
+and `dim-1`.
 
 The inspector in the screen shot is an `Image Plot`. This is a two-dimensional inspector so there
-will appear two comboboxes in the table: the first specifies which dimension will be mapped onto
+will appear two drop-down box in the table: the first specifies which dimension will be mapped onto
 the Y-axis (`dim-0` in the example) and the second determines the data dimension that is mapped to
 the X-axis.
 
@@ -152,15 +178,15 @@ the X-axis.
 When you select the `Line Plot` inspector from the View menu or the Inspector button, the selected
 data will be drawn as a line plot. A line plot can only show one-dimenstional data, but because
 since the example data is two-dimensional only a sub-slice of the dataset can be visualized. The
-collector will therefore contain a combobox for specifying which data dimension will be layed along
-the X-axis, and a spinbox-slider combination for selecting the index of the other dimension. Below
-you see the case that the line plot will draw row 360 (note that the plot title will contain
-`ColumnAmountO3[360, :]`).
+collector will therefore contain a drop-down box for specifying which data dimension will be layed
+along the X-axis, and a spinbox-slider combination for selecting the index of the other dimension.
+Below you see the case that the line plot will draw row 360. By the way, this is reflected in the
+plot title, which will be `ColumnAmountO3[360, :]`).
 
 ![collector_1d](docs/screen_shots/collector_1d.png)
 
 By default Argos will put the first array dimension(s) in the spinbox(es), and select the fasted
-changing array dimension(s) in the combobox(es).
+changing array dimension(s) in the drop-down box(es).
 
 #### Inspecting Data and Configuring the Visualization
 
@@ -187,8 +213,8 @@ Pressing `Ctrl-0` has the same effect.
 If the `auto` checkbox is checked, the _Range_ settings are automatically reset every time you
 select a new item in the Data tree or select a new axis in drop-down box in the data Collector
 panel. Normally this is desired behavior because a new dataset or axis will have a totally different
-data range. Unchecking the auto scale checkbox allows you to retain the axes range settings
-in case you are switching to a related dataset with the same data extent.
+data range. Unchecking the auto scale checkbox allows you to retain the axes range settings, which
+can be useful in case you are switching to a related dataset with the same data extent.
 
 If you want to reset all inspector setttings you can click on the triangle next to the `Reset
 Range` button and select `Reset All` in the context menu that appears. The menu also allow you to
@@ -198,9 +224,9 @@ change the default action of the button.
 
 A few of the inspector settings are explained below. It is not a complete list, many of the settings
 will be clear from their name. I also urge you to experiment yourself by just trying new values.
-You can always go back by using the 'Reset All` option as described above.
+You can always go back by using the `Reset All` option as described above.
 
-##### Line Plot Inspector
+#### Line Plot Inspector
 
 The `Line Plot` inspector contains a single line plot, which uses
 [PyQtGraph](http://www.pyqtgraph.org/) the underlying plot engine.
@@ -229,11 +255,11 @@ Autorange will be turned off as soon as you zoom or pan the data. You can turn i
 
 The plot title can be modified with the `title` config option via an editable combobox widget. You
 can enter any title you want but be aware that the title may be incorrect as soon as you pick a
-new item from the repository. Therefore a few properties can be written in between braces.
-These will then be updated dynamically whenever a new repo item is picked. For example, `{name}`
+new item from the Data tree. Therefore a few properties can be written in between braces.
+These will then be updated dynamically whenever a new data item is selected. For example, `{name}`
 will be substituted with the name of the selected item.
 
-*   `{name}`     : name of the selected item from the repository.
+*   `{name}`     : name of the selected item from the Data tree.
 *   `{path}`     : full path of the items leading up to the selected item. Might be long!
 *   `{base-name}`: name of the file that contains the item.
 *   `{dir-name}` : directory of the file that contains the item. Might be long!
@@ -249,7 +275,7 @@ escape the `<`, `>` and `&` characters by using `&lt;`, `&gt;`, `&amp;` instead!
 The `x-axis/label` and `y-axis/label` settings can be edited in the same way as the `title`.
 
 The editable comboboxes will remember entered values. If you want to remove an item from a
-combobox, highlight it in and then press delete. You can also press CTRL-delete while you are
+combobox, highlight it in and then press delete. You can also press `Ctrl-Del` while you are
 editing to remove the current item.
 
 The `pen` settings branch holds config items that determine how the plot curve is drawn. Make sure
@@ -257,7 +283,7 @@ you have at least one of the `line` and `symbol` checkmarks checked, or the curv
 invisible. Anti-aliasing is turned on by default. This can be slow, especially in combination with
 a line width other than 1.0, so if you have large plots you might want to turn it off.
 
-##### Image Plot Inspector
+#### Image Plot Inspector
 
 This inspector shows an image plot and optional cross-hair line plots that show cross sections of
 the data at the cursor (see the screen shot at the top of this document).
@@ -270,25 +296,29 @@ values of the color scale. It's range, too, can be in auto-range mode, or can be
 
 The range of the color scale can also be manipulated by panning and zooming the color scale as follows:
 
-* **Pan the range:** Drag the scale up or down with the left mouse button to move the color range.
-This changes the intensity of the colorized image.
-* **Zoom the range:** Drag the scale using the right mouse button, or scroll with the mousewheel
-when the cursor is above the scale. This makes the extent of the scale larger or smaller and so
-changes the contrast of the colorized image.
-* **Change the range at one side only:** Hover the cursor over one of the dashed vertical lines
-(located at the edges of the color bar) until it becomes wider and the cursor changes. Then drag
-the line up or down. The range will change only at that end-point while the other end-point remains
-the same. Note that the _drag lines_ might be hidden with the `show draglines` setting but they
-still will appear if the cursor hovers above them. The `show draglines/margins` option allows you
-to increase white space arround the color bar so that you have more room for dragging.
-* **Reset the range:** Click the middle mouse button (or mouse wheel) while the cursor is above the
-scale to reset the color range.
+* **Pan the range:**
+    Drag the scale up or down with the left mouse button to move the color range. This changes the
+    intensity of the colorized image.
+* **Zoom the range:**
+    Drag the scale using the right mouse button, or scroll with the mousewheel when the cursor is
+    above the scale. This makes the extent of the scale larger or smaller and so changes the
+    contrast of the colorized image.
+* **Change the range at one side only:**
+    Hover the cursor over one of the dashed horizontal lines (located at the edges of the color
+    bar) until it becomes wider and the cursor changes. Then drag the line up or down. The range
+    will change only at that end-point while the other end-point remains the same. Note that the
+    _drag lines_ might be hidden with the `show draglines` setting but they still will appear if
+    the cursor hovers above them. The `show draglines/margins` option allows you to increase white
+    space arround the color bar so that you have more room for dragging.
+* **Reset the range:**
+    Click the middle mouse button (or mouse wheel) while the cursor is above the scale to reset the
+    color range.
 
 Next to the color scale you see a side-ways histogram, which gives an indication of how many pixels
 have a certain value. This may assist you in choosing the best color range. The histogram can be
 hidden by unchecking the `color scale/show histogram` setting.
 
-Argos comes with a large collection of color maps. The current color  map can be changed in the
+Argos comes with a large collection of color maps. The current color  map can be changed with the
 `color scale/color map` setting. The drop-down box contains a small selection of user-favorite
 color maps. The elipsis button (`…`) next to will bring forward a dialog window which contains a
 table with all the available color maps. You can add color maps to the favorites by checking the
@@ -299,7 +329,7 @@ By checking the `cross hair` config option you can bring up two line plots to th
 figure (see the screen shot at the top). A horizontal and vertical line are drawn at the cursor
 position and the plots will contain a cross-section of the values along those lines.
 
-##### Table Inspector
+#### Table Inspector
 
 This inspector is useful for examining the exact values of your data. You can change the size of
 the table cells via the `row height` and `column width` settings. By checking the
@@ -324,13 +354,14 @@ The format codes must be a `format_spec` from the new-style Python formatting. Y
 them as new-style formatting codes, but without the braces and the colon. If you want to use a
 complete format string, i.e. _with_ the braces and the colon, you must put your format string
 between quotes. For example, using `'hello {:.2e}'` will prepend "hello" to the data values. Take
-a look at the [Format Specification Mini-Language](https://docs.python.org/3/library/string.html#format-specification-mini-language)
-from the Python documentation to see what's possible.
+a look at [this page](https://pyformat.info/) or the Python documentation
+[Format Specification Mini-Language](https://docs.python.org/3/library/string.html#format-specification-mini-language)
+to see what's possible.
 
-##### Text Inspector
+#### Text Inspector
 
 The `Text` inspector contains a _read-only_ text editor widget that shows the contents of a single
-array element. If your data consists of a large strings, especially strings of multiple lines,
+array element. If your data consists of large strings, especially strings of multiple lines,
 examining it in a text editor works better than using a table and resizing the cell sizes. Also
 the `word wrap` settings has more options here. To see this for yourself, download the example file
 from the screenshot [here](http://www.hdfeos.org/zoo/index_openGESDISC_Examples.php#OMI) (2.4 MB),
@@ -344,7 +375,7 @@ At the bottom of the Data panel, in the lower left corner of the screen shot, ar
 contain meta data of the item that is currently selected in the tree.
 
 The `Attributes` tab lists the attributes of items from HDF or NetCDF files. Other file formats may
-contain similar meta data, which is then also displayed here.
+contain similar meta data, which will also be displayed here.
 
 The `Properties` tab contains a list of properties, such as the shape and element-type of the
 selected item. In contrast to the `Attributes` this list is fixed; all data items always have the
