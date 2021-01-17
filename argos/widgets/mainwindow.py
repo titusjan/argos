@@ -203,8 +203,6 @@ class MainWindow(QtWidgets.QMainWindow):
             "Properties", self.repoWidget.propertiesPane.table)
         self.__addTableHeadersSubMenu(
             "Attributes", self.repoWidget.attributesPane.table)
-        self.__addTableHeadersSubMenu(
-            "Dimensions", self.repoWidget.dimensionsPane.table)
 
 
     def __addTableHeadersSubMenu(self, menuTitle, treeView):

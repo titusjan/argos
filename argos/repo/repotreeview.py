@@ -23,7 +23,6 @@ from argos.qt import QtWidgets, QtGui, QtCore, QtSignal, QtSlot, Qt
 from argos.config.groupcti import MainGroupCti
 from argos.config.boolcti import BoolCti
 from argos.repo.detailplugins.attr import AttributesPane
-from argos.repo.detailplugins.dim import DimensionsPane
 from argos.repo.detailplugins.prop import PropertiesPane
 from argos.repo.registry import globalRtiRegistry
 from argos.repo.repotreemodel import RepoTreeModel
@@ -70,7 +69,6 @@ class RepoWidget(BasePanel):
 
         self.propertiesPane = self.addDetailsPane(PropertiesPane(self.repoTreeView))
         self.attributesPane = self.addDetailsPane(AttributesPane(self.repoTreeView))
-        self.dimensionsPane = self.addDetailsPane(DimensionsPane(self.repoTreeView))
 
         self.repoTreeView.sigRepoItemChanged.connect(self.repoItemChanged)
         self.tabWidget.currentChanged.connect(self.tabChanged)
@@ -98,7 +96,6 @@ class RepoWidget(BasePanel):
             treeHeaders = self.repoTreeView.marshall(),
             propertiesPane = self.propertiesPane.marshall(),
             attributesPane = self.attributesPane.marshall(),
-            dimensionsPane = self.dimensionsPane.marshall(),
         )
 
         return cfg
@@ -117,7 +114,6 @@ class RepoWidget(BasePanel):
 
         self.propertiesPane.unmarshall(cfg.get('propertiesPane', {}))
         self.attributesPane.unmarshall(cfg.get('attributesPane', {}))
-        self.dimensionsPane.unmarshall(cfg.get('dimensionsPane', {}))
 
 
     def repoItemChanged(self, rti):

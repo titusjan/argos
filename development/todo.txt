@@ -26,6 +26,13 @@ TODO short term:
 
         quickview tab
 
+        remove dimensions tab
+
+        warnings in red
+
+        shape & type column visible by default.
+
+        'combobox' -> drop-down box
 
     Think about it
     --------------
@@ -35,11 +42,7 @@ TODO short term:
 
         Fixed font size in tables and trees so that windows10 with two monitors works. (setFixedPitch)
 
-    Cleanup and release
-    -------------------
 
-        check Linux, Windows, MacOs.
-        Check Python 2.7
 
 TODO mid term:
 
