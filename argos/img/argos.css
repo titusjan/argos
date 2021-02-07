@@ -28,6 +28,10 @@ InspectorSelectionPane {
     padding-bottom: 0px;
 }
 
+QFrame#message_label {
+    color: #FF0066;
+};
+
 QMainWindow::separator {
     background: black;
     width: 1px;

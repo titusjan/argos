@@ -47,6 +47,7 @@ class InspectorSelectionPane(QtWidgets.QFrame):
         self.menuButton.setMenu(inspectorMenu)
 
         self.messageLabel = QtWidgets.QLabel("")
+        self.messageLabel.setObjectName("message_label")
         self.messageLabel.setFrameStyle(QtWidgets.QFrame.Panel)
         self.messageLabel.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.messageLabel.setTextInteractionFlags(Qt.TextSelectableByMouse)

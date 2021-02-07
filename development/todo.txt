@@ -21,12 +21,6 @@ Argos philosophy:
 
 TODO short term:
 
-    New Features
-    ------------
-
-
-        warnings in red
-
 
 
 TODO mid term:
