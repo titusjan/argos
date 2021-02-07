@@ -4,7 +4,7 @@ History
 =======
 
 
-0.3.0 (2021-01-03)
+0.3.0 (2021-02-07)
 ------------------
 
 Note that version 0.3 will be the last release that supports Python 2.

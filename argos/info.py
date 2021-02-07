@@ -24,7 +24,7 @@ DEBUGGING = ('-d' in sys.argv or '--debug' in sys.argv)
 TESTING = True # add some test menu options
 PROFILING = False# and DEBUGGING
 
-VERSION = '0.3.0.rc3'
+VERSION = '0.3.0.rc4'
 REPO_NAME = "argos"
 SCRIPT_NAME = "argos"
 PACKAGE_NAME = "argos"

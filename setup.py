@@ -60,7 +60,8 @@ install_requires = [
     "cmlib",  # Needed, even if no plugins are installed.
     "numpy >= 1.11",
     # Argos will technically work without pyqtgraph and h5py, but with very limited functionality.
-    # "pyqtgraph >= 0.10",
+    "pgcolorbar",
+    "pyqtgraph >= 0.10",
     # "h5py >= 2.6"
 ]
 

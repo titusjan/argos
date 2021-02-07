@@ -6,6 +6,7 @@ plug-in architecture that allows it to be extended to read new data formats. At 
 are included to read HDF-5, NetCDF-4, WAV, Exdir, numpy binary files and various image formats, but
 a plug-in could be written for any data that can be expressed as a Numpy array.
 
+
 ### Installing Argos
 
 Argos works with Python 2.7 or Python 3.4 and higher. If you don't have Python yet, consider to
@@ -37,13 +38,14 @@ Provided you use Python 3.5 or higher, you can install PyQt5 with `pip`. Otherwi
 it at the [Riverbank site](https://www.riverbankcomputing.com/software/pyqt/download5).
 
     %> pip install PyQt5
-    %> pip install numpy
-    %> pip install pyqtgraph
-    %> pip install cmlib
-    %> pip install pgcolorbar
     %> pip install argos
 
 After that, install the optional dependencies with `pip install <package>`.
+
+The `numpy`, `pyqtgraph`, `cmlib`, and `pgcolorbar` packages should have been installed
+automatically. If this somehow is not the case you can install them manually with
+`pip install <package>`.
+
 
 #### Installing Argos with Anaconda
 
@@ -56,12 +58,14 @@ isn't available on Anaconda. Therefore use:
     %> conda install pyqt
     %> conda install numpy
     %> conda install pyqtgraph
-    %> pip install cmlib
-    %> pip install pgcolorbar
     %> pip install argos
 
 After that, install the optional dependencies with `conda install <package>` (or
 `pip install <package>` for exdir).
+
+The `cmlib` and `pgcolorbar` packages should have been installed automatically. If this somehow is
+not the case you can install them manually with `pip install <package>`.
+
 
 ### Starting Argos
 
