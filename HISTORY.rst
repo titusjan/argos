@@ -3,11 +3,16 @@
 History
 =======
 
+Note that version 0.3 will be the last release that supports Python 2.
+
+0.3.1 (2021-02-07)
+------------------
+
+*   Fixed error in style sheet.
+
 
 0.3.0 (2021-02-07)
 ------------------
-
-Note that version 0.3 will be the last release that supports Python 2.
 
 *   New legend in 2D image inspector
 *   Extensive database of color maps and color map picker (CmLib).
