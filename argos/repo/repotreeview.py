@@ -27,9 +27,9 @@ from argos.repo.detailplugins.prop import PropertiesPane
 from argos.repo.registry import globalRtiRegistry
 from argos.repo.repotreemodel import RepoTreeModel
 from argos.widgets.argostreeview import ArgosTreeView
-from argos.widgets.constants import (LEFT_DOCK_WIDTH, COL_NODE_NAME_WIDTH,
-                                        COL_SHAPE_WIDTH, COL_ELEM_TYPE_WIDTH,
-                                        DOCK_SPACING, DOCK_MARGIN)
+from argos.widgets.constants import LEFT_DOCK_WIDTH,  DOCK_SPACING, DOCK_MARGIN
+from argos.widgets.constants import COL_NODE_NAME_WIDTH, COL_SHAPE_WIDTH, COL_ELEM_TYPE_WIDTH
+
 from argos.widgets.misc import BasePanel
 
 
@@ -169,8 +169,8 @@ class RepoTreeView(ArgosTreeView):
         enabled[headerNames[RepoTreeModel.COL_NODE_NAME]] = False # Cannot be unchecked
         checked = dict((name, False) for name in headerNames)
         checked[headerNames[RepoTreeModel.COL_NODE_NAME]] = True
-        checked[headerNames[RepoTreeModel.COL_SHAPE]] = False
-        checked[headerNames[RepoTreeModel.COL_ELEM_TYPE]] = False
+        checked[headerNames[RepoTreeModel.COL_SHAPE]] = True
+        checked[headerNames[RepoTreeModel.COL_ELEM_TYPE]] = True
         self.addHeaderContextMenu(checked=checked, enabled=enabled, checkable={})
 
         self.setContextMenuPolicy(Qt.DefaultContextMenu) # will call contextMenuEvent

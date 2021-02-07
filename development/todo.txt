@@ -24,27 +24,17 @@ TODO short term:
     New Features
     ------------
 
-        quickview tab
-
-        remove dimensions tab
 
         warnings in red
-
-        shape & type column visible by default.
-
-        'combobox' -> drop-down box
-
-    Think about it
-    --------------
-
-    Bugs and issues
-    ---------------
-
-        Fixed font size in tables and trees so that windows10 with two monitors works. (setFixedPitch)
 
 
 
 TODO mid term:
+
+    quickview tab
+
+    Fixed font size in tables and trees so that windows10 with two monitors works. (setFixedPitch)
+
 
     Zebra striping?
     The problem is that the currently selected RTI is poorly visible when the data tree loses focus. Fix with CSS?
