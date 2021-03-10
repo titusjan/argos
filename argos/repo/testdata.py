@@ -131,6 +131,13 @@ def createArgosTestData():
     parabola = 0.02 * np.square(x)
     myDict['parabola'] = parabola
 
+    myDict['array_1K'] = np.random.randn(1000)
+    myDict['array_10K'] = np.random.randn(10 * 1000)
+    myDict['array_100K'] = np.random.randn(100 * 1000)
+    myDict['array_200K'] = np.random.randn(200 * 1000)
+    myDict['array_500K'] = np.random.randn(500 * 1000)
+    myDict['array_1000K'] = np.random.randn(1000 * 1000)
+
     #masked_array = ma.arange(2400, dtype=np.float16).reshape(60, 40)
     masked_array = np.transpose(ma.ones(shape=(40, 60)) * parabola)
     masked_array[:, 0:7] = ma.masked
