@@ -21,8 +21,9 @@ Argos philosophy:
 
 TODO short term:
 
+    line plot isn't cleared when a file is closed. Do we want' this? What happens if we pull the slicer
 
-
+    Make cross hair plots size stable/again: https://stackoverflow.com/a/36897295/625350
 TODO mid term:
 
     quickview tab
