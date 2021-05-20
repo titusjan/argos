@@ -42,29 +42,16 @@ it at the [Riverbank site](https://www.riverbankcomputing.com/software/pyqt/down
 
 After that, install the optional dependencies with `pip install <package>`.
 
-The `numpy`, `pyqtgraph`, `cmlib`, and `pgcolorbar` packages should have been installed
-automatically. If this somehow is not the case you can install them manually with
-`pip install <package>`.
-
 
 #### Installing Argos with Anaconda
 
-At the time of writing there is no conda package for Argos yet, so Argos itself should be installed
-with Pip. It is recommended [here](https://www.anaconda.com/blog/using-pip-in-a-conda-environment)
-and [here](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-pkgs.html#installing-non-conda-packages)
-to install Python packages with `conda` where possible and only fall back to `pip` if the package
-isn't available on Anaconda. Therefore use:
+Argos is available at the conda-forge channel. To install it type:
 
     %> conda install pyqt
-    %> conda install numpy
-    %> conda install pyqtgraph
-    %> pip install argos
+    %> conda install -c conda-forge argos
 
 After that, install the optional dependencies with `conda install <package>` (or
 `pip install <package>` for exdir).
-
-The `cmlib` and `pgcolorbar` packages should have been installed automatically. If this somehow is
-not the case you can install them manually with `pip install <package>`.
 
 
 ### Starting Argos
