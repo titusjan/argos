@@ -11,8 +11,6 @@ dependencies:
   - pillow
   - scipy
   - pandas
-  - pip
-  - pip:
-    - pyqtgraph >= 0.10.0
-    - cmlib
-    - pgcolorbar
+  - pyqtgraph >= 0.10.0
+  - conda-forge::cmlib
+  - conda-forge::pgcolorbar
