@@ -7,7 +7,7 @@ import sys
 
 import os, logging
 import argos
-from argos.qt import initQCoreApplication
+from argos.qt import initQApplication
 from argos.repo.registry import RtiRegistry
 from argos.inspector.registry import InspectorRegistry
 
@@ -47,7 +47,7 @@ def main():
     logger.debug("current dir: {}".format(SCRIPT_DIR))
 
     # Important: instantiate a Qt application first to use the correct settings file/winreg.
-    _app = initQCoreApplication()
+    _app = initQApplication()
 
     registerRtis()
     registerInspectors()
