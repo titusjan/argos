@@ -7,7 +7,7 @@ import sys
 # sys.path.append("../../")
 
 import argos
-from argos.qt import initQCoreApplication
+from argos.qt import initQApplication
 from argos.inspector.registry import InspectorRegistry
 from argos.repo.registry import RtiRegistry
 
@@ -19,7 +19,7 @@ def printReg(name, registry):
 
 def main():
     # Important: instantiate a Qt application first to use the correct settings file/winreg.
-    _app = initQCoreApplication()
+    _app = initQApplication()
 
     inspectorRegistry = InspectorRegistry()
     inspectorRegistry.loadOrInitSettings()

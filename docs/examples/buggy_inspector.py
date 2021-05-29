@@ -21,7 +21,7 @@ import logging, os, sys
 
 
 import argos
-from argos.qt import initQCoreApplication
+from argos.qt import initQApplication
 from argos.config.groupcti import MainGroupCti
 from argos.inspector.abstract import AbstractInspector
 from argos.inspector.registry import InspectorRegistry
@@ -82,10 +82,9 @@ def persistentRegisterInspector(fullName, fullClassName, pythonPath=''):
     registry.saveSettings()
 
 
-
 if __name__ == "__main__":
     argos.configBasicLogging(level='DEBUG')
-    initQCoreApplication()
+    initQApplication()
     persistentRegisterInspector('Buggy inspector', 'BuggyInspector')
 
 
