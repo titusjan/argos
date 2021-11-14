@@ -181,7 +181,7 @@ class RepoTreeView(ArgosTreeView):
         self.currentItemActionGroup = QtWidgets.QActionGroup(self)
         self.currentItemActionGroup.setExclusive(False)
 
-        removeFileAction = QtWidgets.QAction("Remove from Tree", self.currentItemActionGroup,
+        removeFileAction = QtWidgets.QAction("  Remove from Tree", self.currentItemActionGroup,
                                          shortcut=QtGui.QKeySequence.Delete,
                                          triggered=self.removeCurrentItem)
         self.addAction(removeFileAction)
@@ -199,6 +199,10 @@ class RepoTreeView(ArgosTreeView):
 
         self.collapseItemAction = QtWidgets.QAction("Collapse Item", self, triggered=self.collapseCurrentItem)
         self.addAction(self.collapseItemAction)
+
+        self.copyPathAction = QtWidgets.QAction("Copy Path to Clipboard", self,
+                                                triggered=self.copyPathToClipboard)
+        self.addAction(self.copyPathAction)
 
         # Connect signals
         selectionModel = self.selectionModel() # need to store reference to prevent crash in PySide
@@ -286,6 +290,19 @@ class RepoTreeView(ArgosTreeView):
     def sizeHint(self):
         """ The recommended size for the widget."""
         return QtCore.QSize(LEFT_DOCK_WIDTH, 450)
+
+
+    @QtSlot()
+    def copyPathToClipboard(self):
+        """ Copies the path of the currently selected item to the clipboard
+        """
+        currentItem, currentIndex = self.getCurrentItem()
+        if not currentIndex.isValid():
+            return
+
+        QtWidgets.QApplication.clipboard().setText(currentItem.nodePath)
+        logger.info("Copied path to the clipboard: {}".format(currentItem.nodePath))
+
 
 
     @QtSlot()
