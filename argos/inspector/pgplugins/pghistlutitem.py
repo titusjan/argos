@@ -3,10 +3,9 @@
     Currently only a histogram range in the imageChanged method is added. This prevents errors when
     the image contains NaNs. Later the mouse and scrolling behaviour may be altered.
 """
+import numpy as np
 
-
-#from pyqtgraph.Qt import QtWidgets, QtCore
-from argos.qt import QtWidgets
+from argos.qt import QtWidgets, QtSignal
 from pyqtgraph.graphicsItems.GraphicsWidget import GraphicsWidget
 from pyqtgraph.graphicsItems.ViewBox import *
 from pyqtgraph.graphicsItems.GradientEditorItem import *
@@ -31,10 +30,9 @@ class HistogramLUTItem(GraphicsWidget):
     - Movable region over histogram to select black/white levels
     - Gradient editor to define color lookup table for single-channel images
     """
-
-    sigLookupTableChanged = QtCore.Signal(object)
-    sigLevelsChanged = QtCore.Signal(object)
-    sigLevelChangeFinished = QtCore.Signal(object)
+    sigLookupTableChanged = QtSignal(object)
+    sigLevelsChanged = QtSignal(object)
+    sigLevelChangeFinished = QtSignal(object)
 
     def __init__(self, image=None, fillHistogram=True):
         """
