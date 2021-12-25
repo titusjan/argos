@@ -5,7 +5,7 @@
 """
 
 
-#from pyqtgraph.Qt import QtWidgets, QtCore
+from pyqtgraph.Qt import QtWidgets, QtCore
 from argos.qt import QtWidgets
 from pyqtgraph.graphicsItems.GraphicsWidget import GraphicsWidget
 from pyqtgraph.graphicsItems.ViewBox import *

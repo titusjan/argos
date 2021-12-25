@@ -1,0 +1,4 @@
+pipenv run pip wheel -w . ..
+pipenv run pip wheel -w . git+https://github.com/franzhaas/cmlib.git#egg=cmlib
+pipenv run pip wheel -w . git+https://github.com/franzhaas/pgcolorbar.git#egg=pgcolorbarb
+pipenv run pyoxidizer 

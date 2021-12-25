@@ -21,7 +21,9 @@ from __future__ import print_function
 
 import logging
 import os.path
-
+import pathlib
+import importlib
+import importlib.resources
 from os import listdir
 
 from cmlib import CmLib, CmLibModel, DATA_DIR
@@ -41,27 +43,18 @@ assert DEFAULT_COLOR_MAP in DEF_FAV_COLOR_MAPS, "Default color map not in defaul
 
 
 class CmLibSingleton(CmLib, SingletonMixin):
-
     def __init__(self, **kwargs):
         super(CmLibSingleton, self).__init__(**kwargs)
-
         logger.debug("CmLib singleton: {}".format(self))
-
-        cmDataDir = DATA_DIR
-        logger.info("Importing color map library from: {}".format(cmDataDir))
-
+        #cmDataDir = DATA_DIR
         # Don't import from Color Brewer since those are already included in MatPlotLib.
-        # With sub-sampling the color maps similar maps can be achieved as the Color Brewer maps.
-        excludeList = ['ColorBrewer2']
-        for path in listdir(cmDataDir):
-            if path in excludeList:
+        # With sub-sampling the color maps similar maps can be achieved as the Color Brewer maps
+        excludeList = ['ColorBrewer2', "readme.txt", "__init__.py", "__pycache__"]
+        for path in importlib.resources.contents(f"cmlib.data"):
+            if any(item in path for item in excludeList):
                 logger.debug("Not importing catalogue from exlude list: {}".format(excludeList))
                 continue
-
-            fullPath = os.path.join(cmDataDir, path)
-            if os.path.isdir(fullPath):
-                self.load_catalog(fullPath)
-
+            self.load_catalog(pathlib.Path(path))
         logger.debug("Number of color maps: {}".format(len(self.color_maps)))
 
 
@@ -69,4 +62,3 @@ class CmLibModelSingleton(CmLibModel, SingletonMixin):
 
     def __init__(self, **kwargs):
         super(CmLibModelSingleton, self).__init__(CmLibSingleton.instance(), **kwargs)
-

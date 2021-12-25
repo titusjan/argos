@@ -78,6 +78,7 @@ setup(
     author_email = info.EMAIL,
     license = "GPLv3",
     url=info.PROJECT_URL,
+    build_requires = ["wheel"],
     packages = find_packages(),
     package_data = {'': ['HISTORY.rst'],
                     info.PACKAGE_NAME: ['img/argos.css', 'img/snipicons/*', 'utils/default_logging.json']},

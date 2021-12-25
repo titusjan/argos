@@ -223,5 +223,3 @@ class RepoTreeModel(BaseTreeModel):
 
         assert repoTreeItem.parentItem is None, "repoTreeItem {!r}".format(repoTreeItem)
         return self.insertItem(repoTreeItem, position=position, parentIndex=parentIndex)
-
-
