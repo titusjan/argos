@@ -245,7 +245,7 @@ def make_exe():
     # `add_python_resources()` adds these objects to the binary, with a load
     # location as defined by the packaging policy's resource location
     # attributes.
-    exe.add_python_resources(exe.pip_install(["./cmlib-1.1.2-py3-none-any.whl", "numpy", "pyqtgraph", "./pgcolorbar-1.1.2-py3-none-any.whl", "PyQt5", "h5py", "./argos-0.3.1-py3-none-any.whl"]))
+    exe.add_python_resources(exe.pip_install(["./cmlib-1.1.2-py3-none-any.whl", "numpy", "pyqtgraph", "./pgcolorbar-1.1.2-py3-none-any.whl", "PyQt5", "h5py", "netCDF4", "pillow", "pandas", "exdir", "./argos-0.3.1-py3-none-any.whl"]))
 
     # Invoke `pip install` using a requirements file and add the collected resources
     # to our binary.
