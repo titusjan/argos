@@ -202,7 +202,7 @@ def make_exe():
     # resources, and other options. The returned object represents the
     # standalone executable that will be built.
     exe = dist.to_python_executable(
-        name="argos_installer",
+        name="argos",
 
         # If no argument passed, the default `PythonPackagingPolicy` for the
         # distribution is used.
@@ -291,7 +291,7 @@ def make_msi(exe):
         # Simple identifier of your app.
         "argos",
         # The name of your application.
-        "argos, the h5 viewer",
+        "argos",
         # The version of your application.
         "0.3",
         # The author/manufacturer of your application.
