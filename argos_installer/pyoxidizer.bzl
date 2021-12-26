@@ -25,7 +25,7 @@ def make_exe():
     # Control support for loading Python extensions and other shared libraries
     # from memory. This is only supported on Windows and is ignored on other
     # platforms.
-    policy.allow_in_memory_shared_library_loading = True
+    policy.allow_in_memory_shared_library_loading = False
 
     # Control whether to generate Python bytecode at various optimization
     # levels. The default optimization level used by Python is 0.
@@ -78,7 +78,7 @@ def make_exe():
     # policy.include_non_distribution_sources = True
 
     # Toggle whether files associated with tests are included.
-    # policy.include_test = False
+    policy.include_test = False
 
     # Resources are loaded from "in-memory" or "filesystem-relative" paths.
     # The locations to attempt to add resources to are defined by the
@@ -225,13 +225,13 @@ def make_exe():
 
     # Copy Windows runtime DLLs next to the build executable and error if this
     # cannot be done.
-    # exe.windows_runtime_dlls_mode = "always"
+    exe.windows_runtime_dlls_mode = "always"
 
     # Make the executable a console application on Windows.
     # exe.windows_subsystem = "console"
 
     # Make the executable a non-console application on Windows.
-    # exe.windows_subsystem = "windows"
+    exe.windows_subsystem = "windows"
 
     # Invoke `pip download` to install a single package using wheel archives
     # obtained via `pip download`. `pip_download()` returns objects representing
