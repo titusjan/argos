@@ -225,7 +225,7 @@ def make_exe():
 
     # Copy Windows runtime DLLs next to the build executable and error if this
     # cannot be done.
-    exe.windows_runtime_dlls_mode = "always"
+    exe.windows_runtime_dlls_mode = "when-present"
 
     # Make the executable a console application on Windows.
     # exe.windows_subsystem = "console"
