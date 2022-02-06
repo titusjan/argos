@@ -115,7 +115,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Move window to the center of the screen
         desktopRect = QtWidgets.QApplication.desktop().availableGeometry(self)
         center = desktopRect.center()
-        self.move(center.x() - self.width () * 0.5, center.y() - self.height() * 0.5)
+        self.move(round(center.x() - self.width () * 0.5), round(center.y() - self.height() * 0.5))
 
         self.__setupMenus()
         self.__setupViews()
