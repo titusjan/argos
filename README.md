@@ -11,7 +11,7 @@ a plug-in could be written for any data that can be expressed as a Numpy array.
 
 Argos works with Python 2.7 or Python 3.4 and higher. If you don't have Python yet, consider to
 use the [Anaconda Python distribution](https://www.continuum.io/downloads), as it comes with many
-of Argos' depencencies installed.
+of Argos' dependencies installed.
 
 Argos requires at least [PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro) and
 [Numpy](http://www.numpy.org) and [CmLib](https://github.com/titusjan/cmlib). It is strongly
@@ -86,10 +86,10 @@ At start-up, Argos reads some persistent settings (window position and size, plo
 from a configuration file so that you can continue where you left off the previous session.
 
 If, for some reason, you want Argos to reset to its initial state, you can simply delete this
-config file  before starting Argos (please make a backup just in case). Argos will then start with
+config file before starting Argos (please make a backup just in case). Argos will then start with
 the original configuration.
 
-The configuration file is called `settings.json` by default. It's location is platform dependent:
+The configuration file is called `settings.json` by default. Its location is platform dependent:
 
 ```
 	Windows: C:\Users\<user>\AppData\Local\titusjan\argos
@@ -104,7 +104,7 @@ file browser by selecting `Configure | Show Config Files...` from the Argos main
 ### Using Argos
 
 The Argos main window consists of a central panel that holds a visualization, and some smaller
-windows that surround the main pannel. The smaller windows can be moved around by dragging them by
+windows that surround the main panel. The smaller windows can be moved around by dragging them by
 their title bar. They can be separated from the main window or can be docked at an at another
 position. Collectively they are called the dock panels. You can show and hide them via the
 `View | Panels` main menu (although there is typically no need to do so).
@@ -112,18 +112,18 @@ position. Collectively they are called the dock panels. You can show and hide th
 ![argos_screen_shot](docs/screen_shots/argos_gui.png)
 
 The main panel is called the (data) Inspector. From the `View` main menu you can select one of the
-following insspector types: _Line Plot_, _Image Plot_, _Table_, or _Text_ inspector. The current
+following inspector types: _Line Plot_, _Image Plot_, _Table_, or _Text_ inspector. The current
 inspector type is shown in the menu button above the inspector panel. Clicking this button (or
 pressing ctrl-I) is an alternative way of selecting a different inspector.
 
-If you want to have multple inspectors open at the same time, you can select `New Window` from the
+If you want to have multiple inspectors open at the same time, you can select `New Window` from the
 `File` menu.
 
 
 #### Selecting Data
 
 Note: the HDF5 file that is used in the screenshot and in the examples below can be
-downloaded  [here](http://www.hdfeos.org/zoo/index_openGESDISC_Examples.php#OMI) (2.4 MB).
+downloaded [here](http://www.hdfeos.org/zoo/index_openGESDISC_Examples.php#OMI) (2.4 MB).
 More (NetCDF4) example data can be found at the UCAR site
 [here](https://www.unidata.ucar.edu/software/netcdf/examples/files.html).
 
@@ -154,7 +154,7 @@ visualize.
 
 In the screen shot for example, the `ColumnAmountO3` HDF-5 dataset is selected and placed in the
 collector. This is a two-dimensional data array, it contains a world wide distribution of ozone in
-the atmosphere. The first dimension corresponds to longitude, the second to latidue. These
+the atmosphere. The first dimension corresponds to longitude, the second to latitude. These
 dimensions have no name since the dataset has no associated [dimension
 scales](http://docs.h5py.org/en/latest/high/dims.html). Therefore, Argos just calls them `dim-0`
 and `dim-1`.
@@ -167,9 +167,9 @@ the X-axis.
 ![collector_2d](docs/screen_shots/collector_2d.png)
 
 When you select the `Line Plot` inspector from the View menu or the Inspector button, the selected
-data will be drawn as a line plot. A line plot can only show one-dimenstional data, but because
+data will be drawn as a line plot. A line plot can only show one-dimensional data, but because
 since the example data is two-dimensional only a sub-slice of the dataset can be visualized. The
-collector will therefore contain a drop-down box for specifying which data dimension will be layed
+collector will therefore contain a drop-down box for specifying which data dimension will be laid
 along the X-axis, and a spinbox-slider combination for selecting the index of the other dimension.
 Below you see the case that the line plot will draw row 360. By the way, this is reflected in the
 plot title, which will be `ColumnAmountO3[360, :]`).
@@ -186,7 +186,7 @@ inspector. If you click on a config value, an appropriate widget will appear for
 with a reset button <img src="argos/img/snipicons/reset-l.svg" width="16" height="16"> that will
 reset the config value to its default when clicked.
 
-The settings are hierarchical so that related settings are grouped together in a branche. Branches
+The settings are hierarchical so that related settings are grouped together in a branch. Branches
 also have a reset button that resets the complete branch. For instance by clicking on the reset
 button of the `y-axis` config value branch, all settings pertaining to the Y-axis are reset.
 
@@ -198,7 +198,7 @@ plots.
 
 When you click on the `Reset Ranges` button at the bottom of the Settings panel, all settings that
 are related to the data range (such as the range of the axes and the color scale) are reset to their
-default values.  This gives you a convenient way to go back to viewing all the data after zooming in.
+default values. This gives you a convenient way to go back to viewing all the data after zooming in.
 Pressing `Ctrl-0` has the same effect.
 
 If the `auto` checkbox is checked, the _Range_ settings are automatically reset every time you
@@ -207,7 +207,7 @@ panel. Normally this is desired behavior because a new dataset or axis will have
 data range. Unchecking the auto scale checkbox allows you to retain the axes range settings, which
 can be useful in case you are switching to a related dataset with the same data extent.
 
-If you want to reset all inspector setttings you can click on the triangle next to the `Reset
+If you want to reset all inspector settings you can click on the triangle next to the `Reset
 Range` button and select `Reset All` in the context menu that appears. The menu also allow you to
 change the default action of the button.
 
@@ -281,7 +281,7 @@ the data at the cursor (see the screen shot at the top of this document).
 
 Panning, zooming and setting the plot titles work in the same manner as for the Line Plot
 inspector. Next to that, the image plot has a `color scale` that determines the minimum and maximum
-values of the color scale. It's range, too, can be in auto-range mode, or can be set manually.
+values of the color scale. Its range, too, can be in auto-range mode, or can be set manually.
 
 <img src="docs/screen_shots/color_legend.png" width="161">
 
@@ -300,7 +300,7 @@ The range of the color scale can also be manipulated by panning and zooming the 
     will change only at that end-point while the other end-point remains the same. Note that the
     _drag lines_ might be hidden with the `show draglines` setting but they still will appear if
     the cursor hovers above them. The `show draglines/margins` option allows you to increase white
-    space arround the color bar so that you have more room for dragging.
+    space around the color bar so that you have more room for dragging.
 * **Reset the range:**
     Click the middle mouse button (or mouse wheel) while the cursor is above the scale to reset the
     color range.
@@ -309,9 +309,9 @@ Next to the color scale you see a side-ways histogram, which gives an indication
 have a certain value. This may assist you in choosing the best color range. The histogram can be
 hidden by unchecking the `color scale/show histogram` setting.
 
-Argos comes with a large collection of color maps. The current color  map can be changed with the
+Argos comes with a large collection of color maps. The current color map can be changed with the
 `color scale/color map` setting. The drop-down box contains a small selection of user-favorite
-color maps. The elipsis button (`…`) next to will bring forward a dialog window which contains a
+color maps. The ellipsis button (`…`) next to will bring forward a dialog window which contains a
 table with all the available color maps. You can add color maps to the favorites by checking the
 check box in the left most column of the table (labeled ★). See the [CmLib
 documentation](https://github.com/titusjan/cmlib#cmlib) for more details.
@@ -326,7 +326,7 @@ This inspector is useful for examining the exact values of your data. You can ch
 the table cells via the `row height` and `column width` settings. By checking the
 `auto row heights` and/or the `auto column widths` check boxes, you can configure the table
 inspector to calculate the cell sizes dynamically from their contents. Note that this can be slow
-for large tables.  So, as an optimization, if the table has more than 1000 elements only the
+for large tables. So, as an optimization, if the table has more than 1000 elements only the
 currently selected cell is used to calculate the height and width, and this is applied to all other
 cells. If a table has more than 10000 rows or columns, auto resizing is disabled.
 
