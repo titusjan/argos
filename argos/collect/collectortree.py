@@ -143,7 +143,7 @@ class CollectorTree(ToggleColumnTreeView):
         # If the remaining total is less than zero, just set the widths to the size hints (a
         # horizontal scrollbar will appear).
         for idx, newWidth in zip(indexSpin, newSpinBoxWidths):
-            header.resizeSection(idx, newWidth)
+            header.resizeSection(idx, round(newWidth))
 
 
 

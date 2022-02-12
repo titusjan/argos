@@ -193,8 +193,8 @@ class ConfigTreeView(ArgosTreeView):
         #self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectItems)
 
         treeHeader = self.header()
-        treeHeader.resizeSection(ConfigTreeModel.COL_NODE_NAME, RIGHT_DOCK_WIDTH * 0.5)
-        treeHeader.resizeSection(ConfigTreeModel.COL_VALUE, RIGHT_DOCK_WIDTH * 0.5)
+        treeHeader.resizeSection(ConfigTreeModel.COL_NODE_NAME, round(RIGHT_DOCK_WIDTH * 0.5))
+        treeHeader.resizeSection(ConfigTreeModel.COL_VALUE, round(RIGHT_DOCK_WIDTH * 0.5))
 
         headerNames = self.model().horizontalHeaders
         enabled = dict((name, True) for name in headerNames)
