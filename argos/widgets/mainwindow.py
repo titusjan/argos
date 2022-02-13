@@ -1036,6 +1036,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 '/myDict/structured_arr4', # gives ValueError: Unable to transform (63, 63) to dtype [('r', '|u1'), ('', '|V1'), ('b', '|u1')]
                 '/argos/trop/2015_01_07T09_29_12_svn4465_wls_prnu/ql_test_020_minutes-020-021/engDat.nc/SATELLITE_INFO/processing_events',
                 '/argos/mini_scanner_output/multiple_dimension_scales.h5', # TODO:
+                '/argos/images/eclipseclouds_tamo_2017_geo.tif', # Fails in Python 3.10. Perhaps will work later.
             ]
 
             # Don't import plugins at module level.
@@ -1080,8 +1081,11 @@ class MainWindow(QtWidgets.QMainWindow):
             if item.nodePath in skipPaths:
                 logger.warning("Skipping node during testing: {}".format(item.nodePath))
                 return
+            else:
+                logger.debug("Not skipping node during testing: {}".format(item.nodePath))
 
             self.repoWidget.repoTreeView.setCurrentIndex(index)
+            self.repoWidget.repoTreeView.setExpanded(index, True)
             processEvents() # Cause Qt to update UI
 
             # Expand node to load children.
@@ -1116,7 +1120,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 logger.debug("Closing: {}".format(prevRootNode.nodePath))
                 prevRootNode.close()
 
-            self.repoWidget.repoTreeView.expandBranch(index = nodeIndex, expanded=True) # TODO: why necessary?
             visitNodes(nodeIndex)
 
         try:

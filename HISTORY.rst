@@ -40,6 +40,7 @@ Note that version 0.3 will be the last release that supports Python 2.
 *   Added --log-config command line option for specifying the logging configuration file.
 *   Collapsing an item in the data tree closes the underlying file or resources.
 *   Open Exdir files read-only
+*   Ctrl-C copies all selected cells in the Table instpector to the clipboard.
 
 0.2.2 (2020-03-28)
 ---------------------
