@@ -179,6 +179,7 @@ def createArgosTestData():
     myDict['numpy unicode array'] = np.array(['Table', u'ταБЬℓσ'])
     myDict['byte array'] = bytearray(range(256))
     myDict['bytes'] = bytes(bytearray(range(0, 256)))
+    myDict['string'] = "The quick brown fox jumps over the lazy dog!"
 
     mappingRti = MappingRti(myDict, nodeName="myDict", iconColor=ICON_COLOR_MEMORY)
 
@@ -238,7 +239,7 @@ def addPandasTestData(rti):
     pandsRti.insertChild(PandasDataFrameRti(df, 'df', iconColor=ICON_COLOR_PANDAS))
 
     if versionInfo < (0, 25, 0):
-        # Panels are depricated and completely removed from Pandas 0.25.0
+        # Panels are deprecated and completely removed from Pandas 0.25.0
         panel = pd.Panel(np.random.randn(2, 5, 4), items=['Item1', 'Item2'],
                          major_axis=pd.date_range('1/1/2000', periods=5),
                          minor_axis=['A', 'B', 'C', 'D'])

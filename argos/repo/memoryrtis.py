@@ -22,7 +22,7 @@
 import logging, os
 import numpy as np
 
-from .baserti import BaseRti
+from .baserti import BaseRti, shapeToSummary, lengthToSummary
 from argos.repo.iconfactory import RtiIconFactory
 from argos.utils.cls import (check_is_a_sequence, check_is_a_mapping, check_is_an_array,
                                 is_a_sequence, is_a_mapping, is_an_array, type_name)
@@ -131,6 +131,13 @@ class ScalarRti(BaseRti):
         """ Returns the value to indicate missing data.
         """
         return getMissingDataValue(self._scalar)
+
+
+    @property
+    def summary(self):
+        """ Returns a summary of the contents of the RTI. In this case the scalar as a string
+        """
+        return str(self._scalar)
 
 
 
@@ -245,6 +252,15 @@ class FieldRti(BaseRti):
             return value
 
 
+    @property
+    def summary(self):
+        """ Returns a summary of the contents of the RTI.  E.g. 'array 20 x 30' elements.
+        """
+        if self.isSliceable:
+            return shapeToSummary(self.arrayShape)
+        else:
+            return ""
+
 
 
 
@@ -353,14 +369,24 @@ class ArrayRti(BaseRti):
         return childItems
 
 
+    @property
+    def summary(self):
+        """ Returns a summary of the contents of the RTI.  E.g. 'array 20 x 30' elements.
+        """
+        if self.isSliceable:
+            return shapeToSummary(self.arrayShape)
+        else:
+            return ""
+
+
 
 class SliceRti(ArrayRti):
     """ Represents a slice of a numpy array (even before it's further sliced in the collector)
 
         Inherits from ArrayRti and changes little. It overrides only the icon to indicate that the
-        underlying data is the same as it's parent.
+        underlying data is the same as its parent.
     """
-    # Use ARRAY icon here, the a FIELD icon should be used when the number of dimension is equal
+    # Use ARRAY icon here, the FIELD icon should be used when the number of dimension is equal
     # to the array to which the field belongs. A slice decreases the number of dimensions.
     _defaultIconGlyph = RtiIconFactory.ARRAY
     #_defaultIconGlyph = RtiIconFactory.FIELD
@@ -435,6 +461,16 @@ class SequenceRti(BaseRti):
         return type_name(self._sequence)
 
 
+    @property
+    def summary(self):
+        """ Returns a summary of the contents of the RTI.  E.g. 'array 20 x 30' elements.
+        """
+        if self._sequence is None:
+            return ""
+        else:
+            return lengthToSummary(len(self._sequence))
+
+
     def _fetchAllChildren(self):
         """ Adds a child item for each column
         """
@@ -480,6 +516,16 @@ class MappingRti(BaseRti):
         else:
             return '' # A dictionary has no single element type
             #return type_name(self._dictionary)
+
+
+    @property
+    def summary(self):
+        """ Returns a summary of the contents of the RTI.  E.g. 'array 20 x 30' elements.
+        """
+        if self._dictionary is None:
+            return ""
+        else:
+            lengthToSummary(len(self._dictionary))
 
 
     def _fetchAllChildren(self):

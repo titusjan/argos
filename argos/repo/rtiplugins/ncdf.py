@@ -27,7 +27,7 @@ import logging, types
 from netCDF4 import Dataset, Variable, Dimension
 
 from argos.utils.cls import check_class
-from argos.repo.baserti import BaseRti
+from argos.repo.baserti import BaseRti, shapeToSummary
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.utils.defs import SUB_DIM_TEMPLATE, CONTIGUOUS
 
@@ -254,6 +254,13 @@ class NcdfFieldRti(BaseRti):
             return value
 
 
+    @property
+    def summary(self):
+        """ Returns a summary of the contents of the RTI.  E.g. 'array 20 x 30' elements.
+        """
+        return shapeToSummary(self.arrayShape)
+
+
 
 class NcdfVariableRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a NCDF variable.
@@ -376,6 +383,17 @@ class NcdfVariableRti(BaseRti):
         """ Returns the value to indicate missing data. None if no missing-data value is specified.
         """
         return variableMissingValue(self._ncVar)
+
+
+    @property
+    def summary(self):
+        """ Returns a summary of the contents of the RTI.  E.g. 'array 20 x 30' elements.
+        """
+        if self.nDims == 0:
+            import numpy as np
+            return str(np.asarray(self._ncVar))  # scalar
+        else:
+            return shapeToSummary(self.arrayShape)
 
 
     def _fetchAllChildren(self):

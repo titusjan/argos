@@ -27,7 +27,7 @@ import h5py
 
 
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
-from argos.repo.baserti import BaseRti
+from argos.repo.baserti import BaseRti, shapeToSummary
 from argos.utils.cls import to_string, check_class, is_an_array
 from argos.utils.defs import DIM_TEMPLATE, SUB_DIM_TEMPLATE, CONTIGUOUS
 from argos.utils.masks import maskedEqual
@@ -223,6 +223,13 @@ class H5pyScalarRti(BaseRti):
         return dataSetMissingValue(self._h5Dataset)
 
 
+    @property
+    def summary(self):
+        """ Returns a summary of the contents of the RTI. In this case the scalar as a string
+        """
+        return str(self._h5Dataset[()])
+
+
 
 class H5pyFieldRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a field in a structured HDF-5 variable.
@@ -371,6 +378,13 @@ class H5pyFieldRti(BaseRti):
             return value
 
 
+    @property
+    def summary(self):
+        """ Returns a summary of the contents of the RTI.  E.g. 'array 20 x 30' elements.
+        """
+        return shapeToSummary(self.arrayShape)
+
+
 
 class H5pyDatasetRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a HDF5 dataset.
@@ -479,6 +493,13 @@ class H5pyDatasetRti(BaseRti):
         """ Returns the value to indicate missing data. None if no missing-data value is specified.
         """
         return dataSetMissingValue(self._h5Dataset)
+
+
+    @property
+    def summary(self):
+        """ Returns a summary of the contents of the RTI.  E.g. 'array 20 x 30' elements.
+        """
+        return shapeToSummary(self.arrayShape)
 
 
     def _fetchAllChildren(self):

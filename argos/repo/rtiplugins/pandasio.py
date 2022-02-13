@@ -27,7 +27,7 @@ import pandas as pd
 
 from pandas.core.generic import NDFrame
 
-from argos.repo.baserti import BaseRti
+from argos.repo.baserti import BaseRti, shapeToSummary
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.utils.cls import check_class
 
@@ -102,6 +102,11 @@ class PandasIndexRti(BaseRti):
             return '<structured>' # DataFrames and Panels
 
 
+    @property
+    def summary(self):
+        """ Returns a summary of the contents of the RTI.  E.g. 'array 20 x 30' elements.
+        """
+        return shapeToSummary(self.arrayShape)
 
 
 
@@ -201,6 +206,16 @@ class AbstractPandasNDFrameRti(BaseRti):
                 return str(self._ndFrame.dtype) # Series
             except AttributeError:
                 return '<structured>' # DataFrames and Panels
+
+
+    @property
+    def summary(self):
+        """ Returns a summary of the contents of the RTI.  E.g. 'array 20 x 30' elements.
+        """
+        if self._ndFrame is None:
+            return ""
+        else:
+            return shapeToSummary(self.arrayShape)
 
 
     def _createIndexRti(self, index, nodeName):

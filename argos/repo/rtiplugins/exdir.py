@@ -31,7 +31,7 @@ except:
     from collections.abc import MutableMapping # Python > 3.10
 
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
-from argos.repo.baserti import BaseRti
+from argos.repo.baserti import BaseRti, shapeToSummary
 from argos.repo.filesytemrtis import createRtiFromFileName
 from argos.repo.rtiplugins.hdf5 import dimNamesFromDataset  # We can reuse it, the exdir module follows the h5py API.
 from argos.utils.cls import check_class, is_an_array
@@ -193,6 +193,13 @@ class ExdirScalarRti(BaseRti):
         return dataSetMissingValue(self._exdirDataset)
 
 
+    @property
+    def summary(self):
+        """ Returns a summary of the contents of the RTI. In this case the scalar as a string
+        """
+        return str(self._h5Dataset[()])
+
+
 class ExdirFieldRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a field in a structured HDF-5 variable.
     """
@@ -323,6 +330,13 @@ class ExdirFieldRti(BaseRti):
             return value
 
 
+    @property
+    def summary(self):
+        """ Returns a summary of the contents of the RTI.  E.g. 'array 20 x 30' elements.
+        """
+        return shapeToSummary(self.arrayShape)
+
+
 
 class ExdirDatasetRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a HDF5 dataset.
@@ -428,6 +442,12 @@ class ExdirDatasetRti(BaseRti):
 
         return childItems
 
+
+    @property
+    def summary(self):
+        """ Returns a summary of the contents of the RTI.  E.g. 'array 20 x 30' elements.
+        """
+        return shapeToSummary(self.arrayShape)
 
 
 class ExdirRawRti(BaseRti):

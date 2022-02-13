@@ -33,6 +33,18 @@ from argos.utils.defs import DIM_TEMPLATE
 logger = logging.getLogger(__name__)
 
 
+def lengthToSummary(length, postfix="items"):
+    """ Constructs a summary from the length of an array
+    """
+    return str(length) + " " + postfix
+
+
+def shapeToSummary(shape, postfix="elements"):
+    """ Constructs a summary from the shape of an array
+    """
+    return " × ".join([str(elem) for elem in shape]) + " " + postfix
+
+
 class BaseRti(AbstractLazyLoadTreeItem):
     """ TreeItem for use in a RepositoryTreeModel. (RTI = Repository TreeItem)
         Base node from which to derive the other types of nodes.
@@ -379,6 +391,15 @@ class BaseRti(AbstractLazyLoadTreeItem):
     @property
     def unit(self):
         """ Returns the unit of the RTI. The base implementation returns ''.
+        """
+        return ""
+
+
+    @property
+    def summary(self):
+        """ Returns a summary of the contents of the RTI.  E.g. 'array 20 x 30' elements.
+
+            The base implementation returns ''.
         """
         return ""
 
