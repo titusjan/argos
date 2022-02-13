@@ -25,6 +25,11 @@ import collections
 import exdir
 import numpy as np
 
+try:
+    from collections import MutableMapping
+except:
+    from collections.abc import MutableMapping # Python > 3.10
+
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.repo.baserti import BaseRti
 from argos.repo.filesytemrtis import createRtiFromFileName
@@ -106,7 +111,7 @@ def flattenDict(d, parent_key='', sep='/'):
     if isinstance(d,list): d = {str(i) : v for i, v in enumerate(d)}
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, collections.MutableMapping):
+        if isinstance(v, MutableMapping):
             items.extend(flattenDict(v, new_key, sep=sep).items())
         else:
             items.append((new_key, v))
