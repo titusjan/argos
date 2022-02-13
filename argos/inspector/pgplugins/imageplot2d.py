@@ -585,10 +585,11 @@ class PgImagePlot2d(AbstractInspector):
                                          masked=self.slicedArray.maskAt(index),
                                          maskFormat='&lt;masked&gt;')
 
-                    txt = "({}, {}) = ({:d}, {:d}) {} {} = {}".format(
-                        self.collector.rtiInfo['x-dim'], self.collector.rtiInfo['y-dim'],
-                        col, row, RIGHT_ARROW, self.collector.rtiInfo['name'], valueStr)
-                    self.probeLabel.setText(txt)
+                    if self.config.probeCti.configValue:
+                        txt = "({}, {}) = ({:d}, {:d}) {} {} = {}".format(
+                            self.collector.rtiInfo['x-dim'], self.collector.rtiInfo['y-dim'],
+                            col, row, RIGHT_ARROW, self.collector.rtiInfo['name'], valueStr)
+                        self.probeLabel.setText(txt)
 
                     # Show cross section at the cursor pos in the line plots
                     if self.config.horCrossPlotCti.configValue:
