@@ -13,7 +13,7 @@ import numpy as np
 def make_special():
     """ Makes HDF-5 file with special cases
     """
-    with h5py.File("special.hdf5", "w") as hdf:
+    with h5py.File("special.h5", "w") as hdf:
         #Gives: AttributeError: 'module' object has no attribute 'Empty'
         ds_ints = hdf.create_dataset("emtpy attributes", (15,), dtype=int)
         ds_ints[:] = 15
@@ -80,19 +80,20 @@ def make_strings3():
 
     with h5py.File("string3.h5", "w") as hdf:
 
-        dataset = hdf.create_dataset("fixed_len_ascii", (100,), dtype=string_dtype(length=40))
+        dataset = hdf.create_dataset("fixed_len_ascii", (100,), dtype=string_dtype(length=40, encoding="ascii"))
         dataset[:] = 'Bill Gates from Microsoft'
         dataset.attrs["description"] = "Fixed-length ASCII strings"
         dataset.attrs["attr"] = np.string_("Hallo")
         dataset.attrs["empty attribute"] = h5py.Empty("f")
 
-        dataset = hdf.create_dataset("fixed_len_utf-8", (100,), dtype=string_dtype(length=40, encoding="utf-8"))
+        dataset = hdf.create_dataset("fixed_len_utf-8", (85,), dtype=string_dtype(length=40, encoding="utf-8"))
         dataset[:] = 'Chào thế giới'
         dataset.attrs["description"] = "Fixed-length UTF-8 strings"
         dataset.attrs["attr"] = np.string_("Good bye")
 
-        dataset = hdf.create_dataset("fixed_len_utf", (100,), dtype=string_dtype(length=None, encoding="utf-8"))
+        dataset = hdf.create_dataset("var_len_utf-8", (70,), dtype=string_dtype(length=None, encoding="utf-8"))
         dataset[:] = "Testing «ταБЬℓσ»: 1<2 & 4+1>3, now 20% off!"
+        dataset[0:5] = "01234567890123456789012345678901234567890123456789012345678901234567890123456789"
         dataset.attrs["description"] = "Variables-length Unicode strings"
         dataset.attrs["attr"] =  u"a\xac\u1234\u20ac\U00008000"
 

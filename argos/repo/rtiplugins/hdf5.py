@@ -31,9 +31,11 @@ from argos.repo.baserti import BaseRti, shapeToSummary
 from argos.utils.cls import to_string, check_class, is_an_array
 from argos.utils.defs import DIM_TEMPLATE, SUB_DIM_TEMPLATE, CONTIGUOUS
 from argos.utils.masks import maskedEqual
+from argos.utils.moduleinfo import versionStrToTuple
 
 logger = logging.getLogger(__name__)
 
+H5PY_MAJOR_VERSION = versionStrToTuple(h5py.__version__)[0]
 
 
 def dimNamesFromDataset(h5Dataset, useBaseName=True):
@@ -69,22 +71,37 @@ def dimNamesFromDataset(h5Dataset, useBaseName=True):
     return dimNames
 
 
-def dataSetElementType(h5Dataset):
+def dataSetElementType(dtype, dimensionalityString):
     """ Returns a string describing the element type of the dataset
+
+        Args:
+            dtype: numpy dtype of the dataset
+            dimensionalityString: e.g. 'array', 'scalar', 'empty'
     """
-    dtype =  h5Dataset.dtype
-
     if dtype.names:
-        return '<structured>'
+        return "compound {}".format(dimensionalityString)
     else:
-        if dtype.metadata and 'vlen' in dtype.metadata:
-            vlen_type = dtype.metadata['vlen']
-            try:
-                return "<vlen {}>".format(vlen_type.__name__)  # when vlen_type is a type
-            except AttributeError: #
-                return "<vlen {}>".format(vlen_type.name)      # when vlen_type is a dtype
+        if H5PY_MAJOR_VERSION <= 2:
+            # h5py version <= 2.x
+            if dtype.metadata and 'vlen' in dtype.metadata:
+                vlen_type = dtype.metadata['vlen']
+                try:
+                    return "<vlen {}>".format(vlen_type.__name__)  # when vlen_type is a type
+                except AttributeError: #
+                    return "<vlen {}>".format(vlen_type.name)      # when vlen_type is a dtype
+        else:
+            # h5py version >= 3.x
+            stringInfo = h5py.check_string_dtype(dtype)
+            if stringInfo is not None:
+                if stringInfo.length is None:
+                    return "string {} {} variable length"\
+                        .format(dimensionalityString, stringInfo.encoding)
+                else:
+                    return "string {} {} length = {}"\
+                        .format(dimensionalityString, stringInfo.encoding, stringInfo.length)
 
-    return str(dtype)
+    return "{} {}".format(dtype, dimensionalityString)
+
 
 
 def dataSetUnit(h5Dataset):
@@ -199,7 +216,8 @@ class H5pyScalarRti(BaseRti):
     def elementTypeName(self):
         """ String representation of the element type.
         """
-        return dataSetElementType(self._h5Dataset)
+        return dataSetElementType(self._h5Dataset.dtype,
+                                  "empty" if self._h5Dataset.shape is None else "scalar")
 
 
     @property
@@ -227,8 +245,18 @@ class H5pyScalarRti(BaseRti):
     def summary(self):
         """ Returns a summary of the contents of the RTI. In this case the scalar as a string
         """
-        return str(self._h5Dataset[()])
+        if H5PY_MAJOR_VERSION <= 2:
+            return str(self._h5Dataset[()])  # Just convert bytes to string in h5py <= 2.x
+        else:
+            # In h5py >= 3.x the encoding is known
+            string_info = h5py.check_string_dtype(self._h5Dataset.dtype)
 
+            if self._h5Dataset.shape is None:
+                return "empty dataset"
+            elif string_info is None:
+                return str(self._h5Dataset[()])  # not a string
+            else:
+                return self._h5Dataset[()].decode(string_info.encoding, errors="replace")
 
 
 class H5pyFieldRti(BaseRti):
@@ -325,7 +353,7 @@ class H5pyFieldRti(BaseRti):
         """ String representation of the element type.
         """
         fieldName = self.nodeName
-        return str(self._h5Dataset.dtype.fields[fieldName][0])
+        return dataSetElementType(self._h5Dataset.dtype.fields[fieldName][0], "array")
 
 
     @property
@@ -416,7 +444,6 @@ class H5pyDatasetRti(BaseRti):
             return RtiIconFactory.ARRAY
 
 
-
     def hasChildren(self):
         """ Returns True if the variable has a structured type, otherwise returns False.
         """
@@ -457,7 +484,7 @@ class H5pyDatasetRti(BaseRti):
     def elementTypeName(self):
         """ String representation of the element type.
         """
-        return dataSetElementType(self._h5Dataset)
+        return dataSetElementType(self._h5Dataset.dtype, "array")
 
 
     @property
