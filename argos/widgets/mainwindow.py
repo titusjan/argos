@@ -336,7 +336,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 try:
                     keySeq = QtGui.QKeySequence(item.shortCut.strip())
                 except Exception as ex:
-                    logger.warning("Unable to create short cut from: '{}".format(item.shortCut))
+                    logger.warning("Unable to create shortcut from: '{}".format(item.shortCut))
                 else:
                     action.setShortcut(QtGui.QKeySequence(keySeq))
 
