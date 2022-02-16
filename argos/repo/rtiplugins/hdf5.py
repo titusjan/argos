@@ -100,6 +100,16 @@ def dataSetElementType(dtype, dimensionalityString):
                     return "string {} {} length = {}"\
                         .format(dimensionalityString, stringInfo.encoding, stringInfo.length)
 
+            vlenType = h5py.check_vlen_dtype(dtype)
+            if vlenType is not None:
+                # Note that, currently, variable length arrays cannot be displayed in any inspector!
+                # In general, they cannot be loaded in a numpy array, only in some cases.
+                # Therefore, they are hard to handle generically. Even the h5py documentation says
+                # it's better to consider using something else if you've got the choice.
+                # See: https://docs.h5py.org/en/stable/special.html#arbitrary-vlen-data
+                return "{} {} variable length".format(vlenType, dimensionalityString)
+
+
     return "{} {}".format(dtype, dimensionalityString)
 
 
