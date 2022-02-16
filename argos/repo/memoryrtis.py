@@ -522,10 +522,11 @@ class MappingRti(BaseRti):
     def summary(self):
         """ Returns a summary of the contents of the RTI.  E.g. 'array 20 x 30' elements.
         """
-        if self._dictionary is None:
-            return ""
-        else:
-            lengthToSummary(len(self._dictionary))
+        return ""  # Don't show length info, so it has the same behaviour as directory and groups.
+        # if self._dictionary is None:
+        #     return ""
+        # else:
+        #     return lengthToSummary(len(self._dictionary))
 
 
     def _fetchAllChildren(self):

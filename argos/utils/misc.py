@@ -20,6 +20,7 @@
 import logging, sys
 logger = logging.getLogger(__name__)
 
+from argos.external.six import unichr
 from argos.utils.cls import is_a_string
 
 class NotSpecified(object):
@@ -110,3 +111,12 @@ def remove_process_serial_number(arg_list):
         See: http://hintsforums.macworld.com/showthread.php?t=11978
     """
     return [arg for arg in arg_list if not arg.startswith("-psn_0_")]
+
+
+def replace_eol_chars(attr):
+    """ Replace end-of-line characters with unicode glyphs so that all table rows fit on one line.
+    """
+    return (attr.replace('\r\n', unichr(0x21B5))
+            .replace('\n', unichr(0x21B5))
+            .replace('\r', unichr(0x21B5)))
+
