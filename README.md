@@ -77,7 +77,7 @@ If you start `argos` and nothing happens, you probably didn't install `PyQt` or 
 try to start argos as follows to get more information
 
 ```
-    %> python -m argos.main
+    %> python -m argos
 ```
 
 #### Resetting Argos
