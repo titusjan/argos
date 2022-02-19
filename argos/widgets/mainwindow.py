@@ -785,10 +785,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
         fileRootIndex = None
 
-        if len(fileNames) <= 1: # Only expand and open the file if the user selected one.
-            fileName = fileNames[0]
-            logger.debug("Opening file: {}".format(fileName))
+        logger.debug("Adding files: {}".format(fileNames))
+        for fileName in fileNames:
             fileRootIndex = self.argosApplication.repo.loadFile(fileName, rtiRegItem=rtiRegItem)
+
+        if len(fileNames) == 1: # Only expand and open the file if the user selected one.
+            logger.debug("Opening file: {}".format(fileNames[0]))
             self.repoWidget.repoTreeView.setExpanded(fileRootIndex, True)
 
         # Select last opened file
