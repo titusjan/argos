@@ -71,15 +71,18 @@ def dimNamesFromDataset(h5Dataset, useBaseName=True):
     return dimNames
 
 
-def dataSetElementType(dtype, dimensionalityString):
-    """ Returns a string describing the element type of the dataset
+def dataSetType(dtype, dimensionalityString):
+    """ Returns a string describing the element type of the dataset.
 
         Args:
             dtype: numpy dtype of the dataset
-            dimensionalityString: e.g. 'array', 'scalar', 'empty'
+            dimensionalityString: e.g. 'array ', 'scalar ', 'empty '
     """
+    if dimensionalityString and dimensionalityString[0] != ' ':
+        dimensionalityString = ' ' + dimensionalityString
+
     if dtype.names:
-        return "compound {}".format(dimensionalityString)
+        return "compound{}".format(dimensionalityString)
     else:
         if H5PY_MAJOR_VERSION <= 2:
             # h5py version <= 2.x
@@ -93,11 +96,13 @@ def dataSetElementType(dtype, dimensionalityString):
             # h5py version >= 3.x
             stringInfo = h5py.check_string_dtype(dtype)
             if stringInfo is not None:
+                # The dimensionality will be placed before the string encoding and length because
+                # it's more important.
                 if stringInfo.length is None:
-                    return "string {} {} variable length"\
+                    return "string{} {} variable length"\
                         .format(dimensionalityString, stringInfo.encoding)
                 else:
-                    return "string {} {} length = {}"\
+                    return "string{} {} length = {}"\
                         .format(dimensionalityString, stringInfo.encoding, stringInfo.length)
 
             vlenType = h5py.check_vlen_dtype(dtype)
@@ -107,10 +112,10 @@ def dataSetElementType(dtype, dimensionalityString):
                 # Therefore, they are hard to handle generically. Even the h5py documentation says
                 # it's better to consider using something else if you've got the choice.
                 # See: https://docs.h5py.org/en/stable/special.html#arbitrary-vlen-data
-                return "{} {} variable length".format(vlenType, dimensionalityString)
+                return "{}{} variable length".format(vlenType, dimensionalityString)
 
 
-    return "{} {}".format(dtype, dimensionalityString)
+    return "{}{}".format(dtype, dimensionalityString)
 
 
 
@@ -223,11 +228,24 @@ class H5pyScalarRti(BaseRti):
 
 
     @property
+    def dimensionality(self):
+        """ String that describes if the RTI is an array, scalar, field, etc.
+        """
+        return "empty" if self._h5Dataset.shape is None else "scalar"
+
+
+    @property
     def elementTypeName(self):
         """ String representation of the element type.
         """
-        return dataSetElementType(self._h5Dataset.dtype,
-                                  "empty" if self._h5Dataset.shape is None else "scalar")
+        return dataSetType(self._h5Dataset.dtype, '')
+
+
+    @property
+    def typeName(self):
+        """ String representation of the type. By default, the elementTypeName + dimensionality.
+        """
+        return dataSetType(self._h5Dataset.dtype, self.dimensionality)
 
 
     @property
@@ -359,11 +377,26 @@ class H5pyFieldRti(BaseRti):
 
 
     @property
+    def dimensionality(self):
+        """ String that describes if the RTI is an array, scalar, field, etc.
+        """
+        return "field"
+
+
+    @property
     def elementTypeName(self):
         """ String representation of the element type.
         """
         fieldName = self.nodeName
-        return dataSetElementType(self._h5Dataset.dtype.fields[fieldName][0], "array")
+        return dataSetType(self._h5Dataset.dtype.fields[fieldName][0], '')
+
+
+    @property
+    def typeName(self):
+        """ String representation of the type. By default, the elementTypeName + dimensionality.
+        """
+        fieldName = self.nodeName
+        return dataSetType(self._h5Dataset.dtype.fields[fieldName][0], self.dimensionality)
 
 
     @property
@@ -491,10 +524,24 @@ class H5pyDatasetRti(BaseRti):
 
 
     @property
+    def dimensionality(self):
+        """ String that describes if the RTI is an array, scalar, field, etc.
+        """
+        return "array"
+
+
+    @property
     def elementTypeName(self):
         """ String representation of the element type.
         """
-        return dataSetElementType(self._h5Dataset.dtype, "array")
+        return dataSetType(self._h5Dataset.dtype, '')
+
+
+    @property
+    def typeName(self):
+        """ String representation of the type. By default, the elementTypeName + dimensionality.
+        """
+        return dataSetType(self._h5Dataset.dtype, self.dimensionality)
 
 
     @property

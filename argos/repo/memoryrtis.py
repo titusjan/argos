@@ -120,6 +120,13 @@ class ScalarRti(BaseRti):
 
 
     @property
+    def dimensionality(self):
+        """ String that describes if the RTI is an array, scalar, field, etc.
+        """
+        return "scalar"
+
+
+    @property
     def elementTypeName(self):
         """ String representation of the element type.
         """
@@ -213,6 +220,13 @@ class FieldRti(BaseRti):
             If the field contains a subarray the shape may be longer than 1.
         """
         return self._array.shape + self._subArrayShape
+
+
+    @property
+    def dimensionality(self):
+        """ String that describes if the RTI is an array, scalar, field, etc.
+        """
+        return "field"
 
 
     @property
@@ -331,6 +345,13 @@ class ArrayRti(BaseRti):
         """
         # Will only be called if self.isSliceable is True, so self._array will not be None
         return self._array.shape
+
+
+    @property
+    def dimensionality(self):
+        """ String that describes if the RTI is an array, scalar, field, etc.
+        """
+        return "array"
 
 
     @property
@@ -505,6 +526,13 @@ class MappingRti(BaseRti):
             Reimplemented from BaseRti: the attribute dictionary is stored per-object.
         """
         return self._attributes
+
+
+    @property
+    def dimensionality(self):
+        """ String that describes if the RTI is an array, scalar, field, etc.
+        """
+        return ""  # Return empty string to be in line with directories, groups, etc
 
 
     @property

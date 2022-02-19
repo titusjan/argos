@@ -40,10 +40,12 @@ class RepoTreeModel(BaseTreeModel):
         for QTreeViews. The underlying data is stored as repository tree items (BaseRti
         descendants).
     """
-    HEADERS = ["Name", "Path", "Summary", "Dimensions", "Shape", "Type", "Unit", "Missing data",
-               "Chunking", "File name", "Item class", "Is open", "Error"]
-    (COL_NODE_NAME, COL_NODE_PATH, COL_SUMMARY,
-     COL_DIMS, COL_SHAPE, COL_ELEM_TYPE, COL_UNIT, COL_MISSING_DATA, COL_CHUNKING,
+    HEADERS = ["Name", "Path", "Summary", "Dimensions", "Shape", "Dimensionality",
+               "Element Type", "Type", "Unit", "Missing data", "Chunking",
+               "File name", "Item class", "Is open", "Error"]
+
+    (COL_NODE_NAME, COL_NODE_PATH, COL_SUMMARY, COL_DIMS, COL_SHAPE, COL_DIMENSIONALITY,
+     COL_ELEM_TYPE, COL_TYPE, COL_UNIT, COL_MISSING_DATA, COL_CHUNKING,
      COL_FILE_NAME, COL_RTI_TYPE, COL_IS_OPEN, COL_EXCEPTION) = range(len(HEADERS))
 
     COL_DECORATION = COL_NODE_NAME  # Column number that contains the icon. None for no icons
@@ -83,8 +85,12 @@ class RepoTreeModel(BaseTreeModel):
                     return str(treeItem.isOpen)
                 else:
                     return ""
+            elif column == self.COL_DIMENSIONALITY:
+                return treeItem.dimensionality
             elif column == self.COL_ELEM_TYPE:
                 return treeItem.elementTypeName
+            elif column == self.COL_TYPE:
+                return treeItem.typeName
             elif column == self.COL_FILE_NAME:
                 return treeItem.fileName if hasattr(treeItem, 'fileName') else ''
             elif column == self.COL_UNIT:
@@ -130,8 +136,12 @@ class RepoTreeModel(BaseTreeModel):
                 return to_string(treeItem.missingDataValue, noneFormat='') # empty str for Nones
             elif column == self.COL_RTI_TYPE:
                 return type_name(treeItem)
+            elif column == self.COL_DIMENSIONALITY:
+                return treeItem.dimensionality
             elif column == self.COL_ELEM_TYPE:
                 return treeItem.elementTypeName
+            elif column == self.COL_TYPE:
+                return treeItem.typeName
             elif column == self.COL_FILE_NAME:
                 return treeItem.fileName if hasattr(treeItem, 'fileName') else ''
             elif column == self.COL_SUMMARY:

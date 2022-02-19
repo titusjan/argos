@@ -92,6 +92,13 @@ class PandasIndexRti(BaseRti):
 
 
     @property
+    def dimensionality(self):
+        """ String that describes if the RTI is an array, scalar, field, etc.
+        """
+        return "index"
+
+
+    @property
     def elementTypeName(self):
         """ String representation of the element type.
         """
@@ -196,6 +203,13 @@ class AbstractPandasNDFrameRti(BaseRti):
 
 
     @property
+    def dimensionality(self):
+        """ String that describes if the RTI is an array, scalar, field, etc.
+        """
+        return "array"
+
+
+    @property
     def elementTypeName(self):
         """ String representation of the element type.
         """
@@ -205,7 +219,7 @@ class AbstractPandasNDFrameRti(BaseRti):
             try:
                 return str(self._ndFrame.dtype) # Series
             except AttributeError:
-                return '<structured>' # DataFrames and Panels
+                return 'compound' # DataFrames and Panels
 
 
     @property

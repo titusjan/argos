@@ -357,10 +357,24 @@ class BaseRti(AbstractLazyLoadTreeItem):
 
 
     @property
+    def dimensionality(self):
+        """ String that describes if the RTI is an array, scalar, field, etc.
+        """
+        return ""
+
+
+    @property
     def elementTypeName(self):
         """ String representation of the element type.
         """
         return ""
+
+
+    @property
+    def typeName(self):
+        """ String representation of the type. By default, the elementTypeName + dimensionality.
+        """
+        return self.elementTypeName + " " + self.dimensionality
 
 
     @property

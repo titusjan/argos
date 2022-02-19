@@ -195,12 +195,18 @@ class NcdfFieldRti(BaseRti):
 
 
     @property
+    def dimensionality(self):
+        """ String that describes if the RTI is an array, scalar, field, etc.
+        """
+        return "field"
+
+
+    @property
     def elementTypeName(self):
         """ String representation of the element type.
         """
-        dimensionalityString =  "scalar" if self.nDims == 0 else "array"
         fieldName = self.nodeName
-        return str(self._ncVar.dtype.fields[fieldName][0]) + " " + dimensionalityString
+        return str(self._ncVar.dtype.fields[fieldName][0])
 
 
     @property
@@ -353,17 +359,23 @@ class NcdfVariableRti(BaseRti):
 
 
     @property
+    def dimensionality(self):
+        """ String that describes if the RTI is an array, scalar, field, etc.
+        """
+        return "scalar" if self.nDims == 0 else "array"
+
+
+    @property
     def elementTypeName(self):
         """ String representation of the element type.
         """
-        dimensionalityString =  "scalar" if self.nDims == 0 else "array"
         dtype =  self._ncVar.dtype
         if type(dtype) == type:
             # Handle the unexpected case that dtype is a regular Python type
             # (happens e.g. in the /PROCESSOR/processing_configuration of the Trop LX files)
-            return dtype.__name__ + " " + dimensionalityString
+            return dtype.__name__
 
-        return ('compound' if dtype.names else str(dtype)) + " " + dimensionalityString
+        return ('compound' if dtype.names else str(dtype))
 
 
     @property
