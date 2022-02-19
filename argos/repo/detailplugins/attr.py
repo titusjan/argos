@@ -22,7 +22,7 @@ import logging
 from argos.qt import QtWidgets
 from argos.repo.detailpanes import DetailTablePane
 from argos.utils.cls import to_string, type_name
-from argos.widgets.constants import COL_ELEM_TYPE_WIDTH
+from argos.widgets.constants import COL_SUMMARY_WIDTH
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class AttributesPane(DetailTablePane):
         tableHeader = self.table.horizontalHeader()
         tableHeader.resizeSection(self.COL_ATTR_NAME, 125)
         tableHeader.resizeSection(self.COL_VALUE, 150)
-        tableHeader.resizeSection(self.COL_ELEM_TYPE, COL_ELEM_TYPE_WIDTH)
+        tableHeader.resizeSection(self.COL_ELEM_TYPE, COL_SUMMARY_WIDTH)
 
 
     def _drawContents(self, currentRti=None):

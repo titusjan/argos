@@ -40,12 +40,12 @@ class RepoTreeModel(BaseTreeModel):
         for QTreeViews. The underlying data is stored as repository tree items (BaseRti
         descendants).
     """
-    HEADERS = ["Name", "Path", "Summary", "Dimensions", "Shape", "Dimensionality",
-               "Element Type", "Type", "Unit", "Missing data", "Chunking",
+    HEADERS = ["Name", "Path", "Dimensions", "Shape", "Dimensionality",
+               "Element Type", "Type", "Unit", "Missing data", "Chunking", "Summary",
                "File name", "Item class", "Is open", "Error"]
 
-    (COL_NODE_NAME, COL_NODE_PATH, COL_SUMMARY, COL_DIMS, COL_SHAPE, COL_DIMENSIONALITY,
-     COL_ELEM_TYPE, COL_TYPE, COL_UNIT, COL_MISSING_DATA, COL_CHUNKING,
+    (COL_NODE_NAME, COL_NODE_PATH, COL_DIMS, COL_SHAPE, COL_DIMENSIONALITY,
+     COL_ELEM_TYPE, COL_TYPE, COL_UNIT, COL_MISSING_DATA, COL_CHUNKING, COL_SUMMARY,
      COL_FILE_NAME, COL_RTI_TYPE, COL_IS_OPEN, COL_EXCEPTION) = range(len(HEADERS))
 
     COL_DECORATION = COL_NODE_NAME  # Column number that contains the icon. None for no icons
