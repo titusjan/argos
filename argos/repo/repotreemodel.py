@@ -27,6 +27,11 @@ from argos.repo.registry import ICON_COLOR_UNDEF, RtiRegItem
 from argos.utils.cls import to_string, type_name, check_class
 from argos.utils.dirs import normRealPath
 
+# The cast to int is necessary to avoid a bug in PySide, See:
+# https://bugreports.qt-project.org/browse/PYSIDE-20
+ALIGN_LEFT  = int(Qt.AlignVCenter | Qt.AlignLeft)
+ALIGN_RIGHT = int(Qt.AlignVCenter | Qt.AlignRight)
+
 
 logger = logging.getLogger(__name__)
 
@@ -133,6 +138,13 @@ class RepoTreeModel(BaseTreeModel):
                 return treeItem.summary
             else:
                 return None
+
+        elif role == Qt.TextAlignmentRole:
+            if column == self.COL_SUMMARY:
+                return ALIGN_RIGHT
+            else:
+                return ALIGN_LEFT
+
         else:
             return super(RepoTreeModel, self).itemData(treeItem, column, role=role)
 

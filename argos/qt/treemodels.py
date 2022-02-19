@@ -113,7 +113,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             # application crash (exceptions can come from plugins here). Instead of crashing we
             # show the error message in the table/tree and hope the users report the error.
             if not DEBUGGING and role in (Qt.DisplayRole, Qt.EditRole, Qt.ToolTipRole,
-                                          Qt.StatusTipRole, Qt.WhatsThisRole):
+                                          Qt.TextAlignmentRole, Qt.StatusTipRole, Qt.WhatsThisRole):
                 return repr(ex)
             else:
                 raise # Still fail hard for the other roles.
