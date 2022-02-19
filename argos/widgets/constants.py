@@ -20,6 +20,9 @@
 import sys
 from argos.qt import QtCore, QtGui, QtWidgets
 
+# Use large numpy line length in the Quicklook panel
+NUMPY_LINE_WIDTH = 1000
+
 #TREE_ROW_HEIGHT = 20 # pixels
 TREE_CELL_SIZE_HINT = QtCore.QSize(100, 20)
 TREE_ICON_SIZE = QtCore.QSize(16, 16)

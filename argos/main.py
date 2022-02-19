@@ -32,6 +32,8 @@ import os
 import os.path
 import sys
 
+import numpy as np
+
 logging.captureWarnings(True)
 
 
@@ -150,6 +152,7 @@ def main():
     """ Starts Argos main window
     """
     # Import in functions. See comments at the top for more details
+    from widgets.constants import NUMPY_LINE_WIDTH
     from argos.info import DEBUGGING, PROJECT_NAME, VERSION, EXIT_CODE_RESTART, resource_directory
     from argos.utils.logs import initLogging
     from argos.utils.misc import remove_process_serial_number
@@ -245,6 +248,9 @@ def main():
         logger.debug("Using default style sheet: {}".format(styleSheet))
     else:
         styleSheet = os.path.abspath(styleSheet)
+
+    logger.debug("Setting numpy line width to {} characters".format(NUMPY_LINE_WIDTH))
+    np.set_printoptions(linewidth=NUMPY_LINE_WIDTH)
 
     # Process -o option. Don't do this in browse. In the future we might be able to call browse()
     # from IPython. Decide at that point how to best pass these parameters.

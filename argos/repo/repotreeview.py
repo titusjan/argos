@@ -24,6 +24,7 @@ from argos.config.groupcti import MainGroupCti
 from argos.config.boolcti import BoolCti
 from argos.repo.detailplugins.attr import AttributesPane
 from argos.repo.detailplugins.prop import PropertiesPane
+from argos.repo.detailplugins.quicklook import QuickLookPane
 from argos.repo.registry import globalRtiRegistry
 from argos.repo.repotreemodel import RepoTreeModel
 from argos.widgets.argostreeview import ArgosTreeView
@@ -69,6 +70,7 @@ class RepoWidget(BasePanel):
 
         self.propertiesPane = self.addDetailsPane(PropertiesPane(self.repoTreeView))
         self.attributesPane = self.addDetailsPane(AttributesPane(self.repoTreeView))
+        self.quickLookPane = self.addDetailsPane(QuickLookPane(self.repoTreeView))
 
         self.repoTreeView.sigRepoItemChanged.connect(self.repoItemChanged)
         self.tabWidget.currentChanged.connect(self.tabChanged)

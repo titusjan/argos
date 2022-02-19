@@ -25,7 +25,6 @@ from __future__ import absolute_import
 import logging, os
 import h5py
 
-
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.repo.baserti import BaseRti, shapeToSummary
 from argos.utils.cls import to_string, check_class, is_an_array
@@ -36,6 +35,7 @@ from argos.utils.moduleinfo import versionStrToTuple
 logger = logging.getLogger(__name__)
 
 H5PY_MAJOR_VERSION = versionStrToTuple(h5py.__version__)[0]
+MAX_QUICK_LOOK_SIZE = 1000
 
 
 def dimNamesFromDataset(h5Dataset, useBaseName=True):
@@ -114,7 +114,6 @@ def dataSetType(dtype, dimensionalityString):
                 # See: https://docs.h5py.org/en/stable/special.html#arbitrary-vlen-data
                 return "{}{} variable length".format(vlenType, dimensionalityString)
 
-
     return "{}{}".format(dtype, dimensionalityString)
 
 
@@ -182,6 +181,21 @@ def dataSetMissingValue(h5Dataset):
             else:
                 return missingDataValue
     return None
+
+
+def dataSetQuickLook(h5Dataset):
+    """ Makes a dataset summary.
+
+        Will decode strings (if h5py version >= 3.x)
+    """
+    string_info = h5py.check_string_dtype(h5Dataset.dtype)
+
+    if h5Dataset.shape is None:
+        return "empty dataset"
+    elif string_info is None:
+        return str(h5Dataset[:])  # not a string
+    else:
+        return h5Dataset[:].decode(string_info.encoding, errors="replace")
 
 
 
@@ -285,6 +299,7 @@ class H5pyScalarRti(BaseRti):
                 return str(self._h5Dataset[()])  # not a string
             else:
                 return self._h5Dataset[()].decode(string_info.encoding, errors="replace")
+
 
 
 class H5pyFieldRti(BaseRti):
@@ -456,6 +471,17 @@ class H5pyFieldRti(BaseRti):
         return shapeToSummary(self.arrayShape)
 
 
+    @property
+    def quickLook(self):
+        """ Returns a string representation fof the RTI to use in the Quik Look pane.
+        """
+        if self._h5Dataset.size > MAX_QUICK_LOOK_SIZE:
+            return "{} of {}".format(self.typeName, self.summary)
+        else:
+            return str(self._h5Dataset[:])
+
+
+
 
 class H5pyDatasetRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a HDF5 dataset.
@@ -584,6 +610,16 @@ class H5pyDatasetRti(BaseRti):
         """ Returns a summary of the contents of the RTI.  E.g. 'array 20 x 30' elements.
         """
         return shapeToSummary(self.arrayShape)
+
+
+    @property
+    def quickLook(self):
+        """ Returns a string representation fof the RTI to use in the Quik Look pane.
+        """
+        if self._h5Dataset.size > MAX_QUICK_LOOK_SIZE:
+            return "{} of {}".format(self.typeName, self.summary)
+        else:
+            return str(self._h5Dataset[:])
 
 
     def _fetchAllChildren(self):

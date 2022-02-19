@@ -419,6 +419,16 @@ class BaseRti(AbstractLazyLoadTreeItem):
 
 
     @property
+    def quickLook(self):
+        """ Returns a string representation fof the RTI to use in the Quik Look pane.
+        """
+        if not self.isSliceable:
+            return ""
+        else:
+            return str(self[...])
+
+
+    @property
     def missingDataValue(self):
         """ Returns the value to indicate missing data.
 
