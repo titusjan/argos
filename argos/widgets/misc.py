@@ -31,7 +31,7 @@ def setWidgetSizePolicy(widget, hor=None, ver=None):
     """ Sets horizontal and/or vertical size policy on a widget
     """
     sizePolicy = widget.sizePolicy()
-    logger.info("widget {} size policy Befor: {} {}"
+    logger.debug("widget {} size policy Befor: {} {}"
                  .format(widget, sizePolicy.horizontalPolicy(), sizePolicy.verticalPolicy()))
 
     if hor is not None:
@@ -43,7 +43,7 @@ def setWidgetSizePolicy(widget, hor=None, ver=None):
     widget.setSizePolicy(sizePolicy)
 
     sizePolicy = widget.sizePolicy()
-    logger.info("widget {} size policy AFTER: {} {}"
+    logger.debug("widget {} size policy AFTER: {} {}"
                  .format(widget, sizePolicy.horizontalPolicy(), sizePolicy.verticalPolicy()))
 
 

@@ -49,7 +49,7 @@ def initQApplication():
     if 'darwin' in sys.platform:
         graphicsSystem = "raster" # raster, native or opengl
         os.environ.setdefault('QT_GRAPHICSSYSTEM', graphicsSystem)
-        logger.info("Setting QT_GRAPHICSSYSTEM to: {}".format(graphicsSystem))
+        logger.debug("Setting QT_GRAPHICSSYSTEM to: {}".format(graphicsSystem))
 
     app = QtWidgets.QApplication(sys.argv)
     initArgosApplicationSettings(app)

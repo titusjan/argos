@@ -54,7 +54,6 @@ def browse(fileNames=None,
 
         :param fileNames: List of file names that will be added to the repository
         :param select: a path of the repository item that will selected at start up.
-            Overrides 'open' parameter.
         :param inspectorFullName: The full path name of the inspector that will be loaded
         :param qtStyle: name of qtStyle (E.g. fusion).
         :param styleSheet: a path to an optional Qt Cascading Style Sheet.
@@ -125,6 +124,7 @@ def _browse(fileNames=None,
     if DEBUGGING:
         argosApp.repo.insertItem(createArgosTestData())
 
+    logger.debug("Selection path: {}".format(select))
     if select:
         for mainWindow in argosApp.mainWindows:
             mainWindow.trySelectRtiByPath(select)
@@ -254,10 +254,13 @@ def main():
     if args.openFile and args.openFile not in fileNames:
         fileNames.insert(0, args.openFile)
 
-    if args.openFile and not args.selectPath:
-        selectPath = os.path.basename(args.openFile)
-    else:
+    if args.selectPath:
         selectPath = args.selectPath
+    else:
+        if len(fileNames) == 1:
+            selectPath = os.path.basename(fileNames[0])
+        else:
+            selectPath = None
 
     # Browse will create an ArgosApplication with one MainWindow
     browse(fileNames = fileNames,

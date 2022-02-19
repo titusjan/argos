@@ -198,7 +198,7 @@ class BaseRegItem(BaseItem):
         """ Tries to import the registered class.
             Will set the exception property if and error occurred.
         """
-        logger.info("Importing: {}".format(self.absClassName))
+        logger.debug("Importing: {}".format(self.absClassName))
         self._triedImport = True
         self._exception = None
         self._cls = None

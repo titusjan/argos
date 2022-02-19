@@ -784,8 +784,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self._argosApplication.addToRecentFiles(fileNames, rtiRegItemName)
 
         fileRootIndex = None
-        logger.debug("Opening file names: {}".format(fileNames))
-        for fileName in fileNames:
+
+        if len(fileNames) <= 1: # Only expand and open the file if the user selected one.
+            fileName = fileNames[0]
+            logger.debug("Opening file: {}".format(fileName))
             fileRootIndex = self.argosApplication.repo.loadFile(fileName, rtiRegItem=rtiRegItem)
             self.repoWidget.repoTreeView.setExpanded(fileRootIndex, True)
 
@@ -813,6 +815,7 @@ class MainWindow(QtWidgets.QMainWindow):
             and (None, None) is returned.
         """
         try:
+            logger.debug("Trying to select: {}".format(path))
             lastItem, lastIndex = self.repoWidget.repoTreeView.expandPath(path)
             self.repoWidget.repoTreeView.setCurrentIndex(lastIndex)
             self.repoWidget.repoTreeView.setFocus()
