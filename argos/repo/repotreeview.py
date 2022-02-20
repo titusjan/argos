@@ -164,7 +164,10 @@ class RepoTreeView(ArgosTreeView):
         treeHeader.resizeSection(RepoTreeModel.COL_NODE_NAME, COL_NODE_NAME_WIDTH)
         treeHeader.resizeSection(RepoTreeModel.COL_TYPE, COL_TYPE_WIDTH)
         treeHeader.resizeSection(RepoTreeModel.COL_SUMMARY, COL_SUMMARY_WIDTH)
-        treeHeader.setStretchLastSection(True)
+
+        # Note, these settings are stored in the json file
+        treeHeader.setStretchLastSection(False)
+        treeHeader.setSectionResizeMode(RepoTreeModel.COL_NODE_NAME, QtWidgets.QHeaderView.Stretch)
 
         headerNames = self.model().horizontalHeaders
         enabled = dict((name, True) for name in headerNames)
