@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 class QuickLookPane(DetailBasePane):
-    """ Shows a string represention of the RTI contents.
+    """ Shows a string representation of the RTI contents.
     """
     _label = "Quick Look"
 
@@ -50,12 +50,7 @@ class QuickLookPane(DetailBasePane):
         """ Draws the attributes of the currentRTI
         """
         self._currentRti = currentRti
-        self._displayRti()
 
-
-    def _displayRti(self):
-        """ Displays the RTI contents in the editor.
-        """
         if self._currentRti is None:
             self.editor.clear()
         else:
@@ -71,6 +66,6 @@ class QuickLookPane(DetailBasePane):
     def resizeEvent(self, event):
         """ Called when the panel is resized. Will update the line length of the editor.
         """
-        self._displayRti()
+        self.repoItemChanged(self._currentRti) # call repoItemChanged so it handles exceptions
         super(QuickLookPane, self).resizeEvent(event)
 

@@ -32,6 +32,7 @@ from argos.utils.cls import check_class
 from argos.repo.baserti import BaseRti, shapeToSummary
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.utils.defs import SUB_DIM_TEMPLATE, CONTIGUOUS
+from argos.utils.masks import maskedEqual
 
 logger = logging.getLogger(__name__)
 
@@ -279,7 +280,11 @@ class NcdfFieldRti(BaseRti):
         if math.prod(self._ncVar.shape) > MAX_QUICK_LOOK_SIZE:
             return "{} of {}".format(self.typeName, self.summary)
         else:
-            return super(NcdfFieldRti, self).quickLook
+            fieldArray = self._ncVar[:][self.nodeName]
+            subIndex = tuple([Ellipsis])
+            slicedArray = fieldArray[subIndex]
+            data = maskedEqual(slicedArray, self.missingDataValue)
+            return str(data)
 
 
 
