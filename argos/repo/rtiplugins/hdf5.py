@@ -23,6 +23,8 @@
 from __future__ import absolute_import
 
 import logging, os
+
+import numpy as np
 import h5py
 
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
@@ -183,19 +185,24 @@ def dataSetMissingValue(h5Dataset):
     return None
 
 
-def dataSetQuickLook(h5Dataset):
-    """ Makes a dataset summary.
+def _dataSetQuickLook(data, string_info):
+    """ Makes a quick look representation of a dataset.
 
-        Will decode strings (if h5py version >= 3.x)
+        Args:
+            data: a numpy array or scalar
+            string_info: h5py.string_dtype information read with h5py.check_string_dtype
     """
-    string_info = h5py.check_string_dtype(h5Dataset.dtype)
-
-    if h5Dataset.shape is None:
-        return "empty dataset"
-    elif string_info is None:
-        return str(h5Dataset[:])  # not a string
+    if H5PY_MAJOR_VERSION <= 2:
+        return str(data) # Just convert bytes to string in h5py <= 2.x
     else:
-        return h5Dataset[:].decode(string_info.encoding, errors="replace")
+        logger.debug("_dataSetQuickLook: {!r}".format(data))
+        if string_info is None:
+            return str(data)  # not a string
+        else:
+            # Variable length (vlen) string datasets will yield a numpy array with object dtype.
+            # First convert to a byte array so that we can decode it.
+            bytesArray = np.char.asarray(data)
+            return str(np.char.decode(bytesArray, encoding=string_info.encoding))
 
 
 
@@ -280,7 +287,10 @@ class H5pyScalarRti(BaseRti):
     def missingDataValue(self):
         """ Returns the value to indicate missing data. None if no missing-data value is specified.
         """
-        return dataSetMissingValue(self._h5Dataset)
+        if self._h5Dataset.size > MAX_QUICK_LOOK_SIZE:
+            return "{} of {}".format(self.typeName, self.summary)
+        else:
+            return dataSetMissingValue(self._h5Dataset)
 
 
     @property
@@ -299,6 +309,15 @@ class H5pyScalarRti(BaseRti):
                 return str(self._h5Dataset[()])  # not a string
             else:
                 return self._h5Dataset[()].decode(string_info.encoding, errors="replace")
+
+
+    @property
+    def quickLook(self):
+        """ Returns a string representation fof the RTI to use in the Quik Look pane.
+
+            Override default so bytes are decoded to strings.
+        """
+        return self.summary
 
 
 
@@ -343,7 +362,7 @@ class H5pyFieldRti(BaseRti):
             current field. In pseudo-code, it returns: self.ncVar[index][self.nodeName].
 
             If the field itself contains a sub-array it returns:
-                self.ncVar[mainArrayIndex][self.nodeName][subArrayIndex]
+                self.dataset[mainArrayIndex][self.nodeName][subArrayIndex]
         """
         mainArrayNumDims = len(self._h5Dataset.shape)
         mainIndex = index[:mainArrayNumDims]
@@ -478,8 +497,13 @@ class H5pyFieldRti(BaseRti):
         if self._h5Dataset.size > MAX_QUICK_LOOK_SIZE:
             return "{} of {}".format(self.typeName, self.summary)
         else:
-            return str(self._h5Dataset[:])
+            fieldArray = self._h5Dataset[self.nodeName][:]
+            subIndex = tuple([Ellipsis])
+            slicedArray = fieldArray[subIndex]
+            data = maskedEqual(slicedArray, self.missingDataValue)
 
+            string_info = h5py.check_string_dtype(self._h5Dataset.dtype)
+            return _dataSetQuickLook(data, string_info)
 
 
 
@@ -619,7 +643,10 @@ class H5pyDatasetRti(BaseRti):
         if self._h5Dataset.size > MAX_QUICK_LOOK_SIZE:
             return "{} of {}".format(self.typeName, self.summary)
         else:
-            return str(self._h5Dataset[:])
+            data = maskedEqual(self._h5Dataset[:], self.missingDataValue)
+            string_info = h5py.check_string_dtype(self._h5Dataset.dtype)
+            return _dataSetQuickLook(data, string_info)
+
 
 
     def _fetchAllChildren(self):

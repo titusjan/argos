@@ -80,19 +80,25 @@ def make_strings3():
 
     with h5py.File("string3.h5", "w") as hdf:
 
-        dataset = hdf.create_dataset("fixed_len_ascii", (100,), dtype=string_dtype(length=40, encoding="ascii"))
+        dataset = hdf.create_dataset("fixed_len_ascii", (10, 10), dtype=string_dtype(length=40, encoding="ascii"))
         dataset[:] = 'Bill Gates from Microsoft'
         dataset.attrs["description"] = "Fixed-length ASCII strings"
         dataset.attrs["attr"] = np.string_("Hallo")
         dataset.attrs["empty attribute"] = h5py.Empty("f")
 
-        dataset = hdf.create_dataset("fixed_len_utf-8", (85,), dtype=string_dtype(length=40, encoding="utf-8"))
+        dataset = hdf.create_dataset("fixed_len_utf-8", (1, 85), dtype=string_dtype(length=40, encoding="utf-8"))
         dataset[:] = 'Chào thế giới'
         dataset.attrs["description"] = "Fixed-length UTF-8 strings"
         dataset.attrs["attr"] = np.string_("Good bye")
 
-        dataset = hdf.create_dataset("var_len_utf-8", (70,), dtype=string_dtype(length=None, encoding="utf-8"))
+        dataset = hdf.create_dataset("var_len_utf-8", (7, 10), dtype=string_dtype(length=None, encoding="utf-8"))
         dataset[:] = "Testing «ταБЬℓσ»: 1<2 & 4+1>3, now 20% off!"
+        dataset[0:5] = "01234567890123456789012345678901234567890123456789012345678901234567890123456789"
+        dataset.attrs["description"] = "Variables-length Unicode strings"
+        dataset.attrs["attr"] =  u"a\xac\u1234\u20ac\U00008000"
+
+        dataset = hdf.create_dataset("var_len_ascii", (7, 10), dtype=string_dtype(length=None, encoding="ascii"))
+        dataset[:] = "Testing 123, now 20% off!"
         dataset[0:5] = "01234567890123456789012345678901234567890123456789012345678901234567890123456789"
         dataset.attrs["description"] = "Variables-length Unicode strings"
         dataset.attrs["attr"] =  u"a\xac\u1234\u20ac\U00008000"
@@ -111,11 +117,35 @@ def make_strings3():
         dataset.attrs["description"] = "Arbitrary length array of int (ragged array)"
 
 
+def test_decoding():
+
+    with h5py.File("string3.h5", "r") as hdf:
+
+        for dsname in ["fixed_len_ascii", "fixed_len_utf-8", "var_len_ascii", "var_len_utf-8"]:
+            print("\n----- {} -----".format(dsname))
+            dataset = hdf[dsname]
+            print(dataset)
+
+            string_info = h5py.check_string_dtype(dataset.dtype)
+            print(string_info.encoding)
+
+            elem = dataset[0, 0]
+            print("elem: {}".format(elem))
+
+            arr = np.char.asarray(dataset[:])
+            #print(repr(arr))
+            print("shope: {}".format(arr.shape))
+            print("dtype: {}".format(arr.dtype))
+
+            sys.stdout.flush()
+            print (np.char.decode(arr, encoding=string_info.encoding))
+
+
 
 if __name__ == '__main__':
 
-
-
-    make_strings3()
     #make_special()
+    make_strings3()
+
+    test_decoding()
 
