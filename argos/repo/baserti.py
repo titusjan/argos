@@ -425,6 +425,10 @@ class BaseRti(AbstractLazyLoadTreeItem):
         if not self.isSliceable:
             return ""
         else:
+            # We would like to use np.array2string so that we can use commas to separate the array
+            # elements, and can set the line length without side effects, but unfortunately
+            # np.array2string doesn't work for masked arrays.
+            # See: https://github.com/numpy/numpy/issues/11674
             return str(self[...])
 
 

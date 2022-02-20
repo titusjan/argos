@@ -18,6 +18,8 @@
 """
 Class for storing values and a mask. Masked arrays would have been a good solution but
 unfortunately they are very buggy.
+
+TODO: what are these issues again?
 """
 from __future__ import division, print_function
 import logging
@@ -34,7 +36,8 @@ class ConsistencyError(Exception):
     """ Raised when the mask of an ArrayWithMask object has an inconsistent shape."""
     pass
 
-
+# TODO: look at Numpy’s dispatch mechanism to see if we reimplement
+# https://numpy.org/doc/stable/user/basics.dispatch.html#basics-dispatch
 class ArrayWithMask(object):
     """ Class for storing an arrays together with a mask.
 

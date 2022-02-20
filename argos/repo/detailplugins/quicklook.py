@@ -21,6 +21,7 @@ import logging
 
 from argos.qt import QtGui, QtWidgets
 from argos.repo.detailpanes import DetailBasePane
+from widgets.constants import MONO_FONT, FONT_SIZE
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ class QuickLookPane(DetailBasePane):
         self.editor = QtWidgets.QPlainTextEdit()
         self.editor.setReadOnly(True)
         self.editor.setWordWrapMode(QtGui.QTextOption.NoWrap)
+        self.editor.setFont(QtGui.QFont(MONO_FONT, FONT_SIZE))
 
         self.contentsLayout.addWidget(self.editor)
 
