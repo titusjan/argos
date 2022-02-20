@@ -131,10 +131,11 @@ class TableInspectorCti(MainGroupCti):
 
         fmtCti = self.insertChild(GroupCti("format specifiers"))
 
-        # Use '!r' as default for Python 2. This will convert the floats with repr(), which is
-        # necessary because str() or an empty format string will only print 2 decimals behind the
-        # point. In Python 3 this is not necessary: all relevant decimals are printed.
-        numDefaultValue = 6 if six.PY2 else 0
+        # # Use '!r' as default for Python 2. This will convert the floats with repr(), which is
+        # # necessary because str() or an empty format string will only print 2 decimals behind the
+        # # point. In Python 3 this is not necessary: all relevant decimals are printed.
+        #numDefaultIndex = 6 if six.PY2 else 0
+        numDefaultIndex = 7
 
         self.strFormatCti = fmtCti.insertChild(
             ChoiceCti("strings", 0, editable=True, completer=None,
@@ -147,7 +148,7 @@ class TableInspectorCti(MainGroupCti):
                                     '8d', '#8.4g', '_<10', '_>10', "'int: {}'"]))
 
         self.numFormatCti = fmtCti.insertChild(
-            ChoiceCti("other numbers", numDefaultValue, editable=True, completer=None,
+            ChoiceCti("other numbers", numDefaultIndex, editable=True, completer=None,
                       configValues=['', 'f', 'g', 'n', '%', '!r',
                                     '8.3e', '#8.4g', '_<15', '_>15', "'num: {}'"]))
 
@@ -295,7 +296,7 @@ class TableInspector(AbstractInspector):
             oldRow = 0
             oldCol = 0
 
-        # Temporarily set header sizes fixed when populating the model (mayy be slow otherwise)
+        # Temporarily set header sizes fixed when populating the model (may be slow otherwise)
         verHeader = self.tableView.verticalHeader()
         horHeader = self.tableView.horizontalHeader()
         verHeader.setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
@@ -532,6 +533,13 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
                                  decode_bytes=self.encoding, maskFormat=self.maskFormat,
                                  strFormat=self.strFormat, intFormat=self.intFormat,
                                  numFormat=self.numFormat, otherFormat=self.otherFormat)
+
+            elif role == Qt.ToolTipRole:
+                fmt = '{!r}' # Use __repr__ for toolbar, except for strings
+                return to_string(self._cellValue(index), masked=self._cellMask(index),
+                                 decode_bytes=self.encoding, maskFormat=fmt,
+                                 strFormat=self.strFormat, intFormat=fmt,
+                                 numFormat=fmt, otherFormat=fmt)
 
             elif role == Qt.FontRole:
                 #assert self._font, "Font undefined"
