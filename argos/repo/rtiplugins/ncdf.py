@@ -23,7 +23,9 @@
 """
 from __future__ import absolute_import
 
-import logging, types
+import logging
+import math
+
 from netCDF4 import Dataset, Variable, Dimension
 
 from argos.utils.cls import check_class
@@ -32,6 +34,8 @@ from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.utils.defs import SUB_DIM_TEMPLATE, CONTIGUOUS
 
 logger = logging.getLogger(__name__)
+
+MAX_QUICK_LOOK_SIZE = 1000
 
 
 def ncVarAttributes(ncVar):
@@ -268,6 +272,16 @@ class NcdfFieldRti(BaseRti):
         return shapeToSummary(self.arrayShape)
 
 
+    @property
+    def quickLook(self):
+        """ Returns a string representation fof the RTI to use in the Quik Look pane.
+        """
+        if math.prod(self._ncVar.shape) > MAX_QUICK_LOOK_SIZE:
+            return "{} of {}".format(self.typeName, self.summary)
+        else:
+            return super(NcdfFieldRti, self).quickLook
+
+
 
 class NcdfVariableRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a NCDF variable.
@@ -408,6 +422,16 @@ class NcdfVariableRti(BaseRti):
             return str(np.asarray(self._ncVar))  # scalar
         else:
             return shapeToSummary(self.arrayShape)
+
+
+    @property
+    def quickLook(self):
+        """ Returns a string representation fof the RTI to use in the Quik Look pane.
+        """
+        if math.prod(self._ncVar.shape) > MAX_QUICK_LOOK_SIZE:
+            return "{} of {}".format(self.typeName, self.summary)
+        else:
+            return super(NcdfVariableRti, self).quickLook
 
 
     def _fetchAllChildren(self):

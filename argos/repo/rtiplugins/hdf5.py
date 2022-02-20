@@ -195,7 +195,6 @@ def _dataSetQuickLook(data, string_info):
     if H5PY_MAJOR_VERSION <= 2:
         return str(data) # Just convert bytes to string in h5py <= 2.x
     else:
-        logger.debug("_dataSetQuickLook: {!r}".format(data))
         if string_info is None:
             return str(data)  # not a string
         else:

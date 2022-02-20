@@ -183,7 +183,7 @@ class RepoTreeView(ArgosTreeView):
         self.currentItemActionGroup = QtWidgets.QActionGroup(self)
         self.currentItemActionGroup.setExclusive(False)
 
-        removeFileAction = QtWidgets.QAction("  Remove from Tree", self.currentItemActionGroup,
+        removeFileAction = QtWidgets.QAction("Remove from Tree", self.currentItemActionGroup,
                                          shortcut=QtGui.QKeySequence.Delete,
                                          triggered=self.removeCurrentItem)
         self.addAction(removeFileAction)
