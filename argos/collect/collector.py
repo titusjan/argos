@@ -304,6 +304,16 @@ class Collector(BasePanel):
         self._comboBoxes = []
 
 
+    @property
+    def _hasFakeDimension(self):
+        """ Returns True if the comboboxes have a fake dimension.
+
+            We add a fake dimension (of length 1) only if there are fewer dimensions in the RTI
+            than the inspector can show.
+        """
+        return self._rti.nDims < len(self._comboBoxes)
+
+
     # TODO: why again don't we create the comboxes when a new RTI is selected (just like the spins)?
     def _populateComboBoxes(self, row):
         """ Populates the combo boxes with values of the repo tree item
@@ -323,8 +333,12 @@ class Collector(BasePanel):
         nCombos = len(self._comboBoxes)
 
         for comboBoxNr, comboBox in enumerate(self._comboBoxes):
-            # Add a fake dimension of length 1
-            comboBox.addItem(FAKE_DIM_NAME, userData = FAKE_DIM_OFFSET + comboBoxNr)
+
+            # Only add a fake dimension of length 1 if there are fewer dimensions in the RTI than
+            # the inspector can show.
+
+            if self._hasFakeDimension:
+                comboBox.addItem(FAKE_DIM_NAME, userData = FAKE_DIM_OFFSET + comboBoxNr)
 
             for dimNr in range(nDims):
                 comboBox.addItem(self._rti.dimensionNames[dimNr], userData=dimNr)
@@ -347,9 +361,9 @@ class Collector(BasePanel):
                     if curDim <= comboBoxNr or self.rti.arrayShape[curDim] > 1:
                         break
 
-                curIdx = curDim + 1 # because of the fake dim
-                assert 0 <= curIdx <= nDims + 1, \
-                    "curIdx should be <= {}, got {}".format(nDims + 1, curIdx)
+                curIdx = curDim
+                assert 0 <= curIdx <= nDims, \
+                    "curIdx should be <= {}, got {}".format(nDims, curIdx)
 
                 comboBox.setCurrentIndex(curIdx)
         else:
@@ -481,15 +495,21 @@ class Collector(BasePanel):
 
         blocked = self.blockChildrenSignals(True)
 
-        # If one of the other combo boxes has the same value, set it to the fake dimension
         curDimIdx = self._comboBoxDimensionIndex(comboBox)
-        if curDimIdx < FAKE_DIM_OFFSET:
-            otherComboBoxes = [cb for cb in self._comboBoxes if cb is not comboBox]
-            for otherComboBox in otherComboBoxes:
-                if otherComboBox.currentIndex() == comboBox.currentIndex():
-                    #newIdx = otherComboBox.findData(FAKE_DIM_IDX)
-                    #otherComboBox.setCurrentIndex(newIdx)
-                    otherComboBox.setCurrentIndex(0) # Fake dimension is always the first
+
+        # if curDimIdx < FAKE_DIM_OFFSET:
+
+        # Find any dimension that is not used
+        unusedDimensions = list(range(self.rti.nDims + int(self._hasFakeDimension)))
+        otherComboBoxes = [cb for cb in self._comboBoxes if cb is not comboBox]
+        for otherComboBox in otherComboBoxes:
+            if otherComboBox.currentIndex() in unusedDimensions:
+                unusedDimensions.remove(otherComboBox.currentIndex())
+
+        logger.info("Unused dimensions: {}".format(unusedDimensions))
+        for otherComboBox in otherComboBoxes:
+            if otherComboBox.currentIndex() == comboBox.currentIndex():
+                otherComboBox.setCurrentIndex(unusedDimensions.pop())
 
         # Show only spin boxes that are not selected
         row = 0
@@ -507,9 +527,6 @@ class Collector(BasePanel):
     @QtSlot(int)
     def _spinboxValueChanged(self, index, spinBox=None):
         """ Is called when a spin box value was changed.
-
-            Updates the spin boxes and sets other combo boxes having the same index to
-            the fake dimension of length 1.
         """
         if spinBox is None:
             spinBox = self.sender()
@@ -595,6 +612,7 @@ class Collector(BasePanel):
         # Add fake dimensions of length 1 so that result.ndim will equal the number of combo boxes
         # TODO: Perhaps get rid of this because it fails with masked arrays with fill values.
         # The less we do here, the less chance an error occurs. See development/todo.txt
+        # 2022-02-21: this seems no longer a problem (numpy 1.22.2)
         for dimNr in range(slicedArray.ndim, self.maxCombos):
             #logger.debug("Adding fake dimension: {}".format(dimNr))
             slicedArray = ma.expand_dims(slicedArray, dimNr)
