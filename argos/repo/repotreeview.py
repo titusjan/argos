@@ -28,8 +28,8 @@ from argos.repo.detailplugins.quicklook import QuickLookPane
 from argos.repo.registry import globalRtiRegistry
 from argos.repo.repotreemodel import RepoTreeModel
 from argos.widgets.argostreeview import ArgosTreeView
-from argos.widgets.constants import LEFT_DOCK_WIDTH,  DOCK_SPACING, DOCK_MARGIN
-from argos.widgets.constants import COL_NODE_NAME_WIDTH, COL_TYPE_WIDTH, COL_SUMMARY_WIDTH
+from argos.widgets.constants import LEFT_DOCK_WIDTH, DOCK_SPACING, DOCK_MARGIN, COL_KIND_WIDTH
+from argos.widgets.constants import COL_NODE_NAME_WIDTH, COL_ELEM_TYPE_WIDTH, COL_SUMMARY_WIDTH
 
 from argos.widgets.misc import BasePanel
 
@@ -162,19 +162,21 @@ class RepoTreeView(ArgosTreeView):
 
         treeHeader = self.header()
         treeHeader.resizeSection(RepoTreeModel.COL_NODE_NAME, COL_NODE_NAME_WIDTH)
-        treeHeader.resizeSection(RepoTreeModel.COL_TYPE, COL_TYPE_WIDTH)
+        treeHeader.resizeSection(RepoTreeModel.COL_KIND, COL_KIND_WIDTH)
+        treeHeader.resizeSection(RepoTreeModel.COL_ELEM_TYPE, COL_ELEM_TYPE_WIDTH)
         treeHeader.resizeSection(RepoTreeModel.COL_SUMMARY, COL_SUMMARY_WIDTH)
 
-        # Note, these settings are stored in the json file
-        treeHeader.setStretchLastSection(False)
-        treeHeader.setSectionResizeMode(RepoTreeModel.COL_NODE_NAME, QtWidgets.QHeaderView.Stretch)
+        # Note: this setting is stored in the json file. Remove the config file if you want to
+        # change it.
+        treeHeader.setStretchLastSection(True)
 
         headerNames = self.model().horizontalHeaders
         enabled = dict((name, True) for name in headerNames)
         enabled[headerNames[RepoTreeModel.COL_NODE_NAME]] = False # Cannot be unchecked
         checked = dict((name, False) for name in headerNames)
         checked[headerNames[RepoTreeModel.COL_NODE_NAME]] = True
-        checked[headerNames[RepoTreeModel.COL_TYPE]] = True
+        checked[headerNames[RepoTreeModel.COL_KIND]] = True
+        checked[headerNames[RepoTreeModel.COL_ELEM_TYPE]] = True
         checked[headerNames[RepoTreeModel.COL_SUMMARY]] = True
         self.addHeaderContextMenu(checked=checked, enabled=enabled, checkable={})
 

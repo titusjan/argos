@@ -40,11 +40,11 @@ class RepoTreeModel(BaseTreeModel):
         for QTreeViews. The underlying data is stored as repository tree items (BaseRti
         descendants).
     """
-    HEADERS = ["Name", "Path", "Dimensions", "Shape", "Dimensionality",
+    HEADERS = ["Name", "Path", "Dimensions", "Shape", "Kind",
                "Element Type", "Type", "Unit", "Missing data", "Chunking", "Summary",
                "File name", "Item class", "Is open", "Error"]
 
-    (COL_NODE_NAME, COL_NODE_PATH, COL_DIMS, COL_SHAPE, COL_DIMENSIONALITY,
+    (COL_NODE_NAME, COL_NODE_PATH, COL_DIMS, COL_SHAPE, COL_KIND,
      COL_ELEM_TYPE, COL_TYPE, COL_UNIT, COL_MISSING_DATA, COL_CHUNKING, COL_SUMMARY,
      COL_FILE_NAME, COL_RTI_TYPE, COL_IS_OPEN, COL_EXCEPTION) = range(len(HEADERS))
 
@@ -85,7 +85,7 @@ class RepoTreeModel(BaseTreeModel):
                     return str(treeItem.isOpen)
                 else:
                     return ""
-            elif column == self.COL_DIMENSIONALITY:
+            elif column == self.COL_KIND:
                 return treeItem.dimensionality
             elif column == self.COL_ELEM_TYPE:
                 return treeItem.elementTypeName
@@ -136,7 +136,7 @@ class RepoTreeModel(BaseTreeModel):
                 return to_string(treeItem.missingDataValue, noneFormat='') # empty str for Nones
             elif column == self.COL_RTI_TYPE:
                 return type_name(treeItem)
-            elif column == self.COL_DIMENSIONALITY:
+            elif column == self.COL_KIND:
                 return treeItem.dimensionality
             elif column == self.COL_ELEM_TYPE:
                 return treeItem.elementTypeName
