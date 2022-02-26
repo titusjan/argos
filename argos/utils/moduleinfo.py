@@ -6,8 +6,9 @@
 """
 from __future__ import print_function
 
-import sys
 import logging
+import re
+import sys
 
 from abc import ABCMeta, abstractproperty
 
@@ -21,9 +22,17 @@ NOT_IMPLEMENTED_ERR_MSG = "You must override this abstract property/method."
 def versionStrToTuple(versionStr):
     """ Converts a version string to tuple
 
-        E.g. 'x.y.z' to (x, y, x)
+        Version string has format <major>.<minor>.<patch><postfix> where postfix can be empty.
+            E.g. versionStrToTuple('0.3.1rc1') returns (0, 3, 1, 'rc1')
     """
-    return tuple([int(i) for i in versionStr.split('.')])
+    matchObj = re.match(r"(\d+)\.(\d+)\.(\d+)(\w*)", versionStr)
+
+    major = int(matchObj.group(1))
+    minor = int(matchObj.group(2))
+    patch = int(matchObj.group(3))
+    postfix = matchObj.group(4)
+
+    return (major, minor, patch, postfix)
 
 
 class AbstractModuleInfo(object):

@@ -23,7 +23,7 @@ import numpy as np
 
 from argos.qt import QtGui, QtWidgets
 from argos.repo.detailpanes import DetailBasePane
-from widgets.constants import MONO_FONT, FONT_SIZE
+from argos.widgets.constants import MONO_FONT, FONT_SIZE
 
 logger = logging.getLogger(__name__)
 

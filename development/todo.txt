@@ -21,20 +21,17 @@ Argos philosophy:
 
 TODO short term:
 
-    Release:
-        - Make all columns visible
-        - Updated config.
-        - Test release
-        - Quick look or Quicklook
+    Further tests
 
     line plot isn't cleared when a file is closed. Do we want' this? What happens if we pull the slicer
 
     Remove empty plots when no valid data selected
 
+    Quick look or Quicklook
+
 TODO mid term:
 
     Fixed font size in tables and trees so that windows10 with two monitors works. (setFixedPitch)
-
 
     Zebra striping?
     The problem is that the currently selected RTI is poorly visible when the data tree loses focus. Fix with CSS?

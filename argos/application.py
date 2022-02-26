@@ -19,16 +19,18 @@
 """
 from __future__ import print_function
 
-import json
+import copy
 import glob
+import json
 import logging
 import os.path
 import pprint
+import shutil
 import sys
 
 from datetime import datetime
 
-from argos.info import DEBUGGING, EXIT_CODE_SUCCESS
+from argos.info import DEBUGGING, EXIT_CODE_SUCCESS, KEY_PROGRAM, PROJECT_NAME, VERSION, KEY_VERSION
 from argos.inspector.registry import InspectorRegistry, DEFAULT_INSPECTOR
 from argos.qt import QtCore, QtWidgets, QtSlot
 from argos.qt.misc import handleException, initQApplication
@@ -36,14 +38,58 @@ from argos.reg.basereg import nameToIdentifier
 from argos.repo.colors import CmLibSingleton, DEF_FAV_COLOR_MAPS
 from argos.repo.registry import globalRtiRegistry
 from argos.repo.repotreemodel import RepoTreeModel
+from argos.utils.config import getConfigParameter, deleteParameter
 from argos.utils.dirs import argosConfigDirectory, normRealPath, ensureFileExists
+from argos.utils.moduleinfo import versionStrToTuple
 from argos.widgets.mainwindow import MainWindow, UpdateReason
 
 logger = logging.getLogger(__name__)
 
 
-_Q_APP = None # Keep reference to QApplication instance to prevent garbage collection
+def _updateConfig(cfg):
+    """ Updates the Argos config dict for the new version after an update.
 
+        Best to make sure that a backup has been made before.
+    """
+    logger.debug("_updateConfig called")
+
+    if not cfg: # The config may be empty, e.g. when the first time the application is started
+        logger.debug("Empty config file in _updateConfig. Returning.")
+        return cfg
+
+    cfg = copy.deepcopy(cfg)
+
+    # Version is written to config from 0.4.0, so we assume version <= 0.3.x if no version was found
+    # We drop the postfix (e.g. 'rc1') from the version tuples so that version tuples can be
+    # compared directly with logical operators.
+    cfgVersion = versionStrToTuple(cfg.get(KEY_VERSION, '0.3.99'))[0:3]
+    appVersion = versionStrToTuple(VERSION)[0:3]
+
+    if cfgVersion == appVersion:
+        logger.info("Config file version {} == app version {}. Will use config file as-is."
+                    .format(cfgVersion, appVersion))
+        return cfg
+    elif cfgVersion > appVersion:
+        logger.warning("Config file version {} > app version {}. Will use config file as-is."
+                    .format(cfgVersion, appVersion))
+        return cfg
+    else:
+        logger.info("Config file version {} < app version {}. Updating config file to new version."
+                    .format(cfgVersion, appVersion))
+        assert appVersion > cfgVersion, "Sanity check"
+
+    if cfgVersion < (0, 4, 0):
+        logger.info("Updating config to 0.4.0")
+
+        # Remove the tree headers because we added the kind, element type, and summary columns.
+        for key, windowsCfg in getConfigParameter(cfg, 'windows', alt={}).items():
+            logger.debug("Updating windows config: {}".format(key))
+            deleteParameter(windowsCfg, "layout/repoWidget", "treeHeaders")
+
+    return cfg
+
+
+_Q_APP = None # Keep reference to QApplication instance to prevent garbage collection
 
 def qApplicationSingleton():
     """ Returns the QApplication object. Creates it if it doesn't exist.
@@ -257,10 +303,34 @@ class ArgosApplication(QtCore.QObject):
             logger.critical("Qt message of unknown type {}: {}".format(qMsgType, msg))
 
 
+    def _makeConfigBackup(self, cfg):
+        """ Creates a backup of the config file if the application version is not the same
+            as the version from the config file.
+        """
+        if not cfg: # The config may be empty, e.g. when the first time the application is started
+            return cfg
+
+        cfgVersion = cfg.get(KEY_VERSION, '0.3.1') # version is present in config from 0.3.2 and up
+
+        if cfgVersion != VERSION:
+            logger.info("Config file version {} differs from application version {}."
+                        .format(cfgVersion, VERSION))
+
+            cfgBackup = "{}.v{}.backup".format(self._settingsFile, cfgVersion)
+            logger.info("Making a backup to: {}".format(os.path.abspath(cfgBackup)))
+            shutil.copy2(self._settingsFile, cfgBackup)
+
+        return cfg
+
+
     def marshall(self):
         """ Returns a dictionary to save in the persistent settings
         """
         cfg = {}
+
+        cfg[KEY_PROGRAM] = PROJECT_NAME
+        cfg[KEY_VERSION] = VERSION
+
         cmLib = CmLibSingleton.instance()
         cfg['cmFavorites'] = [colorMap.key for colorMap in cmLib.color_maps
                      if colorMap.meta_data.favorite]
@@ -306,7 +376,7 @@ class ArgosApplication(QtCore.QObject):
         self.rtiRegistry.unmarshall(pluginCfg.get('file-formats', {}))
 
         for winId, winCfg in cfg.get('windows', {}).items():
-            assert winId.startswith('win-'), "Win ID doesnt't start with 'win-': {}".format(winId)
+            assert winId.startswith('win-'), "Win ID doesn't start with 'win-': {}".format(winId)
             self.addNewMainWindow(cfg=winCfg)
 
         if inspectorFullName is not None:
@@ -359,12 +429,13 @@ class ArgosApplication(QtCore.QObject):
     def loadSettings(self, inspectorFullName):
         """ Loads the settings from file and populates the application object from it.
 
+            Will update the config (and make a backup of the config file) if the version number
+            has changed.
+
             :param inspectorFullName: If not None, a window with this inspector is created.
                 If an inspector window with this inspector is created from the config file, this
                 parameter is ignored.
         """
-        cfg = {}
-
         if not os.path.exists(self._settingsFile):
             logger.warning("Settings file does not exist: {}".format(self._settingsFile))
 
@@ -380,6 +451,9 @@ class ArgosApplication(QtCore.QObject):
             logger.error("Error {} while reading settings file: {}"
                            .format(ex, self._settingsFile))
             raise # in case of a syntax error it's probably best to exit.
+
+        self._makeConfigBackup(cfg)  # If the version has changed.
+        cfg = _updateConfig(cfg)     # If the version has changed.
 
         self.unmarshall(cfg, inspectorFullName)  # Always call unmarshall.
 

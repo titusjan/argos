@@ -75,7 +75,7 @@ class RepoWidget(BasePanel):
         self.repoTreeView.sigRepoItemChanged.connect(self.repoItemChanged)
         self.tabWidget.currentChanged.connect(self.tabChanged)
 
-        self.tabWidget.setCurrentIndex(1) # Show attributes the first time the program runs
+        self.tabWidget.setCurrentIndex(2) # Show quick look tab the first time the program runs
 
 
 
@@ -471,7 +471,7 @@ class RepoTreeView(ArgosTreeView):
         assert hasCurrent == (currentItem is not None), \
             "If current index is valid, currentIndex may not be None" # sanity check
 
-        # Set the item in the collector, will will subsequently update the inspector.
+        # Set the item in the collector, will subsequently update the inspector.
         if hasCurrent:
             logger.info("Adding rti to collector: {}".format(currentItem.nodePath))
             self.collector.setRti(currentItem)

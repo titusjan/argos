@@ -152,7 +152,7 @@ def main():
     """ Starts Argos main window
     """
     # Import in functions. See comments at the top for more details
-    from widgets.constants import NUMPY_LINE_WIDTH
+    from argos.widgets.constants import NUMPY_LINE_WIDTH
     from argos.info import DEBUGGING, PROJECT_NAME, VERSION, EXIT_CODE_RESTART, resource_directory
     from argos.utils.logs import initLogging
     from argos.utils.misc import remove_process_serial_number

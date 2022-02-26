@@ -5,6 +5,19 @@ History
 
 Note that version 0.3 will be the last release that supports Python 2.
 
+0.4.0 (2022-02-??)
+------------------
+
+*   Quick Look panel for showing quickly the contents of scalars and small arrays.
+*   The Repository tree shows Kind, Element Type and Summary columns by default.
+*   If one file or directory is opened, or given on the command line, it is expanded.
+*   Only add a '-' item to the collector combo boxes if the array has less dimensions than the inspector.
+*   The table inspector has "#8.4g" as the default format for floats. The tooltip shows all digits.
+*   Added __main__.py so argos can be started with: python -m argos.
+*   Fixed import in Line Plot and Image Plot inspectors (issue #20).
+*   Fixed errors when running Argos with Python 3.10.
+
+
 0.3.1 (2021-02-07)
 ------------------
 
