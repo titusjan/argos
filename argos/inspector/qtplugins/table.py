@@ -270,7 +270,7 @@ class TableInspector(AbstractInspector):
 
 
     def _clearContents(self):
-        """ Clears the  the inspector widget when no valid input is available.
+        """ Clears the inspector widget when no valid input is available.
         """
         pass
 
@@ -296,7 +296,7 @@ class TableInspector(AbstractInspector):
             oldRow = 0
             oldCol = 0
 
-        # Temporarily set header sizes fixed when populating the model (may be slow otherwise)
+        # Temporarily set header sizes fixed when populating the model (it may be slow otherwise)
         verHeader = self.tableView.verticalHeader()
         horHeader = self.tableView.horizontalHeader()
         verHeader.setSectionResizeMode(QtWidgets.QHeaderView.Fixed)

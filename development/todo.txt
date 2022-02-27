@@ -21,13 +21,18 @@ Argos philosophy:
 
 TODO short term:
 
-    Further tests
+    Further tests:
+        --testing command line options
+
+    self.contentsWidget.setStyleSheet('background: yellow;')
 
     line plot isn't cleared when a file is closed. Do we want' this? What happens if we pull the slicer
 
     Remove empty plots when no valid data selected
 
-    Quick look or Quicklook
+    axesNames: rows, columns.
+    resize repo should resize the name column.
+
 
 TODO mid term:
 

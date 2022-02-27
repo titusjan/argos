@@ -22,7 +22,6 @@ from __future__ import division, print_function
 import logging
 import pyqtgraph as pg
 
-from functools import partial
 from argos.info import DEBUGGING
 from argos.qt import Qt, QtCore, QtWidgets, QtSignal
 

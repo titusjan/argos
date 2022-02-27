@@ -54,8 +54,10 @@ def browse(fileNames=None,
 
         Calls _browse() in a while loop to enable pseudo restarts in case the registry was edited.
 
-        :param fileNames: List of file names that will be added to the repository
-        :param select: a path of the repository item that will selected at start up.
+        :param fileNames: List of file names that will be added to the repository. If only one
+            file or directory is given it will be selected and expanded at start up.
+        :param select: a path of the repository item that will selected and expanded at start up,
+            even if more than one file or directory is given on the command line.
         :param inspectorFullName: The full path name of the inspector that will be loaded
         :param qtStyle: name of qtStyle (E.g. fusion).
         :param styleSheet: a path to an optional Qt Cascading Style Sheet.

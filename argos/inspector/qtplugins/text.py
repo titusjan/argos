@@ -94,7 +94,7 @@ class TextInspector(AbstractInspector):
 
 
     def _clearContents(self):
-        """ Clears the  the inspector widget when no valid input is available.
+        """ Clears the inspector widget when no valid input is available.
         """
         self.editor.clear()
 
