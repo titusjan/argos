@@ -5,7 +5,7 @@ History
 
 Note that version 0.3 will be the last release that supports Python 2.
 
-0.4.0 (2022-02-??)
+0.4.0 (2022-02-27)
 ------------------
 
 *   Quick Look panel for showing quickly the contents of scalars and small arrays.

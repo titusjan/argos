@@ -3,8 +3,6 @@ Argos
 ===============================
 
 
-Argos data inspector.
-
-Requires: PyQtGraph (http://www.pyqtgraph.org/).
+Argos data inspector for HDF5, NetCDF4 and other file formats.
 
 For more info, see: https://github.com/titusjan/argos

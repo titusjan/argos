@@ -214,7 +214,7 @@ class PillowInfo(ImportedModuleInfo):
 
     def __init__(self):
 
-        super(PillowInfo, self).__init__('PIL', versionAttribute='PILLOW_VERSION')
+        super(PillowInfo, self).__init__('PIL')
         self._name = 'pillow (PIL)'
 
 

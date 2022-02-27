@@ -9,9 +9,7 @@ a plug-in could be written for any data that can be expressed as a Numpy array.
 
 ### Installing Argos
 
-Argos works with Python 2.7 or Python 3.4 and higher. If you don't have Python yet, consider to
-use the [Anaconda Python distribution](https://www.continuum.io/downloads), as it comes with many
-of Argos' dependencies installed.
+Argos works with Python 3.7 and higher.
 
 Argos requires at least [PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro) and
 [Numpy](http://www.numpy.org) and [CmLib](https://github.com/titusjan/cmlib). It is strongly
@@ -34,8 +32,7 @@ corresponding file formats.
 
 #### Installing Argos with Pip
 
-Provided you use Python 3.5 or higher, you can install PyQt5 with `pip`. Otherwise you can download
-it at the [Riverbank site](https://www.riverbankcomputing.com/software/pyqt/download5).
+First install PyQt5 with `pip`, then install Argos.
 
     %> pip install PyQt5
     %> pip install argos
