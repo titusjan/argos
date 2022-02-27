@@ -21,7 +21,7 @@ Argos philosophy:
 
 TODO short term:
 
-    axesNames: rows, columns.
+    axesNames: rows, columns in table inspector.
     resize repo should resize the name column.
 
 

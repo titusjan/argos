@@ -433,7 +433,12 @@ class NcdfVariableRti(BaseRti):
     def quickLook(self):
         """ Returns a string representation fof the RTI to use in the Quik Look pane.
         """
-        if math.prod(self._ncVar.shape) > MAX_QUICK_LOOK_SIZE:
+        # In python 3.8 we can use math.prod(self._ncVar.shape)
+        product = 1
+        for elem in self._ncVar.shape:
+            product *= elem
+
+        if  product > MAX_QUICK_LOOK_SIZE:
             return "{} of {}".format(self.typeName, self.summary)
         else:
             return super(NcdfVariableRti, self).quickLook
