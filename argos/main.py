@@ -262,11 +262,14 @@ def main():
 
     if args.selectPath:
         selectPath = args.selectPath
+        logger.debug("Using selection path from the command line: {!r}".format(selectPath))
     else:
         if len(fileNames) == 1:
-            selectPath = os.path.basename(fileNames[0])
+            selectPath = os.path.basename(os.path.normpath(fileNames[0]))  # Using normpath to remove trailing slashes.
+            logger.debug("Selection path is the only file that is given on the command line: {!r}".format(selectPath))
         else:
             selectPath = None
+            logger.debug("Not selecting any files (selection path = {!r})".format(selectPath))
 
     # Browse will create an ArgosApplication with one MainWindow
     browse(fileNames = fileNames,
