@@ -1049,6 +1049,10 @@ class MainWindow(QtWidgets.QMainWindow):
             from argos.inspector.pgplugins.imageplot2d import PgImagePlot2d
 
             if isinstance(self._inspector, TextInspector):
+                 # TODO: let's fix the Pandas errors when users can open a Pandas in memory.
+                skipError.append('/myDict/pandas/simple series/index')  # AttributeError: 'str' object has no attribute 'ndim'
+                skipError.append('/myDict/pandas/df/index')  # Gives AssertionError: <class 'numpy.int64'>
+                skipError.append('/myDict/pandas/df/columns')  # Gives TAttributeError: 'str' object has no attribute 'ndim'
                 skipError.append('/myDict/pandas/multi-index/index')  # Gives TypeError: len() of unsized object. Unclear whe. # TODO
                 skipError.append('/myDict/structured_masked_arr2')    # Fails with ma.copy: 'numpy.void' object has no attribute '_update_from'
                 skipError.append('/myDict/pandas/panel/major_axis')   # ValueError: object __array__ method not producing an array
@@ -1091,11 +1095,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.repoWidget.repoTreeView.setCurrentIndex(index)
             self.repoWidget.repoTreeView.setExpanded(index, True)
-            processEvents() # Cause Qt to update UI
 
-            # Expand node to load children.
-            #self.repoWidget.repoTreeView.setExpanded(index, True)
-            #QtWidgets.qApp.processEvents() # Cause Qt to load children.
+            # Try properties, attributes and quicklook tabs
+            for idx in range(self.repoWidget.tabWidget.count()):
+                # if idx != 2:
+                #     continue
+                logger.debug("Setting repo tab index to: {}".format(idx))
+                self.repoWidget.tabWidget.setCurrentIndex(idx)
+                processEvents() # Cause Qt to update UI
 
             for rowNr in range(repoModel.rowCount(index)):
                 childIndex = repoModel.index(rowNr, 0, parentIndex=index)
