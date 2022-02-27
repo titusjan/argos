@@ -301,6 +301,9 @@ class PgImagePlot2d(AbstractInspector):
         """
         super(PgImagePlot2d, self).__init__(collector, parent=parent)
 
+        # Ensure that only a white background is visible when self.graphicsLayoutWidget is hidden.
+        self.contentsWidget.setStyleSheet('background: white;')
+
         # The sliced array is kept in memory. This may be different per inspector, e.g. 3D
         # inspectors may decide that this uses to much memory. The slice is therefor not stored
         # in the collector.
@@ -434,6 +437,9 @@ class PgImagePlot2d(AbstractInspector):
         self.horCrossPlotItem.clear()
         self.verCrossPlotItem.clear()
 
+        # Hide the complete widget. # TODO: do we still need the lines above?
+        self.graphicsLayoutWidget.hide()
+
 
     def _drawContents(self, reason=None, initiator=None):
         """ Draws the plot contents from the sliced array of the collected repo tree item.
@@ -489,6 +495,8 @@ class PgImagePlot2d(AbstractInspector):
             self.slicedArray = slicedArray
 
         # -- Valid plot data from here on --
+
+        self.graphicsLayoutWidget.show()
 
         if self.config.crossPlotGroupCti.checkState != Qt.Unchecked:
             tempPlotDataItem = self.config.crossPenCti.createPlotDataItem()

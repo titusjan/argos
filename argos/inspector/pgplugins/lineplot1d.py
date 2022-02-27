@@ -135,6 +135,9 @@ class PgLinePlot1d(AbstractInspector):
         """
         super(PgLinePlot1d, self).__init__(collector, parent=parent)
 
+        # Ensure that only a white background is visible when self.graphicsLayoutWidget is hidden.
+        self.contentsWidget.setStyleSheet('background: white;')
+
         # The sliced array is kept in memory. This may be different per inspector, e.g. 3D
         # inspectors may decide that this uses to much memory. The slice is therefor not stored
         # in the collector.
@@ -183,13 +186,15 @@ class PgLinePlot1d(AbstractInspector):
 
 
     def _clearContents(self):
-        """ Clears the  the inspector widget when no valid input is available.
+        """ Clears the inspector widget when no valid input is available.
         """
         self.slicedArray = None
         self.titleLabel.setText('')
         self.plotItem.clear()
         self.plotItem.setLabel('left', '')
         self.plotItem.setLabel('bottom', '')
+
+        self.graphicsLayoutWidget.hide()
 
 
     def _drawContents(self, reason=None, initiator=None):
@@ -208,7 +213,7 @@ class PgLinePlot1d(AbstractInspector):
         slicedArray = self.collector.getSlicedArray()
         if slicedArray is None:
             self._clearContents()
-            raise InvalidDataError()  # Don't show message, to common.
+            raise InvalidDataError()  # Don't show message, too common.
         elif not array_has_real_numbers(slicedArray.data):
             self._clearContents()
             raise InvalidDataError(
@@ -217,6 +222,8 @@ class PgLinePlot1d(AbstractInspector):
             self.slicedArray = slicedArray
 
         # -- Valid plot data from here on --
+
+        self.graphicsLayoutWidget.show()
 
         numElem = np.prod(self.slicedArray.data.shape)
         if numElem == 0:

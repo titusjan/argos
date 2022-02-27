@@ -45,7 +45,7 @@ COL_SUMMARY_WIDTH = 110 # will be stretched
 CENTRAL_SPACING = 0
 CENTRAL_MARGIN  = 0
 
-# Spacing and margin in dock widgets in pixels. Is now set in style sheet padding.
+# Spacing and margin in dock widgets in pixels. Is now set in style sheet margin.
 
 DOCK_SPACING = 0
 DOCK_MARGIN  = 0

@@ -20,12 +20,12 @@ QDockWidget::title:hover {
 }*/
 
 BasePanel {
-    padding: 5px;
+    margin: 5px;
 }
 
 InspectorSelectionPane {
-    padding: 5px;
-    padding-bottom: 0px;
+    margin: 5px;
+    margin-bottom: 0px;
 }
 
 QFrame#message_label {
