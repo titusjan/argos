@@ -35,8 +35,8 @@ except ImportError:
 
 from argos import info
 
-if sys.version_info < (2,7) or ((3,0) <= sys.version_info < (3, 4)):
-    err("Arogs requires Python 2.7 and higher or 3.4 and higher.")
+if sys.version_info < (3,7):
+    err("Argos requires Python 3.7")
     sys.exit(1)
 
 
@@ -57,10 +57,10 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 install_requires = [
     #"PyQt5 >= 5.6.0", # Don't require PyQt. See comment above
-    "cmlib",  # Needed, even if no plugins are installed.
+    "cmlib >= 1.1.2",  # Needed, even if no plugins are installed.
     "numpy >= 1.11",
     # Argos will technically work without pyqtgraph and h5py, but with very limited functionality.
-    "pgcolorbar",
+    "pgcolorbar >= 1.1.1",
     "pyqtgraph >= 0.11",
     # "h5py >= 2.6"
 ]

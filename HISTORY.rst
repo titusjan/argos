@@ -5,6 +5,12 @@ History
 
 Note that version 0.3 will be the last release that supports Python 2.
 
+
+0.4.1 (2022-03-02)
+------------------
+
+*   Fix: don't import numpy during running setup.py
+
 0.4.0 (2022-02-27)
 ------------------
 

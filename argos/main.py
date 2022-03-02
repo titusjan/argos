@@ -23,7 +23,7 @@ from __future__ import print_function
 # Do not do any imports here that (indirectly) import any dependencies (PyQt, numpy, etc)
 # The browse function is imported by the argos package, which in turn is imported by setup.py.
 # If you import (for instance) numpy here, the setup.py will fail if numpy is not installed.
-# Therefore we do all imports from the argos package in the functions here.
+# Therefore, we do all imports from the argos package in the functions here.
 
 import argparse
 import glob
@@ -31,8 +31,6 @@ import logging
 import os
 import os.path
 import sys
-
-import numpy as np
 
 logging.captureWarnings(True)
 
@@ -154,6 +152,8 @@ def main():
     """ Starts Argos main window
     """
     # Import in functions. See comments at the top for more details
+    import numpy as np
+
     from argos.widgets.constants import NUMPY_LINE_WIDTH
     from argos.info import DEBUGGING, PROJECT_NAME, VERSION, EXIT_CODE_RESTART, resource_directory
     from argos.utils.logs import initLogging
