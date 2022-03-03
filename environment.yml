@@ -1,9 +1,12 @@
 # Use this file to create an Anaconda environment with:
 # %> conda env create -f environment.yml [-n better_name]
 
+# At the moment Python 3.10 doesn't work with PyQt 5.12, which is the most recent PyQt version
+# on Anaconda.
+
 name: argos
 dependencies:
-  - python >= 3.4
+  - python >=3.7,<3.10
   - numpy
   - pyqt
   - h5py
@@ -11,6 +14,6 @@ dependencies:
   - pillow
   - scipy
   - pandas
-  - pyqtgraph >= 0.10.0
-  - conda-forge::cmlib
-  - conda-forge::pgcolorbar
+  - pyqtgraph >= 0.11.0
+  - conda-forge::cmlib >= 1.1.2
+  - conda-forge::pgcolorbar >= 1.1.1
