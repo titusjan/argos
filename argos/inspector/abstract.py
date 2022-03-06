@@ -18,6 +18,7 @@
 """ Base class for inspectors
 """
 import logging
+
 from argos.config.abstractcti import ResetMode
 from argos.config.groupcti import MainGroupCti
 from argos.info import DEBUGGING
@@ -26,6 +27,7 @@ from argos.utils.cls import type_name, check_class
 from argos.widgets.constants import DOCK_SPACING, DOCK_MARGIN
 from argos.widgets.display import MessageDisplay
 from argos.widgets.misc import BasePanel
+from utils.defs import TestingWrappedError
 
 logger = logging.getLogger(__name__)
 
@@ -179,7 +181,7 @@ class AbstractInspector(QtWidgets.QStackedWidget):
             (the inspector is the configuration's target, hence the name).
 
             The reason parameter is a string (one of the UpdateReason values) that indicates why
-            the inspector contents whas updated. This can, for instance, be used to optimize
+            the inspector contents was updated. This can, for instance, be used to optimize
             drawing the inspector contents. Note that the reason may be undefined (None).
 
             The initiator may contain the object that initiated the updated. The type depends on the
@@ -218,13 +220,15 @@ class AbstractInspector(QtWidgets.QStackedWidget):
                 self.sigShowMessage.emit(str(ex))
 
         except Exception as ex:####
-            if DEBUGGING:
-                raise
             logger.error("Error while drawing the inspector: {} ----".format(ex))
             logger.exception(ex)
             self._clearContents()
             self.setCurrentIndex(self.ERROR_PAGE_IDX)
             self._showError(msg=str(ex), title=type_name(ex))
+
+            # Perhaps use a signal
+            if DEBUGGING:
+                raise
         else:
             logger.debug("---- updateContents finished successfully")
 

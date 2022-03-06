@@ -35,7 +35,7 @@ from argos.collect.collector import Collector
 from argos.config.abstractcti import AbstractCti
 from argos.config.configtreemodel import ConfigTreeModel
 from argos.config.configtreeview import ConfigWidget
-from argos.info import DEBUGGING, TESTING, PROJECT_NAME, PROFILING, EXIT_CODE_RESTART
+from argos.info import DEBUGGING, PROJECT_NAME, PROFILING, EXIT_CODE_RESTART
 from argos.inspector.abstract import AbstractInspector, UpdateReason
 from argos.inspector.errormsg import ErrorMsgInspector
 from argos.inspector.selectionpane import InspectorSelectionPane
@@ -83,7 +83,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self._windowNumber = MainWindow.__numInstances # Used only for debugging
         MainWindow.__numInstances += 1
 
-        self.__nodesVisited = 0 # during testing
         if PROFILING:
             # Profiler that measures the drawing of the inspectors.
             self._profFileName = "inspectors.prof"
@@ -312,12 +311,22 @@ class MainWindow(QtWidgets.QMainWindow):
 
         helpMenu.addAction('&About...', self.about)
 
-        if TESTING or DEBUGGING:
+        helpMenu.addSeparator()
+        helpMenu.addAction("Add Test Data", self.addTestData, "Shift+Ctrl+A")
+
+        helpMenu.addAction(
+            "Quick Walk &Current Node", lambda: self.walkCurrentRepoNode(False, False))
+        helpMenu.addAction(
+            "Quick Walk &All Nodes", lambda: self.walkAllRepoNodes(False, False), "Shift+Ctrl+Q")
+
+        helpMenu.addAction(
+            "Walk &Current Node", lambda: self.walkCurrentRepoNode(True, True))
+        helpMenu.addAction(
+            "Walk &All Nodes", lambda: self.walkAllRepoNodes(True, True), "Shift+Ctrl+W")
+
+        if DEBUGGING:
             helpMenu.addSeparator()
-            helpMenu.addAction("&My Test", self.myTest, "Meta+T")
-            helpMenu.addAction("&Test Walk Current", self.testWalkCurrentNode, "Meta+W")
-            helpMenu.addAction("&Extensive Test Walk", self.testWalk, "Meta+E")
-            helpMenu.addAction("Add Test Data", self.addTestData, "Meta+A")
+            helpMenu.addAction("&My Test", self.myTest, "Shift+Ctrl+T")
 
 
 
@@ -980,14 +989,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     @QtSlot()
-    def addTestData(self):
-        """ Adds test data to the repository
-        """
-        logger.info("Adding test data to the repository.")
-        self.argosApplication.repo.insertItem(createArgosTestData())
-
-
-    @QtSlot()
     def myTest(self):
         """ Function for small ad-hoc tests
         """
@@ -1002,18 +1003,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         #self.repoWidget.repoTreeView.closeCurrentItem2()
 
-
-    def testWalkCurrentNode(self):
-        """ Will visit all nodes below the currently selected node
-        """
-        curItem, _curIdx = self.repoWidget.repoTreeView.getCurrentItem()
-        logger.info("CurrentItem: {}".format(curItem.nodePath))
-        self.testWalk(rootNodes=[curItem.nodePath])
-
-
-    def testWalk(self, rootNodes=None):
-        """ Will visit a list of (hard coded) preselected nodes.
-        """
+    def __not__used(self, rootNodes):
         if rootNodes is None:
 
             # Subtrees that will be visited. At the moment only data on my development PC.
@@ -1068,18 +1058,61 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             skipPaths = []
 
-        # Add myDict if not yet present
-        nodeItem, nodeIndex = self.trySelectRtiByPath('/myDict')
-        if nodeItem is None:
-            self.addTestData()
 
-        self.__nodesVisited = 0
+    @QtSlot()
+    def addTestData(self):
+        """ Adds test data to the repository
+        """
+        logger.info("Adding test data to the repository.")
+        self.argosApplication.repo.insertItem(createArgosTestData())
+
+
+    @QtSlot()
+    def addTestData(self):
+        """ Adds test data to the repository
+        """
+        logger.info("Adding test data to the repository.")
+        self.argosApplication.repo.insertItem(createArgosTestData())
+
+
+    def walkCurrentRepoNode(self, allInspectors: bool, allRepoTabs: bool):
+        """ Will visit all nodes below the currently selected node
+        """
+        curItem, _curIdx = self.repoWidget.repoTreeView.getCurrentItem()
+        logger.info("CurrentItem: {}".format(curItem.nodePath))
+        self.walkRepoNodes([curItem.nodePath], allInspectors, allRepoTabs)
+
+
+    def walkAllRepoNodes(self, allInspectors: bool, allRepoTabs: bool):
+        """ Will visit all nodes in the repo tree.
+
+            See walkRepoNodes docstring for more info
+        """
+        logger.debug("testWalkAllNodes")
+        repo = self.argosApplication.repo
+        nodePaths = [rti.nodePath for rti in repo.rootItems()]
+        logger.debug("All root items: {}".format(nodePaths))
+        self.walkRepoNodes(nodePaths, allInspectors, allRepoTabs)
+
+
+    def walkRepoNodes(self, nodePaths, allInspectors: bool, allRepoTabs: bool):
+        """ Will recursively walk through a list of repo tree nodes and all their descendants
+
+            Is useful for testing.
+
+            Args:
+                allInspectors: if True all inspectors are selected
+                allRepoTabs: if True all repo tabs (properties, attributes, quicklook) are selected.
+        """
+        _nodesVisited = 0
 
         def visitNodes(index):
             """ Visits all the nodes recursively.
             """
             assert index.isValid(), "sanity check"
-            self.__nodesVisited += 1
+
+            nonlocal  _nodesVisited
+            _nodesVisited += 1
 
             repoModel = self.repoWidget.repoTreeView.model()
             item = repoModel.getItem(index)
@@ -1087,7 +1120,7 @@ class MainWindow(QtWidgets.QMainWindow):
                         format(item.nodePath, repoModel.rowCount(index)))
 
             # Select index
-            if item.nodePath in skipPaths:
+            if False and item.nodePath in skipPaths:
                 logger.warning("Skipping node during testing: {}".format(item.nodePath))
                 return
             else:
@@ -1096,50 +1129,50 @@ class MainWindow(QtWidgets.QMainWindow):
             self.repoWidget.repoTreeView.setCurrentIndex(index)
             self.repoWidget.repoTreeView.setExpanded(index, True)
 
-            # Try properties, attributes and quicklook tabs
-            for idx in range(self.repoWidget.tabWidget.count()):
-                # if idx != 2:
-                #     continue
-                logger.debug("Setting repo tab index to: {}".format(idx))
-                self.repoWidget.tabWidget.setCurrentIndex(idx)
-                processEvents() # Cause Qt to update UI
+            if allRepoTabs:
+                # Try properties, attributes and quicklook tabs
+                for idx in range(self.repoWidget.tabWidget.count()):
+                    logger.debug("Setting repo tab index to: {}".format(idx))
+                    self.repoWidget.tabWidget.setCurrentIndex(idx)
+                    processEvents() # Cause Qt to update UI
+            else:
+                processEvents()
+
+            if allInspectors:
+                for action in self.inspectorActionGroup.actions():
+                    action.trigger()
+                    processEvents()
+            else:
+                processEvents()
 
             for rowNr in range(repoModel.rowCount(index)):
                 childIndex = repoModel.index(rowNr, 0, parentIndex=index)
                 visitNodes(childIndex)
 
+            # TODO: see if we can close the node
 
         # Actual body
         logger.info("-------------- Running Tests ----------------")
-        try:
-            timeAtStart = time.perf_counter()
-        except AttributeError:
-            timeAtStart = 0.0 # Python 2.7
+        logger.info("Visiting all nodes below: {}".format(nodePaths))
 
-        logger.info("Visiting all nodes below: {}".format(rootNodes))
-        check_is_a_sequence(rootNodes) # prevent accidental iteration over strings.
+        timeAtStart = time.perf_counter()
+        check_is_a_sequence(nodePaths) # prevent accidental iteration over strings.
 
-        prevRootNode = None
+        for nodePath in nodePaths:
+            logger.info("Testing root node: {!r}".format(nodePath))
 
-        for rootNode in rootNodes:
-            logger.debug("Testing root node: {!r}".format(rootNode))
-
-            nodeItem, nodeIndex = self.selectRtiByPath(rootNode)
-            assert nodeItem is not None, "Test data not found, rootNode: {}".format(rootNode)
+            nodeItem, nodeIndex = self.selectRtiByPath(nodePath)
+            assert nodeItem is not None, "Test data not found, rootNode: {}".format(nodePath)
             assert nodeIndex
-
-            if prevRootNode is not None:
-                logger.debug("Closing: {}".format(prevRootNode.nodePath))
-                prevRootNode.close()
 
             visitNodes(nodeIndex)
 
-        try:
-            timeAtEnd = time.perf_counter()
-        except AttributeError:
-            timeAtEnd = 1.0 # Python 2.7
+        duration = time.perf_counter() - timeAtStart
+        logger.info("Visited {} nodes in {:.1f} seconds ({:.1f} nodes/second)."
+                    .format(_nodesVisited, duration, _nodesVisited/duration))
 
-        duration = timeAtEnd - timeAtStart
-        logger.info("Visited {} nodes in {:.1f} seconds ({:.1f} nodes/second)"
-                    .format(self.__nodesVisited, duration, self.__nodesVisited/duration))
-        logger.info("-------------- Tests Done ----------------")
+        # logger.info("Number of failed nodes during test walk: {}".format(len(_failedPaths)))
+        # for _failedPath in _failedPaths:
+        #     logger.info("    {}".format(_failedPath))
+
+        logger.info("-------------- Test walk done ----------------")

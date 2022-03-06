@@ -61,7 +61,7 @@ class ErrorMsgInspector(AbstractInspector):
 
 
     def updateContents(self, reason=None, initiator=None):
-        """ Override updateContents. Shows the error error message
+        """ Override updateContents. Shows the error message
         """
         self.setCurrentIndex(self.ERROR_PAGE_IDX)
         self._showError(msg=self.msg, title="Error")

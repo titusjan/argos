@@ -305,11 +305,13 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         return QtCore.QModelIndex()
 
 
-    def rootItem(self):
+    def rootItems(self):
         """ Returns an invalid index, which therefore will point to the root Item.
             Can return None if the model is empty
         """
-        return self.getItem(self.rootIndex())
+        return self.invisibleRootTreeItem.childItems
+
+
 
 
     # Originally from the editabletreemodel example but added the altItem parameter to force
@@ -521,10 +523,6 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
 
 
     def logItems(self, level=logging.DEBUG):
-        """ rootItem
+        """ Logs all items in the tree
         """
-        rootItem = self.rootItem()
-        if rootItem is None:
-            logger.debug("No items in: {}".format(self))
-        else:
-            rootItem.logBranch(level=level)
+        self.invisibleRootTreeItem.logBranch(level=level)
