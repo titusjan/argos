@@ -27,7 +27,6 @@ from argos.utils.cls import type_name, check_class
 from argos.widgets.constants import DOCK_SPACING, DOCK_MARGIN
 from argos.widgets.display import MessageDisplay
 from argos.widgets.misc import BasePanel
-from utils.defs import TestingWrappedError
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +77,7 @@ class AbstractInspector(QtWidgets.QStackedWidget):
     CONTENTS_PAGE_IDX = 1
 
     sigShowMessage = QtSignal(str)
+    sigUpdateFailed = QtSignal()  # Emitted when updateContents fails and displays the error tab
 
     def __init__(self, collector, parent=None):
         """ Constructor.
@@ -220,15 +220,17 @@ class AbstractInspector(QtWidgets.QStackedWidget):
                 self.sigShowMessage.emit(str(ex))
 
         except Exception as ex:####
+            if DEBUGGING:
+                raise
+
             logger.error("Error while drawing the inspector: {} ----".format(ex))
             logger.exception(ex)
             self._clearContents()
             self.setCurrentIndex(self.ERROR_PAGE_IDX)
             self._showError(msg=str(ex), title=type_name(ex))
 
-            # Perhaps use a signal
-            if DEBUGGING:
-                raise
+            self.sigUpdateFailed.emit()  # so that test walk can give summary on errors.
+
         else:
             logger.debug("---- updateContents finished successfully")
 

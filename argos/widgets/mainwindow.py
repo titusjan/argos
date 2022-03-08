@@ -94,11 +94,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self._inspector = ErrorMsgInspector(
             self._collector, "No inspector yet. Please select one from the menu.")
         self._inspector.sigShowMessage.connect(self.sigShowMessage)
+        self._inspector.sigUpdateFailed.connect(self.appendFailedTest)
         self._inspectorRegItem = None # The registered inspector item a InspectorRegItem)
 
         self._argosApplication = argosApplication
         self._configTreeModel = ConfigTreeModel()
         self._inspectorStates = {}  # keeps track of earlier inspector states
+        self._currentTestName = False
+        self._failedTests = []
 
         self.setDockNestingEnabled(False)
         self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
@@ -134,6 +137,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sigShowMessage.disconnect(self.inspectorSelectionPane.showMessage)
         self._collector.sigShowMessage.disconnect(self.sigShowMessage)
         self._inspector.sigShowMessage.disconnect(self.sigShowMessage)
+        self._inspector.sigUpdateFailed.disconnect(self.appendFailedTest)
 
         if PROFILING:
             logger.info("Saving profiling information to {}"
@@ -635,6 +639,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self._storeInspectorState(oldInspectorRegItem, oldInspector)
 
             oldInspector.sigShowMessage.disconnect(self.sigShowMessage)
+            oldInspector.sigUpdateFailed.disconnect(self.appendFailedTest)
             oldInspector.finalize()
             self.wrapperLayout.removeWidget(oldInspector)
             oldInspector.deleteLater()
@@ -659,6 +664,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.collector.clearAndSetComboBoxes(self.inspector.axesNames())
 
                 self._inspector.sigShowMessage.connect(self.sigShowMessage)
+                self._inspector.sigUpdateFailed.connect(self.appendFailedTest)
                 self.wrapperLayout.addWidget(self.inspector)
             finally:
                 self.collector.blockSignals(oldBlockState)
@@ -1068,11 +1074,16 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     @QtSlot()
-    def addTestData(self):
-        """ Adds test data to the repository
+    def appendFailedTest(self):
+        """ Appends the currently selected path node to the list of failed tests.
+
+            This slot will be called whenever the inspector can't display the current array slice.
+            It also will be called whenever the current repo detail tab (properties, attributes,
+            etc.) fails to display itself.
         """
-        logger.info("Adding test data to the repository.")
-        self.argosApplication.repo.insertItem(createArgosTestData())
+        if self._currentTestName is not None:
+            logger.critical("Appending failed test: {}".format(self._currentTestName))
+            self._failedTests.append(self._currentTestName)
 
 
     def walkCurrentRepoNode(self, allInspectors: bool, allRepoTabs: bool):
@@ -1132,17 +1143,22 @@ class MainWindow(QtWidgets.QMainWindow):
             if allRepoTabs:
                 # Try properties, attributes and quicklook tabs
                 for idx in range(self.repoWidget.tabWidget.count()):
-                    logger.debug("Setting repo tab index to: {}".format(idx))
+                    tabName = self.repoWidget.tabWidget.tabText(idx)
+                    self._currentTestName = "{:10}: {}".format(tabName, item.nodePath)
+                    logger.debug("Setting repo detail tab : {}".format(tabName))
                     self.repoWidget.tabWidget.setCurrentIndex(idx)
                     processEvents() # Cause Qt to update UI
             else:
+                self._currentTestName = item.nodePath
                 processEvents()
 
             if allInspectors:
                 for action in self.inspectorActionGroup.actions():
+                    self._currentTestName = "{:10}: {}".format(action.text(), item.nodePath)
                     action.trigger()
-                    processEvents()
+                    processEvents() # Cause Qt to update UI
             else:
+                self._currentTestName = item.nodePath
                 processEvents()
 
             for rowNr in range(repoModel.rowCount(index)):
@@ -1152,27 +1168,37 @@ class MainWindow(QtWidgets.QMainWindow):
             # TODO: see if we can close the node
 
         # Actual body
+        # TODO: detail tabs must signal when they fail
+        # TODO: skip tests starting with underscore
+        # TODO: why is visitNodes a nested function?
+        # TODO: test walk dialog with progress bar and cancel button
         logger.info("-------------- Running Tests ----------------")
         logger.info("Visiting all nodes below: {}".format(nodePaths))
 
-        timeAtStart = time.perf_counter()
-        check_is_a_sequence(nodePaths) # prevent accidental iteration over strings.
+        self._currentTestName = None
+        self._failedTests = []
+        try:
+            timeAtStart = time.perf_counter()
+            check_is_a_sequence(nodePaths) # prevent accidental iteration over strings.
 
-        for nodePath in nodePaths:
-            logger.info("Testing root node: {!r}".format(nodePath))
+            for nodePath in nodePaths:
+                logger.info("Testing root node: {!r}".format(nodePath))
 
-            nodeItem, nodeIndex = self.selectRtiByPath(nodePath)
-            assert nodeItem is not None, "Test data not found, rootNode: {}".format(nodePath)
-            assert nodeIndex
+                nodeItem, nodeIndex = self.selectRtiByPath(nodePath)
+                assert nodeItem is not None, "Test data not found, rootNode: {}".format(nodePath)
+                assert nodeIndex
 
-            visitNodes(nodeIndex)
+                visitNodes(nodeIndex)
 
-        duration = time.perf_counter() - timeAtStart
-        logger.info("Visited {} nodes in {:.1f} seconds ({:.1f} nodes/second)."
-                    .format(_nodesVisited, duration, _nodesVisited/duration))
+            duration = time.perf_counter() - timeAtStart
+            logger.info("Visited {} nodes in {:.1f} seconds ({:.1f} nodes/second)."
+                        .format(_nodesVisited, duration, _nodesVisited/duration))
 
-        # logger.info("Number of failed nodes during test walk: {}".format(len(_failedPaths)))
-        # for _failedPath in _failedPaths:
-        #     logger.info("    {}".format(_failedPath))
-
-        logger.info("-------------- Test walk done ----------------")
+            logger.info("Number of failed tests during test walk: {}"
+                        .format(len(self._failedTests)))
+            for testName in self._failedTests:
+                logger.info("    {}".format(testName))
+        finally:
+            self._currentTestName = None
+            self._failedTests = []
+            logger.info("-------------- Test walk done ----------------")

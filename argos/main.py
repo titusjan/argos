@@ -42,12 +42,13 @@ logging.basicConfig(level='DEBUG', stream=sys.stderr,
                     format='%(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-8s: %(message)s')
 
 # We are not using **kwargs here so IDEs can see which parameters are expected.
-def browse(fileNames=None,
+def browse(fileNames=None, *,
            select=None,
            inspectorFullName=None,
            qtStyle=None,
            styleSheet=None,
-           settingsFile=None):
+           settingsFile=None,
+           addTestData=False):
     """ Opens the main window(s) for the persistent settings and executes the application.
 
         Calls _browse() in a while loop to enable pseudo restarts in case the registry was edited.
@@ -60,6 +61,7 @@ def browse(fileNames=None,
         :param qtStyle: name of qtStyle (E.g. fusion).
         :param styleSheet: a path to an optional Qt Cascading Style Sheet.
         :param settingsFile: file with persistent settings. If None a default will be used.
+        :param addTestData: if True, some in-memory test data is added to the repository tree.
     """
     # Import in functions. See comments at the top for more details
     from argos.info import EXIT_CODE_RESTART
@@ -72,7 +74,8 @@ def browse(fileNames=None,
             inspectorFullName=inspectorFullName,
             qtStyle=qtStyle,
             styleSheet=styleSheet,
-            settingsFile=settingsFile)
+            settingsFile=settingsFile,
+            addTestData=addTestData)
 
         logger.info("Argos finished with exit code: {}".format(exitCode))
         if exitCode != EXIT_CODE_RESTART:
@@ -82,12 +85,13 @@ def browse(fileNames=None,
 
 
 
-def _browse(fileNames=None,
+def _browse(fileNames=None, *,
             select=None,
             inspectorFullName=None,
             qtStyle=None,
             styleSheet=None,
-            settingsFile=None):
+            settingsFile=None,
+            addTestData=False):
     """ Execute browse a single time
     """
     # Import in functions. See comments at the top for more details.
@@ -123,7 +127,7 @@ def _browse(fileNames=None,
     # Load data in common repository before windows are created.
     argosApp.loadFiles(fileNames)
 
-    if DEBUGGING:
+    if addTestData:
         argosApp.repo.insertItem(createArgosTestData())
 
     logger.debug("Selection path: {}".format(select))
@@ -192,6 +196,9 @@ def main():
 
     parser.add_argument('-d', '--debugging-mode', dest='debugging', action = 'store_true',
         help="Run Argos in debugging mode. Useful during development.")
+
+    parser.add_argument('--add-test-data', dest='addTestData', action = 'store_true',
+        help="Adds some in-memory test data. Useful during development.")
 
     parser.add_argument('--log-config', dest='logConfigFileName',
                         help='Logging configuration file. If not set a default will be used.')
@@ -279,7 +286,8 @@ def main():
            select=selectPath,
            qtStyle=qtStyle,
            styleSheet=styleSheet,
-           settingsFile=args.settingsFile)
+           settingsFile=args.settingsFile,
+           addTestData=args.addTestData)
     logger.info('Done {}'.format(PROJECT_NAME))
 
 if __name__ == "__main__":
