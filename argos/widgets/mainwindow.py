@@ -316,21 +316,22 @@ class MainWindow(QtWidgets.QMainWindow):
         helpMenu.addAction('&About...', self.about)
 
         helpMenu.addSeparator()
-        helpMenu.addAction("Add Test Data", self.addTestData, "Shift+Ctrl+A")
+        helpMenu.addAction("Add Test Data", self.addTestData, "Meta+A")
 
         helpMenu.addAction(
-            "Quick Walk &Current Node", lambda: self.walkCurrentRepoNode(False, False))
+            "Quick Walk &Current Node",
+            lambda: self.walkCurrentRepoNode(False, False), "Meta+Q")
         helpMenu.addAction(
-            "Quick Walk &All Nodes", lambda: self.walkAllRepoNodes(False, False), "Shift+Ctrl+Q")
+            "Quick Walk &All Nodes", lambda: self.walkAllRepoNodes(False, False))
 
         helpMenu.addAction(
             "Walk &Current Node", lambda: self.walkCurrentRepoNode(True, True))
         helpMenu.addAction(
-            "Walk &All Nodes", lambda: self.walkAllRepoNodes(True, True), "Shift+Ctrl+W")
+            "Walk &All Nodes", lambda: self.walkAllRepoNodes(True, True), "Meta+W")  # meta works on MacOs
 
         if DEBUGGING:
             helpMenu.addSeparator()
-            helpMenu.addAction("&My Test", self.myTest, "Shift+Ctrl+T")
+            helpMenu.addAction("&My Test", self.myTest, "Meta+T")
 
 
 
@@ -1106,77 +1107,28 @@ class MainWindow(QtWidgets.QMainWindow):
         self.walkRepoNodes(nodePaths, allInspectors, allRepoTabs)
 
 
-    def walkRepoNodes(self, nodePaths, allInspectors: bool, allRepoTabs: bool):
+    def walkRepoNodes(self, nodePaths, allInspectors: bool, allDetailsTabs: bool):
         """ Will recursively walk through a list of repo tree nodes and all their descendants
 
             Is useful for testing.
 
             Args:
-                allInspectors: if True all inspectors are selected
-                allRepoTabs: if True all repo tabs (properties, attributes, quicklook) are selected.
+                allInspectors: if True all inspectors are tried for this node.
+                allDetailsTabs: if True all detail tabs (attributes, quicklook, etc.) are tried.
         """
-        _nodesVisited = 0
-
-        def visitNodes(index):
-            """ Visits all the nodes recursively.
-            """
-            assert index.isValid(), "sanity check"
-
-            nonlocal  _nodesVisited
-            _nodesVisited += 1
-
-            repoModel = self.repoWidget.repoTreeView.model()
-            item = repoModel.getItem(index)
-            logger.info("Visiting: {!r} ({} children)".
-                        format(item.nodePath, repoModel.rowCount(index)))
-
-            # Select index
-            if False and item.nodePath in skipPaths:
-                logger.warning("Skipping node during testing: {}".format(item.nodePath))
-                return
-            else:
-                logger.debug("Not skipping node during testing: {}".format(item.nodePath))
-
-            self.repoWidget.repoTreeView.setCurrentIndex(index)
-            self.repoWidget.repoTreeView.setExpanded(index, True)
-
-            if allRepoTabs:
-                # Try properties, attributes and quicklook tabs
-                for idx in range(self.repoWidget.tabWidget.count()):
-                    tabName = self.repoWidget.tabWidget.tabText(idx)
-                    self._currentTestName = "{:10}: {}".format(tabName, item.nodePath)
-                    logger.debug("Setting repo detail tab : {}".format(tabName))
-                    self.repoWidget.tabWidget.setCurrentIndex(idx)
-                    processEvents() # Cause Qt to update UI
-            else:
-                self._currentTestName = item.nodePath
-                processEvents()
-
-            if allInspectors:
-                for action in self.inspectorActionGroup.actions():
-                    self._currentTestName = "{:10}: {}".format(action.text(), item.nodePath)
-                    action.trigger()
-                    processEvents() # Cause Qt to update UI
-            else:
-                self._currentTestName = item.nodePath
-                processEvents()
-
-            for rowNr in range(repoModel.rowCount(index)):
-                childIndex = repoModel.index(rowNr, 0, parentIndex=index)
-                visitNodes(childIndex)
-
-            # TODO: see if we can close the node
-
-        # Actual body
         # TODO: detail tabs must signal when they fail
         # TODO: skip tests starting with underscore
-        # TODO: why is visitNodes a nested function?
         # TODO: test walk dialog with progress bar and cancel button
+        # TODO: select original node at the end of the tests.
+        # TODO: separate test menu
+
         logger.info("-------------- Running Tests ----------------")
         logger.info("Visiting all nodes below: {}".format(nodePaths))
 
         self._currentTestName = None
         self._failedTests = []
+        nodesVisited = 0
+
         try:
             timeAtStart = time.perf_counter()
             check_is_a_sequence(nodePaths) # prevent accidental iteration over strings.
@@ -1188,11 +1140,11 @@ class MainWindow(QtWidgets.QMainWindow):
                 assert nodeItem is not None, "Test data not found, rootNode: {}".format(nodePath)
                 assert nodeIndex
 
-                visitNodes(nodeIndex)
+                nodesVisited += self._visitNodes(nodeIndex, allInspectors, allDetailsTabs)
 
             duration = time.perf_counter() - timeAtStart
             logger.info("Visited {} nodes in {:.1f} seconds ({:.1f} nodes/second)."
-                        .format(_nodesVisited, duration, _nodesVisited/duration))
+                        .format(nodesVisited, duration, nodesVisited/duration))
 
             logger.info("Number of failed tests during test walk: {}"
                         .format(len(self._failedTests)))
@@ -1202,3 +1154,62 @@ class MainWindow(QtWidgets.QMainWindow):
             self._currentTestName = None
             self._failedTests = []
             logger.info("-------------- Test walk done ----------------")
+
+
+    def _visitNodes(self, index: QtCore.QModelIndex, allInspectors: bool, allDetailTabs: bool) -> int:
+        """ Helper function that visits all the nodes recursively.
+
+            Args:
+                allInspectors: if True all inspectors are tried for this node.
+                allDetailsTabs: if True all detail tabs (attributes, quicklook, etc.) are tried.
+
+            Returns:
+                The number of nodes that where visited.
+        """
+        assert index.isValid(), "sanity check"
+
+        nodesVisited = 1
+
+        repoModel = self.repoWidget.repoTreeView.model()
+        item = repoModel.getItem(index)
+        logger.info("Visiting: {!r} ({} children)".
+                    format(item.nodePath, repoModel.rowCount(index)))
+
+        # Select index
+        if False and item.nodePath in skipPaths:
+            logger.warning("Skipping node during testing: {}".format(item.nodePath))
+            return 0
+        else:
+            logger.debug("Not skipping node during testing: {}".format(item.nodePath))
+
+        self.repoWidget.repoTreeView.setCurrentIndex(index)
+        self.repoWidget.repoTreeView.setExpanded(index, True)
+
+        if allDetailTabs:
+            # Try properties, attributes and quicklook tabs
+            for idx in range(self.repoWidget.tabWidget.count()):
+                tabName = self.repoWidget.tabWidget.tabText(idx)
+                self._currentTestName = "{:10}: {}".format(tabName, item.nodePath)
+                logger.debug("Setting repo detail tab : {}".format(tabName))
+                self.repoWidget.tabWidget.setCurrentIndex(idx)
+                processEvents() # Cause Qt to update UI
+        else:
+            self._currentTestName = item.nodePath
+            processEvents()
+
+        if allInspectors:
+            for action in self.inspectorActionGroup.actions():
+                self._currentTestName = "{:10}: {}".format(action.text(), item.nodePath)
+                action.trigger()
+                processEvents() # Cause Qt to update UI
+        else:
+            self._currentTestName = item.nodePath
+            processEvents()
+
+        for rowNr in range(repoModel.rowCount(index)):
+            childIndex = repoModel.index(rowNr, 0, parentIndex=index)
+            nodesVisited += self._visitNodes(childIndex, allInspectors, allDetailTabs)
+
+        # TODO: see if we can close the node
+        return nodesVisited
+
