@@ -77,7 +77,7 @@ class JsonFileRti(BaseRti):
                         iconColor=self.iconColor, fileName=self.fileName))
 
             elif is_a_mapping(self._data):
-                for key, value in sorted(self._data.items()):
+                for key, value in self._data.items():
                     childItems.append(_createFromObject(
                         value, nodeName=str(key),
                         iconColor=self.iconColor, fileName=self.fileName))

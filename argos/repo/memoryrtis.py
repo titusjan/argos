@@ -352,7 +352,7 @@ class ArrayRti(BaseRti):
     def dimensionality(self):
         """ String that describes if the RTI is an array, scalar, field, etc.
         """
-        return "array"
+        return "array" if self._array is not None else ""
 
 
     @property
@@ -595,7 +595,7 @@ class MappingRti(BaseRti):
                      .format(self, self.iconColor, self.fileName))
 
         if self.hasChildren():
-            for key, value in sorted(self._dictionary.items()):
+            for key, value in self._dictionary.items():
                 childItem = _createFromObject(value, nodeName=str(key), iconColor=self.iconColor,
                                               fileName=self.fileName)
                 childItems.append(childItem)

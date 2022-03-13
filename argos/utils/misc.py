@@ -126,4 +126,4 @@ def replace_eol_chars(attr):
 def pformat(obj, width) -> str:
     """ Pretty print format with Argos default parameter values.
     """
-    return pprint.pformat(obj, width=width)
+    return pprint.pformat(obj, width=width, depth=2, sort_dicts=False)
