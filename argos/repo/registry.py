@@ -38,8 +38,9 @@ ICON_COLOR_H5PY = '#00EE88'
 ICON_COLOR_NCDF4 = '#0088FF'
 ICON_COLOR_NUMPY = '#987456'
 ICON_COLOR_PANDAS = '#FB9A99'
-ICON_COLOR_PILLOW = '#880088'
+ICON_COLOR_PILLOW = '#FF40FF'
 ICON_COLOR_SCIPY = ICON_COLOR_NUMPY
+ICON_COLOR_JSON = '#880088'
 
 
 
@@ -246,6 +247,11 @@ class RtiRegistry(BaseRegistry):
                        iconColor=ICON_COLOR_PILLOW,
                        globs='*.bmp;*.eps;*.im;*.gif;*.jpg;*.jpeg;*.msp;*.pcx;*.png;*.ppm;*.spi;'
                              '*.tif;*.tiff;*.xbm;*.xv'),
+
+            RtiRegItem('JSON file',
+                       'argos.repo.rtiplugins.jsonio.JsonFileRti',
+                       iconColor=ICON_COLOR_JSON,
+                       globs='*.json'),
         ]
 
 
