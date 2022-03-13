@@ -77,7 +77,7 @@ class AbstractInspector(QtWidgets.QStackedWidget):
     CONTENTS_PAGE_IDX = 1
 
     sigShowMessage = QtSignal(str)
-    sigUpdateFailed = QtSignal()  # Emitted when updateContents fails and displays the error tab
+    sigUpdated = QtSignal(bool)  # Parameter indicates sucess
 
     def __init__(self, collector, parent=None):
         """ Constructor.
@@ -213,11 +213,15 @@ class AbstractInspector(QtWidgets.QStackedWidget):
             self.config.refreshFromTarget()
             logger.debug("refreshFromTarget finished successfully")
 
+            self.sigUpdated.emit(True)
+
         except InvalidDataError as ex:
             logger.info("Unable to draw the inspector contents: '{}'".format(ex))
             if str(ex):
                 # Exception message can be empty in common cases. Don't clear message label then.
                 self.sigShowMessage.emit(str(ex))
+
+            self.sigUpdated.emit(False)
 
         except Exception as ex:####
             if DEBUGGING:
@@ -229,7 +233,7 @@ class AbstractInspector(QtWidgets.QStackedWidget):
             self.setCurrentIndex(self.ERROR_PAGE_IDX)
             self._showError(msg=str(ex), title=type_name(ex))
 
-            self.sigUpdateFailed.emit()  # so that test walk can give summary on errors.
+            self.sigUpdated.emit(False)
 
         else:
             logger.debug("---- updateContents finished successfully")
