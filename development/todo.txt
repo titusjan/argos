@@ -27,6 +27,8 @@ TODO short term:
     There seems to be a bug when closing opening mydict/pandas test data
     The contents is removed. When closing mydict, only subdicts are removed.
 
+    What to do with (json) lists. Convert to array?
+
 TODO mid term:
 
     Fixed font size in tables and trees so that windows10 with two monitors works. (setFixedPitch)

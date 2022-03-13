@@ -310,8 +310,7 @@ class H5pyScalarRti(BaseRti):
                 return self._h5Dataset[()].decode(string_info.encoding, errors="replace")
 
 
-    @property
-    def quickLook(self):
+    def quickLook(self, width: int):
         """ Returns a string representation fof the RTI to use in the Quik Look pane.
 
             Override default so bytes are decoded to strings.
@@ -489,8 +488,7 @@ class H5pyFieldRti(BaseRti):
         return shapeToSummary(self.arrayShape)
 
 
-    @property
-    def quickLook(self):
+    def quickLook(self, width: int):
         """ Returns a string representation fof the RTI to use in the Quik Look pane.
         """
         if self._h5Dataset.size > MAX_QUICK_LOOK_SIZE:
@@ -635,8 +633,7 @@ class H5pyDatasetRti(BaseRti):
         return shapeToSummary(self.arrayShape)
 
 
-    @property
-    def quickLook(self):
+    def quickLook(self, width: int):
         """ Returns a string representation fof the RTI to use in the Quik Look pane.
         """
         if self._h5Dataset.size > MAX_QUICK_LOOK_SIZE:

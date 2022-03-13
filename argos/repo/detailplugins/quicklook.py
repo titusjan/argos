@@ -58,7 +58,7 @@ class QuickLookPane(DetailBasePane):
             oldLineWidth = np.get_printoptions()['linewidth']
             np.set_printoptions(linewidth=editorCharWidth)
             try:
-                self.editor.setPlainText(self._currentRti.quickLook)
+                self.editor.setPlainText(self._currentRti.quickLook(editorCharWidth))
             finally:
                 np.set_printoptions(linewidth=oldLineWidth)
 

@@ -19,15 +19,16 @@
 
     The memory-RTIs store the attributes per-object (instead of returning an emtpy dictionary)
 """
-import logging, os
+import logging
+
 import numpy as np
 
 from .baserti import BaseRti, shapeToSummary, lengthToSummary
 from argos.repo.iconfactory import RtiIconFactory
-from argos.utils.cls import (check_is_a_sequence, check_is_a_mapping, check_is_an_array,
-                                is_a_sequence, is_a_mapping, is_an_array, type_name)
+from argos.utils.cls import check_is_a_sequence, check_is_a_mapping, check_is_an_array, \
+    is_a_sequence, is_a_mapping, is_an_array, type_name
 from argos.utils.defs import DIM_TEMPLATE, SUB_DIM_TEMPLATE
-from argos.utils.misc import NOT_SPECIFIED
+from argos.utils.misc import pformat
 
 logger = logging.getLogger(__name__)
 
@@ -498,6 +499,17 @@ class SequenceRti(BaseRti):
         else:
             return lengthToSummary(len(self._sequence))
 
+    def quickLook(self, width: int):
+        """ Returns a string representation fof the RTI to use in the Quik Look pane.
+
+            We print all data, even if it is large, since it is already in memory, and it is
+            assumed to be quick.
+        """
+        if self._sequence is None:
+            return ""
+        else:
+            return pformat(self._sequence, width)
+
 
     def _fetchAllChildren(self):
         """ Adds a child item for each column
@@ -562,6 +574,17 @@ class MappingRti(BaseRti):
         #     return ""
         # else:
         #     return lengthToSummary(len(self._dictionary))
+
+    def quickLook(self, width: int):
+        """ Returns a string representation fof the RTI to use in the Quik Look pane.
+
+            We print all data, even if it is large, since it is already in memory, and it is
+            assumed to be quick.
+        """
+        if self._dictionary is None:
+            return ""
+        else:
+            return pformat(self._dictionary, width)
 
 
     def _fetchAllChildren(self):

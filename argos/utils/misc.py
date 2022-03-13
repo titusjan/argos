@@ -18,6 +18,8 @@
 """ Miscellaneous routines.
 """
 import logging, sys
+import pprint
+
 logger = logging.getLogger(__name__)
 
 from argos.external.six import unichr
@@ -120,3 +122,8 @@ def replace_eol_chars(attr):
             .replace('\n', unichr(0x21B5))
             .replace('\r', unichr(0x21B5)))
 
+
+def pformat(obj, width) -> str:
+    """ Pretty print format with Argos default parameter values.
+    """
+    return pprint.pformat(obj, width=width)

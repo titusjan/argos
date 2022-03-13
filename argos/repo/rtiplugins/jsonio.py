@@ -25,6 +25,7 @@ from argos.repo.baserti import BaseRti, lengthToSummary
 from argos.repo.memoryrtis import _createFromObject
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.utils.cls import is_a_sequence, is_a_mapping, is_an_array, type_name
+from argos.utils.misc import pformat
 
 logger = logging.getLogger(__name__)
 
@@ -181,3 +182,13 @@ class JsonFileRti(BaseRti):
             return str(self._data)
 
 
+    def quickLook(self, width: int):
+        """ Returns a string representation fof the RTI to use in the Quik Look pane.
+
+            We print all data, even if it is large, since it is already in memory, and it is
+            assumed to be quick.
+        """
+        if not self.isOpen:
+            return ""
+        else:
+            return pformat(self._data, width)

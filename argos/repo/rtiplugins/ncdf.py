@@ -273,8 +273,7 @@ class NcdfFieldRti(BaseRti):
         return shapeToSummary(self.arrayShape)
 
 
-    @property
-    def quickLook(self):
+    def quickLook(self, width: int):
         """ Returns a string representation fof the RTI to use in the Quik Look pane.
         """
         if math.prod(self._ncVar.shape) > MAX_QUICK_LOOK_SIZE:
@@ -429,8 +428,7 @@ class NcdfVariableRti(BaseRti):
             return shapeToSummary(self.arrayShape)
 
 
-    @property
-    def quickLook(self):
+    def quickLook(self, width: int):
         """ Returns a string representation fof the RTI to use in the Quik Look pane.
         """
         # In python 3.8 we can use math.prod(self._ncVar.shape)

@@ -418,9 +418,11 @@ class BaseRti(AbstractLazyLoadTreeItem):
         return ""
 
 
-    @property
-    def quickLook(self):
+    def quickLook(self, width: int):
         """ Returns a string representation fof the RTI to use in the Quik Look pane.
+
+            Args:
+                Width in characters.
         """
         if not self.isSliceable:
             return ""
