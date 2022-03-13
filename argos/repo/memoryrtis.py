@@ -478,6 +478,13 @@ class SequenceRti(BaseRti):
 
 
     @property
+    def dimensionality(self):
+        """ String that describes if the RTI is an array, scalar, field, etc.
+        """
+        return type_name(self._sequence)
+
+
+    @property
     def typeName(self):
         return type_name(self._sequence)
 

@@ -33,7 +33,7 @@ from argos.utils.defs import DIM_TEMPLATE
 logger = logging.getLogger(__name__)
 
 
-def lengthToSummary(length, postfix="items"):
+def lengthToSummary(length, postfix="elements"):
     """ Constructs a summary from the length of an array
     """
     return str(length) + " " + postfix

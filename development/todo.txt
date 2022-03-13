@@ -24,6 +24,8 @@ TODO short term:
     axesNames: rows, columns in table inspector.
     resize repo should resize the name column.
 
+    There seems to be a bug when closing opening mydict/pandas test data
+    The contents is removed. When closing mydict, only subdicts are removed.
 
 TODO mid term:
 
