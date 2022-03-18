@@ -16,6 +16,7 @@
 
 """ Contains the TestWalkDialog widget.
 """
+import base64
 import logging
 import time
 from typing import Optional, Tuple, List
@@ -24,6 +25,8 @@ from argos.qt import QtCore, QtGui, QtWidgets, QtSlot
 from argos.widgets.constants import MONO_FONT, FONT_SIZE
 from argos.widgets.misc import processEvents
 from argos.utils.cls import check_is_a_sequence
+from argos.utils.config import ConfigDict
+from qt.misc import getWidgetGeom, getWidgetState
 
 logger = logging.getLogger(__name__)
 
@@ -50,13 +53,53 @@ class TestWalkDialog(QtWidgets.QDialog):
         self._currentTestName: Optional[str] = None
         self._results: List[Tuple[bool, str]] = []
 
-        mainLayout = QtWidgets.QVBoxLayout()
-        self.setLayout(mainLayout)
+        self.walkCurrentAction = QtWidgets.QAction("Walk Current Item", self)
+        self.walkCurrentAction.setToolTip("Does a test walk on the currently selected tree item.")
+        self.walkCurrentAction.triggered.connect(self.walkCurrentRepoNode)
+        self.addAction(self.walkCurrentAction)
+
+        self.walkAllAction = QtWidgets.QAction("Walk All Items", self)
+        self.walkAllAction.setToolTip("Does a test walk on all tree nodes.")
+        self.walkAllAction.triggered.connect(self.walkAllRepoNodes)
+        self.addAction(self.walkAllAction)
+
+        self.abortWalkAction = QtWidgets.QAction("Abort Walk", self)
+        self.abortWalkAction.setToolTip("Aborts the current test walk.")
+        #self.abortWalkAction.triggered.connect(lambda: self.walkAllRepoNodes(False, False))  # TODO
+        self.addAction(self.abortWalkAction)
+
+        #################
+        # Setup widgets #
+        #################
+
+        self.mainLayout = QtWidgets.QVBoxLayout()
+        self.setLayout(self.mainLayout)
+
+        self.controlLayout = QtWidgets.QHBoxLayout()
+        self.mainLayout.addLayout(self.controlLayout)
+
+        self.walkCurrentButton = QtWidgets.QToolButton()
+        self.walkCurrentButton.setDefaultAction(self.walkCurrentAction)
+        self.controlLayout.addWidget(self.walkCurrentButton)
+
+        self.walkAllButton = QtWidgets.QToolButton()
+        self.walkAllButton.setDefaultAction(self.walkAllAction)
+        self.controlLayout.addWidget(self.walkAllButton)
+
+        self.abortWalkButton = QtWidgets.QToolButton()
+        self.abortWalkButton.setDefaultAction(self.abortWalkAction)
+        self.controlLayout.addWidget(self.abortWalkButton)
+
+        self.allInspectorsCheckBox = QtWidgets.QCheckBox("Test all Inspectors")
+        self.controlLayout.addWidget(self.allInspectorsCheckBox)
+        self.allDetailTabsCheckBox = QtWidgets.QCheckBox("Test all Detail-tabs")
+        self.controlLayout.addWidget(self.allDetailTabsCheckBox)
+        self.controlLayout.addStretch()
 
         self.curPathLabel = QtWidgets.QLabel()
         self.curPathLabel.setText("Current Path")
         self.curPathLabel.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-        mainLayout.addWidget(self.curPathLabel)
+        self.mainLayout.addWidget(self.curPathLabel)
 
         font = QtGui.QFont()
         font.setFamily(MONO_FONT)
@@ -68,13 +111,41 @@ class TestWalkDialog(QtWidgets.QDialog):
         self.editor.setFont(font)
         self.editor.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.editor.clear()
-        mainLayout.addWidget(self.editor)
+        self.mainLayout.addWidget(self.editor)
 
-        buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok)
+        buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Close)
         buttonBox.accepted.connect(self.accept)
-        mainLayout.addWidget(buttonBox)
+        buttonBox.rejected.connect(self.reject)
+        self.mainLayout.addWidget(buttonBox)
 
         self.resize(QtCore.QSize(800, 400))
+
+
+    def marshall(self) -> Tuple[ConfigDict, ConfigDict]:
+        """ Returns a layout and state config dictionaries
+        """
+        layoutCfg = dict(
+            winGeom = base64.b64encode(getWidgetGeom(self)).decode('ascii'),
+        )
+
+        cfg = dict(
+            testAllInspectors = self.allInspectorsCheckBox.isChecked(),
+            testAllDetailTabs = self.allDetailTabsCheckBox.isChecked(),
+        )
+        return layoutCfg, cfg
+
+
+    def unmarshall(self, layoutCfg, cfg):
+        """ Initializes itself from a layout and config dict form the persistent settings.
+        """
+        if 'testAllInspectors' in cfg:
+            self.allInspectorsCheckBox.setChecked(cfg['testAllInspectors'])
+
+        if 'testAllDetailTabs' in cfg:
+            self.allDetailTabsCheckBox.setChecked(cfg['testAllDetailTabs'])
+
+        if 'winGeom' in layoutCfg:
+            self.restoreGeometry(base64.b64decode(layoutCfg['winGeom']))
 
 
     def clear(self):
@@ -84,20 +155,8 @@ class TestWalkDialog(QtWidgets.QDialog):
         self._results = None
         self.editor.clear()
 
-    #
-    # def getCurrentTestName(self, currentTestName: str):
-    #     """ Returns name of the current test.
-    #     """
-    #     self._currentTestName = currentTestName
-    #
-    #
-    # def setCurrentTestName(self, currentTestName: str):
-    #     """ Stores name of the current test.
-    #     """
-    #     self._currentTestName = currentTestName
 
-
-    def testOngoing(self) -> bool:
+    def testIsOngoing(self) -> bool:
         """ Returns True if a test is ongoing
         """
         return bool(self._currentTestName)
@@ -113,44 +172,55 @@ class TestWalkDialog(QtWidgets.QDialog):
             Setting the name and result are separate methods because the inspector and detail tab
             don't know which node is currently selected in the repo tree.
         """
-        if not self.testOngoing():
+        if not self.testIsOngoing():
             return
 
         self._results.append((success, self._currentTestName))
 
-        line = "{:7s}: {}".format("success" if success else "FAILED", self._currentTestName)
-        logger.info("setTestResult: {}".format(line))
+        line = "{:8s}: {}".format("success" if success else "FAILED", self._currentTestName)
+        logger.info("setTestResult: {}".format(line), stack_info=False)
         self.editor.appendPlainText(line)
 
 
-    def walkCurrentRepoNode(self, allInspectors: bool, allRepoTabs: bool):
+    @QtSlot()
+    def walkCurrentRepoNode(self, allInspectors: bool=None, allDetailTabs: bool=None):
         """ Will visit all nodes below the currently selected node
         """
+        logger.debug(f"walkCurrentRepoNode: {allInspectors} {allDetailTabs}")
+        if allInspectors is not None:
+            self.allInspectorsCheckBox.setChecked(allInspectors)
+
+        if allDetailTabs is not None:
+            self.allDetailTabsCheckBox.setChecked(allDetailTabs)
+
         curItem, _curIdx = self._mainWindow.repoWidget.repoTreeView.getCurrentItem()
-        logger.debug("CurrentItem: {}".format(curItem.nodePath))
-        self.walkRepoNodes([curItem.nodePath], allInspectors, allRepoTabs)
+        logger.info("Test walk current item: {}".format(curItem.nodePath))
+        self.walkRepoNodes([curItem.nodePath])
 
 
-    def walkAllRepoNodes(self, allInspectors: bool, allRepoTabs: bool):
+    @QtSlot()
+    def walkAllRepoNodes(self, allInspectors: bool=None, allDetailTabs: bool=None):
         """ Will visit all nodes in the repo tree.
 
             See walkRepoNodes docstring for more info
         """
         logger.info("testWalkAllNodes")
+        if allInspectors is not None:
+            self.allInspectorsCheckBox.setChecked(allInspectors)
+
+        if allDetailTabs is not None:
+            self.allDetailTabsCheckBox.setChecked(allDetailTabs)
+
         repo = self._mainWindow.repoWidget.repoTreeView.model()
         nodePaths = [rti.nodePath for rti in repo.rootItems()]
         logger.debug("All root items: {}".format(nodePaths))
-        self.walkRepoNodes(nodePaths, allInspectors, allRepoTabs)
+        self.walkRepoNodes(nodePaths)
 
 
-    def walkRepoNodes(self, nodePaths, allInspectors: bool, allDetailsTabs: bool):
+    def walkRepoNodes(self, nodePaths):
         """ Will recursively walk through a list of repo tree nodes and all their descendants
 
             Is useful for testing.
-
-            Args:
-                allInspectors: if True all inspectors are tried for this node.
-                allDetailsTabs: if True all detail tabs (attributes, quicklook, etc.) are tried.
         """
         # TODO: detail tabs must signal when they fail
         # TODO: skip tests starting with underscore
@@ -176,7 +246,7 @@ class TestWalkDialog(QtWidgets.QDialog):
                 assert nodeItem is not None, "Test data not found, rootNode: {}".format(nodePath)
                 assert nodeIndex
 
-                nodesVisited += self._visitNodes(nodeIndex, allInspectors, allDetailsTabs)
+                nodesVisited += self._visitNodes(nodeIndex)
 
             duration = time.perf_counter() - timeAtStart
             self._logTestSummary(duration, nodesVisited)
@@ -186,7 +256,7 @@ class TestWalkDialog(QtWidgets.QDialog):
             logger.info("-------------- Test walk done ----------------")
 
 
-    def _visitNodes(self, index: QtCore.QModelIndex, allInspectors: bool, allDetailTabs: bool) -> int:
+    def _visitNodes(self, index: QtCore.QModelIndex) -> int:
         """ Helper function that visits all the nodes recursively.
 
             Args:
@@ -217,11 +287,11 @@ class TestWalkDialog(QtWidgets.QDialog):
         repoWidget.repoTreeView.setCurrentIndex(index)
         repoWidget.repoTreeView.setExpanded(index, True)
 
-        if allDetailTabs:
+        if self.allDetailTabsCheckBox.isChecked():
             # Try properties, attributes and quicklook tabs
             for idx in range(repoWidget.tabWidget.count()):
                 tabName = repoWidget.tabWidget.tabText(idx)
-                self._currentTestName = "{:10}: {}".format(tabName, item.nodePath)
+                self._currentTestName = "{:11}: {}".format(tabName, item.nodePath)
                 logger.debug("Setting repo detail tab : {}".format(tabName))
                 repoWidget.tabWidget.setCurrentIndex(idx)
                 processEvents() # Cause Qt to update UI
@@ -229,9 +299,9 @@ class TestWalkDialog(QtWidgets.QDialog):
             self._currentTestName = item.nodePath
             processEvents()
 
-        if allInspectors:
+        if self.allInspectorsCheckBox.isChecked():
             for action in self._mainWindow.inspectorActionGroup.actions():
-                self._currentTestName = "{:10}: {}".format(action.text(), item.nodePath)
+                self._currentTestName = "{:11}: {}".format(action.text(), item.nodePath)
                 action.trigger()
                 processEvents() # Cause Qt to update UI
         else:
@@ -240,7 +310,7 @@ class TestWalkDialog(QtWidgets.QDialog):
 
         for rowNr in range(repoModel.rowCount(index)):
             childIndex = repoModel.index(rowNr, 0, parentIndex=index)
-            nodesVisited += self._visitNodes(childIndex, allInspectors, allDetailTabs)
+            nodesVisited += self._visitNodes(childIndex)
 
         # TODO: see if we can close the node
         return nodesVisited
@@ -257,3 +327,7 @@ class TestWalkDialog(QtWidgets.QDialog):
         logger.info("Number of failed tests during test walk: {}".format(len(failedTests)))
         for testName in failedTests:
             logger.info("    {}".format(testName))
+
+        # if len(self._results) != nodesVisited:
+        #     logger.warning("Number of results ({}) != Nodes visited: {}"
+        #                    .format(len(self._results), nodesVisited))

@@ -24,6 +24,26 @@ TODO short term:
     axesNames: rows, columns in table inspector.
     resize repo should resize the name column.
 
+    Tooltips for spin-slider in collector
+    Warning in text inspector if more than one element is selected.
+
+    JSON files in text/table inspector. Yaml files.
+
+    Bugs and issues
+    ---------------
+        IrisCC motor data units is in meters while attribute is in millimeters.
+        Probably because it is a structured array with to (m) units
+
+        Using "argos ." doesn't expand the directory (at least on Windows)
+
+        Reload item doesn't work with memoryctis.MappingRti (and perhaps other memory RTIs)
+
+        What if the H5 only has a dimension label? 2020-10-04. What is this? Perhaps mini_scanner_output
+
+        What if they have multiple dimension scales?
+            /argos/mini_scanner_output/multiple_dimension_scales.h5
+
+
 
 TODO mid term:
 
@@ -62,18 +82,6 @@ TODO mid term:
     Editable defaults in config tree.
 
     Test ExdirFieldRti
-
-
-
-    Bugs and issues
-    ---------------
-
-        Reload item doesn't work with memoryctis.MappingRti (and perhaps other memory RTIs)
-
-        What if the H5 only has a dimension label? 2020-10-04. What is this?
-
-        What if they have multiple dimension scales?
-            /argos/mini_scanner_output/multiple_dimension_scales.h5
 
 
 TODO long term:

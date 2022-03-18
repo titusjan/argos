@@ -114,6 +114,7 @@ class MainWindow(QtWidgets.QMainWindow):
         center = desktopRect.center()
         self.move(round(center.x() - self.width () * 0.5), round(center.y() - self.height() * 0.5))
 
+        self.__setupActions()
         self.__setupMenus()
         self.__setupViews()
         self.__setupDockWidgets()
@@ -211,6 +212,41 @@ class MainWindow(QtWidgets.QMainWindow):
             subMenu.addAction(action)
 
 
+    def __setupActions(self):
+        """ Creates actions that are always usable, even if they are not added to the main menu.
+
+            Some actions are only added to the menu in debugging mode.
+        """
+        self.showTestWalkDialogAction = QtWidgets.QAction("Test Walk...", self)
+        self.showTestWalkDialogAction.setToolTip("Shows test-walk dialog windows.")
+        self.showTestWalkDialogAction.setShortcut("Ctrl+T")
+        self.showTestWalkDialogAction.triggered.connect(self.showTestWalkDialog)
+        self.addAction(self.showTestWalkDialogAction)
+
+        # The action added to the menu in the repopulateWindowMenu method, which is called by
+        # the ArgosApplication object every time a window is added or removed.
+        self.activateWindowAction = QtWidgets.QAction("Window #{}".format(self.windowNumber), self)
+        self.activateWindowAction.triggered.connect(self.activateAndRaise)
+        self.activateWindowAction.setCheckable(True)
+        #self.addAction(self.activateWindowAction)
+
+        if self.windowNumber <= 9:
+            self.activateWindowAction.setShortcut(QtGui.QKeySequence(
+                "Alt+{}".format(self.windowNumber)))
+
+        self.addTestDataAction = QtWidgets.QAction("Add Test Data", self)
+        self.addTestDataAction.setToolTip("Add in-memory test data to the tree.")
+        self.addTestDataAction.setShortcut("Meta+T")
+        self.addTestDataAction.triggered.connect(self.addTestData)
+        self.addAction(self.addTestDataAction)
+
+        self.myTestAction = QtWidgets.QAction("My Test", self)
+        self.myTestAction.setToolTip("Ad-hoc test procedure for debugging.")
+        self.myTestAction.setShortcut("Meta+T")
+        self.myTestAction.triggered.connect(self.myTest)
+        self.addAction(self.myTestAction)
+
+
     def __setupMenus(self):
         """ Sets up the main menu.
         """
@@ -263,19 +299,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self.panelsMenu = self.viewMenu.addMenu("&Panels")
         self.tableHeadersMenu = self.viewMenu.addMenu("&Table Headers")
 
+        self.viewMenu.addSeparator()
+        self.viewMenu.addAction(self.showTestWalkDialogAction)
+
         ### Config Menu ###
+
         self.configMenu = menuBar.addMenu("Configure")
 
         app = self.argosApplication
         action = self.configMenu.addAction("&File Format Plugins...",
             lambda: self.execPluginsDialog("File Formats", app.rtiRegistry))
-        if DEBUGGING:
-            action.setShortcut(QtGui.QKeySequence("Ctrl+P"))
+        action.setShortcut(QtGui.QKeySequence("Ctrl+P"))
 
         action = self.configMenu.addAction("&Inspector Plugins...",
             lambda: self.execPluginsDialog("Inspectors", app.inspectorRegistry))
-        # if DEBUGGING:
-        #     action.setShortcut(QtGui.QKeySequence("Ctrl+P"))
 
         self.configMenu.addSeparator()
 
@@ -284,16 +321,9 @@ class MainWindow(QtWidgets.QMainWindow):
             lambda: self.openInExternalApp(argosConfigDirectory()))
 
         ### Window Menu ###
-        self.windowMenu = menuBar.addMenu("&Window")
 
-        # The action added to the menu in the repopulateWindowMenu method, which is called by
-        # the ArgosApplication object every time a window is added or removed.
-        self.activateWindowAction = QtWidgets.QAction(
-            "Window #{}".format(self.windowNumber), self,
-            triggered=self.activateAndRaise, checkable=True)
-        if self.windowNumber <= 9:
-            self.activateWindowAction.setShortcut(QtGui.QKeySequence(
-                "Alt+{}".format(self.windowNumber)))
+        # Will be populated in repopulateWindowMenu
+        self.windowMenu = menuBar.addMenu("&Window")
 
         ### Help Menu ###
         menuBar.addSeparator()
@@ -311,25 +341,18 @@ class MainWindow(QtWidgets.QMainWindow):
         helpMenu.addAction('&About...', self.about)
 
         helpMenu.addSeparator()
-        helpMenu.addAction("Add Test Data", self.addTestData, "Meta+A")
+        helpMenu.addAction(self.addTestDataAction)
 
         helpMenu.addAction(
             "Quick Walk &Current Node",
             lambda: self.testWalkDialog.walkCurrentRepoNode(False, False), "Meta+Q")
-        helpMenu.addAction(
-            "Quick Walk &All Nodes",
-            lambda: self.testWalkDialog.walkAllRepoNodes(False, False))
-
-        helpMenu.addAction(
-            "Walk &Current Node",
-            lambda: self.testWalkDialog.walkCurrentRepoNode(True, True))
         helpMenu.addAction(
             "Walk &All Nodes",
             lambda: self.testWalkDialog.walkAllRepoNodes(True, True), "Meta+W")  # meta works on MacOs
 
         if DEBUGGING:
             helpMenu.addSeparator()
-            helpMenu.addAction("&My Test", self.myTest, "Meta+T")
+            helpMenu.addAction(self.myTestAction)
 
 
 
@@ -882,18 +905,22 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         self._storeInspectorState(self.inspectorRegItem, self.inspector)
 
+        twLayoutCfg, twCfg = self.testWalkDialog.marshall()
+
         layoutCfg = dict(
             repoWidget = self.repoWidget.marshall(),
             configTreeHeaders =  self.configWidget.configTreeView.marshall(),
             collectorHeaders = self.collector.tree.marshall(),
             winGeom = base64.b64encode(getWidgetGeom(self)).decode('ascii'),
-            winState = base64.b64encode(getWidgetState(self)).decode('ascii')
+            winState = base64.b64encode(getWidgetState(self)).decode('ascii'),
+            testWalkDialog = twLayoutCfg,
         )
 
         cfg = dict(
             configWidget = self.configWidget.marshall(),
             curInspector = self.inspectorRegItem.identifier if self.inspectorRegItem else '',
             inspectors = self._inspectorStates,
+            testWalkDialog = twCfg,
             layout = layoutCfg,
         )
         return cfg
@@ -919,6 +946,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.repoWidget.unmarshall(layoutCfg.get('repoWidget', {}))
         self.configWidget.configTreeView.unmarshall(layoutCfg.get('configTreeHeaders', ''))
         self.collector.tree.unmarshall(layoutCfg.get('collectorHeaders', ''))
+
+        self.testWalkDialog.unmarshall(layoutCfg.get('testWalkDialog', {}),
+                                       cfg.get('testWalkDialog', {}))
 
         if 'winGeom' in layoutCfg:
             self.restoreGeometry(base64.b64decode(layoutCfg['winGeom']))
@@ -1010,16 +1040,6 @@ class MainWindow(QtWidgets.QMainWindow):
         logger.critical("Hello there")
 
         logger.info("--------- myTest function done --------------------")
-        logger.warning("--------- myTest function done --------------------")
-
-        # repoTreeView = self.repoWidget.repoTreeView
-        # curItem, curIdx = repoTreeView.getCurrentItem()
-        #
-        # #repoTreeView.closeItem(self.getRowCurrentIndex())
-        # repoTreeView.collapse(curIdx)
-        # repoTreeView.closeItem(curIdx)
-        #
-        # #self.repoWidget.repoTreeView.closeCurrentItem2()
 
 
     def __not__used(self, rootNodes):
@@ -1078,12 +1098,18 @@ class MainWindow(QtWidgets.QMainWindow):
             skipPaths = []
 
 
-    @QtSlot()
     def addTestData(self):
         """ Adds test data to the repository
         """
         logger.info("Adding test data to the repository.")
         self.argosApplication.repo.insertItem(createArgosTestData())
+
+
+    def showTestWalkDialog(self):
+        """ Shows the test-walk dialog box
+        """
+        self.testWalkDialog.show()
+        self.testWalkDialog.raise_()
 
 
     @QtSlot(bool)
@@ -1094,4 +1120,3 @@ class MainWindow(QtWidgets.QMainWindow):
             quicklook) updates itself.
         """
         self.testWalkDialog.setTestResult(success)
-
