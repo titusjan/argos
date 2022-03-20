@@ -189,7 +189,7 @@ class AbstractInspector(QtWidgets.QStackedWidget):
             this case the initiator will be the Config Tree Item (CTI that has changed).
         """
         UpdateReason.checkValid(reason)
-        logger.debug("---- Inspector updateContents, reason: {}, initiator: {}"
+        logger.info("---- Inspector updateContents, reason: {}, initiator: {}"
                      .format(reason, initiator))
         logger.debug("Inspector: {}".format(self))
         logger.debug("RTI: {}".format(self.collector.rti))

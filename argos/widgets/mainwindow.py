@@ -236,7 +236,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.addTestDataAction = QtWidgets.QAction("Add Test Data", self)
         self.addTestDataAction.setToolTip("Add in-memory test data to the tree.")
-        self.addTestDataAction.setShortcut("Meta+T")
+        self.addTestDataAction.setShortcut("Meta+A")
         self.addTestDataAction.triggered.connect(self.addTestData)
         self.addAction(self.addTestDataAction)
 
@@ -340,17 +340,18 @@ class MainWindow(QtWidgets.QMainWindow):
 
         helpMenu.addAction('&About...', self.about)
 
-        helpMenu.addSeparator()
-        helpMenu.addAction(self.addTestDataAction)
-
-        helpMenu.addAction(
-            "Quick Walk &Current Node",
-            lambda: self.testWalkDialog.walkCurrentRepoNode(False, False), "Meta+Q")
-        helpMenu.addAction(
-            "Walk &All Nodes",
-            lambda: self.testWalkDialog.walkAllRepoNodes(True, True), "Meta+W")  # meta works on MacOs
-
         if DEBUGGING:
+
+            helpMenu.addSeparator()
+            helpMenu.addAction(self.addTestDataAction)
+
+            helpMenu.addAction(
+                "Quick Walk &Current Node",
+                lambda: self.testWalkDialog.walkCurrentRepoNode(False, False), "Meta+Q")
+            helpMenu.addAction(
+                "Walk &All Nodes",
+                lambda: self.testWalkDialog.walkAllRepoNodes(True, True), "Meta+W")  # meta works on MacOs
+
             helpMenu.addSeparator()
             helpMenu.addAction(self.myTestAction)
 
@@ -696,7 +697,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.updateWindowTitle()
 
-            logger.debug("Emitting sigInspectorChanged({})".format(self.inspectorRegItem))
+            logger.info("Emitting sigInspectorChanged({})".format(self.inspectorRegItem))
             self.sigInspectorChanged.emit(self.inspectorRegItem)
 
 

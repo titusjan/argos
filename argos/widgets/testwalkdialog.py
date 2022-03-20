@@ -223,10 +223,8 @@ class TestWalkDialog(QtWidgets.QDialog):
             Is useful for testing.
         """
         # TODO: detail tabs must signal when they fail
-        # TODO: skip tests starting with underscore
         # TODO: test walk dialog with progress bar and cancel button
         # TODO: select original node at the end of the tests.
-        # TODO: separate test menu
 
         logger.info("-------------- Running Tests ----------------")
         logger.debug("Visiting all nodes below: {}".format(nodePaths))
@@ -278,7 +276,7 @@ class TestWalkDialog(QtWidgets.QDialog):
                     format(item.nodePath, repoModel.rowCount(index)))
 
         # Select index
-        if False and item.nodePath in skipPaths:
+        if item.nodeName.startswith('_'):
             logger.warning("Skipping node during testing: {}".format(item.nodePath))
             return 0
         else:
@@ -294,18 +292,22 @@ class TestWalkDialog(QtWidgets.QDialog):
                 self._currentTestName = "{:11}: {}".format(tabName, item.nodePath)
                 logger.debug("Setting repo detail tab : {}".format(tabName))
                 repoWidget.tabWidget.setCurrentIndex(idx)
-                processEvents() # Cause Qt to update UI
+                logger.info("processEvents: {}".format(self._currentTestName))
+                processEvents()
         else:
             self._currentTestName = item.nodePath
+            logger.info("processEvents: {}".format(self._currentTestName))
             processEvents()
 
         if self.allInspectorsCheckBox.isChecked():
             for action in self._mainWindow.inspectorActionGroup.actions():
                 self._currentTestName = "{:11}: {}".format(action.text(), item.nodePath)
                 action.trigger()
-                processEvents() # Cause Qt to update UI
+                logger.info("processEvents: {}".format(self._currentTestName))
+                processEvents()
         else:
             self._currentTestName = item.nodePath
+            logger.info("processEvents: {}".format(self._currentTestName))
             processEvents()
 
         for rowNr in range(repoModel.rowCount(index)):
