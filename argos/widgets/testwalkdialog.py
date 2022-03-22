@@ -48,6 +48,8 @@ class TestWalkDialog(QtWidgets.QDialog):
         super(TestWalkDialog, self).__init__(parent=parent)
         self.setModal(False)
 
+        self._isOngoing = False
+
         self._mainWindow = mainWindow
 
         self._currentTestName: Optional[str] = None
@@ -65,7 +67,7 @@ class TestWalkDialog(QtWidgets.QDialog):
 
         self.abortWalkAction = QtWidgets.QAction("Abort Walk", self)
         self.abortWalkAction.setToolTip("Aborts the current test walk.")
-        #self.abortWalkAction.triggered.connect(lambda: self.walkAllRepoNodes(False, False))  # TODO
+        self.abortWalkAction.triggered.connect(self.abortTestWalk)
         self.addAction(self.abortWalkAction)
 
         #################
@@ -97,7 +99,6 @@ class TestWalkDialog(QtWidgets.QDialog):
         self.controlLayout.addStretch()
 
         self.curPathLabel = QtWidgets.QLabel()
-        self.curPathLabel.setText("Current Path")
         self.curPathLabel.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.mainLayout.addWidget(self.curPathLabel)
 
@@ -119,6 +120,7 @@ class TestWalkDialog(QtWidgets.QDialog):
         self.mainLayout.addWidget(buttonBox)
 
         self.resize(QtCore.QSize(800, 400))
+        self._updateButtons()
 
 
     def marshall(self) -> Tuple[ConfigDict, ConfigDict]:
@@ -148,6 +150,14 @@ class TestWalkDialog(QtWidgets.QDialog):
             self.restoreGeometry(base64.b64decode(layoutCfg['winGeom']))
 
 
+    def reject(self):
+        """ Called when the user closes the dialog
+        """
+        logger.debug("Closing TestWalkDialog")
+        self.abortTestWalk()
+        super().reject()
+        
+
     def clear(self):
         """ Clear all test results and current test name.
         """
@@ -156,10 +166,12 @@ class TestWalkDialog(QtWidgets.QDialog):
         self.editor.clear()
 
 
-    def testIsOngoing(self) -> bool:
-        """ Returns True if a test is ongoing
+    def _updateButtons(self):
+        """ Enables/disables buttons depending on if the test is ongaing
         """
-        return bool(self._currentTestName)
+        self.walkAllButton.setEnabled(not self._isOngoing)
+        self.walkCurrentButton.setEnabled(not self._isOngoing)
+        self.abortWalkButton.setEnabled(self._isOngoing)
 
 
     @QtSlot(bool)
@@ -172,7 +184,7 @@ class TestWalkDialog(QtWidgets.QDialog):
             Setting the name and result are separate methods because the inspector and detail tab
             don't know which node is currently selected in the repo tree.
         """
-        if not self.testIsOngoing():
+        if not self._isOngoing:
             return
 
         self._results.append((success, self._currentTestName))
@@ -180,6 +192,15 @@ class TestWalkDialog(QtWidgets.QDialog):
         line = "{:8s}: {}".format("success" if success else "FAILED", self._currentTestName)
         logger.info("setTestResult: {}".format(line), stack_info=False)
         self.editor.appendPlainText(line)
+
+
+    @QtSlot()
+    def abortTestWalk(self):
+        """ Sets the flag to abort the test walk
+        """
+        self._isOngoing = False
+        self._updateButtons()
+        self.curPathLabel.setText("Test walk aborted!")
 
 
     @QtSlot()
@@ -223,7 +244,7 @@ class TestWalkDialog(QtWidgets.QDialog):
             Is useful for testing.
         """
         # TODO: detail tabs must signal when they fail
-        # TODO: test walk dialog with progress bar and cancel button
+        # TODO: test walk dialog with progress bar
         # TODO: select original node at the end of the tests.
 
         logger.info("-------------- Running Tests ----------------")
@@ -233,7 +254,10 @@ class TestWalkDialog(QtWidgets.QDialog):
         self._currentTestName = None
         self._results = []
         self.editor.clear()
+
         nodesVisited = 0
+        self._isOngoing = True
+        self._updateButtons()
 
         try:
             timeAtStart = time.perf_counter()
@@ -249,8 +273,10 @@ class TestWalkDialog(QtWidgets.QDialog):
             duration = time.perf_counter() - timeAtStart
             self._logTestSummary(duration, nodesVisited)
         finally:
+            self._isOngoing = False
             self._currentTestName = None
             self._results = []
+            self._updateButtons()
             logger.info("-------------- Test walk done ----------------")
 
 
@@ -266,6 +292,9 @@ class TestWalkDialog(QtWidgets.QDialog):
         """
         assert index.isValid(), "sanity check"
 
+        if not self._isOngoing:
+            return 0  # Test walk aborted.
+
         nodesVisited = 1
 
         repoWidget = self._mainWindow.repoWidget
@@ -274,6 +303,8 @@ class TestWalkDialog(QtWidgets.QDialog):
         item = repoModel.getItem(index)
         logger.info("Visiting: {!r} ({} children)".
                     format(item.nodePath, repoModel.rowCount(index)))
+
+        self.curPathLabel.setText(item.nodePath)
 
         # Select index
         if item.nodeName.startswith('_'):
@@ -329,6 +360,10 @@ class TestWalkDialog(QtWidgets.QDialog):
         logger.info("Number of failed tests during test walk: {}".format(len(failedTests)))
         for testName in failedTests:
             logger.info("    {}".format(testName))
+
+        if not self._isOngoing:
+            logger.info("")
+            logger.info("NOTE: the test walk was aborted!")
 
         # if len(self._results) != nodesVisited:
         #     logger.warning("Number of results ({}) != Nodes visited: {}"
