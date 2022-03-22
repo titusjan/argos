@@ -120,3 +120,8 @@ def replace_eol_chars(attr):
             .replace('\n', unichr(0x21B5))
             .replace('\r', unichr(0x21B5)))
 
+
+def wrapHtmlColor(html, color):
+    """ Wraps HTML in a span with a certain color
+    """
+    return '<span style="color:{}">{}</span>'.format(color, html)

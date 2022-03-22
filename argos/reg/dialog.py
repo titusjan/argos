@@ -32,6 +32,7 @@ from argos.reg.tabview import TableEditWidget
 from argos.utils.cls import check_class
 from argos.widgets.constants import MONO_FONT, FONT_SIZE, COLOR_ERROR
 #from argos.widgets.constants import QCOLOR_REGULAR, QCOLOR_NOT_IMPORTED, QCOLOR_ERROR
+from utils.misc import wrapHtmlColor
 
 logger = logging.getLogger(__name__)
 
@@ -276,8 +277,3 @@ class PluginsDialog(QtWidgets.QDialog):
         else:
             self.editor.setHtml(header + regItem.docString.replace('\n', '<br>'))
 
-
-def wrapHtmlColor(html, color):
-    """ Wraps HTML in a span with a certain color
-    """
-    return '<span style="color:{}">{}</span>'.format(color, html)

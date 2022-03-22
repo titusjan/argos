@@ -22,11 +22,12 @@ import time
 from typing import Optional, Tuple, List
 
 from argos.qt import QtCore, QtGui, QtWidgets, QtSlot
-from argos.widgets.constants import MONO_FONT, FONT_SIZE
+from argos.widgets.constants import MONO_FONT, FONT_SIZE, COLOR_ERROR
 from argos.widgets.misc import processEvents
 from argos.utils.cls import check_is_a_sequence
 from argos.utils.config import ConfigDict
 from qt.misc import getWidgetGeom, getWidgetState
+from utils.misc import wrapHtmlColor
 
 logger = logging.getLogger(__name__)
 
@@ -151,12 +152,12 @@ class TestWalkDialog(QtWidgets.QDialog):
 
 
     def reject(self):
-        """ Called when the user closes the dialog
+        """ Called when the user closes the dialog. Aborts any running test walk.
         """
         logger.debug("Closing TestWalkDialog")
         self.abortTestWalk()
         super().reject()
-        
+
 
     def clear(self):
         """ Clear all test results and current test name.
@@ -172,6 +173,15 @@ class TestWalkDialog(QtWidgets.QDialog):
         self.walkAllButton.setEnabled(not self._isOngoing)
         self.walkCurrentButton.setEnabled(not self._isOngoing)
         self.abortWalkButton.setEnabled(self._isOngoing)
+
+
+    def appendText(self, text: str, isError: bool = False):
+        """ Appends a text message to the editor.
+        """
+        if not isError:
+            self.editor.appendPlainText(text)
+        else:
+            self.editor.appendHtml(wrapHtmlColor(text, COLOR_ERROR))
 
 
     @QtSlot(bool)
@@ -191,7 +201,7 @@ class TestWalkDialog(QtWidgets.QDialog):
 
         line = "{:8s}: {}".format("success" if success else "FAILED", self._currentTestName)
         logger.info("setTestResult: {}".format(line), stack_info=False)
-        self.editor.appendPlainText(line)
+        self.appendText(line, isError=not success)
 
 
     @QtSlot()
@@ -272,6 +282,7 @@ class TestWalkDialog(QtWidgets.QDialog):
 
             duration = time.perf_counter() - timeAtStart
             self._logTestSummary(duration, nodesVisited)
+            self._displayTestSummary(duration, nodesVisited)
         finally:
             self._isOngoing = False
             self._currentTestName = None
@@ -347,6 +358,16 @@ class TestWalkDialog(QtWidgets.QDialog):
 
         # TODO: see if we can close the node
         return nodesVisited
+
+
+    def _displayTestSummary(self, duration: float, nodesVisited: int):
+        """ Displays a test summary in the dialog
+        """
+        self.appendText('-' * 80)
+        if self._isOngoing:
+            self.appendText("Test finished.")
+        else:
+            self.appendText("Test ABORTED", isError=True)
 
 
     def _logTestSummary(self, duration: float, nodesVisited: int):
