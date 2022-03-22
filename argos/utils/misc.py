@@ -18,10 +18,13 @@
 """ Miscellaneous routines.
 """
 import logging, sys
-logger = logging.getLogger(__name__)
+
+from html import escape
 
 from argos.external.six import unichr
 from argos.utils.cls import is_a_string
+
+logger = logging.getLogger(__name__)
 
 class NotSpecified(object):
     """ Class for NOT_SPECIFIED constant.
@@ -124,4 +127,5 @@ def replace_eol_chars(attr):
 def wrapHtmlColor(html, color):
     """ Wraps HTML in a span with a certain color
     """
-    return '<span style="color:{}">{}</span>'.format(color, html)
+    return '<span style="color:{}; white-space:pre;">{}</span>'\
+        .format(color, escape(html, quote=False))
