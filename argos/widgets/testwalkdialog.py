@@ -195,12 +195,13 @@ class TestWalkDialog(QtWidgets.QDialog):
             don't know which node is currently selected in the repo tree.
         """
         if not self._isOngoing:
+            logger.debug("No test ongoing. Test result discarded.")
             return
 
         self._results.append((success, self._currentTestName))
 
         line = "{:8s}: {}".format("success" if success else "FAILED", self._currentTestName)
-        logger.info("setTestResult: {}".format(line), stack_info=False)
+        logger.info("setTestResult: {}".format(line), stack_info=True)
         self.appendText(line, isError=not success)
 
 
@@ -266,8 +267,14 @@ class TestWalkDialog(QtWidgets.QDialog):
         self.editor.clear()
 
         nodesVisited = 0
+        logger.debug("Starting test walk")
         self._isOngoing = True
         self._updateButtons()
+
+        # Unselect the current item to force the first node to trigger a new inspector
+        invalidIndex = self._mainWindow.repoWidget.repoTreeView.model().index(-1, -1)
+        assert not invalidIndex.isValid(), "sanity check"
+        self._mainWindow.repoWidget.repoTreeView.setCurrentIndex(invalidIndex)
 
         try:
             timeAtStart = time.perf_counter()
@@ -284,6 +291,7 @@ class TestWalkDialog(QtWidgets.QDialog):
             self._logTestSummary(duration, nodesVisited)
             self._displayTestSummary(duration, nodesVisited)
         finally:
+            logger.debug("Stopping test walk")
             self._isOngoing = False
             self._currentTestName = None
             self._results = []
@@ -337,18 +345,19 @@ class TestWalkDialog(QtWidgets.QDialog):
                 logger.info("processEvents: {}".format(self._currentTestName))
                 processEvents()
         else:
-            self._currentTestName = item.nodePath
+            self._currentTestName = "{:11}: {}".format("<no tab>", item.nodePath)
             logger.info("processEvents: {}".format(self._currentTestName))
             processEvents()
 
         if self.allInspectorsCheckBox.isChecked():
             for action in self._mainWindow.inspectorActionGroup.actions():
+                assert action.text(), "Action text undefined: {!r}".format(action.text())
                 self._currentTestName = "{:11}: {}".format(action.text(), item.nodePath)
                 action.trigger()
                 logger.info("processEvents: {}".format(self._currentTestName))
                 processEvents()
         else:
-            self._currentTestName = item.nodePath
+            self._currentTestName = "{:11}: {}".format("<no inspector>", item.nodePath)
             logger.info("processEvents: {}".format(self._currentTestName))
             processEvents()
 
