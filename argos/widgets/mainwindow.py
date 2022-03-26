@@ -84,17 +84,18 @@ class MainWindow(QtWidgets.QMainWindow):
             logger.warning("Profiling is on for {}. This may cost a bit of CPU time.")
             self._profiler = cProfile.Profile()
 
+        self.testWalkDialog = TestWalkDialog(mainWindow=self)  # don't show yet
+
         self._collector = None
         self._inspector = ErrorMsgInspector(
             self._collector, "No inspector yet. Please select one from the menu.")
         self._inspector.sigShowMessage.connect(self.sigShowMessage)
-        self._inspector.sigUpdated.connect(self.appendTestResult)
+        self._inspector.sigUpdated.connect(self.testWalkDialog.setTestResult)
         self._inspectorRegItem = None # The registered inspector item a InspectorRegItem)
 
         self._argosApplication = argosApplication
         self._configTreeModel = ConfigTreeModel()
         self._inspectorStates = {}  # keeps track of earlier inspector states
-        self.testWalkDialog = TestWalkDialog(mainWindow=self)  # don't show yet
         self._currentTestName = None
         self._failedTests = []
 
@@ -133,7 +134,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sigShowMessage.disconnect(self.inspectorSelectionPane.showMessage)
         self._collector.sigShowMessage.disconnect(self.sigShowMessage)
         self._inspector.sigShowMessage.disconnect(self.sigShowMessage)
-        self._inspector.sigUpdated.disconnect(self.appendTestResult)
+        self._inspector.sigUpdated.disconnect(self.testWalkDialog.setTestResult)
 
         if PROFILING:
             logger.info("Saving profiling information to {}"
@@ -662,7 +663,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self._storeInspectorState(oldInspectorRegItem, oldInspector)
 
             oldInspector.sigShowMessage.disconnect(self.sigShowMessage)
-            oldInspector.sigUpdated.disconnect(self.appendTestResult)
+            oldInspector.sigUpdated.disconnect(self.testWalkDialog.setTestResult)
             oldInspector.finalize()
             self.wrapperLayout.removeWidget(oldInspector)
             oldInspector.deleteLater()
@@ -687,7 +688,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.collector.clearAndSetComboBoxes(self.inspector.axesNames())
 
                 self._inspector.sigShowMessage.connect(self.sigShowMessage)
-                self._inspector.sigUpdated.connect(self.appendTestResult)
+                self._inspector.sigUpdated.connect(self.testWalkDialog.setTestResult)
                 self.wrapperLayout.addWidget(self.inspector)
             finally:
                 self.collector.blockSignals(oldBlockState)
@@ -1106,11 +1107,3 @@ class MainWindow(QtWidgets.QMainWindow):
         self.testWalkDialog.raise_()
 
 
-    @QtSlot(bool)
-    def appendTestResult(self, success: bool):
-        """ Appends the currently selected path node to the list of failed tests.
-
-            This slot will be called whenever the inspector or detail tab (properties, attributes,
-            quicklook) updates itself.
-        """
-        self.testWalkDialog.setTestResult(success)

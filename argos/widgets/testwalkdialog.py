@@ -198,6 +198,19 @@ class TestWalkDialog(QtWidgets.QDialog):
             logger.debug("No test ongoing. Test result discarded.")
             return
 
+        # An inspector may be updated twice during a single test. For example, if a node was not
+        # yet expanded, expanding will redraw the inspector for that node. In that case this
+        # function will be called twice for the current test. We therefore merge these results.
+        if self._results:
+            prevSuccess, prevName = self._results[-1]
+            if self._currentTestName == prevName:
+                logger.debug("Ignoring duplicate test result: {}".format(self._currentTestName))
+                # New result should be the same as the old, It should not matter if a node was
+                # previously expanded or not.
+                assert success == prevSuccess, \
+                    "New result ({}) differs from old ({})".format(success, prevSuccess)
+                return
+
         self._results.append((success, self._currentTestName))
 
         line = "{:8s}: {}".format("success" if success else "FAILED", self._currentTestName)
@@ -257,8 +270,7 @@ class TestWalkDialog(QtWidgets.QDialog):
         # TODO: detail tabs must signal when they fail
         # TODO: test walk dialog with progress bar
         # TODO: select original node at the end of the tests.
-        # TODO: Why is do I get double results the first time I run a test on a node
-        # Ook te reproduceren door de node eerst te closen.
+        # TODO: why are there failed test results while in debugging mode?
 
         logger.info("-------------- Running Tests ----------------")
         logger.debug("Visiting all nodes below: {}".format(nodePaths))
@@ -340,7 +352,7 @@ class TestWalkDialog(QtWidgets.QDialog):
         processEvents()
 
         repoWidget.repoTreeView.setCurrentIndex(index)
-        repoWidget.repoTreeView.setExpanded(index, True)
+        repoWidget.repoTreeView.expand(index)
 
         if self.allDetailTabsCheckBox.isChecked():
             # Try properties, attributes and quicklook tabs
