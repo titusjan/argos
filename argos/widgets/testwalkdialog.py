@@ -373,7 +373,7 @@ class TestWalkDialog(QtWidgets.QDialog):
                 logger.critical("Progress range: {}".format(progressRange))
                 nodesVisited += self._visitNodes(nodeIndex, progressRange)
 
-            #self._setProgressFraction(1.0)
+            self._setProgressFraction(1.0)
             duration = time.perf_counter() - timeAtStart
             self._logTestSummary(duration, nodesVisited)
             self._displayTestSummary(duration, nodesVisited)
@@ -454,7 +454,8 @@ class TestWalkDialog(QtWidgets.QDialog):
                         prMin + (numVisited+1) / toVisit * prLength)
             nodesVisited += self._visitNodes(childIndex, subRange)
 
-        #self.repoTreeView.closeItem(index)  # TODO: enable
+        if self._isOngoing:
+            self.repoTreeView.closeItem(index)
 
         return nodesVisited
 
