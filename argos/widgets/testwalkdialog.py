@@ -201,7 +201,7 @@ class TestWalkDialog(QtWidgets.QDialog):
         self._results.append((success, self._currentTestName))
 
         line = "{:8s}: {}".format("success" if success else "FAILED", self._currentTestName)
-        logger.info("setTestResult: {}".format(line), stack_info=True)
+        logger.info("setTestResult: {}".format(line))
         self.appendText(line, isError=not success)
 
 
@@ -257,6 +257,8 @@ class TestWalkDialog(QtWidgets.QDialog):
         # TODO: detail tabs must signal when they fail
         # TODO: test walk dialog with progress bar
         # TODO: select original node at the end of the tests.
+        # TODO: Why is do I get double results the first time I run a test on a node
+        # Ook te reproduceren door de node eerst te closen.
 
         logger.info("-------------- Running Tests ----------------")
         logger.debug("Visiting all nodes below: {}".format(nodePaths))
@@ -281,7 +283,8 @@ class TestWalkDialog(QtWidgets.QDialog):
             check_is_a_sequence(nodePaths) # prevent accidental iteration over strings.
 
             for nodePath in nodePaths:
-                nodeItem, nodeIndex = self._mainWindow.selectRtiByPath(nodePath)
+                nodeItem, nodeIndex = self._mainWindow.repoWidget.repoTreeView.model().findItemAndIndex(nodePath)
+
                 assert nodeItem is not None, "Test data not found, rootNode: {}".format(nodePath)
                 assert nodeIndex
 
@@ -332,6 +335,10 @@ class TestWalkDialog(QtWidgets.QDialog):
         else:
             logger.debug("Not skipping node during testing: {}".format(item.nodePath))
 
+        self._currentTestName = "{:11}: {}".format("<cur>", item.nodePath)
+        logger.info("processEvents: {}".format(self._currentTestName))
+        processEvents()
+
         repoWidget.repoTreeView.setCurrentIndex(index)
         repoWidget.repoTreeView.setExpanded(index, True)
 
@@ -344,10 +351,6 @@ class TestWalkDialog(QtWidgets.QDialog):
                 repoWidget.tabWidget.setCurrentIndex(idx)
                 logger.info("processEvents: {}".format(self._currentTestName))
                 processEvents()
-        else:
-            self._currentTestName = "{:11}: {}".format("<no tab>", item.nodePath)
-            logger.info("processEvents: {}".format(self._currentTestName))
-            processEvents()
 
         if self.allInspectorsCheckBox.isChecked():
             for action in self._mainWindow.inspectorActionGroup.actions():
@@ -356,10 +359,6 @@ class TestWalkDialog(QtWidgets.QDialog):
                 action.trigger()
                 logger.info("processEvents: {}".format(self._currentTestName))
                 processEvents()
-        else:
-            self._currentTestName = "{:11}: {}".format("<no inspector>", item.nodePath)
-            logger.info("processEvents: {}".format(self._currentTestName))
-            processEvents()
 
         for rowNr in range(repoModel.rowCount(index)):
             childIndex = repoModel.index(rowNr, 0, parentIndex=index)

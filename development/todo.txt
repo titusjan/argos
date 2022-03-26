@@ -36,13 +36,17 @@ TODO short term:
 
         Using "argos ." doesn't expand the directory (at least on Windows)
 
-        Reload item doesn't work with memoryctis.MappingRti (and perhaps other memory RTIs)
+        Open/close item doesn't work with memoryctis.MappingRti (and perhaps other memory RTIs)
+            After closing and opening, the child nodes have disappeared.
+
+        Reload file from context menu gives error
 
         What if the H5 only has a dimension label? 2020-10-04. What is this? Perhaps mini_scanner_output
 
         What if they have multiple dimension scales?
             /argos/mini_scanner_output/multiple_dimension_scales.h5
 
+        Remove warnings if all elements in the slice have the same value.
 
 
 TODO mid term:

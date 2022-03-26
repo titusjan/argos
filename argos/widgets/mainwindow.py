@@ -843,8 +843,6 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         lastItem, lastIndex = self.repoWidget.repoTreeView.expandPath(path)
         self.repoWidget.repoTreeView.setCurrentIndex(lastIndex)
-        if lastItem.nodePath != path:
-            raise IndexError("Path not found: {!r} (partialPath={!r})", path, lastItem.nodePath)
         return lastItem, lastIndex
 
 
@@ -1030,15 +1028,10 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         logger.info("--------- myTest function called --------------------")
 
-        testWalkDialog = TestWalkDialog(mainWindow=self)
-        testWalkDialog.show()
+        invalidIndex = self.repoWidget.repoTreeView.model().index(-1, -1)
+        assert not invalidIndex.isValid()
+        self.repoWidget.repoTreeView.setCurrentIndex(invalidIndex)
 
-        print(logger.getEffectiveLevel())
-        logger.debug("Hello there")
-        logger.info("Hello there")
-        logger.warning("Hello there")
-        logger.error("Hello there")
-        logger.critical("Hello there")
 
         logger.info("--------- myTest function done --------------------")
 
