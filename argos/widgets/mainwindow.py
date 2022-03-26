@@ -120,6 +120,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.__setupViews()
         self.__setupDockWidgets()
 
+        for detailsPane in self.repoWidget.detailDockPanes:
+            detailsPane.sigUpdated.connect(self.testWalkDialog.setTestResult)
+
 
     def finalize(self):
         """ Is called before destruction (when closing).
@@ -135,6 +138,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self._collector.sigShowMessage.disconnect(self.sigShowMessage)
         self._inspector.sigShowMessage.disconnect(self.sigShowMessage)
         self._inspector.sigUpdated.disconnect(self.testWalkDialog.setTestResult)
+
+        for detailsPane in self.repoWidget.detailDockPanes:
+            detailsPane.sigUpdated.disconnect(self.testWalkDialog.setTestResult)
 
         if PROFILING:
             logger.info("Saving profiling information to {}"

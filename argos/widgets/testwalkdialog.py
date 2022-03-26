@@ -198,6 +198,13 @@ class TestWalkDialog(QtWidgets.QDialog):
             logger.debug("No test ongoing. Test result discarded.")
             return
 
+        if self._currentTestName is None:
+            # When we test also for different inspector or detail panels, the test with the
+            # current inspector & panels is ignored because the same test will be repeated later
+            # This prevents showing the same test result again but with a different name.
+            logger.debug("Ignoring test with current inspector and detail panel")
+            return
+
         # An inspector may be updated twice during a single test. For example, if a node was not
         # yet expanded, expanding will redraw the inspector for that node. In that case this
         # function will be called twice for the current test. We therefore merge these results.
@@ -270,7 +277,6 @@ class TestWalkDialog(QtWidgets.QDialog):
         # TODO: detail tabs must signal when they fail
         # TODO: test walk dialog with progress bar
         # TODO: select original node at the end of the tests.
-        # TODO: why are there failed test results while in debugging mode?
 
         logger.info("-------------- Running Tests ----------------")
         logger.debug("Visiting all nodes below: {}".format(nodePaths))
@@ -347,9 +353,12 @@ class TestWalkDialog(QtWidgets.QDialog):
         else:
             logger.debug("Not skipping node during testing: {}".format(item.nodePath))
 
-        self._currentTestName = "{:11}: {}".format("<cur>", item.nodePath)
-        logger.info("processEvents: {}".format(self._currentTestName))
-        processEvents()
+        if self.allDetailTabsCheckBox.isChecked() or self.allInspectorsCheckBox.isChecked():
+            self._currentTestName = None
+        else:
+            self._currentTestName = "{}".format(item.nodePath)
+            logger.info("processEvents: {}".format(self._currentTestName))
+            processEvents()
 
         repoWidget.repoTreeView.setCurrentIndex(index)
         repoWidget.repoTreeView.expand(index)
@@ -397,7 +406,6 @@ class TestWalkDialog(QtWidgets.QDialog):
                     .format(nodesVisited, duration, nodesVisited/duration))
 
         failedTests = [(success, name) for success, name in self._results if not success]
-        failedTests = self._results
         logger.info("Number of failed tests during test walk: {}".format(len(failedTests)))
         for testName in failedTests:
             logger.info("    {}".format(testName))

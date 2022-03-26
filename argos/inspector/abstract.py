@@ -221,7 +221,7 @@ class AbstractInspector(QtWidgets.QStackedWidget):
                 # Exception message can be empty in common cases. Don't clear message label then.
                 self.sigShowMessage.emit(str(ex))
 
-            self.sigUpdated.emit(False)
+            self.sigUpdated.emit(True)
 
         except Exception as ex:####
             if DEBUGGING:
