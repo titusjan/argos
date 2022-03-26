@@ -460,21 +460,20 @@ class TestWalkDialog(QtWidgets.QDialog):
         if not self._isOngoing:
             logger.info("")
             logger.info("NOTE: the test walk was aborted!")
-
-        # Check number of results
-
-        allInspect = self.allInspectorsCheckBox.isChecked()
-        allDetail = self.allDetailTabsCheckBox.isChecked()
-        if allInspect or allDetail:
-            numInspectors = len(self._mainWindow.inspectorActionGroup.actions())
-            numDetailPanels = self.repoWidget.tabWidget.count()
-            factor = numInspectors * int(allInspect) + numDetailPanels * int(allDetail)
         else:
-            factor = 1
+            # Check that the number of test results is as expected
+            allInspect = self.allInspectorsCheckBox.isChecked()
+            allDetail = self.allDetailTabsCheckBox.isChecked()
+            if allInspect or allDetail:
+                numInspectors = len(self._mainWindow.inspectorActionGroup.actions())
+                numDetailPanels = self.repoWidget.tabWidget.count()
+                factor = numInspectors * int(allInspect) + numDetailPanels * int(allDetail)
+            else:
+                factor = 1
 
-        expectedNumResuls = nodesVisited * factor
-        if len(self._results) != expectedNumResuls:
-            msg = "Actual nr of results ({}) != expected nr of results: {}"\
-                .format(len(self._results), expectedNumResuls)
-            logger.warning(msg)
-            assert False, msg
+            expectedNumResuls = nodesVisited * factor
+            if len(self._results) != expectedNumResuls:
+                msg = "Actual nr of results ({}) != expected nr of results: {}"\
+                    .format(len(self._results), expectedNumResuls)
+                logger.warning(msg)
+                assert False, msg
