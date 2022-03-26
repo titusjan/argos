@@ -100,6 +100,9 @@ class TestWalkDialog(QtWidgets.QDialog):
         self.controlLayout.addWidget(self.allDetailTabsCheckBox)
         self.controlLayout.addStretch()
 
+        self.progressBar = QtWidgets.QProgressBar()
+        self.mainLayout.addWidget(self.progressBar)
+
         self.curPathLabel = QtWidgets.QLabel()
         self.curPathLabel.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.mainLayout.addWidget(self.curPathLabel)
@@ -207,6 +210,14 @@ class TestWalkDialog(QtWidgets.QDialog):
         self.walkAllButton.setEnabled(not self._isOngoing)
         self.walkCurrentButton.setEnabled(not self._isOngoing)
         self.abortWalkButton.setEnabled(self._isOngoing)
+
+
+    def _setProgressFraction(self, fraction: float):
+        """ Sets the fraction (percentage / 100)
+        """
+        self.progressBar.setValue(int(round(fraction * 100)))
+        logger.debug("Progress fraction {:8.3f}".format(fraction))
+        processEvents()
 
 
     @QtSlot(int)
@@ -345,18 +356,24 @@ class TestWalkDialog(QtWidgets.QDialog):
         assert not invalidIndex.isValid(), "sanity check"
         self.repoTreeView.setCurrentIndex(invalidIndex)
 
+        # Similarly, select the last detail panel to force the first to trigger a new result
+        self.repoWidget.tabWidget.setCurrentIndex(self.repoWidget.tabWidget.count()-1)
+
         try:
             timeAtStart = time.perf_counter()
             check_is_a_sequence(nodePaths) # prevent accidental iteration over strings.
 
-            for nodePath in nodePaths:
+            for numVisited, nodePath in enumerate(nodePaths):
                 nodeItem, nodeIndex = self.repoTreeView.model().findItemAndIndex(nodePath)
 
                 assert nodeItem is not None, "Test data not found, rootNode: {}".format(nodePath)
                 assert nodeIndex
 
-                nodesVisited += self._visitNodes(nodeIndex)
+                progressRange = (numVisited / len(nodePaths), (numVisited+1) / len(nodePaths))
+                logger.critical("Progress range: {}".format(progressRange))
+                nodesVisited += self._visitNodes(nodeIndex, progressRange)
 
+            #self._setProgressFraction(1.0)
             duration = time.perf_counter() - timeAtStart
             self._logTestSummary(duration, nodesVisited)
             self._displayTestSummary(duration, nodesVisited)
@@ -369,12 +386,12 @@ class TestWalkDialog(QtWidgets.QDialog):
             logger.info("-------------- Test walk done ----------------")
 
 
-    def _visitNodes(self, index: QtCore.QModelIndex) -> int:
+    def _visitNodes(self, index: QtCore.QModelIndex, progressRange: Tuple[float, float]) -> int:
         """ Helper function that visits all the nodes recursively.
 
             Args:
-                allInspectors: if True all inspectors are tried for this node.
-                allDetailsTabs: if True all detail tabs (attributes, quicklook, etc.) are tried.
+                index: current node index
+                progressRange: range that this call will cover in the progress bar.
 
             Returns:
                 The number of nodes that where visited.
@@ -384,10 +401,7 @@ class TestWalkDialog(QtWidgets.QDialog):
         if not self._isOngoing:
             return 0  # Test walk aborted.
 
-        nodesVisited = 1
-
         repoModel = self.repoTreeView.model()
-
         item = repoModel.getItem(index)
         logger.info("Visiting: {!r} ({} children)".
                     format(item.nodePath, repoModel.rowCount(index)))
@@ -426,11 +440,22 @@ class TestWalkDialog(QtWidgets.QDialog):
                 action.trigger()
                 processEvents()
 
-        for rowNr in range(repoModel.rowCount(index)):
-            childIndex = repoModel.index(rowNr, 0, parentIndex=index)
-            nodesVisited += self._visitNodes(childIndex)
+        nodesVisited = 1
 
-        #self.repoTreeView.closeItem(index)
+        prMin, prMax = progressRange
+        prLength = prMax - prMin
+        self._setProgressFraction(prMin)
+        logger.debug("Range {:8.3f}, {:8.3f}: {}".format(prMin, prMax, item.nodePath))
+
+        toVisit = repoModel.rowCount(index)
+        for numVisited, rowNr in enumerate(range(toVisit)):
+            childIndex = repoModel.index(rowNr, 0, parentIndex=index)
+            subRange = (prMin + numVisited / toVisit * prLength,
+                        prMin + (numVisited+1) / toVisit * prLength)
+            nodesVisited += self._visitNodes(childIndex, subRange)
+
+        #self.repoTreeView.closeItem(index)  # TODO: enable
+
         return nodesVisited
 
 
