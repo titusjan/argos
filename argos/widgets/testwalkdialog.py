@@ -21,7 +21,7 @@ import logging
 import time
 from typing import Optional, Tuple, List
 
-from argos.qt import QtCore, QtGui, QtWidgets, QtSlot
+from argos.qt import Qt, QtCore, QtGui, QtWidgets, QtSlot
 from argos.widgets.constants import MONO_FONT, FONT_SIZE, COLOR_ERROR
 from argos.widgets.misc import processEvents
 from argos.utils.cls import check_is_a_sequence
@@ -50,6 +50,7 @@ class TestWalkDialog(QtWidgets.QDialog):
         self.setModal(False)
 
         self._isOngoing = False
+        self._showAllResults = False
 
         self._mainWindow = mainWindow
 
@@ -115,13 +116,28 @@ class TestWalkDialog(QtWidgets.QDialog):
         self.editor.clear()
         self.mainLayout.addWidget(self.editor)
 
+        self.bottomLayout = QtWidgets.QHBoxLayout()
+        self.bottomLayout.setContentsMargins(0, 0, 0, 0)
+        self.mainLayout.addLayout(self.bottomLayout)
+
+        self.showAllResCheckBox = QtWidgets.QCheckBox("Show all results")
+        self.showAllResCheckBox.stateChanged.connect(self.onShowAllResultsChanged)
+        self.bottomLayout.addWidget(self.showAllResCheckBox)
+
         buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Close)
         buttonBox.accepted.connect(self.accept)
         buttonBox.rejected.connect(self.reject)
-        self.mainLayout.addWidget(buttonBox)
+        self.bottomLayout.addWidget(buttonBox)
 
         self.resize(QtCore.QSize(800, 400))
         self._updateButtons()
+
+
+    def finalize(self):
+        """ Is called before destruction (when closing).
+            Can be used to clean-up resources.
+        """
+        self.showAllResCheckBox.stateChanged.disconnect(self.onShowAllResultsChanged)
 
 
     @property
@@ -148,6 +164,7 @@ class TestWalkDialog(QtWidgets.QDialog):
         cfg = dict(
             testAllInspectors = self.allInspectorsCheckBox.isChecked(),
             testAllDetailTabs = self.allDetailTabsCheckBox.isChecked(),
+            showAllResults = self.showAllResCheckBox.isChecked(),
         )
         return layoutCfg, cfg
 
@@ -160,6 +177,9 @@ class TestWalkDialog(QtWidgets.QDialog):
 
         if 'testAllDetailTabs' in cfg:
             self.allDetailTabsCheckBox.setChecked(cfg['testAllDetailTabs'])
+
+        if 'showAllResults' in cfg:
+            self.showAllResCheckBox.setChecked(cfg['showAllResults'])
 
         if 'winGeom' in layoutCfg:
             self.restoreGeometry(base64.b64decode(layoutCfg['winGeom']))
@@ -187,6 +207,19 @@ class TestWalkDialog(QtWidgets.QDialog):
         self.walkAllButton.setEnabled(not self._isOngoing)
         self.walkCurrentButton.setEnabled(not self._isOngoing)
         self.abortWalkButton.setEnabled(self._isOngoing)
+
+
+    @QtSlot(int)
+    def onShowAllResultsChanged(self, state: int):
+        """ Executed when the 'show all results' check box changes
+        """
+        logger.info("Setting onShowAllResultsChanged: {}".format(state))
+        if state == Qt.Checked:
+            self._showAllResults = True
+        elif state == Qt.Unchecked:
+            self._showAllResults = False
+        else:
+            raise ValueError("Unexpected checkbox state: {}".format(state))
 
 
     def appendText(self, text: str, isError: bool = False):
@@ -234,9 +267,10 @@ class TestWalkDialog(QtWidgets.QDialog):
 
         self._results.append((success, self._currentTestName))
 
-        line = "{:8s}: {}".format("success" if success else "FAILED", self._currentTestName)
-        logger.info("setTestResult: {}".format(line))
-        self.appendText(line, isError=not success)
+        if self._showAllResults or not success:
+            line = "{:8s}: {}".format("success" if success else "FAILED", self._currentTestName)
+            logger.info("setTestResult: {}".format(line))
+            self.appendText(line, isError=not success)
 
 
     @QtSlot()
@@ -290,6 +324,7 @@ class TestWalkDialog(QtWidgets.QDialog):
         """
         # TODO: test walk dialog with progress bar
         # TODO: select original node at the end of the tests.
+        # TODO: process children of skipped nodes?
 
         logger.info("-------------- Running Tests ----------------")
         logger.debug("Visiting all nodes below: {}".format(nodePaths))

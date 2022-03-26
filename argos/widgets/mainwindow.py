@@ -130,6 +130,8 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         logger.debug("Finalizing: {}".format(self))
 
+        self.testWalkDialog.finalize()
+
         # Disconnect signals
         self.collector.sigContentsChanged.disconnect(self.collectorContentsChanged)
         self._configTreeModel.sigItemChanged.disconnect(self.configContentsChanged)
