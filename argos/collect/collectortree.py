@@ -19,6 +19,7 @@
 from __future__ import print_function
 
 import logging
+import warnings
 
 import numpy as np
 
@@ -123,10 +124,13 @@ class CollectorTree(ToggleColumnTreeView):
         nonSpinBoxTotalWidth = np.sum(colWidths[indexNonSpin])
         remainingTotal = max(0, headerWidth - nonSpinBoxTotalWidth - spinBoxTotalSizeHints)
 
-        spinBoxWeights = np.maximum(0.5, np.log10(np.array(spinBoxMaximums)))
-        normSpinBoxWeights = spinBoxWeights / np.sum(spinBoxWeights)
-        extraWidthPerSpinBox = remainingTotal * normSpinBoxWeights
-        newSpinBoxWidths = spinBoxSizeHints + extraWidthPerSpinBox
+        with warnings.catch_warnings():
+            # Ignore divide by zero warnings when all elements have the same value
+            warnings.simplefilter("ignore")
+            spinBoxWeights = np.maximum(0.5, np.log10(np.array(spinBoxMaximums)))
+            normSpinBoxWeights = spinBoxWeights / np.sum(spinBoxWeights)
+            extraWidthPerSpinBox = remainingTotal * normSpinBoxWeights
+            newSpinBoxWidths = spinBoxSizeHints + extraWidthPerSpinBox
 
         logger.debug("Dividing the remaining width over the spinboxes.")
         logger.debug("Header width               : {}".format(headerWidth))

@@ -628,7 +628,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             Emits the sigInspectorChanged(self.inspectorRegItem)
         """
-        logger.info("Setting inspector: {}".format(identifier))
+        logger.debug("Setting inspector: {}".format(identifier))
 
         # Use the identifier to find a registered inspector and set self.inspectorRegItem.
         # Then create an inspector object from it.
@@ -706,7 +706,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.updateWindowTitle()
 
-            logger.info("Emitting sigInspectorChanged({})".format(self.inspectorRegItem))
+            logger.debug("Emitting sigInspectorChanged({})".format(self.inspectorRegItem))
             self.sigInspectorChanged.emit(self.inspectorRegItem)
 
 
