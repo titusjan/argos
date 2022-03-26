@@ -124,6 +124,20 @@ class TestWalkDialog(QtWidgets.QDialog):
         self._updateButtons()
 
 
+    @property
+    def repoWidget(self):
+        """ The repoWidget of the main window
+        """
+        return self._mainWindow.repoWidget
+
+
+    @property
+    def repoTreeView(self):
+        """ The repoTreeView of repo widget of the main window
+        """
+        return self._mainWindow.repoWidget.repoTreeView
+
+
     def marshall(self) -> Tuple[ConfigDict, ConfigDict]:
         """ Returns a layout and state config dictionaries
         """
@@ -245,7 +259,7 @@ class TestWalkDialog(QtWidgets.QDialog):
         if allDetailTabs is not None:
             self.allDetailTabsCheckBox.setChecked(allDetailTabs)
 
-        curItem, _curIdx = self._mainWindow.repoWidget.repoTreeView.getCurrentItem()
+        curItem, _curIdx = self.repoTreeView.getCurrentItem()
         logger.info("Test walk current item: {}".format(curItem.nodePath))
         self.walkRepoNodes([curItem.nodePath])
 
@@ -263,7 +277,7 @@ class TestWalkDialog(QtWidgets.QDialog):
         if allDetailTabs is not None:
             self.allDetailTabsCheckBox.setChecked(allDetailTabs)
 
-        repo = self._mainWindow.repoWidget.repoTreeView.model()
+        repo = self.repoTreeView.model()
         nodePaths = [rti.nodePath for rti in repo.rootItems()]
         logger.debug("All root items: {}".format(nodePaths))
         self.walkRepoNodes(nodePaths)
@@ -274,7 +288,6 @@ class TestWalkDialog(QtWidgets.QDialog):
 
             Is useful for testing.
         """
-        # TODO: detail tabs must signal when they fail
         # TODO: test walk dialog with progress bar
         # TODO: select original node at the end of the tests.
 
@@ -292,16 +305,16 @@ class TestWalkDialog(QtWidgets.QDialog):
         self._updateButtons()
 
         # Unselect the current item to force the first node to trigger a new inspector
-        invalidIndex = self._mainWindow.repoWidget.repoTreeView.model().index(-1, -1)
+        invalidIndex = self.repoTreeView.model().index(-1, -1)
         assert not invalidIndex.isValid(), "sanity check"
-        self._mainWindow.repoWidget.repoTreeView.setCurrentIndex(invalidIndex)
+        self.repoTreeView.setCurrentIndex(invalidIndex)
 
         try:
             timeAtStart = time.perf_counter()
             check_is_a_sequence(nodePaths) # prevent accidental iteration over strings.
 
             for nodePath in nodePaths:
-                nodeItem, nodeIndex = self._mainWindow.repoWidget.repoTreeView.model().findItemAndIndex(nodePath)
+                nodeItem, nodeIndex = self.repoTreeView.model().findItemAndIndex(nodePath)
 
                 assert nodeItem is not None, "Test data not found, rootNode: {}".format(nodePath)
                 assert nodeIndex
@@ -337,8 +350,7 @@ class TestWalkDialog(QtWidgets.QDialog):
 
         nodesVisited = 1
 
-        repoWidget = self._mainWindow.repoWidget
-        repoModel = repoWidget.repoTreeView.model()
+        repoModel = self.repoTreeView.model()
 
         item = repoModel.getItem(index)
         logger.info("Visiting: {!r} ({} children)".
@@ -360,16 +372,16 @@ class TestWalkDialog(QtWidgets.QDialog):
             logger.info("processEvents: {}".format(self._currentTestName))
             processEvents()
 
-        repoWidget.repoTreeView.setCurrentIndex(index)
-        repoWidget.repoTreeView.expand(index)
+        self.repoTreeView.setCurrentIndex(index)
+        self.repoTreeView.expand(index)
 
         if self.allDetailTabsCheckBox.isChecked():
             # Try properties, attributes and quicklook tabs
-            for idx in range(repoWidget.tabWidget.count()):
-                tabName = repoWidget.tabWidget.tabText(idx)
+            for idx in range(self.repoWidget.tabWidget.count()):
+                tabName = self.repoWidget.tabWidget.tabText(idx)
                 self._currentTestName = "{:11}: {}".format(tabName, item.nodePath)
                 logger.debug("Setting repo detail tab : {}".format(tabName))
-                repoWidget.tabWidget.setCurrentIndex(idx)
+                self.repoWidget.tabWidget.setCurrentIndex(idx)
                 logger.info("processEvents: {}".format(self._currentTestName))
                 processEvents()
 
@@ -414,6 +426,20 @@ class TestWalkDialog(QtWidgets.QDialog):
             logger.info("")
             logger.info("NOTE: the test walk was aborted!")
 
-        # if len(self._results) != nodesVisited:
-        #     logger.warning("Number of results ({}) != Nodes visited: {}"
-        #                    .format(len(self._results), nodesVisited))
+        # Check number of results
+
+        allInspect = self.allInspectorsCheckBox.isChecked()
+        allDetail = self.allDetailTabsCheckBox.isChecked()
+        if allInspect or allDetail:
+            numInspectors = len(self._mainWindow.inspectorActionGroup.actions())
+            numDetailPanels = self.repoWidget.tabWidget.count()
+            factor = numInspectors * int(allInspect) + numDetailPanels * int(allDetail)
+        else:
+            factor = 1
+
+        expectedNumResuls = nodesVisited * factor
+        if len(self._results) != expectedNumResuls:
+            msg = "Actual nr of results ({}) != expected nr of results: {}"\
+                .format(len(self._results), expectedNumResuls)
+            logger.warning(msg)
+            assert False, msg
