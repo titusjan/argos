@@ -259,10 +259,9 @@ class TestWalkDialog(QtWidgets.QDialog):
             prevSuccess, prevName = self._results[-1]
             if self._currentTestName == prevName:
                 logger.debug("Ignoring duplicate test result: {}".format(self._currentTestName))
-                # New result should be the same as the old, It should not matter if a node was
-                # previously expanded or not.
-                assert success == prevSuccess, \
-                    "New result ({}) differs from old ({})".format(success, prevSuccess)
+                # It can happen that test results differ. For instance when the inspector fails
+                # but the detail panel succeeds.
+                self._results[-1] = (success and prevSuccess, self._currentTestName)
                 return
 
         self._results.append((success, self._currentTestName))
@@ -294,8 +293,11 @@ class TestWalkDialog(QtWidgets.QDialog):
             self.allDetailTabsCheckBox.setChecked(allDetailTabs)
 
         curItem, _curIdx = self.repoTreeView.getCurrentItem()
-        logger.info("Test walk current item: {}".format(curItem.nodePath))
-        self.walkRepoNodes([curItem.nodePath])
+        if curItem is None:
+            logger.warning("No node selected for test walk")
+        else:
+            logger.info("Test walk current item: {}".format(curItem.nodePath))
+            self.walkRepoNodes([curItem.nodePath])
 
 
     @QtSlot()
@@ -324,7 +326,6 @@ class TestWalkDialog(QtWidgets.QDialog):
         """
         # TODO: test walk dialog with progress bar
         # TODO: select original node at the end of the tests.
-        # TODO: process children of skipped nodes?
 
         logger.info("-------------- Running Tests ----------------")
         logger.debug("Visiting all nodes below: {}".format(nodePaths))
@@ -404,7 +405,6 @@ class TestWalkDialog(QtWidgets.QDialog):
             self._currentTestName = None
         else:
             self._currentTestName = "{}".format(item.nodePath)
-            logger.info("processEvents: {}".format(self._currentTestName))
             processEvents()
 
         self.repoTreeView.setCurrentIndex(index)
@@ -417,7 +417,6 @@ class TestWalkDialog(QtWidgets.QDialog):
                 self._currentTestName = "{:11}: {}".format(tabName, item.nodePath)
                 logger.debug("Setting repo detail tab : {}".format(tabName))
                 self.repoWidget.tabWidget.setCurrentIndex(idx)
-                logger.info("processEvents: {}".format(self._currentTestName))
                 processEvents()
 
         if self.allInspectorsCheckBox.isChecked():
@@ -425,14 +424,13 @@ class TestWalkDialog(QtWidgets.QDialog):
                 assert action.text(), "Action text undefined: {!r}".format(action.text())
                 self._currentTestName = "{:11}: {}".format(action.text(), item.nodePath)
                 action.trigger()
-                logger.info("processEvents: {}".format(self._currentTestName))
                 processEvents()
 
         for rowNr in range(repoModel.rowCount(index)):
             childIndex = repoModel.index(rowNr, 0, parentIndex=index)
             nodesVisited += self._visitNodes(childIndex)
 
-        # TODO: see if we can close the node
+        #self.repoTreeView.closeItem(index)
         return nodesVisited
 
 
