@@ -335,9 +335,6 @@ class TestWalkDialog(QtWidgets.QDialog):
 
             Is useful for testing.
         """
-        # TODO: test walk dialog with progress bar
-        # TODO: select original node at the end of the tests.
-
         logger.info("-------------- Running Tests ----------------")
         logger.debug("Visiting all nodes below: {}".format(nodePaths))
 
@@ -352,6 +349,7 @@ class TestWalkDialog(QtWidgets.QDialog):
         self._updateButtons()
 
         # Unselect the current item to force the first node to trigger a new inspector
+        originalIndex = self.repoTreeView.currentIndex()
         invalidIndex = self.repoTreeView.model().index(-1, -1)
         assert not invalidIndex.isValid(), "sanity check"
         self.repoTreeView.setCurrentIndex(invalidIndex)
@@ -373,7 +371,9 @@ class TestWalkDialog(QtWidgets.QDialog):
                 logger.critical("Progress range: {}".format(progressRange))
                 nodesVisited += self._visitNodes(nodeIndex, progressRange)
 
-            self._setProgressFraction(1.0)
+            if self._isOngoing:
+                self._setProgressFraction(1.0)
+
             duration = time.perf_counter() - timeAtStart
             self._logTestSummary(duration, nodesVisited)
             self._displayTestSummary(duration, nodesVisited)
@@ -383,6 +383,8 @@ class TestWalkDialog(QtWidgets.QDialog):
             self._currentTestName = None
             self._results = []
             self._updateButtons()
+            if self._isOngoing:
+                self.repoTreeView.setCurrentIndex(originalIndex)
             logger.info("-------------- Test walk done ----------------")
 
 
@@ -421,6 +423,7 @@ class TestWalkDialog(QtWidgets.QDialog):
             self._currentTestName = "{}".format(item.nodePath)
             processEvents()
 
+        wasOpen = self.repoTreeView.isExpanded(index)
         self.repoTreeView.setCurrentIndex(index)
         self.repoTreeView.expand(index)
 
@@ -454,7 +457,7 @@ class TestWalkDialog(QtWidgets.QDialog):
                         prMin + (numVisited+1) / toVisit * prLength)
             nodesVisited += self._visitNodes(childIndex, subRange)
 
-        if self._isOngoing:
+        if self._isOngoing and not wasOpen:
             self.repoTreeView.closeItem(index)
 
         return nodesVisited
@@ -500,4 +503,7 @@ class TestWalkDialog(QtWidgets.QDialog):
                 msg = "Actual nr of results ({}) != expected nr of results: {}"\
                     .format(len(self._results), expectedNumResuls)
                 logger.warning(msg)
-                assert False, msg
+
+                # No assert, as this can happen when there are two nodes with the same name, which
+                # is common in NetCDF files that follow the CF conventions.
+                #assert False, msg

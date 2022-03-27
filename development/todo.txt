@@ -50,6 +50,9 @@ TODO short term:
 
 
 TODO mid term:
+    During log test walks the program seems to slow down.
+        E.g. "ucar\test_echam_spectral-deflated.nc" takes one minute during a full ucar test, and
+        only half a minute when testing it alone (only table inspector, log level info).
 
     Fixed font size in tables and trees so that windows10 with two monitors works. (setFixedPitch)
 

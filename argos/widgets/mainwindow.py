@@ -84,7 +84,7 @@ class MainWindow(QtWidgets.QMainWindow):
             logger.warning("Profiling is on for {}. This may cost a bit of CPU time.")
             self._profiler = cProfile.Profile()
 
-        self.testWalkDialog = TestWalkDialog(mainWindow=self)  # don't show yet
+        self.testWalkDialog = TestWalkDialog(mainWindow=self, parent=self)  # don't show yet
 
         self._collector = None
         self._inspector = ErrorMsgInspector(
