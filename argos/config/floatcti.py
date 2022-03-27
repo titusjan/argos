@@ -70,10 +70,10 @@ class FloatCti(AbstractCti):
 
         if math.isinf(value):
             if value > 0:
-                logger.warning("Replacing inf by the largest representable float")
+                logger.debug("Replacing inf by the largest representable float")
                 value = sys.float_info.max
             else:
-                logger.warning("Replacing -inf by the smallest representable float")
+                logger.debug("Replacing -inf by the smallest representable float")
                 value = -sys.float_info.max
 
         return value
@@ -228,10 +228,10 @@ class SnFloatCti(AbstractCti):
 
         if math.isinf(value):
             if value > 0:
-                logger.warning("Replacing inf by the largest representable float")
+                logger.debug("Replacing inf by the largest representable float")
                 value = sys.float_info.max
             else:
-                logger.warning("Replacing -inf by the smallest representable float")
+                logger.debug("Replacing -inf by the smallest representable float")
                 value = -sys.float_info.max
 
         return value
