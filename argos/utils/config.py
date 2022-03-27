@@ -3,9 +3,11 @@
 """ Various function related to config files.
 """
 import logging
+from typing import Dict, Any
 
 logger = logging.getLogger(__name__)
 
+ConfigDict = Dict[str, Any]
 
 def __findConfigParameter(cfg, parts, orgPath):
     """ Recursively finds a parameter in a (config) dict.

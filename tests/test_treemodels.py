@@ -79,8 +79,8 @@ class TestGetByPath(unittest.TestCase):
     def getLastItem(self, path, startIndex=None):
         """ Gets the last item from the itemAndIndexPath
         """
-        iiPath = self.model.findItemAndIndexPath(path, startIndex=startIndex)
-        return iiPath[-1]
+        return self.model.findItemAndIndex(path, startIndex=startIndex)
+
 
     def testLastPathItemStartAtRoot(self):
 

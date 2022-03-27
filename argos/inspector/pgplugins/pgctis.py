@@ -20,6 +20,8 @@
 from __future__ import division, print_function
 
 import logging
+import warnings
+
 import numpy as np
 import pyqtgraph as pg
 
@@ -279,14 +281,17 @@ class AbstractRangeCti(GroupCti):
         # So, while the range is the same size we need more decimals because we are not zoomed in
         # around zero.
         rangeMin, rangeMax = self.getTargetRange() # [[xmin, xmax], [ymin, ymax]]
-        maxOrder = np.log10(np.abs(max(rangeMax, rangeMin)))
-        diffOrder = np.log10(np.abs(rangeMax - rangeMin))
+        with warnings.catch_warnings():
+            # Ignore divide by zero warnings when all elements have the same value
+            warnings.simplefilter("ignore")
+            maxOrder = np.log10(np.abs(max(rangeMax, rangeMin)))
+            diffOrder = np.log10(np.abs(rangeMax - rangeMin))
 
-        extraDigits = 2 # add some extra digits to make each pan/zoom action show a new value.
-        precisionF = np.clip(abs(maxOrder - diffOrder) + extraDigits, extraDigits + 1, 25)
-        precision = int(precisionF) if np.isfinite(precisionF) else extraDigits + 1
-        #logger.debug("maxOrder: {}, diffOrder: {}, precision: {}"
-        #             .format(maxOrder, diffOrder, precision))
+            extraDigits = 2 # add some extra digits to make each pan/zoom action show a new value.
+            precisionF = np.clip(abs(maxOrder - diffOrder) + extraDigits, extraDigits + 1, 25)
+            precision = int(precisionF) if np.isfinite(precisionF) else extraDigits + 1
+            #logger.debug("maxOrder: {}, diffOrder: {}, precision: {}"
+            #             .format(maxOrder, diffOrder, precision))
 
         self.rangeMinCti.precision = precision
         self.rangeMaxCti.precision = precision

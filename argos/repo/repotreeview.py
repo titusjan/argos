@@ -449,7 +449,7 @@ class RepoTreeView(ArgosTreeView):
     def repoTreeItemChanged(self, rti):
         """ Called when repo tree item has changed (the item itself, not a new selection)
 
-            If the item is the currently selected item, the the collector (inspector) and
+            If the item is the currently selected item, the collector (inspector) and
             metadata widgets are updated.
         """
         logger.debug("repoTreeItemChanged: {}".format(rti))
@@ -473,7 +473,7 @@ class RepoTreeView(ArgosTreeView):
 
         # Set the item in the collector, will subsequently update the inspector.
         if hasCurrent:
-            logger.info("Adding rti to collector: {}".format(currentItem.nodePath))
+            logger.debug("Adding rti to collector: {}".format(currentItem.nodePath))
             self.collector.setRti(currentItem)
             #if rti.asArray is not None: # TODO: maybe later, first test how robust it is now
             #    self.collector.setRti(rti)

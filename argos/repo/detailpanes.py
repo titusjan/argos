@@ -20,7 +20,7 @@
 import logging
 
 from argos.info import DEBUGGING
-from argos.qt import QtSlot, QtCore, QtWidgets
+from argos.qt import QtSignal, QtCore, QtWidgets
 from argos.qt.togglecolumn import ToggleColumnTableWidget
 from argos.repo.baserti import BaseRti
 from argos.utils.cls import get_class_name, check_class
@@ -41,6 +41,8 @@ class DetailBasePane(QtWidgets.QStackedWidget):
 
     ERROR_PAGE_IDX = 0
     CONTENTS_PAGE_IDX = 1
+
+    sigUpdated = QtSignal(bool)  # Parameter indicates sucess
 
     def __init__(self, repoTreeView, parent=None):
         """ Constructor takes a reference to the repository tree view it monitors
@@ -91,12 +93,16 @@ class DetailBasePane(QtWidgets.QStackedWidget):
         try:
             self._drawContents(rti)
             self.setCurrentIndex(self.CONTENTS_PAGE_IDX)
+            if rti is not None:
+                self.sigUpdated.emit(True)
         except Exception as ex:
             if DEBUGGING:
                 raise
             logger.exception(ex)
             self.errorWidget.setError(msg=str(ex), title=get_class_name(ex))
             self.setCurrentIndex(self.ERROR_PAGE_IDX)
+            if rti is not None:
+                self.sigUpdated.emit(False)
 
 
     def _drawContents(self, currentRti=None):

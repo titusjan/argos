@@ -20,10 +20,12 @@
 import logging, sys
 import pprint
 
-logger = logging.getLogger(__name__)
+from html import escape
 
 from argos.external.six import unichr
 from argos.utils.cls import is_a_string
+
+logger = logging.getLogger(__name__)
 
 class NotSpecified(object):
     """ Class for NOT_SPECIFIED constant.
@@ -127,3 +129,11 @@ def pformat(obj, width) -> str:
     """ Pretty print format with Argos default parameter values.
     """
     return pprint.pformat(obj, width=width, depth=2, sort_dicts=False)
+
+
+def wrapHtmlColor(html, color):
+    """ Wraps HTML in a span with a certain color
+    """
+    return '<span style="color:{}; white-space:pre;">{}</span>'\
+        .format(color, escape(html, quote=False))
+

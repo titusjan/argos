@@ -456,6 +456,15 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
             return self.findTopLevelItemIndex(childIndex.parent())
 
 
+    def findItemAndIndex(self, path, startIndex=None):
+        """ Searches all the model recursively (starting at startIndex) for an item where
+            item.nodePath == path.
+
+            Calls findItemAndIndexPath and returns the last item in the list.
+        """
+        return self.findItemAndIndexPath(path, startIndex=startIndex)[-1]
+
+
     def findItemAndIndexPath(self, path, startIndex=None):
         """ Searches all the model recursively (starting at startIndex) for an item where
             item.nodePath == path.
@@ -510,7 +519,13 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
         if not startItem:
             raise IndexError("Item not found: {!r}. No start item!".format(path))
 
-        return _auxGetByPath(path.split('/'), startItem, startIndex)
+        nodes = _auxGetByPath(path.split('/'), startItem, startIndex)
+
+        lastItem, _lastIndex = nodes[-1]
+        if lastItem.nodePath != path:  # When can this occur? Or is it a sanity check?
+            raise IndexError("Path not found: {!r} (partialPath={!r})", path, lastItem.nodePath)
+
+        return nodes
 
 
     def __not_used__emitUpdateForBranch(self, parentIndex):

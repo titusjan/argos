@@ -20,13 +20,12 @@
 
 """
 
-from __future__ import absolute_import, division, print_function
 
 import base64
 import cProfile
+import logging
 import os.path
 import pstats
-import time
 from functools import partial
 
 import numpy as np
@@ -52,12 +51,7 @@ from argos.utils.dirs import argosConfigDirectory, argosLogDirectory
 from argos.utils.misc import string_to_identifier
 from argos.utils.moduleinfo import versionStrToTuple
 from argos.widgets.aboutdialog import AboutDialog
-from argos.widgets.constants import CENTRAL_MARGIN, CENTRAL_SPACING
-from argos.widgets.misc import processEvents
-
-
-import logging
-
+from argos.widgets.testwalkdialog import TestWalkDialog
 
 logger = logging.getLogger(__name__)
 
@@ -90,17 +84,19 @@ class MainWindow(QtWidgets.QMainWindow):
             logger.warning("Profiling is on for {}. This may cost a bit of CPU time.")
             self._profiler = cProfile.Profile()
 
+        self.testWalkDialog = TestWalkDialog(mainWindow=self, parent=self)  # don't show yet
+
         self._collector = None
         self._inspector = ErrorMsgInspector(
             self._collector, "No inspector yet. Please select one from the menu.")
         self._inspector.sigShowMessage.connect(self.sigShowMessage)
-        self._inspector.sigUpdateFailed.connect(self.appendFailedTest)
+        self._inspector.sigUpdated.connect(self.testWalkDialog.setTestResult)
         self._inspectorRegItem = None # The registered inspector item a InspectorRegItem)
 
         self._argosApplication = argosApplication
         self._configTreeModel = ConfigTreeModel()
         self._inspectorStates = {}  # keeps track of earlier inspector states
-        self._currentTestName = False
+        self._currentTestName = None
         self._failedTests = []
 
         self.setDockNestingEnabled(False)
@@ -119,9 +115,13 @@ class MainWindow(QtWidgets.QMainWindow):
         center = desktopRect.center()
         self.move(round(center.x() - self.width () * 0.5), round(center.y() - self.height() * 0.5))
 
+        self.__setupActions()
         self.__setupMenus()
         self.__setupViews()
         self.__setupDockWidgets()
+
+        for detailsPane in self.repoWidget.detailDockPanes:
+            detailsPane.sigUpdated.connect(self.testWalkDialog.setTestResult)
 
 
     def finalize(self):
@@ -130,6 +130,8 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         logger.debug("Finalizing: {}".format(self))
 
+        self.testWalkDialog.finalize()
+
         # Disconnect signals
         self.collector.sigContentsChanged.disconnect(self.collectorContentsChanged)
         self._configTreeModel.sigItemChanged.disconnect(self.configContentsChanged)
@@ -137,7 +139,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sigShowMessage.disconnect(self.inspectorSelectionPane.showMessage)
         self._collector.sigShowMessage.disconnect(self.sigShowMessage)
         self._inspector.sigShowMessage.disconnect(self.sigShowMessage)
-        self._inspector.sigUpdateFailed.disconnect(self.appendFailedTest)
+        self._inspector.sigUpdated.disconnect(self.testWalkDialog.setTestResult)
+
+        for detailsPane in self.repoWidget.detailDockPanes:
+            detailsPane.sigUpdated.disconnect(self.testWalkDialog.setTestResult)
 
         if PROFILING:
             logger.info("Saving profiling information to {}"
@@ -216,6 +221,41 @@ class MainWindow(QtWidgets.QMainWindow):
             subMenu.addAction(action)
 
 
+    def __setupActions(self):
+        """ Creates actions that are always usable, even if they are not added to the main menu.
+
+            Some actions are only added to the menu in debugging mode.
+        """
+        self.showTestWalkDialogAction = QtWidgets.QAction("Test Walk...", self)
+        self.showTestWalkDialogAction.setToolTip("Shows test-walk dialog windows.")
+        self.showTestWalkDialogAction.setShortcut("Ctrl+T")
+        self.showTestWalkDialogAction.triggered.connect(self.showTestWalkDialog)
+        self.addAction(self.showTestWalkDialogAction)
+
+        # The action added to the menu in the repopulateWindowMenu method, which is called by
+        # the ArgosApplication object every time a window is added or removed.
+        self.activateWindowAction = QtWidgets.QAction("Window #{}".format(self.windowNumber), self)
+        self.activateWindowAction.triggered.connect(self.activateAndRaise)
+        self.activateWindowAction.setCheckable(True)
+        #self.addAction(self.activateWindowAction)
+
+        if self.windowNumber <= 9:
+            self.activateWindowAction.setShortcut(QtGui.QKeySequence(
+                "Alt+{}".format(self.windowNumber)))
+
+        self.addTestDataAction = QtWidgets.QAction("Add Test Data", self)
+        self.addTestDataAction.setToolTip("Add in-memory test data to the tree.")
+        self.addTestDataAction.setShortcut("Meta+A")
+        self.addTestDataAction.triggered.connect(self.addTestData)
+        self.addAction(self.addTestDataAction)
+
+        self.myTestAction = QtWidgets.QAction("My Test", self)
+        self.myTestAction.setToolTip("Ad-hoc test procedure for debugging.")
+        self.myTestAction.setShortcut("Meta+T")
+        self.myTestAction.triggered.connect(self.myTest)
+        self.addAction(self.myTestAction)
+
+
     def __setupMenus(self):
         """ Sets up the main menu.
         """
@@ -268,19 +308,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self.panelsMenu = self.viewMenu.addMenu("&Panels")
         self.tableHeadersMenu = self.viewMenu.addMenu("&Table Headers")
 
+        self.viewMenu.addSeparator()
+        self.viewMenu.addAction(self.showTestWalkDialogAction)
+
         ### Config Menu ###
+
         self.configMenu = menuBar.addMenu("Configure")
 
         app = self.argosApplication
         action = self.configMenu.addAction("&File Format Plugins...",
             lambda: self.execPluginsDialog("File Formats", app.rtiRegistry))
-        if DEBUGGING:
-            action.setShortcut(QtGui.QKeySequence("Ctrl+P"))
+        action.setShortcut(QtGui.QKeySequence("Ctrl+P"))
 
         action = self.configMenu.addAction("&Inspector Plugins...",
             lambda: self.execPluginsDialog("Inspectors", app.inspectorRegistry))
-        # if DEBUGGING:
-        #     action.setShortcut(QtGui.QKeySequence("Ctrl+P"))
 
         self.configMenu.addSeparator()
 
@@ -289,16 +330,9 @@ class MainWindow(QtWidgets.QMainWindow):
             lambda: self.openInExternalApp(argosConfigDirectory()))
 
         ### Window Menu ###
-        self.windowMenu = menuBar.addMenu("&Window")
 
-        # The action added to the menu in the repopulateWindowMenu method, which is called by
-        # the ArgosApplication object every time a window is added or removed.
-        self.activateWindowAction = QtWidgets.QAction(
-            "Window #{}".format(self.windowNumber), self,
-            triggered=self.activateAndRaise, checkable=True)
-        if self.windowNumber <= 9:
-            self.activateWindowAction.setShortcut(QtGui.QKeySequence(
-                "Alt+{}".format(self.windowNumber)))
+        # Will be populated in repopulateWindowMenu
+        self.windowMenu = menuBar.addMenu("&Window")
 
         ### Help Menu ###
         menuBar.addSeparator()
@@ -315,22 +349,20 @@ class MainWindow(QtWidgets.QMainWindow):
 
         helpMenu.addAction('&About...', self.about)
 
-        helpMenu.addSeparator()
-        helpMenu.addAction("Add Test Data", self.addTestData, "Shift+Ctrl+A")
-
-        helpMenu.addAction(
-            "Quick Walk &Current Node", lambda: self.walkCurrentRepoNode(False, False))
-        helpMenu.addAction(
-            "Quick Walk &All Nodes", lambda: self.walkAllRepoNodes(False, False), "Shift+Ctrl+Q")
-
-        helpMenu.addAction(
-            "Walk &Current Node", lambda: self.walkCurrentRepoNode(True, True))
-        helpMenu.addAction(
-            "Walk &All Nodes", lambda: self.walkAllRepoNodes(True, True), "Shift+Ctrl+W")
-
         if DEBUGGING:
+
             helpMenu.addSeparator()
-            helpMenu.addAction("&My Test", self.myTest, "Shift+Ctrl+T")
+            helpMenu.addAction(self.addTestDataAction)
+
+            helpMenu.addAction(
+                "Quick Walk &Current Node",
+                lambda: self.testWalkDialog.walkCurrentRepoNode(False, False), "Meta+Q")
+            helpMenu.addAction(
+                "Walk &All Nodes",
+                lambda: self.testWalkDialog.walkAllRepoNodes(True, True), "Meta+W")  # meta works on MacOs
+
+            helpMenu.addSeparator()
+            helpMenu.addAction(self.myTestAction)
 
 
 
@@ -596,7 +628,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             Emits the sigInspectorChanged(self.inspectorRegItem)
         """
-        logger.info("Setting inspector: {}".format(identifier))
+        logger.debug("Setting inspector: {}".format(identifier))
 
         # Use the identifier to find a registered inspector and set self.inspectorRegItem.
         # Then create an inspector object from it.
@@ -639,7 +671,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self._storeInspectorState(oldInspectorRegItem, oldInspector)
 
             oldInspector.sigShowMessage.disconnect(self.sigShowMessage)
-            oldInspector.sigUpdateFailed.disconnect(self.appendFailedTest)
+            oldInspector.sigUpdated.disconnect(self.testWalkDialog.setTestResult)
             oldInspector.finalize()
             self.wrapperLayout.removeWidget(oldInspector)
             oldInspector.deleteLater()
@@ -664,7 +696,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.collector.clearAndSetComboBoxes(self.inspector.axesNames())
 
                 self._inspector.sigShowMessage.connect(self.sigShowMessage)
-                self._inspector.sigUpdateFailed.connect(self.appendFailedTest)
+                self._inspector.sigUpdated.connect(self.testWalkDialog.setTestResult)
                 self.wrapperLayout.addWidget(self.inspector)
             finally:
                 self.collector.blockSignals(oldBlockState)
@@ -820,8 +852,6 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         lastItem, lastIndex = self.repoWidget.repoTreeView.expandPath(path)
         self.repoWidget.repoTreeView.setCurrentIndex(lastIndex)
-        if lastItem.nodePath != path:
-            raise IndexError("Path not found: {!r} (partialPath={!r})", path, lastItem.nodePath)
         return lastItem, lastIndex
 
 
@@ -883,18 +913,22 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         self._storeInspectorState(self.inspectorRegItem, self.inspector)
 
+        twLayoutCfg, twCfg = self.testWalkDialog.marshall()
+
         layoutCfg = dict(
             repoWidget = self.repoWidget.marshall(),
             configTreeHeaders =  self.configWidget.configTreeView.marshall(),
             collectorHeaders = self.collector.tree.marshall(),
             winGeom = base64.b64encode(getWidgetGeom(self)).decode('ascii'),
-            winState = base64.b64encode(getWidgetState(self)).decode('ascii')
+            winState = base64.b64encode(getWidgetState(self)).decode('ascii'),
+            testWalkDialog = twLayoutCfg,
         )
 
         cfg = dict(
             configWidget = self.configWidget.marshall(),
             curInspector = self.inspectorRegItem.identifier if self.inspectorRegItem else '',
             inspectors = self._inspectorStates,
+            testWalkDialog = twCfg,
             layout = layoutCfg,
         )
         return cfg
@@ -920,6 +954,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.repoWidget.unmarshall(layoutCfg.get('repoWidget', {}))
         self.configWidget.configTreeView.unmarshall(layoutCfg.get('configTreeHeaders', ''))
         self.collector.tree.unmarshall(layoutCfg.get('collectorHeaders', ''))
+
+        self.testWalkDialog.unmarshall(layoutCfg.get('testWalkDialog', {}),
+                                       cfg.get('testWalkDialog', {}))
 
         if 'winGeom' in layoutCfg:
             self.restoreGeometry(base64.b64decode(layoutCfg['winGeom']))
@@ -996,18 +1033,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @QtSlot()
     def myTest(self):
-        """ Function for small ad-hoc tests
+        """ Function for small ad-hoc tests that can be called from the menu.
         """
         logger.info("--------- myTest function called --------------------")
 
-        repoTreeView = self.repoWidget.repoTreeView
-        curItem, curIdx = repoTreeView.getCurrentItem()
+        invalidIndex = self.repoWidget.repoTreeView.model().index(-1, -1)
+        assert not invalidIndex.isValid()
+        self.repoWidget.repoTreeView.setCurrentIndex(invalidIndex)
 
-        #repoTreeView.closeItem(self.getRowCurrentIndex())
-        repoTreeView.collapse(curIdx)
-        repoTreeView.closeItem(curIdx)
 
-        #self.repoWidget.repoTreeView.closeCurrentItem2()
+        logger.info("--------- myTest function done --------------------")
+
 
     def __not__used(self, rootNodes):
         if rootNodes is None:
@@ -1065,7 +1101,6 @@ class MainWindow(QtWidgets.QMainWindow):
             skipPaths = []
 
 
-    @QtSlot()
     def addTestData(self):
         """ Adds test data to the repository
         """
@@ -1073,132 +1108,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.argosApplication.repo.insertItem(createArgosTestData())
 
 
-    @QtSlot()
-    def appendFailedTest(self):
-        """ Appends the currently selected path node to the list of failed tests.
-
-            This slot will be called whenever the inspector can't display the current array slice.
-            It also will be called whenever the current repo detail tab (properties, attributes,
-            etc.) fails to display itself.
+    def showTestWalkDialog(self):
+        """ Shows the test-walk dialog box
         """
-        if self._currentTestName is not None:
-            logger.critical("Appending failed test: {}".format(self._currentTestName))
-            self._failedTests.append(self._currentTestName)
+        self.testWalkDialog.show()
+        self.testWalkDialog.raise_()
 
 
-    def walkCurrentRepoNode(self, allInspectors: bool, allRepoTabs: bool):
-        """ Will visit all nodes below the currently selected node
-        """
-        curItem, _curIdx = self.repoWidget.repoTreeView.getCurrentItem()
-        logger.info("CurrentItem: {}".format(curItem.nodePath))
-        self.walkRepoNodes([curItem.nodePath], allInspectors, allRepoTabs)
-
-
-    def walkAllRepoNodes(self, allInspectors: bool, allRepoTabs: bool):
-        """ Will visit all nodes in the repo tree.
-
-            See walkRepoNodes docstring for more info
-        """
-        logger.debug("testWalkAllNodes")
-        repo = self.argosApplication.repo
-        nodePaths = [rti.nodePath for rti in repo.rootItems()]
-        logger.debug("All root items: {}".format(nodePaths))
-        self.walkRepoNodes(nodePaths, allInspectors, allRepoTabs)
-
-
-    def walkRepoNodes(self, nodePaths, allInspectors: bool, allRepoTabs: bool):
-        """ Will recursively walk through a list of repo tree nodes and all their descendants
-
-            Is useful for testing.
-
-            Args:
-                allInspectors: if True all inspectors are selected
-                allRepoTabs: if True all repo tabs (properties, attributes, quicklook) are selected.
-        """
-        _nodesVisited = 0
-
-        def visitNodes(index):
-            """ Visits all the nodes recursively.
-            """
-            assert index.isValid(), "sanity check"
-
-            nonlocal  _nodesVisited
-            _nodesVisited += 1
-
-            repoModel = self.repoWidget.repoTreeView.model()
-            item = repoModel.getItem(index)
-            logger.info("Visiting: {!r} ({} children)".
-                        format(item.nodePath, repoModel.rowCount(index)))
-
-            # Select index
-            if False and item.nodePath in skipPaths:
-                logger.warning("Skipping node during testing: {}".format(item.nodePath))
-                return
-            else:
-                logger.debug("Not skipping node during testing: {}".format(item.nodePath))
-
-            self.repoWidget.repoTreeView.setCurrentIndex(index)
-            self.repoWidget.repoTreeView.setExpanded(index, True)
-
-            if allRepoTabs:
-                # Try properties, attributes and quicklook tabs
-                for idx in range(self.repoWidget.tabWidget.count()):
-                    tabName = self.repoWidget.tabWidget.tabText(idx)
-                    self._currentTestName = "{:10}: {}".format(tabName, item.nodePath)
-                    logger.debug("Setting repo detail tab : {}".format(tabName))
-                    self.repoWidget.tabWidget.setCurrentIndex(idx)
-                    processEvents() # Cause Qt to update UI
-            else:
-                self._currentTestName = item.nodePath
-                processEvents()
-
-            if allInspectors:
-                for action in self.inspectorActionGroup.actions():
-                    self._currentTestName = "{:10}: {}".format(action.text(), item.nodePath)
-                    action.trigger()
-                    processEvents() # Cause Qt to update UI
-            else:
-                self._currentTestName = item.nodePath
-                processEvents()
-
-            for rowNr in range(repoModel.rowCount(index)):
-                childIndex = repoModel.index(rowNr, 0, parentIndex=index)
-                visitNodes(childIndex)
-
-            # TODO: see if we can close the node
-
-        # Actual body
-        # TODO: detail tabs must signal when they fail
-        # TODO: skip tests starting with underscore
-        # TODO: why is visitNodes a nested function?
-        # TODO: test walk dialog with progress bar and cancel button
-        logger.info("-------------- Running Tests ----------------")
-        logger.info("Visiting all nodes below: {}".format(nodePaths))
-
-        self._currentTestName = None
-        self._failedTests = []
-        try:
-            timeAtStart = time.perf_counter()
-            check_is_a_sequence(nodePaths) # prevent accidental iteration over strings.
-
-            for nodePath in nodePaths:
-                logger.info("Testing root node: {!r}".format(nodePath))
-
-                nodeItem, nodeIndex = self.selectRtiByPath(nodePath)
-                assert nodeItem is not None, "Test data not found, rootNode: {}".format(nodePath)
-                assert nodeIndex
-
-                visitNodes(nodeIndex)
-
-            duration = time.perf_counter() - timeAtStart
-            logger.info("Visited {} nodes in {:.1f} seconds ({:.1f} nodes/second)."
-                        .format(_nodesVisited, duration, _nodesVisited/duration))
-
-            logger.info("Number of failed tests during test walk: {}"
-                        .format(len(self._failedTests)))
-            for testName in self._failedTests:
-                logger.info("    {}".format(testName))
-        finally:
-            self._currentTestName = None
-            self._failedTests = []
-            logger.info("-------------- Test walk done ----------------")
