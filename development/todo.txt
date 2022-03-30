@@ -6,17 +6,17 @@ Argos philosophy:
     -   Argos shall remain a stand-alone tool and not become a part of other projects such as
         IPython or Spyder.
 
-    PyQtGraph:
-        - Mouse buttons
-        - Zoom buttons
-        - ExceptHook
-        - Handle Nans
-        - Handle masked arrays
-        - Warning QApplication created before...
+PyQtGraph:
+    - Mouse buttons
+    - Zoom buttons
+    - ExceptHook
+    - Handle Nans
+    - Handle masked arrays
+    - Warning QApplication created before...
 
-    PgColorBar:
-        - Default extent = 100 % of pixels
-        - Clear histogram when image is set to empty. (clear color scale?)
+PgColorBar:
+    - Default extent = 100 % of pixels
+    - Clear histogram when image is set to empty. (clear color scale?)
 
 
 TODO short term:
@@ -49,8 +49,6 @@ TODO short term:
 
         What if they have multiple dimension scales?
             /argos/mini_scanner_output/multiple_dimension_scales.h5
-
-        Remove warnings if all elements in the slice have the same value.
 
 
 TODO mid term:

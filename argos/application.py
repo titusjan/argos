@@ -466,7 +466,7 @@ class ArgosApplication(QtCore.QObject):
             self.saveSettings()
 
 
-    def loadFiles(self, filePatterns):
+    def loadFiles(self, fileNames):
         """ Loads files into the repository as repo tree items of class rtiClass.
             Auto-detects using the extensions when rtiClass is None
 
@@ -474,9 +474,8 @@ class ArgosApplication(QtCore.QObject):
                 For example filePatterns = ['my_file.nc, 'your_file.nc']
                 For example filePatterns = ['*.h5']
         """
-        for filePattern in filePatterns:
-            for fileName in glob.glob(filePattern):
-                self.repo.loadFile(fileName, rtiRegItem=None)
+        for fileName in fileNames:
+            self.repo.loadFile(fileName, rtiRegItem=None)
 
 
     def getRecentFiles(self):

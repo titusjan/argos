@@ -521,9 +521,10 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
 
         nodes = _auxGetByPath(path.split('/'), startItem, startIndex)
 
-        lastItem, _lastIndex = nodes[-1]
-        if lastItem.nodePath != path:  # When can this occur? Or is it a sanity check?
-            raise IndexError("Path not found: {!r} (partialPath={!r})", path, lastItem.nodePath)
+        # Disabled this check. It is triggered when path doesn't start with a slash
+        # lastItem, _lastIndex = nodes[-1]
+        # if lastItem.nodePath != path:  # When can this occur? Or is it a sanity check?
+        #     raise IndexError("Path not found: {!r} (partialPath={!r})", path, lastItem.nodePath)
 
         return nodes
 

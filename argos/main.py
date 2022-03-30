@@ -26,14 +26,14 @@ from __future__ import print_function
 # Therefore, we do all imports from the argos package in the functions here.
 
 import argparse
-import glob
 import logging
 import os
 import os.path
 import sys
 
-logging.captureWarnings(True)
+from glob import glob
 
+logging.captureWarnings(True)
 
 logger = logging.getLogger('argos')
 
@@ -42,7 +42,7 @@ logging.basicConfig(level='DEBUG', stream=sys.stderr,
                     format='%(asctime)s %(filename)25s:%(lineno)-4d : %(levelname)-8s: %(message)s')
 
 # We are not using **kwargs here so IDEs can see which parameters are expected.
-def browse(fileNames=None, *,
+def browse(filePatterns=None, *,
            select=None,
            inspectorFullName=None,
            qtStyle=None,
@@ -53,8 +53,9 @@ def browse(fileNames=None, *,
 
         Calls _browse() in a while loop to enable pseudo restarts in case the registry was edited.
 
-        :param fileNames: List of file names that will be added to the repository. If only one
-            file or directory is given it will be selected and expanded at start up.
+        :param filePatterns: List of file names (or unix glob patterns like *.h5) that will be
+            added to the repository. If only one file or directory is given it will be selected
+            and expanded at start up.
         :param select: a path of the repository item that will selected and expanded at start up,
             even if more than one file or directory is given on the command line.
         :param inspectorFullName: The full path name of the inspector that will be loaded
@@ -69,7 +70,7 @@ def browse(fileNames=None, *,
     while True:
         logger.info("Starting browse window...")
         exitCode = _browse(
-            fileNames=fileNames,
+            filePatterns=filePatterns,
             select=select,
             inspectorFullName=inspectorFullName,
             qtStyle=qtStyle,
@@ -85,7 +86,7 @@ def browse(fileNames=None, *,
 
 
 
-def _browse(fileNames=None, *,
+def _browse(filePatterns=None, *,
             select=None,
             inspectorFullName=None,
             qtStyle=None,
@@ -99,6 +100,7 @@ def _browse(fileNames=None, *,
     from argos.qt import QtWidgets, QtCore
     from argos.application import ArgosApplication
     from argos.repo.testdata import createArgosTestData
+    from argos.utils.dirs import normRealPath
     from argos.widgets.misc import setApplicationQtStyle, setApplicationStyleSheet
 
     argosApp = ArgosApplication(settingsFile)
@@ -125,15 +127,31 @@ def _browse(fileNames=None, *,
     setApplicationStyleSheet(styleSheet)
 
     # Load data in common repository before windows are created.
+
+    fileNames = [f for fp in filePatterns for f in glob(fp)]
+
     argosApp.loadFiles(fileNames)
 
     if addTestData:
         argosApp.repo.insertItem(createArgosTestData())
 
-    logger.debug("Selection path: {}".format(select))
     if select:
+        selectPath = select
+        logger.debug("Using selection path from the command line: {!r}".format(selectPath))
+    else:
+        if len(fileNames) == 1:
+            # Using normpath to remove trailing slashes.
+            selectPath = os.path.basename(normRealPath(fileNames[0]))
+            logger.debug("Selection path is the only file that is given on the command line: {!r}"
+                         .format(selectPath))
+        else:
+            selectPath = None
+            logger.debug("Not selecting any files (selection path = {!r})".format(selectPath))
+
+    if selectPath:
+        logger.debug("Selection path: {}".format(selectPath))
         for mainWindow in argosApp.mainWindows:
-            mainWindow.trySelectRtiByPath(select)
+            mainWindow.trySelectRtiByPath(selectPath)
 
     return argosApp.execute()
 
@@ -166,17 +184,17 @@ def main():
     aboutStr = "{} version: {}".format(PROJECT_NAME, VERSION)
     parser = argparse.ArgumentParser(description = aboutStr)
 
-    parser.add_argument('fileNames', metavar='FILE', nargs='*',
+    parser.add_argument('-v', '--version', action = 'store_true',
+        help="Prints the program version and exits")
+
+    parser.add_argument('filePatterns', metavar='FILE', nargs='*',
         help="""Files or directories that will be loaded at start up. Accepts unix-like glob
                 patterns, even on Windows. E.g.: 'argos *.h5' opens all files with the h5 extension
                 in the current directory.""")
 
-    parser.add_argument('-o', '--open', dest='openFile',
-        help="""File or directory that will be loaded and selected at start-up.""")
-
     parser.add_argument('-s', '--select', dest='selectPath',
         help="""Full path name of an item in the data tree that will be selected at start-up.
-                E.g. 'file/var/fieldname'. Overrides -o option.""")
+                E.g. 'file/var/fieldname'.""")
 
     parser.add_argument('-i', '--inspector', dest='inspector',
         help="""The name of the inspector that will be opened at start up. E.g. Table""")
@@ -184,34 +202,37 @@ def main():
     parser.add_argument('--list-inspectors', dest='list_inspectors', action = 'store_true',
         help="""Prints a list of available inspectors for the -i option, and exits.""")
 
-    parser.add_argument('--qt-style', dest='qtStyle', help='Qt style. E.g.: fusion')
+    cfgGroup = parser.add_argument_group(
+        "config options", description="Options related to style and configuration.")
 
-    parser.add_argument('--qss', dest='styleSheet',
+    cfgGroup.add_argument('--qt-style', dest='qtStyle', help='Qt style. E.g.: fusion')
+
+    cfgGroup.add_argument('--qss', dest='styleSheet',
                         help="Name of Qt Style Sheet file. If not set, the Argos default style "
                              "sheet will be used.")
 
-    parser.add_argument('-c', '--config-file', metavar='FILE', dest='settingsFile',
+    cfgGroup.add_argument('-c', '--config-file', metavar='FILE', dest='settingsFile',
         help="Configuration file with persistent settings. When using a relative path the settings "
              "file is loaded/saved to the argos settings directory.")
 
-    parser.add_argument('-d', '--debugging-mode', dest='debugging', action = 'store_true',
-        help="Run Argos in debugging mode. Useful during development.")
-
-    parser.add_argument('--add-test-data', dest='addTestData', action = 'store_true',
-        help="Adds some in-memory test data. Useful during development.")
-
-    parser.add_argument('--log-config', dest='logConfigFileName',
+    cfgGroup.add_argument('--log-config', metavar='FILE', dest='logConfigFileName',
                         help='Logging configuration file. If not set a default will be used.')
 
-    parser.add_argument('-l', '--log-level', dest='log_level', default='',
+    cfgGroup.add_argument('-l', '--log-level', dest='log_level', default='',
         help="Log level. If set, only log messages with a level higher or equal than this will be "
              "printed to screen (stderr). Overrides the log level of the StreamHandlers in the "
              "--log-config file. Does not alter the log level of log handlers that write to a "
              "file.",
         choices=('debug', 'info', 'warning', 'error', 'critical'))
 
-    parser.add_argument('--version', action = 'store_true',
-        help="Prints the program version and exits")
+    devGroup = parser.add_argument_group(
+        "developer options", description="Options that are mainly useful for Argos developers.")
+
+    devGroup.add_argument('-d', '--debugging-mode', dest='debugging', action = 'store_true',
+        help="Run Argos in debugging mode. Useful during development.")
+
+    devGroup.add_argument('--add-test-data', dest='addTestData', action = 'store_true',
+        help="Adds some in-memory test data. Useful during development.")
 
     args = parser.parse_args(remove_process_serial_number(sys.argv[1:]))
 
@@ -261,29 +282,10 @@ def main():
     logger.debug("Setting numpy line width to {} characters".format(NUMPY_LINE_WIDTH))
     np.set_printoptions(linewidth=NUMPY_LINE_WIDTH)
 
-    # Process -o option. Don't do this in browse. In the future we might be able to call browse()
-    # from IPython. Decide at that point how to best pass these parameters.
-    fileNames = []
-    for fileName in args.fileNames:
-        fileNames.extend(glob.glob(fileName))
-    if args.openFile and args.openFile not in fileNames:
-        fileNames.insert(0, args.openFile)
-
-    if args.selectPath:
-        selectPath = args.selectPath
-        logger.debug("Using selection path from the command line: {!r}".format(selectPath))
-    else:
-        if len(fileNames) == 1:
-            selectPath = os.path.basename(os.path.normpath(fileNames[0]))  # Using normpath to remove trailing slashes.
-            logger.debug("Selection path is the only file that is given on the command line: {!r}".format(selectPath))
-        else:
-            selectPath = None
-            logger.debug("Not selecting any files (selection path = {!r})".format(selectPath))
-
     # Browse will create an ArgosApplication with one MainWindow
-    browse(fileNames = fileNames,
+    browse(filePatterns = args.filePatterns,
            inspectorFullName=args.inspector,
-           select=selectPath,
+           select=args.selectPath,
            qtStyle=qtStyle,
            styleSheet=styleSheet,
            settingsFile=args.settingsFile,

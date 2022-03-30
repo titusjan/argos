@@ -22,12 +22,12 @@ import time
 from typing import Optional, Tuple, List
 
 from argos.qt import Qt, QtCore, QtGui, QtWidgets, QtSlot
+from argos.qt.misc import getWidgetGeom, getWidgetState
 from argos.widgets.constants import MONO_FONT, FONT_SIZE, COLOR_ERROR
 from argos.widgets.misc import processEvents
 from argos.utils.cls import check_is_a_sequence
 from argos.utils.config import ConfigDict
-from qt.misc import getWidgetGeom, getWidgetState
-from utils.misc import wrapHtmlColor
+from argos.utils.misc import wrapHtmlColor
 
 logger = logging.getLogger(__name__)
 

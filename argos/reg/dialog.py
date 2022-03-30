@@ -30,9 +30,9 @@ from argos.qt.shortcutedit import ShortCutEditor
 from argos.reg.basereg import BaseRegistryModel, BaseRegistry, RegType
 from argos.reg.tabview import TableEditWidget
 from argos.utils.cls import check_class
+from argos.utils.misc import wrapHtmlColor
 from argos.widgets.constants import MONO_FONT, FONT_SIZE, COLOR_ERROR
 #from argos.widgets.constants import QCOLOR_REGULAR, QCOLOR_NOT_IMPORTED, QCOLOR_ERROR
-from utils.misc import wrapHtmlColor
 
 logger = logging.getLogger(__name__)
 
