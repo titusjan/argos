@@ -286,7 +286,8 @@ class H5pyScalarRti(BaseRti):
     def missingDataValue(self):
         """ Returns the value to indicate missing data. None if no missing-data value is specified.
         """
-        if self._h5Dataset.size > MAX_QUICK_LOOK_SIZE:
+        # For empty datasets, self._h5Dataset.size can be None
+        if self._h5Dataset.size is not None and self._h5Dataset.size > MAX_QUICK_LOOK_SIZE:
             return "{} of {}".format(self.typeName, self.summary)
         else:
             return dataSetMissingValue(self._h5Dataset)
