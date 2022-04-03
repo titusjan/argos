@@ -439,7 +439,7 @@ class NcdfVariableRti(BaseRti):
         if  product > MAX_QUICK_LOOK_SIZE:
             return "{} of {}".format(self.typeName, self.summary)
         else:
-            return super(NcdfVariableRti, self).quickLook
+            return super(NcdfVariableRti, self).quickLook(width)
 
 
     def _fetchAllChildren(self):
