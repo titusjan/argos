@@ -552,7 +552,9 @@ class H5pyDatasetRti(BaseRti):
             Passes the index through to the underlying dataset.
             Converts to a masked array using the missing data value as fill_value
         """
-        return maskedEqual(self._h5Dataset.__getitem__(index), self.missingDataValue)
+        # Some old HDF5 files return bytes objects when containing string data. Convert to array.
+        array = np.array(self._h5Dataset.__getitem__(index))
+        return maskedEqual(array, self.missingDataValue)
 
 
     @property
