@@ -13,17 +13,17 @@ def main():
     timeDim = rootgrp.createDimension("my_long_time_dim_name", 10000)
     lonDim = rootgrp.createDimension("lon", 2)
     latDim = rootgrp.createDimension("lat", 2)
-    
-    
+
+
     var = rootgrp.createVariable("my_var", "c",
                            ("my_long_time_dim_name", "lon", "lat"))
-    
-    print var.shape
+
+    print(var.shape)
     var[:] = 'p'
-    
+
     rootgrp.close()
-    
-    
+
+
 
 
 if __name__ == '__main__':

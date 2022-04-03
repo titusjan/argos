@@ -5,7 +5,7 @@ import h5py
 
 
 def main():
-    
+
     with h5py.File("string.hdf5", "r") as root:
         ds = root['fixed_len_ascii_ds']
         print(type(ds[:]))
@@ -18,5 +18,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
-    
+
