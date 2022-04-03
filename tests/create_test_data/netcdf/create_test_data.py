@@ -63,24 +63,6 @@ def createNetCdfTestData():
 
 
 
-def createHdfTestData():
-    """ Create files with the python h5py module.
-    """
-    import h5py
-
-    # Emtpy datasets
-    # See https://docs.h5py.org/en/latest/high/dataset.html#creating-and-reading-empty-or-null-datasets-and-attributes
-    # and https://github.com/h5py/h5py/issues/279#issuecomment-15313062 for a possible use case
-    with h5py.File('empty.h5', 'w') as h5Root:
-        ds = h5Root.create_dataset("emptyDataset", data=h5py.Empty("f"))
-        ds.attrs['Description'] = 'An empty dataset'
-
-        # Broken in 2.10 but was fixed in 3.0 https://github.com/h5py/h5py/issues/1540
-        ds = h5Root.create_dataset("hasEmptyAttribute", data=np.arange(5))
-        ds.attrs['Description'] = 'An regular dataset with an empty attribute'
-        ds.attrs["emptyAttr"] = h5py.Empty(np.float32)
-
-
 
 def createTestData(outputDir):
     """ Creates test data files in output directory
@@ -89,17 +71,7 @@ def createTestData(outputDir):
     oldDir = os.getcwd()
     os.chdir(outputDir)
     try:
-        try:
-            createNetCdfTestData()
-        except Exception as ex:
-            logger.error("Error while creating NetCDF data. Aborted")
-            logger.exception(ex)
-
-        try:
-            createHdfTestData()
-        except Exception as ex:
-            logger.error("Error while creating HDF5 data. Aborted")
-            logger.exception(ex)
+        createNetCdfTestData()
 
     finally:
         os.chdir(oldDir)

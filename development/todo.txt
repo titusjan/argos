@@ -33,12 +33,12 @@ TODO short term:
 
     JSON files in text/table inspector. Yaml files.
 
+    HDF5 test data
+
     Bugs and issues
     ---------------
         IrisCC motor data units is in meters while attribute is in millimeters.
         Probably because it is a structured array with to (m) units
-
-        Using "argos ." doesn't expand the directory (at least on Windows)
 
         Open/close item doesn't work with memoryctis.MappingRti (and perhaps other memory RTIs)
             After closing and opening, the child nodes have disappeared.
