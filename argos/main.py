@@ -48,10 +48,9 @@ def browse(filePatterns=None, *,
            qtStyle=None,
            styleSheet=None,
            settingsFile=None,
-           addTestData=False):
+           addTestData=False,
+           runTestWalk=False):
     """ Opens the main window(s) for the persistent settings and executes the application.
-
-        Calls _browse() in a while loop to enable pseudo restarts in case the registry was edited.
 
         :param filePatterns: List of file names (or unix glob patterns like *.h5) that will be
             added to the repository. If only one file or directory is given it will be selected
@@ -63,20 +62,27 @@ def browse(filePatterns=None, *,
         :param styleSheet: a path to an optional Qt Cascading Style Sheet.
         :param settingsFile: file with persistent settings. If None a default will be used.
         :param addTestData: if True, some in-memory test data is added to the repository tree.
+        :param runTestWalk: if True, all nodes are visited and the program exits.
     """
     # Import in functions. See comments at the top for more details
     from argos.info import EXIT_CODE_RESTART
 
+    # Creates and runs an ArgosApplication in a while loop to 'restart' application when the
+    # plugin registry was edited.
     while True:
         logger.info("Starting browse window...")
-        exitCode = _browse(
+        argosApplication = createArgosApp(
             filePatterns=filePatterns,
             select=select,
             inspectorFullName=inspectorFullName,
             qtStyle=qtStyle,
             styleSheet=styleSheet,
             settingsFile=settingsFile,
-            addTestData=addTestData)
+            addTestData=addTestData,
+            runTestWalk=runTestWalk
+        )
+
+        exitCode = argosApplication.execute()
 
         logger.info("Argos finished with exit code: {}".format(exitCode))
         if exitCode != EXIT_CODE_RESTART:
@@ -86,14 +92,21 @@ def browse(filePatterns=None, *,
 
 
 
-def _browse(filePatterns=None, *,
-            select=None,
-            inspectorFullName=None,
-            qtStyle=None,
-            styleSheet=None,
-            settingsFile=None,
-            addTestData=False):
-    """ Execute browse a single time
+def createArgosApp(filePatterns=None, *,
+                   select=None,
+                   inspectorFullName=None,
+                   qtStyle=None,
+                   styleSheet=None,
+                   settingsFile=None,
+                   addTestData=False,
+                   runTestWalk=False):
+    """ Creates an Argos application, including window(s) and loads the data.
+
+       The Argos application will also create a QtApplication. You will have to call
+       argosApp.execute() on the returned Argos application to start the Qt event loop.
+
+        Returns:
+            The newly created ArgosApplication object.
     """
     # Import in functions. See comments at the top for more details.
     from argos.info import DEBUGGING
@@ -103,7 +116,7 @@ def _browse(filePatterns=None, *,
     from argos.utils.dirs import normRealPath
     from argos.widgets.misc import setApplicationQtStyle, setApplicationStyleSheet
 
-    argosApp = ArgosApplication(settingsFile)
+    argosApp = ArgosApplication(settingsFile, runTestWalk=runTestWalk)
     argosApp.loadSettings(inspectorFullName)  # TODO: call in constructor?
 
     try:
@@ -153,7 +166,7 @@ def _browse(filePatterns=None, *,
         for mainWindow in argosApp.mainWindows:
             mainWindow.trySelectRtiByPath(selectPath)
 
-    return argosApp.execute()
+    return argosApp
 
 
 def printInspectors(settingsFile):
@@ -234,6 +247,10 @@ def main():
     devGroup.add_argument('--add-test-data', dest='addTestData', action = 'store_true',
         help="Adds some in-memory test data. Useful during development.")
 
+    devGroup.add_argument('--run-test-walk', dest='runTestWalk', action = 'store_true',
+        help="Walks through all the nodes in the repository tree and exits. "
+             "The exit code 1 if any of the nodes failed to display.")
+
     args = parser.parse_args(remove_process_serial_number(sys.argv[1:]))
 
     initLogging(args.logConfigFileName, args.log_level)
@@ -289,7 +306,8 @@ def main():
            qtStyle=qtStyle,
            styleSheet=styleSheet,
            settingsFile=args.settingsFile,
-           addTestData=args.addTestData)
+           addTestData=args.addTestData,
+           runTestWalk=args.runTestWalk)
     logger.info('Done {}'.format(PROJECT_NAME))
 
 if __name__ == "__main__":

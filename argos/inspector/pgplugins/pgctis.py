@@ -307,7 +307,7 @@ class AbstractRangeCti(GroupCti):
             Does nothing when self.getRefreshBlocked() returns True.
         """
         if self.getRefreshBlocked():
-            logger.debug("refreshMinMax blocked for {}".format(self.nodeName))
+            #logger.debug("refreshMinMax blocked for {}".format(self.nodeName))
             return
 
         self._forceRefreshMinMax()

@@ -108,8 +108,9 @@ def qApplicationSingleton():
 class ArgosApplication(QtCore.QObject):
     """ The application singleton which holds global state.
     """
-    def __init__(self, settingsFile=None, setExceptHook=True):
+    def __init__(self, settingsFile=None, setExceptHook=True, runTestWalk=False):
         """ Constructor
+
             :param settingsFile: Config file from which the persistent settings are loaded.
 
             :param setExceptHook: Sets the global sys.except hook so that Qt shows a dialog box
@@ -120,8 +121,12 @@ class ArgosApplication(QtCore.QObject):
                 log message is displayed). The practice of swallowing exceptions fosters bad
                 programming IHMO as it is easy to miss errors. I strongly recommend that you set
                 the setExceptHook to True.
+
+            :param runTestWalk: if True, all nodes are visited and the program exits.
         """
         super(ArgosApplication, self).__init__()
+
+        self._runTestWalk = runTestWalk
 
         if not settingsFile:
             settingsFile = ArgosApplication.defaultSettingsFile()
@@ -156,13 +161,13 @@ class ArgosApplication(QtCore.QObject):
         self.windowActionGroup.setExclusive(True)
 
         # Call setup when the event loop starts.
-        QtCore.QTimer.singleShot(0, self.setup)
+        QtCore.QTimer.singleShot(0, self.onEventLoopStarted)
 
 
-    def setup(self):
-        """ Called once directly after the event loop starts.
+    def onEventLoopStarted(self):
+        """ Is called as soon as the event loop has started.
         """
-        logger.debug("ArgosApplication.setup called")
+        logger.debug("ArgosApplication.onEventLoopStarted called")
 
         # Raising all window because in OS-X window 0 is not shown.
         #self.raiseAllWindows()
@@ -170,6 +175,14 @@ class ArgosApplication(QtCore.QObject):
         actions = self.windowActionGroup.actions()
         if actions:
             actions[0].trigger()
+
+        if self._runTestWalk:
+            testWalkDialog = self._mainWindows[0].testWalkDialog
+            testWalkDialog.walkAllRepoNodes(allInspectors=True, allDetailTabs=True)
+            allRes = [success for (success, _) in testWalkDialog.results]
+            allPassed = all(success for (success, _) in testWalkDialog.results)
+            if not DEBUGGING:
+                sys.exit(0 if allPassed else 1)
 
 
     @classmethod

@@ -17,6 +17,7 @@
 """ Contains the TestWalkDialog widget.
 """
 import base64
+import copy
 import logging
 import time
 from typing import Optional, Tuple, List
@@ -144,6 +145,13 @@ class TestWalkDialog(QtWidgets.QDialog):
 
 
     @property
+    def results(self):
+        """ Get a copy of the test results
+        """
+        return copy.deepcopy(self._results)
+
+
+    @property
     def repoWidget(self):
         """ The repoWidget of the main window
         """
@@ -194,14 +202,6 @@ class TestWalkDialog(QtWidgets.QDialog):
         logger.debug("Closing TestWalkDialog")
         self.abortTestWalk()
         super().reject()
-
-
-    def clear(self):
-        """ Clear all test results and current test name.
-        """
-        self._currentTestName = None
-        self._results = None
-        self.editor.clear()
 
 
     def _updateButtons(self):
@@ -381,7 +381,6 @@ class TestWalkDialog(QtWidgets.QDialog):
             logger.debug("Stopping test walk")
             self._isOngoing = False
             self._currentTestName = None
-            self._results = []
             self._updateButtons()
             if self._isOngoing:
                 self.repoTreeView.setCurrentIndex(originalIndex)

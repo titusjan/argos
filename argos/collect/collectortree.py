@@ -23,6 +23,7 @@ import warnings
 
 import numpy as np
 
+from argos.info import DEBUGGING
 from argos.qt import Qt, QtCore, QtGui, QtWidgets, QtSlot
 from argos.qt.togglecolumn import ToggleColumnTreeView
 from argos.widgets.constants import COLLECTOR_TREE_ICON_SIZE
@@ -132,16 +133,17 @@ class CollectorTree(ToggleColumnTreeView):
             extraWidthPerSpinBox = remainingTotal * normSpinBoxWeights
             newSpinBoxWidths = spinBoxSizeHints + extraWidthPerSpinBox
 
-        logger.debug("Dividing the remaining width over the spinboxes.")
-        logger.debug("Header width               : {}".format(headerWidth))
-        logger.debug("Column widths              : {}".format(colWidths))
-        logger.debug("Width of non-spinboxes     : {}".format(nonSpinBoxTotalWidth))
-        logger.debug("Total size hint spinboxes  : {}".format(spinBoxTotalSizeHints))
-        logger.debug("Remaining width to divide  : {}".format(remainingTotal))
-        logger.debug("Spinbox maximums           : {}".format(spinBoxMaximums))
-        logger.debug("Normalized spinbox weights : {}".format(normSpinBoxWeights))
-        logger.debug("Extra width per spin box   : {}".format(extraWidthPerSpinBox))
-        logger.debug("New spinbox widths         : {}".format(newSpinBoxWidths))
+        if DEBUGGING:  # Only during debugging to reduce devops log file size.
+            logger.debug("Dividing the remaining width over the spinboxes.")
+            logger.debug("Header width               : {}".format(headerWidth))
+            logger.debug("Column widths              : {}".format(colWidths))
+            logger.debug("Width of non-spinboxes     : {}".format(nonSpinBoxTotalWidth))
+            logger.debug("Total size hint spinboxes  : {}".format(spinBoxTotalSizeHints))
+            logger.debug("Remaining width to divide  : {}".format(remainingTotal))
+            logger.debug("Spinbox maximums           : {}".format(spinBoxMaximums))
+            logger.debug("Normalized spinbox weights : {}".format(normSpinBoxWeights))
+            logger.debug("Extra width per spin box   : {}".format(extraWidthPerSpinBox))
+            logger.debug("New spinbox widths         : {}".format(newSpinBoxWidths))
 
         # Divide the remaining width over the spin boxes using the log(nrElements) as weights.
         # If the remaining total is less than zero, just set the widths to the size hints (a
