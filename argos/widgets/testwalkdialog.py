@@ -368,7 +368,6 @@ class TestWalkDialog(QtWidgets.QDialog):
                 assert nodeIndex
 
                 progressRange = (numVisited / len(nodePaths), (numVisited+1) / len(nodePaths))
-                logger.critical("Progress range: {}".format(progressRange))
                 nodesVisited += self._visitNodes(nodeIndex, progressRange)
 
             if self._isOngoing:

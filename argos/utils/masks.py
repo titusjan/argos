@@ -23,6 +23,7 @@ TODO: what are these issues again?
 """
 from __future__ import division, print_function
 import logging
+import warnings
 
 import numpy as np
 import numpy.ma as ma
@@ -312,7 +313,11 @@ def _maskedNanPercentile(maskedArray, percentiles, *args, **kwargs):
     validData = awm.data[~maskIdx]
 
     if len(validData) >= 1:
-        result = np.nanpercentile(validData, percentiles, *args, **kwargs)
+        with warnings.catch_warnings():
+            # Suppress warnings when stepData consists of only infinite data
+            warnings.simplefilter("ignore")
+            result = np.nanpercentile(validData, percentiles, *args, **kwargs)
+
     else:
         # If np.nanpercentile on an empty list only returns a single Nan. We correct this here.
         result = len(percentiles) * [np.nan]

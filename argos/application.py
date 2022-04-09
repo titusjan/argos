@@ -179,7 +179,6 @@ class ArgosApplication(QtCore.QObject):
         if self._runTestWalk:
             testWalkDialog = self._mainWindows[0].testWalkDialog
             testWalkDialog.walkAllRepoNodes(allInspectors=True, allDetailTabs=True)
-            allRes = [success for (success, _) in testWalkDialog.results]
             allPassed = all(success for (success, _) in testWalkDialog.results)
             if not DEBUGGING:
                 sys.exit(0 if allPassed else 1)
