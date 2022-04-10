@@ -312,53 +312,6 @@ class PandasDataFrameRti(AbstractPandasNDFrameRti):
 
 
 
-class PandasPanelRti(AbstractPandasNDFrameRti):
-    """ Contains a Pandas Panel
-
-        Panel is deprecated and has been fully removed in Pandas 0.25.0.
-        For N-D labeled data structures, please use xarray. See
-        https://pandas.pydata.org/pandas-docs/version/0.25/whatsnew/v0.25.0.html
-    """
-    @property
-    def _isStructured(self):
-        """ Returns True, because Panels consist of DataFrames
-        """
-        return True
-
-
-    @property
-    def dimensionNames(self):
-        """ Returns a list with names that correspond to every NDFrame dimension.
-            For DataFrames this is: ['items', 'major_axis', 'minor_axis'], which correspond to the
-            data frames itself, the rows and the columns of the underlying DataFrames.
-        """
-        return ['items', 'major_axis', 'minor_axis']
-
-
-    def _fetchAllChildren(self):
-        """ Fetches children items.
-
-            If this is stand-alone Panel the index, column etc are added as PandasIndexRti obj.
-        """
-        assert self.isSliceable, "No underlying pandas object: self._ndFrame is None"
-
-        childItems = []
-
-        for subName in self._ndFrame.items:
-            childItem = PandasDataFrameRti(self._ndFrame[subName], nodeName=subName,
-                                           fileName=self.fileName, iconColor=self.iconColor,
-                                           standAlone=False)
-            childItems.append(childItem)
-
-        if self._standAlone:
-            childItems.append(self._createIndexRti(self._ndFrame.items, 'items'))
-            childItems.append(self._createIndexRti(self._ndFrame.major_axis, 'major_axis'))
-            childItems.append(self._createIndexRti(self._ndFrame.minor_axis, 'minor_axis'))
-
-        return childItems
-
-
-
 class PandasCsvFileRti(PandasDataFrameRti):
     """ Reads a comma-separated file (CSV) into a Pandas DataFrame.
     """

@@ -111,7 +111,6 @@ def makeUniformNoise():
 def createArgosTestData():
     """ Makes various test data sets for debugging
     """
-
     myDict = {}
     myDict['name'] = 'Pac Man'
     myDict['age'] = 34
@@ -184,30 +183,33 @@ def createArgosTestData():
 
     mappingRti = MappingRti(myDict, nodeName="myDict", iconColor=ICON_COLOR_MEMORY)
 
-    # New axis at the beginning and end.
-    mappingRti.insertChild(SyntheticArrayRti(
-        'newaxis heading 2D', fun=lambda: makeConcentricCircles()[np.newaxis, np.newaxis, ...]))
-    mappingRti.insertChild(SyntheticArrayRti(
-        'newaxis trailing 2D', fun=lambda: makeConcentricCircles()[..., np.newaxis, np.newaxis]))
+    # If set, the data below is added directly to the MappingRti instead to the underlying
+    # dictionary. However, when you open and close the RTI in the tree, this data is lost.
+    # Therefore, we turn it off for now and perhaps solve this problem later.
+    includeVolatileData = False
 
-    mappingRti.insertChild(SyntheticArrayRti(
-        'newaxis heading 1D', fun=lambda: makeConcentricCircles()[50,:][np.newaxis, np.newaxis, :]))
+    if includeVolatileData:
+        # New axis at the beginning and end.
+        mappingRti.insertChild(SyntheticArrayRti(
+            'newaxis heading 2D', fun=lambda: makeConcentricCircles()[np.newaxis, np.newaxis, ...]))
+        mappingRti.insertChild(SyntheticArrayRti(
+            'newaxis trailing 2D', fun=lambda: makeConcentricCircles()[..., np.newaxis, np.newaxis]))
 
-    mappingRti.insertChild(SyntheticArrayRti(
-        'newaxis trailing 1D', fun=lambda: makeConcentricCircles()[50,:][:, np.newaxis, np.newaxis]))
+        mappingRti.insertChild(SyntheticArrayRti(
+            'newaxis heading 1D', fun=lambda: makeConcentricCircles()[50,:][np.newaxis, np.newaxis, :]))
 
-    # Synthetic images for testing color maps.
-    colorMapRti = mappingRti.insertChild(MappingRti({}, nodeName="test color maps"))
-    colorMapRti.insertChild(SyntheticArrayRti('concentric circles', fun=makeConcentricCircles))
-    colorMapRti.insertChild(SyntheticArrayRti('ramp', fun=makeRamp))
-    colorMapRti.insertChild(SyntheticArrayRti('arctan2', fun=makeArcTan2))
-    colorMapRti.insertChild(SyntheticArrayRti('spiral', fun=makeSpiral))
-    colorMapRti.insertChild(SyntheticArrayRti('sine product', fun=makeSineProduct))
-    colorMapRti.insertChild(SyntheticArrayRti('uniform noise', fun=makeUniformNoise))
+        mappingRti.insertChild(SyntheticArrayRti(
+            'newaxis trailing 1D', fun=lambda: makeConcentricCircles()[50,:][:, np.newaxis, np.newaxis]))
 
-    with warnings.catch_warnings():
-        # Ignore future warnins about Panel
-        warnings.simplefilter(action='ignore', category=FutureWarning)
+        # Synthetic images for testing color maps.
+        colorMapRti = mappingRti.insertChild(MappingRti({}, nodeName="test color maps"))
+        colorMapRti.insertChild(SyntheticArrayRti('concentric circles', fun=makeConcentricCircles))
+        colorMapRti.insertChild(SyntheticArrayRti('ramp', fun=makeRamp))
+        colorMapRti.insertChild(SyntheticArrayRti('arctan2', fun=makeArcTan2))
+        colorMapRti.insertChild(SyntheticArrayRti('spiral', fun=makeSpiral))
+        colorMapRti.insertChild(SyntheticArrayRti('sine product', fun=makeSineProduct))
+        colorMapRti.insertChild(SyntheticArrayRti('uniform noise', fun=makeUniformNoise))
+
         addPandasTestData(mappingRti)
 
     return mappingRti
@@ -238,13 +240,6 @@ def addPandasTestData(rti):
                        'D' : np.random.randn(8)})
 
     pandsRti.insertChild(PandasDataFrameRti(df, 'df', iconColor=ICON_COLOR_PANDAS))
-
-    if versionInfo < (0, 25, 0):
-        # Panels are deprecated and completely removed from Pandas 0.25.0
-        panel = pd.Panel(np.random.randn(2, 5, 4), items=['Item1', 'Item2'],
-                         major_axis=pd.date_range('1/1/2000', periods=5),
-                         minor_axis=['A', 'B', 'C', 'D'])
-        pandsRti.insertChild(PandasPanelRti(panel, 'panel', iconColor=ICON_COLOR_PANDAS))
 
     # Multi index
     arrays = [['bar', 'bar', 'baz', 'baz', 'foo', 'foo', 'qux', 'qux'],
