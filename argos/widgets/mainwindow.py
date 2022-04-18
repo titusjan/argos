@@ -1045,3 +1045,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.testWalkDialog.raise_()
 
 
+    @QtSlot()
+    def myTest(self):
+        """ Function for small ad-hoc tests that can be called from the menu.
+        """
+        logger.info("--------- myTest function called --------------------")
+
+        logger.info("--------- myTest function done --------------------")
+
+
