@@ -55,8 +55,15 @@ class TestWalkDialog(QtWidgets.QDialog):
 
         self._mainWindow = mainWindow
 
+        self._iterator = None
         self._currentTestName: Optional[str] = None
         self._results: List[Tuple[bool, str]] = []
+
+        self._nextStepTimer = QtCore.QTimer(self)
+        self._nextStepTimer.setInterval(0) # Start when event loop has started
+        self._nextStepTimer.setSingleShot(True)
+        self._nextStepTimer.timeout.connect(self.doWalk, type=Qt.QueuedConnection)
+        # self._nextStepTimer.start()
 
         self.walkCurrentAction = QtWidgets.QAction("Walk Current Item", self)
         self.walkCurrentAction.setToolTip("Does a test walk on the currently selected tree item.")
@@ -217,7 +224,7 @@ class TestWalkDialog(QtWidgets.QDialog):
         """
         self.progressBar.setValue(int(round(fraction * 100)))
         logger.debug("Progress fraction {:8.3f}".format(fraction))
-        processEvents()
+        #processEvents()
 
 
     @QtSlot(int)
@@ -335,8 +342,61 @@ class TestWalkDialog(QtWidgets.QDialog):
 
             Is useful for testing.
         """
+        logger.critical("walkRepoNodes start")
+        # for testName in self._iterRepoNodes(nodePaths):
+        #     logger.critical("  test name =  = {}".format(testName))
+        #     processEvents()
+
+        # iterator = self._iterRepoNodes(nodePaths)
+        # while True:
+        #     try:
+        #         res = next(iterator)
+        #         logger.debug("Result: {}".format(res))
+        #     except StopIteration as ex:
+        #         logger.debug("Stop iteration")
+        #         break
+
+        if self._iterator is None:
+            self._iterator = self._iterRepoNodes(nodePaths)
+
+        self.doWalk()
+
+
+
+    def doWalk(self):
+
+        try:
+            logger.debug("Walking the next step")
+            res = next(self._iterator)
+            logger.debug("Result: {}".format(res))
+        except StopIteration as ex:
+            logger.debug("Stop iteration")
+            self._iterator = None
+        else:
+            #QtCore.QTimer.singleShot(0, self.doWalk)
+            self._nextStepTimer.start()
+
+        logger.critical("walkRepoNodes stop")
+
+
+    # def doWalk(self):
+    #
+    #     while True:
+    #         try:
+    #             res = next(self._iterator)
+    #             logger.debug("Result: {}".format(res))
+    #         except StopIteration as ex:
+    #             logger.debug("Stop iteration")
+    #             self._iterator = None
+    #             break
+    #
+    #     logger.critical("walkRepoNodes stop")
+
+
+    def _iterRepoNodes(self, nodePaths):  # TODO: rename to _iterTests?
         logger.info("-------------- Running Tests ----------------")
         logger.debug("Visiting all nodes below: {}".format(nodePaths))
+
 
         self.show()
         self._currentTestName = None
@@ -368,7 +428,10 @@ class TestWalkDialog(QtWidgets.QDialog):
                 assert nodeIndex
 
                 progressRange = (numVisited / len(nodePaths), (numVisited+1) / len(nodePaths))
-                nodesVisited += self._visitNodes(nodeIndex, progressRange)
+                #nodesVisited += self._visitNodes(nodeIndex, progressRange)
+                for testName in self._visitNodes(nodeIndex, progressRange):
+                    yield testName
+
 
             if self._isOngoing:
                 self._setProgressFraction(1.0)
@@ -386,7 +449,7 @@ class TestWalkDialog(QtWidgets.QDialog):
             logger.info("-------------- Test walk done ----------------")
 
 
-    def _visitNodes(self, index: QtCore.QModelIndex, progressRange: Tuple[float, float]) -> int:
+    def _visitNodes(self, index: QtCore.QModelIndex, progressRange: Tuple[float, float]):
         """ Helper function that visits all the nodes recursively.
 
             Args:
@@ -419,7 +482,7 @@ class TestWalkDialog(QtWidgets.QDialog):
             self._currentTestName = None
         else:
             self._currentTestName = "{}".format(item.nodePath)
-            processEvents()
+            yield self._currentTestName
 
         wasOpen = self.repoTreeView.isExpanded(index)
         self.repoTreeView.setCurrentIndex(index)
@@ -432,14 +495,14 @@ class TestWalkDialog(QtWidgets.QDialog):
                 self._currentTestName = "{:11}: {}".format(tabName, item.nodePath)
                 logger.debug("Setting repo detail tab : {}".format(tabName))
                 self.repoWidget.tabWidget.setCurrentIndex(idx)
-                processEvents()
+                yield self._currentTestName
 
         if self.allInspectorsCheckBox.isChecked():
             for action in self._mainWindow.inspectorActionGroup.actions():
                 assert action.text(), "Action text undefined: {!r}".format(action.text())
                 self._currentTestName = "{:11}: {}".format(action.text(), item.nodePath)
                 action.trigger()
-                processEvents()
+                yield self._currentTestName
 
         nodesVisited = 1
 
@@ -453,12 +516,13 @@ class TestWalkDialog(QtWidgets.QDialog):
             childIndex = repoModel.index(rowNr, 0, parentIndex=index)
             subRange = (prMin + numVisited / toVisit * prLength,
                         prMin + (numVisited+1) / toVisit * prLength)
-            nodesVisited += self._visitNodes(childIndex, subRange)
+            for testName in self._visitNodes(childIndex, subRange):
+                yield testName
 
         if self._isOngoing and not wasOpen:
             self.repoTreeView.closeItem(index)
 
-        return nodesVisited
+        #return nodesVisited
 
 
     def _displayTestSummary(self, duration: float, nodesVisited: int):
@@ -475,7 +539,10 @@ class TestWalkDialog(QtWidgets.QDialog):
         """ Logs a summary of the test results.
         """
         logger.info("Visited {} nodes in {:.1f} seconds ({:.1f} nodes/second)."
-                    .format(nodesVisited, duration, nodesVisited/duration))
+                    .format(len(self._results), duration, len(self._results)/duration))
+
+        # logger.info("Visited {} nodes in {:.1f} seconds ({:.1f} nodes/second)."
+        #             .format(nodesVisited, duration, nodesVisited/duration))
 
         failedTests = [(success, name) for success, name in self._results if not success]
         logger.info("Number of failed tests during test walk: {}".format(len(failedTests)))
@@ -496,10 +563,10 @@ class TestWalkDialog(QtWidgets.QDialog):
             else:
                 factor = 1
 
-            expectedNumResuls = nodesVisited * factor
-            if len(self._results) != expectedNumResuls:
+            expectedNumResults = nodesVisited * factor
+            if len(self._results) != expectedNumResults:
                 msg = "Actual nr of results ({}) != expected nr of results: {}"\
-                    .format(len(self._results), expectedNumResuls)
+                    .format(len(self._results), expectedNumResults)
                 logger.warning(msg)
 
                 # No assert, as this can happen when there are two nodes with the same name, which

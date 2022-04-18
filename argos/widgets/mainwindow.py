@@ -251,7 +251,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.myTestAction = QtWidgets.QAction("My Test", self)
         self.myTestAction.setToolTip("Ad-hoc test procedure for debugging.")
-        self.myTestAction.setShortcut("Meta+T")
+        #self.myTestAction.setShortcut("Meta+T")
+        self.myTestAction.setShortcut("Alt+T")
         self.myTestAction.triggered.connect(self.myTest)
         self.addAction(self.myTestAction)
 
@@ -349,20 +350,20 @@ class MainWindow(QtWidgets.QMainWindow):
 
         helpMenu.addAction('&About...', self.about)
 
-        if DEBUGGING:
+        if True:
 
             helpMenu.addSeparator()
             helpMenu.addAction(self.addTestDataAction)
 
             helpMenu.addAction(
                 "Quick Walk &Current Node",
-                lambda: self.testWalkDialog.walkCurrentRepoNode(False, False), "Meta+Q")
+                lambda: self.testWalkDialog.walkCurrentRepoNode(False, False), "Ctrl+W")
             helpMenu.addAction(
                 "Walk &All Nodes",
-                lambda: self.testWalkDialog.walkAllRepoNodes(True, True), "Meta+W")  # meta works on MacOs
+                lambda: self.testWalkDialog.walkAllRepoNodes(True, True), "Ctrl_Shift+W")  # meta works on MacOs
 
-            helpMenu.addSeparator()
-            helpMenu.addAction(self.myTestAction)
+        helpMenu.addSeparator()
+        helpMenu.addAction(self.myTestAction)
 
 
 
@@ -1044,4 +1045,31 @@ class MainWindow(QtWidgets.QMainWindow):
         self.testWalkDialog.show()
         self.testWalkDialog.raise_()
 
+
+
+    @QtSlot()
+    def myTest(self):
+        """ Function for small ad-hoc tests that can be called from the menu.
+        """
+        logger.info("--------- myTest function called --------------------")
+        import profile
+
+        for i in range(5):
+            logger.info("================ STARTING TEST WALK: {} ================".format(i))
+
+            profiler = cProfile.Profile()
+            profiler.enable()
+            self.testWalkDialog.walkAllRepoNodes(allInspectors=False, allDetailTabs=False)
+            profiler.disable()
+            profFileName = os.path.join(argosLogDirectory(), "testwalk-{:02d}.prof".format(i))
+            logger.info("Saving profiling information to {}".format(profFileName))
+            profStats = pstats.Stats(profiler)
+            profStats.dump_stats(profFileName)
+
+        # invalidIndex = self.repoWidget.repoTreeView.model().index(-1, -1)
+        # assert not invalidIndex.isValid()
+        # self.repoWidget.repoTreeView.setCurrentIndex(invalidIndex)
+
+
+        logger.info("--------- myTest function done --------------------")
 
