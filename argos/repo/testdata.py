@@ -170,6 +170,12 @@ def createArgosTestData():
                     #'titles': ['Red pixel', 'Blue pixel']})
     myDict['structured_arr4'] = np.array([(255, 11), (1, 50)], dtype=dt4)
 
+    # Nested structured array
+    dt5 = [('year', '<i4'), ('countries', [('c1', [('iso','a3'), ('my_value','<f4')]),
+                                           ('c2', [('iso','a3'), ('your_value','<f8')])])]
+    myDict['structured_arr5'] = np.array([(2009, (('USA', 10.0), ('CHN', -16.9))),
+                                          (2010, (('BRA', 11.2), ('ARG', 12.0)))], dtype=dt5)
+
     # The _structured_masked_arr2 array fails for the Text inspector. Start with '_' to skip test.
     myDict['_structured_masked_arr2'] = ma.MaskedArray(myDict['structured_arr2'], fill_value=-99999)
     myDict['_structured_masked_arr2'].mask[0][0] = True

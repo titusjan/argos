@@ -161,7 +161,11 @@ class FieldRti(BaseRti):
         """
         super(FieldRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
         check_is_an_array(array, allow_none=True)
-        self._array = array
+
+        self._array = array # The array of which this field is a part
+        fieldName = self.nodeName
+        self._fieldDtype = self._array.dtype.fields[fieldName][0]
+
         self._attributes = {} if attributes is None else attributes
 
 
@@ -174,10 +178,17 @@ class FieldRti(BaseRti):
         return self._attributes
 
 
-    def hasChildren(self):
-        """ Returns False. Field nodes never have children.
+    @property
+    def _isStructured(self):
+        """ Returns True if the variable has a structured type, otherwise returns False.
         """
-        return False
+        return bool(self._fieldDtype.names)
+
+
+    def hasChildren(self):
+        """ Returns True if the variable has a structured type, otherwise returns False.
+        """
+        return self._isStructured
 
 
     @property
@@ -210,9 +221,7 @@ class FieldRti(BaseRti):
         """ Returns the shape of the sub-array.
             An empty tuple is returned for regular fields, which have no sub array.
         """
-        fieldName = self.nodeName
-        fieldDtype = self._array.dtype.fields[fieldName][0]
-        return fieldDtype.shape
+        return self._fieldDtype.shape
 
 
     @property
@@ -237,9 +246,7 @@ class FieldRti(BaseRti):
         if self._array is None:
             return super(FieldRti, self).elementTypeName
         else:
-            fieldName = self.nodeName
-            return str(self._array.dtype.fields[fieldName][0])
-
+            return '<structured>' if self._fieldDtype.names else str(self._fieldDtype)
 
     @property
     def dimensionNames(self):
@@ -265,6 +272,24 @@ class FieldRti(BaseRti):
             return value[idx]
         else:
             return value
+
+
+    def _fetchAllChildren(self):
+        """ Fetches all fields that this variable contains.
+            Only variables with a structured data type can have fields.
+        """
+        assert self.canFetchChildren(), "canFetchChildren must be True"
+
+        childItems = []
+
+        # Add fields in case of an array of structured type.
+        if self._isStructured:
+            for fieldName in self._fieldDtype.names:
+                childItem = FieldRti(self._array[self.nodeName], nodeName=fieldName,
+                                     iconColor=self.iconColor, fileName=self.fileName)
+                childItems.append(childItem)
+
+        return childItems
 
 
     @property
@@ -362,8 +387,7 @@ class ArrayRti(BaseRti):
         if self._array is None:
             return super(ArrayRti, self).elementTypeName
         else:
-            dtype =  self._array.dtype
-            return '<structured>' if dtype.names else str(dtype)
+            return '<structured>' if self._isStructured else str(self._array.dtype)
 
 
     @property
