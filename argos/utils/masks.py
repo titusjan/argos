@@ -377,21 +377,29 @@ def maskedEqual(array, missingValue):
         https://mail.scipy.org/pipermail/numpy-discussion/2011-July/057669.html
 
         If the data is a structured array the mask is applied for every field (i.e. forming a
-        logical-and). Otherwise ma.masked_equal is called.
+        logical-and). Otherwise, ma.masked_equal is called.
     """
     if array_is_structured(array):
         # Enforce the array to be masked
         if not isinstance(array, ma.MaskedArray):
             array = ma.MaskedArray(array)
 
-        # Set the mask separately per field
-        for nr, field in enumerate(array.dtype.names):
-            if hasattr(missingValue, '__len__'):
-                fieldMissingValue = missingValue[nr]
-            else:
-                fieldMissingValue = missingValue
+        if missingValue is not None:
+            # Set the mask separately per field. Do this only when a missing value is specified.
+            # Otherwise, it might fail if the missing value is not of the correct type.
+            for nr, field in enumerate(array.dtype.names):
 
-            array[field] = ma.masked_equal(array[field], fieldMissingValue)
+                if hasattr(missingValue, '__len__'):
+                    fieldMissingValue = missingValue[nr]
+                else:
+                    fieldMissingValue = missingValue
+
+                try:
+                    array[field] = ma.masked_equal(array[field], fieldMissingValue)
+                except ValueError as ex:
+                    # Type mismatch between missing value and field dtype
+                    logger.warning("Missing values can't be determined for field: {}. Reason: {}"
+                                   .format(field, ex))
 
         check_class(array, ma.MaskedArray) # post-condition check
         return array
