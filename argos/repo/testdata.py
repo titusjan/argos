@@ -162,7 +162,7 @@ def createArgosTestData():
 
     myDict['structured_arr2'] = np.array([(1.5,2.5,(1.0,2.0)),(3.,4.,(4.,5.)),(1.,3.,(2.,6.))],
                                          dtype=[('x','f4'),('y',np.float32),('value','f4',(2,2))])
-    myDict['structured_arr3'] = np.array([(1.5,2.5,(2.0, )),(3.,4.,(5., )),(1.,3.,(2.,))],
+    myDict['structured_arr3'] = np.array([(1.5,2.5,[2.0, -1.0]),(3.,4.,[5., 88]),(1.,3.,[2., 0.01])],
                                          dtype=[('1st','f4'),('2nd',np.float32),('3rd','f4',(2,))])
 
     # A structured array with offsets and titles
@@ -172,9 +172,10 @@ def createArgosTestData():
 
     # Nested structured array
     dt5 = [('year', '<i4'), ('countries', [('c1', [('iso','a3'), ('my_value','<f4')]),
-                                           ('c2', [('iso','a3'), ('your_value','<f8')])])]
-    myDict['structured_arr5'] = np.array([(2009, (('USA', 10.0), ('CHN', -16.9))),
-                                          (2010, (('BRA', 11.2), ('ARG', 12.0)))], dtype=dt5)
+                                           ('c2', [('iso','a3'), ('your_value','<f8', (3,))])])]
+    myDict['structured_arr5'] = np.array([(2009, (('USA', 10.0), ('CHN', [-16.9, 0, 1000]))),
+                                          (2010, (('BRA', 11.2), ('ARG', [12.0, 17.2, np.nan])))],
+                                         dtype=dt5)
 
     # The _structured_masked_arr2 array fails for the Text inspector. Start with '_' to skip test.
     myDict['_structured_masked_arr2'] = ma.MaskedArray(myDict['structured_arr2'], fill_value=-99999)
