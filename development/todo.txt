@@ -92,6 +92,8 @@ TODO mid term:
 
     Test ExdirFieldRti
 
+    Implement Parquet files?
+        https://www.upsolver.com/blog/apache-parquet-why-use
 
 TODO long term:
 
