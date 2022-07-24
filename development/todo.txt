@@ -31,6 +31,9 @@ TODO short term:
     Tooltips for spin-slider in collector
     Warning in text inspector if more than one element is selected.
 
+    Display the array that is listed in the table. E.g. dcm[5, :, 3, :]. Same as in
+
+
     JSON files in text/table inspector. Yaml files.
 
     HDF5 test data

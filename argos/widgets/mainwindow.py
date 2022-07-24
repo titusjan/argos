@@ -869,8 +869,8 @@ class MainWindow(QtWidgets.QMainWindow):
             return lastItem, lastIndex
         except Exception as ex:
             logger.warning("Unable to select {!r} because: {}".format(path, ex))
-            # if DEBUGGING:
-            #     raise
+            if DEBUGGING:
+                raise
             return None, None
 
 

@@ -325,19 +325,15 @@ class H5pyFieldRti(BaseRti):
     """
     _defaultIconGlyph = RtiIconFactory.FIELD
 
-    def __init__(self, h5Dataset, nodeName, fieldArray, fileName='', iconColor=ICON_COLOR_UNDEF):
+    def __init__(self, h5Dataset, nodeName, subArray, fileName='', iconColor=ICON_COLOR_UNDEF):
         """ Constructor.
-
-            fieldNameList is a list of field names that are the path of the main array to this
-            field. This list can have more than one element because compound datasets can be
-            recursive.
         """
         super(H5pyFieldRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
         check_class(h5Dataset, h5py.Dataset)
         self._h5Dataset = h5Dataset
 
-        self._fieldArray = fieldArray
-        self._isStructured = bool(self._fieldArray.dtype.names)
+        self._subArray = subArray # The array that this field contains. Can be h5Dataset itself.
+        self._isStructured = bool(self._subArray.dtype.names)
 
 
     def hasChildren(self):
@@ -369,36 +365,7 @@ class H5pyFieldRti(BaseRti):
             If the field itself contains a sub-array it returns:
                 self.dataset[mainArrayIndex][self.nodeName][subArrayIndex]
         """
-        mainArrayNumDims = len(self._h5Dataset.shape)
-        mainIndex = index[:mainArrayNumDims]
-        mainArray = self._fieldArray.__getitem__(mainIndex)
-
-        subIndex = tuple([Ellipsis]) + index[mainArrayNumDims:]
-        slicedArray = mainArray[subIndex]
-
-        return maskedEqual(slicedArray, self.missingDataValue)
-
-
-        # mainArrayNumDims = len(self._h5Dataset.shape)
-        # mainIndex = index[:mainArrayNumDims]
-        # mainArray = self._h5Dataset.__getitem__(mainIndex)
-        # fieldArray = mainArray[self.nodeName]
-        # subIndex = tuple([Ellipsis]) + index[mainArrayNumDims:]
-        # slicedArray = fieldArray[subIndex]
-
-
-        # mainArrayNumDims = len(self._h5Dataset.shape)
-        # mainIndex = index[:mainArrayNumDims]
-        # mainArray = self._h5Dataset.__getitem__(mainIndex)
-        #
-        # fieldArray = mainArray
-        # for fieldName in self._fieldNameList:
-        #     fieldArray = fieldArray[fieldName]
-        #
-        # subIndex = tuple([Ellipsis]) + index[mainArrayNumDims:]
-        # slicedArray = fieldArray[subIndex]
-        #
-        # return maskedEqual(slicedArray, self.missingDataValue)
+        return self._subArray[index]
 
 
     @property
@@ -409,26 +376,10 @@ class H5pyFieldRti(BaseRti):
 
 
     @property
-    def _subArrayShape(self):
-        """ Returns the shape of the sub-array
-            An empty tuple is returned for regular fields, which have no sub array.
-        """
-        if self._h5Dataset.dtype.fields is None:
-            return tuple() # regular field
-        else:
-            # dtype.fields returns a tuple with (dtype, offset, ...) so we use its first element.
-            if self.nodeName == 'dcm':
-                logger.critical("dcm: {}".format(self._fieldArray.dtype))
-                # raise AssertionError("fna")
-            return self._fieldArray.dtype.shape
-
-
-    @property
     def arrayShape(self):
         """ Returns the shape of the underlying array.
-            If the field contains a subarray the shape may be longer than 1.
         """
-        return self._h5Dataset.shape + self._subArrayShape
+        return self._subArray.shape
 
 
     @property
@@ -450,25 +401,21 @@ class H5pyFieldRti(BaseRti):
     def elementTypeName(self):
         """ String representation of the element type.
         """
-        return dataSetType(self._fieldArray.dtype, '')
-        # logger.critical("Getting elementTypeName of: {}".format(self))
-        # fieldName = self.nodeName
-        # return dataSetType(self._fieldArray.dtype.fields[fieldName][0], '')
+        return dataSetType(self._subArray.dtype, '')
 
 
     @property
     def typeName(self):
         """ String representation of the type. By default, the elementTypeName + dimensionality.
         """
-        fieldName = self.nodeName
-        return dataSetType(self._fieldArray.dtype, self.dimensionality)
+        return dataSetType(self._subArray.dtype, self.dimensionality)
 
 
     @property
     def dimensionNames(self):
         """ Returns a list with the dimension names of the underlying HDF5 variable
         """
-        nSubDims = len(self._subArrayShape)
+        nSubDims = len(self._subArray.shape)
         subArrayDims = [SUB_DIM_TEMPLATE.format(dimNr) for dimNr in range(nSubDims)]
         return dimNamesFromDataset(self._h5Dataset) + subArrayDims
 
@@ -477,7 +424,7 @@ class H5pyFieldRti(BaseRti):
     def dimensionPaths(self):
         """ Returns a list with the full path names of the dimensions.
         """
-        nSubDims = len(self._subArrayShape)
+        nSubDims = len(self._subArray.shape)
         subArrayDims = [SUB_DIM_TEMPLATE.format(dimNr) for dimNr in range(nSubDims)]
         return dimNamesFromDataset(self._h5Dataset, useBaseName=False) + subArrayDims
 
@@ -527,9 +474,8 @@ class H5pyFieldRti(BaseRti):
         if self._h5Dataset.size > MAX_QUICK_LOOK_SIZE:
             return "{} of {}".format(self.typeName, self.summary)
         else:
-            fieldArray = self._h5Dataset[self.nodeName][:]
             subIndex = tuple([Ellipsis])
-            slicedArray = fieldArray[subIndex]
+            slicedArray = self._subArray[subIndex]
             data = maskedEqual(slicedArray, self.missingDataValue)
 
             string_info = h5py.check_string_dtype(self._h5Dataset.dtype)
@@ -542,13 +488,11 @@ class H5pyFieldRti(BaseRti):
         """
         assert self.canFetchChildren(), "canFetchChildren must be True"
 
-        logger.critical("_fetchAllChildren: {}".format(self))
         childItems = []
         if self._isStructured:
-            for fieldName in self._fieldArray.dtype.names:
-                logger.critical("  Appending: {}".format(fieldName))
+            for fieldName in self._subArray.dtype.names:
                 childItems.append(H5pyFieldRti(
-                    self._h5Dataset, fieldName, self._fieldArray[fieldName],
+                    self._h5Dataset, fieldName, self._subArray[fieldName],
                     fileName=self.fileName, iconColor=self.iconColor))
         return childItems
 
@@ -706,8 +650,9 @@ class H5pyDatasetRti(BaseRti):
         # Add fields
         if self._isStructured:
             for fieldName in self._h5Dataset.dtype.names:
+                logger.critical("  dtype of {}: {}".format(fieldName, self._h5Dataset[fieldName].dtype))
                 childItems.append(H5pyFieldRti(
-                    self._h5Dataset, nodeName=fieldName, fieldArray=self._h5Dataset[fieldName],
+                    self._h5Dataset, nodeName=fieldName, subArray=self._h5Dataset[fieldName],
                     fileName=self.fileName, iconColor=self.iconColor))
         return childItems
 

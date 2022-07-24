@@ -165,7 +165,7 @@ class FieldRti(BaseRti):
         self._array = array # The array of which this field is a part
         fieldName = self.nodeName
 
-        # dtype.fields returns a tuple with (dtype, offset, ...) so we use its first element.
+        # dtype.fields returns a tuple with (dtype, offset, shape) so we use its first element.
         self._fieldDtype = self._array.dtype.fields[fieldName][0]
 
         self._attributes = {} if attributes is None else attributes
