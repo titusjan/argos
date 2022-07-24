@@ -5,6 +5,14 @@ History
 
 Note that version 0.3 will be the last release that supports Python 2.
 
+0.4.2 (2022-07-24)
+------------------
+
+* Compound/stuctured HDF5 datasets can be nested.
+* Can display JSON files (with comments https://github.com/sidneycadot/json_with_comments)
+* Removed many harmless warnings.
+* Small fixes
+
 
 0.4.1 (2022-03-02)
 ------------------
