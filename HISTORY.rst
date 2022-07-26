@@ -5,6 +5,13 @@ History
 
 Note that version 0.3 will be the last release that supports Python 2.
 
+
+0.4.3 (2022-07-26)
+------------------
+
+* Removed spurious log message.
+
+
 0.4.2 (2022-07-24)
 ------------------
 
