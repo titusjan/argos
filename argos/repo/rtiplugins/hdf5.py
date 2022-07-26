@@ -650,7 +650,6 @@ class H5pyDatasetRti(BaseRti):
         # Add fields
         if self._isStructured:
             for fieldName in self._h5Dataset.dtype.names:
-                logger.critical("  dtype of {}: {}".format(fieldName, self._h5Dataset[fieldName].dtype))
                 childItems.append(H5pyFieldRti(
                     self._h5Dataset, nodeName=fieldName, subArray=self._h5Dataset[fieldName],
                     fileName=self.fileName, iconColor=self.iconColor))
