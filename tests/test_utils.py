@@ -7,7 +7,7 @@ Tests functionality from the utils package
 
 import unittest
 
-from argos.utils.cls import is_a_string, is_text, is_binary
+from argos.utils.cls import is_a_string, is_binary
 from argos.utils.misc import python2
 import numpy as np
 
@@ -53,27 +53,6 @@ class TestStringTypeDetection(unittest.TestCase):
         self.assertTrue(is_a_string(self.np_u_lit))
 
 
-    def test_is_text(self):
-        """
-            Result             py-2  py-3
-            -----------------  ----- -----
-            b'bytes literal'   False False
-             'string literal'  False True
-            u'unicode literal' True  True
-        """
-
-        self.assertFalse(is_text(self.b_lit))
-        self.assertFalse(is_text(self.np_b_lit))
-
-        if python2():
-            self.assertFalse(is_text(self.s_lit))
-            self.assertFalse(is_text(self.np_s_lit))
-        else:
-            self.assertTrue(is_text(self.s_lit))
-            self.assertTrue(is_text(self.np_s_lit))
-
-        self.assertTrue(is_text(self.u_lit))
-        self.assertTrue(is_text(self.np_u_lit))
 
 
     def test_is_binary(self):

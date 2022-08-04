@@ -18,6 +18,26 @@ PgColorBar:
     - Default extent = 100 % of pixels
     - Clear histogram when image is set to empty. (clear color scale?)
 
+TODO: cleanup
+
+Remove Python 2 code
+MyPy (ook met -a optie)
+PyLint
+Doc Strings
+Remove/fix TODOs where possible
+
+
+Do this per package (bottom up):
+    utils
+    qt
+    widgets
+    reg
+    repo
+    config
+    inspector
+    collect
+    argos top dir
+
 
 TODO short term:
 

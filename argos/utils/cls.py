@@ -18,6 +18,9 @@
 """ 'Class' module that contains functions that have to do with type checking, importing, etc.
 
 """
+from __future__ import annotations
+
+from typing import Any, Dict, Type
 
 import logging
 import numbers
@@ -26,15 +29,11 @@ import re
 import numpy as np
 import numpy.ma as ma
 
-from argos.external import six
 
 logger = logging.getLogger(__name__)
 
-# For al list of encodings the the standard library see.
-if six.PY2:
-    URL_PYTHON_ENCODINGS_DOC = "https://docs.python.org/2/library/codecs.html#standard-encodings"
-else:
-    URL_PYTHON_ENCODINGS_DOC = "https://docs.python.org/3/library/codecs.html#standard-encodings"
+# For al list of encodings the standard library see.
+URL_PYTHON_ENCODINGS_DOC = "https://docs.python.org/3/library/codecs.html#standard-encodings"
 
 
 #pylint: enable=C0103
@@ -122,35 +121,14 @@ def fill_values_to_nan(masked_array):
         return masked_array
 
 
-# Needed because boolean QSettings in Pyside are converted incorrect the second
-# time in Windows (and Linux?) because of a bug in Qt. See:
-# https://www.mail-archive.com/pyside@lists.pyside.org/msg00230.html
-def setting_str_to_bool(s):
-    """ Converts 'true' to True and 'false' to False if s is a string
-    """
-    if isinstance(s, six.string_types):
-        s = s.lower()
-        if s == 'true':
-            return True
-        elif s == 'false':
-            return False
-        else:
-            return ValueError('Invalid boolean representation: {!r}'.format(s))
-    else:
-        return s
-
-
 #################
 # Type checking #
 #################
 
-# Use '{!r}' as default float format for Python 2. This will convert the floats with repr(), which
-# is necessary because str() or an empty format string will only print 2 decimals behind the point.
-# In Python 3 this is not necessary: all relevant decimals are printed.
-DEFAULT_NUM_FORMAT = '{!r}' if six.PY2 else '{}'
+_DEFAULT_NUM_FORMAT = '{}'  # Will print all relevant decimals (in Python 3)
 
 def to_string(var, masked=None, decode_bytes='utf-8', maskFormat='', strFormat='{}',
-              intFormat='{}', numFormat=DEFAULT_NUM_FORMAT, noneFormat='{!r}', otherFormat='{}'):
+              intFormat='{}', numFormat=_DEFAULT_NUM_FORMAT, noneFormat='{!r}', otherFormat='{}'):
     """ Converts var to a python string or unicode string so Qt widgets can display them.
 
         If var consists of bytes, the decode_bytes is used to decode the bytes.
@@ -182,9 +160,9 @@ def to_string(var, masked=None, decode_bytes='utf-8', maskFormat='', strFormat='
             # Add URL to exception message.
             raise LookupError("{}\n\nFor a list of encodings in Python see: {}"
                               .format(ex, URL_PYTHON_ENCODINGS_DOC))
-    elif is_text(var):
-        fmt = strFormat
-        decodedVar = six.text_type(var)
+    # elif is_text(var):   # is 'str' in Python 3
+    #     fmt = strFormat
+    #     decodedVar = six.text_type(var)
     elif is_a_string(var):
         fmt = strFormat
         decodedVar = str(var)
@@ -232,7 +210,7 @@ def is_a_string(var, allow_none=False):
 
         Also returns True if the var is a numpy string (numpy.string_, numpy.unicode_).
     """
-    return isinstance(var, six.string_types) or (var is None and allow_none)
+    return isinstance(var, str) or (var is None and allow_none)
 
 
 def check_is_a_string(var, allow_none=False):
@@ -243,64 +221,15 @@ def check_is_a_string(var, allow_none=False):
                         .format(type(var)))
 
 
-def is_text(var, allow_none=False):
-    """ Returns True if var is a unicode text
-
-        Result             py-2  py-3
-        -----------------  ----- -----
-        b'bytes literal'   False False
-         'string literal'  False True
-        u'unicode literal' True  True
-
-        Also works with the corresponding numpy types.
-    """
-    return isinstance(var, six.text_type) or (var is None and allow_none)
-
-# Not used yet
-# def check_is_text(var, allow_none=False):
-#     """ Calls is_text and raises a type error if the check fails.
-#     """
-#     if not is_text(var, allow_none=allow_none):
-#         raise TypeError("var must be a text (unicode str), however type(var) is {}"
-#                         .format(type(var)))
-
-
 def is_binary(var, allow_none=False):
     """ Returns True if var is a binary (bytes) objects
 
-        Result             py-2  py-3
-        -----------------  ----- -----
-        b'bytes literal'   True  True
-         'string literal'  True  False
-        u'unicode literal' False False
-
         Also works with the corresponding numpy types.
     """
-    return isinstance(var, six.binary_type) or (var is None and allow_none)
+    return isinstance(var, bytes) or (var is None and allow_none)
 
 
-# Not used yet
-# def check_is_text(var, allow_none=False):
-#     """ Calls is_binary and raises a type error if the check fails.
-#     """
-#     if not is_binary(var, allow_none=allow_none):
-#         raise TypeError("var must be a binary (bytes), however type(var) is {}"
-#                         .format(type(var)))
-
-
-# Not used. Remove?
-# def is_a_numpy_string(var, allow_none=False):
-#     """ Returns True if var is of type: numpy.string_, numpy.unicode_
-#
-#         :param var: variable of which we want to know if it is a string
-#         :type var: any type
-#         :returns: True if var is of type string
-#         :rtype: Boolean
-#     """
-#     return isinstance(var, (np.string_, np.unicode_)) or (var is None and allow_none)
-
-
-def is_a_sequence(var, allow_none=False):
+def is_a_sequence(var, allow_none=False):  # TODO: use iterable?
     """ Returns True if var is a list or a tuple (but not a string!)
     """
     return isinstance(var, (list, tuple)) or (var is None and allow_none)
@@ -492,7 +421,7 @@ class SingletonMixin(object):
         The instance method is thread-safe but the returned object not! You still have to implement
         your own locking for that.
     """
-    __singletons = {}
+    __singletons: Dict[Type[Any], SingletonMixin] = {}
 
     def __init__(self, **kwargs):
         super(SingletonMixin, self).__init__(**kwargs)
