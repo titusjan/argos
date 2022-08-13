@@ -100,3 +100,4 @@ ENV/
 .idea/
 tests/test_data/
 tests/create_test_data/test_data
+docs_new
