@@ -219,7 +219,7 @@ class BaseItemStore(object):
 
 # Rhe main window inherits from a Qt class, therefore it has many
 # ancestors public methods and attributes.
-# pylint: disable=R0901, R0902, R0904, W0201
+# pylint: disable=too-many-ancestors, too-many-instance-attributes, too-many-public-methods, attribute-defined-outside-init
 
 
 class BaseTableModel(QtCore.QAbstractTableModel):

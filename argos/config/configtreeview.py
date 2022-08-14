@@ -36,7 +36,7 @@ from argos.utils.cls import check_class
 logger = logging.getLogger(__name__)
 
 # Qt classes have many ancestors
-#pylint: disable=R0901
+#pylint: disable=too-many-ancestors
 
 
 

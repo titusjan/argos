@@ -37,7 +37,7 @@ from argos.widgets.misc import BasePanel
 logger = logging.getLogger(__name__)
 
 # Qt classes have many ancestors
-#pylint: disable=R0901
+#pylint: disable=too-many-ancestors
 
 
 

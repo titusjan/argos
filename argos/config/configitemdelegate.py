@@ -27,7 +27,7 @@ from argos.widgets.constants import TREE_CELL_SIZE_HINT
 logger = logging.getLogger(__name__)
 
 # Qt classes have many ancestors
-#pylint: disable=R0901
+#pylint: disable=too-many-ancestors
 
 class ConfigItemDelegate(QtWidgets.QStyledItemDelegate):
     """ Provides editing facilities for config tree items.

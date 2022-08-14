@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-""" 'Class' module that contains functions that have to do with type checking, importing, etc.
+""" Module that contains functions that have to do with type checking, importing, etc.
 
+    The name is short for 'Class'
 """
 from __future__ import annotations
 
@@ -36,50 +37,12 @@ logger = logging.getLogger(__name__)
 URL_PYTHON_ENCODINGS_DOC = "https://docs.python.org/3/library/codecs.html#standard-encodings"
 
 
-#pylint: enable=C0103
-
-
+# Temporary disable invalid names until we have decided on camelCase or snake_case here.
+#pylint: disable=invalid-name
 
 ###################
 # Type conversion #
 ###################
-
-
-# def masked_to_regular_array(masked_array, replacement_value=np.nan):
-#     """ Returns a copy of the masked array where masked values have been replaced with fill values.
-#
-#         If masked_array is a regular numpy.ndarry, the function works, meaning a copy of the array
-#         is returned.
-#
-#         :param masked_array: numpy masked
-#         :param replacement_value: replacement value (default=np.nan).
-#             If None the masked_array.fill_value is used.
-#         :return: numpy.ndarray with masked arrays replaced by the fill_vluae
-#     """
-#     return ma.filled(masked_array, fill_value=replacement_value)
-
-#
-# def replace_missing_values(array, missing_value, replacement_value):
-#     """ Returns a copy of the array where the missing_values are replaced with replacement_value.
-#
-#         If missing_value is None, nothing is replaced, a copy of the array is returned..
-#         The missing_value can be Nan or infinite, these are replaced.
-#
-#         If array is a masked array the masked value are replaced (masked_to_regular_array).
-#     """
-#     if isinstance(array, ma.MaskedArray):
-#         logger.debug("^^^^^^^^^^^^^^^^^^^ mask: {}".format(array.mask))
-#
-#         return array
-#         return masked_to_regular_array(array, replacement_value=replacement_value)
-#     if missing_value is None:
-#         array = np.copy(array)
-#     elif np.isnan(missing_value):
-#         array[np.isnan(array)] = replacement_value
-#     else:
-#         array[array == missing_value] = replacement_value
-#
-#     return array
 
 def environment_var_to_bool(env_var):
     """ Converts an environment variable to a boolean
@@ -159,7 +122,7 @@ def to_string(var, masked=None, decode_bytes='utf-8', maskFormat='', strFormat='
         except LookupError as ex:
             # Add URL to exception message.
             raise LookupError("{}\n\nFor a list of encodings in Python see: {}"
-                              .format(ex, URL_PYTHON_ENCODINGS_DOC))
+                              .format(ex, URL_PYTHON_ENCODINGS_DOC)) from ex
     # elif is_text(var):   # is 'str' in Python 3
     #     fmt = strFormat
     #     decodedVar = six.text_type(var)
@@ -182,7 +145,7 @@ def to_string(var, masked=None, decode_bytes='utf-8', maskFormat='', strFormat='
     if maskFormat != '{}':
         try:
             allMasked = all(masked)
-        except TypeError as ex:
+        except TypeError:
             allMasked = bool(masked)
 
         if allMasked:
@@ -193,8 +156,9 @@ def to_string(var, masked=None, decode_bytes='utf-8', maskFormat='', strFormat='
     except Exception:
         result = "Invalid format {!r} for: {!r}".format(fmt, decodedVar)
 
-    #if masked:
-    #    logger.debug("to_string (fmt={}): {!r} ({}) -> result = {!r}".format(maskFormat, var, type(var), result))
+    # if masked:
+    #    logger.debug("to_string (fmt={}): {!r} ({}) -> result = {!r}"
+    #                 .format(maskFormat, var, type(var), result))
 
     return result
 
@@ -351,7 +315,8 @@ def check_is_a_color_str(var, allow_none=False):
 # Type info #
 #############
 
-# TODO: get_class_name and type_name the same? Not for old style classes. Fix when only using Python 3
+# TODO: get_class_name and type_name the same? Not for old style classes.
+#  Fix when only using Python 3
 # #http://stackoverflow.com/questions/1060499/difference-between-typeobj-and-obj-class
 
 def type_name(var):
@@ -409,13 +374,7 @@ def import_symbol(full_symbol_name):
 
 
 
-# TODO: when Python 2 support is dropped use metaclass. The problem in Py2 is that if obj is a
-# singleton metaclass, type(obj) will return type.
-#   https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
-
-
-
-class SingletonMixin(object):
+class SingletonMixin():
     """ Mixin to ensure the class is a singleton.
 
         The instance method is thread-safe but the returned object not! You still have to implement
@@ -424,7 +383,7 @@ class SingletonMixin(object):
     __singletons: Dict[Type[Any], SingletonMixin] = {}
 
     def __init__(self, **kwargs):
-        super(SingletonMixin, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         cls = type(self)
         logger.debug("Creating singleton: {} (awaiting lock)".format(cls))
@@ -458,16 +417,3 @@ class SingletonMixin(object):
                 "Ancestor of {} already present: {}".format(cls, existingClass)
 
 
-
-
-if __name__ == "__main__":
-
-    class MyClass(SingletonMixin):
-        pass
-
-    myClass = MyClass.instance()
-    print(myClass)
-    myClass2 = MyClass.instance()
-    print(myClass2)
-    myClass3 = MyClass.instance()
-    print(myClass3)

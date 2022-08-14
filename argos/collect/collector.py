@@ -42,7 +42,7 @@ FAKE_DIM_OFFSET = 1000  # Fake dimensions start here (so all arrays must have a 
 
 
 # Qt classes have many ancestors
-#pylint: disable=R0901
+#pylint: disable=too-many-ancestors
 
 
 

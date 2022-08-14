@@ -22,9 +22,13 @@ TODO: cleanup
 
 Remove Python 2 code
 MyPy (ook met -a optie)
+Overal '*' gebruiken om keyword argumenten af te dwingen.
 PyLint
 Doc Strings
 Remove/fix TODOs where possible
+
+cls.py camelCase?
+
 
 
 Do this per package (bottom up):

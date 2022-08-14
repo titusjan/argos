@@ -27,7 +27,7 @@ from argos.qt import QtWidgets, Qt
 logger = logging.getLogger(__name__)
 
 # Qt classes have many ancestors
-#pylint: disable=R0901
+#pylint: disable=too-many-ancestors
 
 class ArgosTableView(QtWidgets.QTableView):
     """ QTableView that defines common functionality for argos

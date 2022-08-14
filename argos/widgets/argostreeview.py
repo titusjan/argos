@@ -56,7 +56,7 @@ from argos.widgets.constants import TREE_ICON_SIZE
 logger = logging.getLogger(__name__)
 
 # Qt classes have many ancestors
-#pylint: disable=R0901
+#pylint: disable=too-many-ancestors
 
 class ArgosTreeView(ToggleColumnTreeView):
     """ QTreeView that defines common functionality, look and feel for all tree views in Argos.

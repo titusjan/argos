@@ -270,7 +270,7 @@ def createGlobalRegistryFunction():
     return accessGlobalRegistry
 
 # This is actually a function definition, not a constant
-#pylint: disable=C0103
+#pylint: disable=invalid-name
 
 globalRtiRegistry = createGlobalRegistryFunction()
 globalRtiRegistry.__doc__ = "Function that returns the RtiRegistry singleton common to all windows"

@@ -25,7 +25,7 @@ from argos.qt import QtCore, QtWidgets, Qt
 logger = logging.getLogger(__name__)
 
 # Qt classes have many ancestors
-#pylint: disable=R0901
+#pylint: disable=too-many-ancestors
 
 
 class LabeledWidget(QtWidgets.QWidget):
