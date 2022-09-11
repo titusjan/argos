@@ -21,7 +21,7 @@
 import logging
 import os.path
 
-from argos.utils.cls import type_name, check_class
+from argos.utils.cls import typeName, chechType
 
 from argos.info import icons_directory
 from argos.reg.tabmodel import BaseTableModel
@@ -43,7 +43,7 @@ class BaseTableView(ToggleColumnTableView):
         """
         super(BaseTableView, self).__init__(parent)
 
-        check_class(model, BaseTableModel)
+        chechType(model, BaseTableModel)
         self.setModel(model)
 
         self.setTextElideMode(QtCore.Qt.ElideMiddle) # Does not work nicely when editing cells.

@@ -27,7 +27,7 @@ import pyqtgraph as pg
 from argos.qt import QtCore, QtWidgets, QtSignal
 
 
-from argos.utils.cls import check_class
+from argos.utils.cls import chechType
 from pgcolorbar.colorlegend import ColorLegendItem
 
 # from argos.info import DEBUGGING
@@ -72,7 +72,7 @@ class ArgosColorLegendItem(ColorLegendItem):
             plot masked values as NaNs) while it still calculates the histogram bins as if it
             where integers (to prevent aliasing)
         """
-        check_class(imageItem, pg.ImageItem, allow_none=True)
+        chechType(imageItem, pg.ImageItem, allow_none=True)
 
         if hasattr(imageItem, '_wasIntegerData'):
             return imageItem._wasIntegerData

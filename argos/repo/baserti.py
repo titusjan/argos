@@ -26,7 +26,7 @@ from argos.external import six
 from argos.info import DEBUGGING
 from argos.qt.treeitems import AbstractLazyLoadTreeItem
 from argos.repo.iconfactory import RtiIconFactory
-from argos.utils.cls import check_class, is_a_sequence, is_a_color_str
+from argos.utils.cls import chechType, isASequence, isAColorString
 from argos.utils.dirs import normRealPath
 from argos.utils.defs import DIM_TEMPLATE
 
@@ -61,14 +61,14 @@ class BaseRti(AbstractLazyLoadTreeItem):
             :param fileName: absolute path to the file where the data of this RTI originates.
         """
         super(BaseRti, self).__init__(nodeName=nodeName)
-        assert is_a_color_str(iconColor), \
+        assert isAColorString(iconColor), \
             "Icon color for {!r} not a hex string: {!r}".format(self, iconColor)
         self._iconColor = iconColor
 
         self._isOpen = False
         self._exception = None # Any exception that may occur when opening this item.
 
-        check_class(fileName, six.string_types, allow_none=True)
+        chechType(fileName, six.string_types, allow_none=True)
         if fileName:
             fileName = os.path.abspath(fileName)
         self._fileName = fileName
@@ -236,7 +236,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
             childItems = []
             try:
                 childItems = self._fetchAllChildren()
-                assert is_a_sequence(childItems), "ChildItems must be a sequence"
+                assert isASequence(childItems), "ChildItems must be a sequence"
 
             except Exception as ex:
                 # This can happen, for example, when a NCDF/HDF5 file contains data types that

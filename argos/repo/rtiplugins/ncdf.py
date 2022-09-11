@@ -28,7 +28,7 @@ import math
 
 from netCDF4 import Dataset, Variable, Dimension
 
-from argos.utils.cls import check_class
+from argos.utils.cls import chechType
 from argos.repo.baserti import BaseRti, shapeToSummary
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.utils.defs import SUB_DIM_TEMPLATE, CONTIGUOUS
@@ -100,7 +100,7 @@ class NcdfDimensionRti(BaseRti):
         """ Constructor
         """
         super(NcdfDimensionRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        check_class(ncDim, Dimension)
+        chechType(ncDim, Dimension)
 
         self._ncDim = ncDim
 
@@ -129,7 +129,7 @@ class NcdfFieldRti(BaseRti):
             The name of the field must be given to the nodeName parameter.
         """
         super(NcdfFieldRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        check_class(ncVar, Variable)
+        chechType(ncVar, Variable)
 
         self._ncVar = ncVar
 
@@ -296,7 +296,7 @@ class NcdfVariableRti(BaseRti):
         """ Constructor
         """
         super(NcdfVariableRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        check_class(ncVar, Variable)
+        chechType(ncVar, Variable)
         self._ncVar = ncVar
 
         try:
@@ -469,7 +469,7 @@ class NcdfGroupRti(BaseRti):
         """ Constructor
         """
         super(NcdfGroupRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        check_class(ncGroup, Dataset, allow_none=True)
+        chechType(ncGroup, Dataset, allow_none=True)
 
         self._ncGroup = ncGroup
 

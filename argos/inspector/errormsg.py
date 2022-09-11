@@ -22,7 +22,7 @@ import logging
 from argos.config.groupcti import MainGroupCti
 
 from argos.inspector.abstract import AbstractInspector
-from argos.utils.cls import check_is_a_string
+from argos.utils.cls import checkIsAString
 
 
 logger = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ class ErrorMsgInspector(AbstractInspector):
 
         super(ErrorMsgInspector, self).__init__(collector, parent=parent)
 
-        check_is_a_string(msg)
+        checkIsAString(msg)
         self.msg = msg
 
         self._config = self._createConfig()

@@ -19,7 +19,7 @@
 
 import logging
 
-from argos.utils.cls import type_name, check_class
+from argos.utils.cls import typeName, chechType
 
 from argos.qt import QtCore, QtSignal, Qt
 
@@ -77,7 +77,7 @@ class BaseItem(object):
 
 
     def __repr__(self):
-        return "<{}: {}>".format(type_name(self), self._data)
+        return "<{}: {}>".format(typeName(self), self._data)
 
 
     @property
@@ -233,7 +233,7 @@ class BaseTableModel(QtCore.QAbstractTableModel):
             :param parent: Parent widget
         """
         super(BaseTableModel, self).__init__(parent)
-        check_class(store, BaseItemStore)
+        chechType(store, BaseItemStore)
         self._store = store
         self._fieldNames = self._store.fieldNames
         self._fieldLabels = self.store.fieldLabels
@@ -369,7 +369,7 @@ class BaseTableModel(QtCore.QAbstractTableModel):
     def insertItem(self, item, row):
         """ Insert an item in the store at a certain row.
         """
-        check_class(item, self.store.ITEM_CLASS)
+        chechType(item, self.store.ITEM_CLASS)
         logger.info("Inserting {!r} at row {}".format(item, row, self))
         self.beginInsertRows(QtCore.QModelIndex(), row, row)
         try:

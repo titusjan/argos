@@ -4,7 +4,7 @@ import logging
 from argos.qt.treeitems import BaseTreeItem
 from argos.info import DEBUGGING
 from argos.qt import Qt, QtCore, QtSignal, QtSlot
-from argos.utils.cls import check_is_a_string, check_class
+from argos.utils.cls import checkIsAString, chechType
 from argos.widgets.constants import TREE_CELL_SIZE_HINT
 
 logger = logging.getLogger(__name__)
@@ -506,7 +506,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
 
         # The actual body of findItemAndIndexPath starts here
 
-        check_is_a_string(path)
+        checkIsAString(path)
         if not path:
             raise IndexError("Item not found: {!r}".format(path))
 

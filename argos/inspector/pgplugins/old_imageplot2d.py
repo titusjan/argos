@@ -39,8 +39,8 @@ from argos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, BOTH_AXES, NO_LABE
 from argos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from argos.inspector.pgplugins.pghistlutitem import HistogramLUTItem
 from argos.qt import Qt, QtCore, QtGui, QtSlot
-from argos.utils.cls import array_has_real_numbers, check_class, is_an_array, to_string
-from argos.utils.cls import array_kind_label
+from argos.utils.cls import arrayHasRealNumbers, chechType, isAnArray, toString
+from argos.utils.cls import arrayKindLabel
 from argos.utils.defs import RIGHT_ARROW
 from argos.utils.masks import replaceMaskedValueWithFloat, nanPercentileOfSubsampledArrayWithMask, ArrayWithMask
 
@@ -67,7 +67,7 @@ def calcPgImagePlot2dDataRange(pgImagePlot2d, percentage, crossPlot, subsample):
             If the cursor is outside the image, there is no valid data under the cross-hair and
             the range will be determined from the sliced array as a fall back.
     """
-    check_class(pgImagePlot2d.slicedArray, ArrayWithMask) # sanity check
+    chechType(pgImagePlot2d.slicedArray, ArrayWithMask) # sanity check
 
     if crossPlot is None:
         array = pgImagePlot2d.slicedArray  # the whole image
@@ -134,7 +134,7 @@ class PgImagePlot2dCti(MainGroupCti):
             Vice versa, it can connect signals to the target.
         """
         super(PgImagePlot2dCti, self).__init__(nodeName)
-        check_class(pgImagePlot2d, PgImagePlot2d)
+        chechType(pgImagePlot2d, PgImagePlot2d)
         self.pgImagePlot2d = pgImagePlot2d
         imagePlotItem = self.pgImagePlot2d.imagePlotItem
         viewBox = imagePlotItem.getViewBox()
@@ -470,10 +470,10 @@ class PgImagePlot2d(AbstractInspector):
         if slicedArray is None:
             self._clearContents()
             raise InvalidDataError()  # Don't show message, to common.
-        elif not array_has_real_numbers(slicedArray.data):
+        elif not arrayHasRealNumbers(slicedArray.data):
             self._clearContents()
             raise InvalidDataError(
-                "Selected item contains {} data.".format(array_kind_label(slicedArray.data)))
+                "Selected item contains {} data.".format(arrayKindLabel(slicedArray.data)))
         else:
             self.slicedArray = slicedArray
 
@@ -540,7 +540,7 @@ class PgImagePlot2d(AbstractInspector):
             Draws a vertical line and a symbol at the position of the probe.
         """
         try:
-            check_class(viewPos, QtCore.QPointF)
+            chechType(viewPos, QtCore.QPointF)
             show_data_point = False # shows the data point as a circle in the cross hair plots
             self.crossPlotRow, self.crossPlotCol = None, None
 
@@ -566,9 +566,9 @@ class PgImagePlot2d(AbstractInspector):
 
                     self.crossPlotRow, self.crossPlotCol = row, col
                     index = tuple([row, col])
-                    valueStr = to_string(self.slicedArray.data[index],
-                                         masked=self.slicedArray.maskAt(index),
-                                         maskFormat='&lt;masked&gt;')
+                    valueStr = toString(self.slicedArray.data[index],
+                                        masked=self.slicedArray.maskAt(index),
+                                        maskFormat='&lt;masked&gt;')
 
                     txt = "({}, {}) = ({:d}, {:d}) {} {} = {}".format(
                         self.collector.rtiInfo['x-dim'], self.collector.rtiInfo['y-dim'],
@@ -586,7 +586,7 @@ class PgImagePlot2d(AbstractInspector):
                         # First determine which points are connected or separated by masks/nans.
                         rowData = self.slicedArray.data[row, :]
                         connected = np.isfinite(rowData)
-                        if is_an_array(self.slicedArray.mask):
+                        if isAnArray(self.slicedArray.mask):
                             connected = np.logical_and(connected, ~self.slicedArray.mask[row, :])
                         else:
                             connected = (np.zeros_like(rowData)
@@ -629,7 +629,7 @@ class PgImagePlot2d(AbstractInspector):
                         # First determine which points are connected or separated by masks/nans.
                         colData = self.slicedArray.data[:, col]
                         connected = np.isfinite(colData)
-                        if is_an_array(self.slicedArray.mask):
+                        if isAnArray(self.slicedArray.mask):
                             connected = np.logical_and(connected, ~self.slicedArray.mask[:, col])
                         else:
                             connected = (np.zeros_like(colData)

@@ -18,7 +18,7 @@ import logging
 
 from argos.info import PROJECT_NAME, VERSION, DEBUGGING
 from argos.qt import QtCore, QtGui, QtWidgets
-from argos.utils.cls import is_a_string
+from argos.utils.cls import isAString
 from argos.utils import moduleinfo as mi
 from argos.widgets.constants import MONO_FONT, FONT_SIZE
 
@@ -76,7 +76,7 @@ class AboutDialog(QtWidgets.QDialog):
             :param moduleInfo: can either be a string or a module info class.
                 In the first case, an object is instantiated as ImportedModuleInfo(moduleInfo).
         """
-        if is_a_string(moduleInfo):
+        if isAString(moduleInfo):
             moduleInfo = mi.ImportedModuleInfo(moduleInfo)
 
         line = "{:15s}: {}".format(moduleInfo.name, moduleInfo.verboseVersion)

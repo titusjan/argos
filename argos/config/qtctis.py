@@ -26,7 +26,7 @@ from argos.config.intcti import IntCti
 from argos.config.floatcti import FloatCti
 from argos.info import DEBUGGING
 from argos.qt import Qt, QtCore, QtGui, QtWidgets, QtSlot
-from argos.utils.cls import check_is_a_string
+from argos.utils.cls import checkIsAString
 from argos.utils.defs import InvalidInputError
 
 
@@ -460,7 +460,7 @@ class FontChoiceCti(ChoiceCti):
 
             For the (other) parameters see the AbstractCti constructor documentation.
         """
-        check_is_a_string(defaultFamily)
+        checkIsAString(defaultFamily)
 
         # Get a list of of configValues by reading them from a temporary QFontComboBox.
         tempFontComboBox = QtWidgets.QFontComboBox()

@@ -26,7 +26,7 @@ from argos.collect.collectortree import CollectorTree, CollectorSpinBox, SpinSli
 from argos.inspector.abstract import UpdateReason
 from argos.qt import Qt, QtWidgets, QtGui, QtCore, QtSignal, QtSlot
 from argos.repo.baserti import BaseRti
-from argos.utils.cls import check_class, check_is_a_sequence, check_is_an_array
+from argos.utils.cls import chechType, checkIsASequence, checkIsAnArray
 from argos.utils.masks import ArrayWithMask
 from argos.utils.moduleinfo import versionStrToTuple
 from argos.widgets.constants import TOP_DOCK_HEIGHT, DOCK_SPACING, DOCK_MARGIN
@@ -188,7 +188,7 @@ class Collector(BasePanel):
         """ Removes all comboboxes.
         """
         logger.debug("Collector clearAndSetComboBoxes: {}".format(axesNames))
-        check_is_a_sequence(axesNames)
+        checkIsASequence(axesNames)
         row = 0
         self._deleteComboBoxes(row)
         self.clear()
@@ -230,7 +230,7 @@ class Collector(BasePanel):
             Is a slot but the signal is usually connected to the Collector, which then calls
             this function directly.
         """
-        check_class(rti, BaseRti)
+        chechType(rti, BaseRti)
         #assert rti.isSliceable, "RTI must be sliceable" # TODO: maybe later
 
         self._rti = rti
@@ -603,7 +603,7 @@ class Collector(BasePanel):
             slicedArray = ma.MaskedArray(slicedArray)
 
         # Post-condition type check
-        check_is_an_array(slicedArray, np.ndarray)
+        checkIsAnArray(slicedArray, np.ndarray)
 
         # Enforce the return type to be a masked array.
         if not isinstance(slicedArray, ma.MaskedArray):

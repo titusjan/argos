@@ -27,7 +27,7 @@ from numpy.lib.npyio import NpzFile
 from argos.qt import QtWidgets
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.repo.memoryrtis import ArrayRti, SliceRti, MappingRti
-from argos.utils.cls import check_is_an_array, check_class
+from argos.utils.cls import checkIsAnArray, chechType
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +111,7 @@ class NumpyBinaryFileRti(ArrayRti):
         """ Uses numpy.load to open the underlying file
         """
         arr = np.load(self._fileName, allow_pickle=ALLOW_PICKLE)
-        check_is_an_array(arr)
+        checkIsAnArray(arr)
         self._array = arr
 
 
@@ -151,7 +151,7 @@ class NumpyCompressedFileRti(MappingRti):
         """ Uses numpy.load to open the underlying file
         """
         dct = np.load(self._fileName, allow_pickle=ALLOW_PICKLE)
-        check_class(dct, NpzFile)
+        chechType(dct, NpzFile)
         self._dictionary = dct
 
 

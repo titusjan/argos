@@ -31,7 +31,7 @@ from argos.qt import Qt, QtCore, QtGui, QtWidgets, QtSlot
 from argos.widgets.argostreeview import ArgosTreeView
 from argos.widgets.constants import RIGHT_DOCK_WIDTH, DOCK_SPACING, DOCK_MARGIN
 from argos.widgets.misc import BasePanel
-from argos.utils.cls import check_class
+from argos.utils.cls import chechType
 
 logger = logging.getLogger(__name__)
 
@@ -143,7 +143,7 @@ class ConfigWidget(BasePanel):
 
             :param resetMode: 'Ranges' all 'All'
         """
-        check_class(resetMode, ResetMode)
+        chechType(resetMode, ResetMode)
         if resetMode == ResetMode.All:
             self.resetButton.setDefaultAction(self.resetAllAction)
             self.modeAllAction.setChecked(True)

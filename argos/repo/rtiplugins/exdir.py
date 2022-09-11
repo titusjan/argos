@@ -34,7 +34,7 @@ from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.repo.baserti import BaseRti, shapeToSummary
 from argos.repo.filesytemrtis import createRtiFromFileName
 from argos.repo.rtiplugins.hdf5 import dimNamesFromDataset  # We can reuse it, the exdir module follows the h5py API.
-from argos.utils.cls import check_class, is_an_array
+from argos.utils.cls import chechType, isAnArray
 from argos.utils.defs import DIM_TEMPLATE, SUB_DIM_TEMPLATE
 from argos.utils.masks import maskedEqual
 
@@ -95,7 +95,7 @@ def dataSetMissingValue(exdirDataset):
     for key in ('missing_value', 'MissingValue', 'missingValue', 'FillValue', '_FillValue'):
         if key in attributes:
             missingDataValue = attributes[key]
-            if is_an_array(missingDataValue) and len(missingDataValue) == 1:
+            if isAnArray(missingDataValue) and len(missingDataValue) == 1:
                 return missingDataValue[0] # In case of HDF-EOS and NetCDF files
             else:
                 return missingDataValue
@@ -130,7 +130,7 @@ class ExdirScalarRti(BaseRti):
         """
         super(ExdirScalarRti, self).__init__(
             nodeName=nodeName, fileName=fileName, iconColor=iconColor)
-        check_class(exdirDataset, exdir.Dataset)
+        chechType(exdirDataset, exdir.Dataset)
         self._exdirDataset = exdirDataset
 
 
@@ -218,7 +218,7 @@ class ExdirFieldRti(BaseRti):
             The name of the field must be given to the nodeName parameter.
         """
         super(ExdirFieldRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        check_class(exdirDataset, exdir.Dataset)
+        chechType(exdirDataset, exdir.Dataset)
         self._exdirDataset = exdirDataset
 
 
@@ -364,7 +364,7 @@ class ExdirDatasetRti(BaseRti):
         """ Constructor
         """
         super(ExdirDatasetRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        check_class(exdirDataset, exdir.Dataset)
+        chechType(exdirDataset, exdir.Dataset)
         self._exdirDataset = exdirDataset
         self._isStructured = bool(self._exdirDataset.dtype.names)
 
@@ -481,7 +481,7 @@ class ExdirRawRti(BaseRti):
         """ Constructor
         """
         super(ExdirRawRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        check_class(exdirRaw, exdir.Raw, allow_none=True)
+        chechType(exdirRaw, exdir.Raw, allow_none=True)
 
         self._exdirRaw = exdirRaw
 
@@ -516,7 +516,7 @@ class ExdirGroupRti(BaseRti):
         """ Constructor
         """
         super(ExdirGroupRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        check_class(exdirGroup, exdir.Group, allow_none=True)
+        chechType(exdirGroup, exdir.Group, allow_none=True)
 
         self._exdirGroup = exdirGroup
 

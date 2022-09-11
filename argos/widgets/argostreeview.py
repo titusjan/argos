@@ -49,7 +49,7 @@ import logging
 from argos.qt import QtCore, QtWidgets
 from argos.qt.togglecolumn import ToggleColumnTreeView
 from argos.qt.treemodels import BaseTreeModel
-from argos.utils.cls import check_class
+from argos.utils.cls import chechType
 from argos.widgets.constants import TREE_ICON_SIZE
 
 
@@ -93,7 +93,7 @@ class ArgosTreeView(ToggleColumnTreeView):
         """ Sets the model.
             Checks that the model is a
         """
-        check_class(model, BaseTreeModel)
+        chechType(model, BaseTreeModel)
         super(ArgosTreeView, self).setModel(model)
 
 

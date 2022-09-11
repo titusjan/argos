@@ -7,7 +7,7 @@ Tests functionality from the utils package
 
 import unittest
 
-from argos.utils.cls import is_a_string, is_binary
+from argos.utils.cls import isAString, isBinary
 from argos.utils.misc import python2
 import numpy as np
 
@@ -40,17 +40,17 @@ class TestStringTypeDetection(unittest.TestCase):
         """
 
         if python2():
-            self.assertTrue(is_a_string(self.b_lit))
-            self.assertTrue(is_a_string(self.np_b_lit))
+            self.assertTrue(isAString(self.b_lit))
+            self.assertTrue(isAString(self.np_b_lit))
         else:
-            self.assertFalse(is_a_string(self.b_lit))
-            self.assertFalse(is_a_string(self.np_b_lit))
+            self.assertFalse(isAString(self.b_lit))
+            self.assertFalse(isAString(self.np_b_lit))
 
-        self.assertTrue(is_a_string(self.s_lit))
-        self.assertTrue(is_a_string(self.np_s_lit))
+        self.assertTrue(isAString(self.s_lit))
+        self.assertTrue(isAString(self.np_s_lit))
 
-        self.assertTrue(is_a_string(self.u_lit))
-        self.assertTrue(is_a_string(self.np_u_lit))
+        self.assertTrue(isAString(self.u_lit))
+        self.assertTrue(isAString(self.np_u_lit))
 
 
 
@@ -64,18 +64,18 @@ class TestStringTypeDetection(unittest.TestCase):
             u'unicode literal' False False
         """
 
-        self.assertTrue(is_binary(self.b_lit))
-        self.assertTrue(is_binary(self.np_b_lit))
+        self.assertTrue(isBinary(self.b_lit))
+        self.assertTrue(isBinary(self.np_b_lit))
 
         if python2():
-            self.assertTrue(is_binary(self.s_lit))
-            self.assertTrue(is_binary(self.np_s_lit))
+            self.assertTrue(isBinary(self.s_lit))
+            self.assertTrue(isBinary(self.np_s_lit))
         else:
-            self.assertFalse(is_binary(self.s_lit))
-            self.assertFalse(is_binary(self.np_s_lit))
+            self.assertFalse(isBinary(self.s_lit))
+            self.assertFalse(isBinary(self.np_s_lit))
 
-        self.assertFalse(is_binary(self.u_lit))
-        self.assertFalse(is_binary(self.np_u_lit))
+        self.assertFalse(isBinary(self.u_lit))
+        self.assertFalse(isBinary(self.np_u_lit))
 
 
 

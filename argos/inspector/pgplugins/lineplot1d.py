@@ -37,8 +37,8 @@ from argos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, NO_LABEL_STR,
                                               setXYAxesAutoRangeOn, PgAxisLabelCti,
                                               PgAxisLogModeCti, PgAxisRangeCti, PgPlotDataItemCti)
 from argos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
-from argos.utils.cls import array_has_real_numbers, check_class, is_an_array, to_string
-from argos.utils.cls import array_kind_label
+from argos.utils.cls import arrayHasRealNumbers, chechType, isAnArray, toString
+from argos.utils.cls import arrayKindLabel
 from argos.utils.defs import RIGHT_ARROW
 
 
@@ -56,7 +56,7 @@ class PgLinePlot1dCti(MainGroupCti):
         """
         super(PgLinePlot1dCti, self).__init__(nodeName=nodeName)
 
-        check_class(pgLinePlot1d, PgLinePlot1d)
+        chechType(pgLinePlot1d, PgLinePlot1d)
         self.pgLinePlot1d = pgLinePlot1d
 
         self.insertChild(ChoiceCti('title', 0, editable=True,
@@ -214,10 +214,10 @@ class PgLinePlot1d(AbstractInspector):
         if slicedArray is None:
             self._clearContents()
             raise InvalidDataError()  # Don't show message, too common.
-        elif not array_has_real_numbers(slicedArray.data):
+        elif not arrayHasRealNumbers(slicedArray.data):
             self._clearContents()
             raise InvalidDataError(
-                "Selected item contains {} data.".format(array_kind_label(slicedArray.data)))
+                "Selected item contains {} data.".format(arrayKindLabel(slicedArray.data)))
         else:
             self.slicedArray = slicedArray
 
@@ -247,7 +247,7 @@ class PgLinePlot1d(AbstractInspector):
         self.titleLabel.setText(self.configValue('title').format(**self.collector.rtiInfo))
 
         connected = np.isfinite(self.slicedArray.data)
-        if is_an_array(self.slicedArray.mask):
+        if isAnArray(self.slicedArray.mask):
             connected = np.logical_and(connected, ~self.slicedArray.mask)
         else:
             connected = np.zeros_like(self.slicedArray.data) if self.slicedArray.mask else connected
@@ -281,7 +281,7 @@ class PgLinePlot1d(AbstractInspector):
             Draws a vertical line and a symbol at the position of the probe.
         """
         try:
-            check_class(viewPos, QtCore.QPointF)
+            chechType(viewPos, QtCore.QPointF)
             self.crossLineVerShadow.setVisible(False)
             self.crossLineVertical.setVisible(False)
             self.probeLabel.setText("")
@@ -298,8 +298,8 @@ class PgLinePlot1d(AbstractInspector):
                     txt = "<span style='color: grey'>No data at cursor</span>"
                     self.probeLabel.setText(txt)
                 else:
-                    valueStr = to_string(data[index], masked=self.slicedArray.maskAt(index),
-                                         maskFormat='&lt;masked&gt;')
+                    valueStr = toString(data[index], masked=self.slicedArray.maskAt(index),
+                                        maskFormat='&lt;masked&gt;')
 
                     self.probeLabel.setText("{} = {:d} {} {} = {}".format(
                         self.collector.rtiInfo['x-dim'], index, RIGHT_ARROW,

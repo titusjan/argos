@@ -23,7 +23,7 @@ from argos.qt import Qt, QtCore, QtSlot
 from argos.qt.treemodels import BaseTreeModel
 from argos.config.abstractcti import ResetMode, DEFAULT_RESET_MODE
 from argos.config.groupcti import MainGroupCti
-from argos.utils.cls import type_name, check_class
+from argos.utils.cls import typeName, chechType
 
 
 logger = logging.getLogger(__name__)
@@ -87,7 +87,7 @@ class ConfigTreeModel(BaseTreeModel):
             elif column == self.COL_DEF_VALUE:
                 return treeItem.displayDefaultValue
             elif column == self.COL_CTI_TYPE:
-                return type_name(treeItem)
+                return typeName(treeItem)
             elif column == self.COL_DEBUG:
                 return treeItem.debugInfo
             else:
@@ -108,7 +108,7 @@ class ConfigTreeModel(BaseTreeModel):
             elif column == self.COL_DEF_VALUE:
                 return treeItem.displayDefaultValue
             elif column == self.COL_CTI_TYPE:
-                return type_name(treeItem)
+                return typeName(treeItem)
             elif column == self.COL_DEBUG:
                 return treeItem.debugInfo
             else:
@@ -237,7 +237,7 @@ class ConfigTreeModel(BaseTreeModel):
     def resetMode(self, value):
         """ Determines what is reset if autoReset is True (either axes or all settings)
         """
-        check_class(value, ResetMode)
+        chechType(value, ResetMode)
         self._resetMode = value
 
 

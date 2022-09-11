@@ -24,7 +24,7 @@ from argos.external.json_with_comments import parse_json_with_comments_file
 from argos.repo.baserti import BaseRti, lengthToSummary
 from argos.repo.memoryrtis import _createFromObject
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
-from argos.utils.cls import is_a_sequence, is_a_mapping, is_an_array, type_name
+from argos.utils.cls import isASequence, isAMapping, isAnArray, typeName
 from argos.utils.misc import pformat
 
 logger = logging.getLogger(__name__)
@@ -70,19 +70,19 @@ class JsonFileRti(BaseRti):
                      .format(self, self.iconColor, self.fileName))
 
         if self.hasChildren():
-            if is_a_sequence(self._data):
+            if isASequence(self._data):
                 for nr, elem in enumerate(self._data):
                     childItems.append(_createFromObject(
                         elem, nodeName="elem-{}".format(nr),
                         iconColor=self.iconColor, fileName=self.fileName))
 
-            elif is_a_mapping(self._data):
+            elif isAMapping(self._data):
                 for key, value in self._data.items():
                     childItems.append(_createFromObject(
                         value, nodeName=str(key),
                         iconColor=self.iconColor, fileName=self.fileName))
 
-            elif is_an_array(self._data):
+            elif isAnArray(self._data):
                 raise TypeError("Unexpected type in JSON: {}".format(type(self._data)))
 
             elif isinstance(self._data, bytearray):
@@ -106,9 +106,9 @@ class JsonFileRti(BaseRti):
             Returns False if the file is closed.
         """
         return (self.isOpen and
-                not is_a_sequence(self._data) and
-                not is_a_mapping(self._data) and
-                not is_an_array(self._data) and
+                not isASequence(self._data) and
+                not isAMapping(self._data) and
+                not isAnArray(self._data) and
                 not isinstance(self._data, bytearray))
 
 
@@ -142,11 +142,11 @@ class JsonFileRti(BaseRti):
         """
         if not self.isOpen:
             return ""
-        elif is_a_sequence(self._data):
+        elif isASequence(self._data):
             return "list"
-        elif is_a_mapping(self._data):
+        elif isAMapping(self._data):
             return ""
-        elif is_an_array(self._data):
+        elif isAnArray(self._data):
             return "array"
         elif isinstance(self._data, bytearray):
             return "array"
@@ -159,7 +159,7 @@ class JsonFileRti(BaseRti):
         """
 
         if self._containsScalar():
-            return type_name(self._data)
+            return typeName(self._data)
         else:
             return ""
 
@@ -170,11 +170,11 @@ class JsonFileRti(BaseRti):
         """
         if not self.isOpen:
             return ""
-        elif is_a_sequence(self._data):
+        elif isASequence(self._data):
             return lengthToSummary(len(self._data))
-        elif is_a_mapping(self._data):
+        elif isAMapping(self._data):
             return ""  # emtpy to be in-line with other group RTIs
-        elif is_an_array(self._data):
+        elif isAnArray(self._data):
             raise NotImplementedError("Not (yet) implemented")
         elif isinstance(self._data, bytearray):
             raise NotImplementedError("Not (yet) implemented")

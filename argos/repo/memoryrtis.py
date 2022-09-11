@@ -25,8 +25,8 @@ import numpy as np
 
 from .baserti import BaseRti, shapeToSummary, lengthToSummary
 from argos.repo.iconfactory import RtiIconFactory
-from argos.utils.cls import check_is_a_sequence, check_is_a_mapping, check_is_an_array, \
-    is_a_sequence, is_a_mapping, is_an_array, type_name
+from argos.utils.cls import checkIsASequence, checkIsAMapping, checkIsAnArray, \
+    isASequence, isAMapping, isAnArray, typeName
 from argos.utils.defs import DIM_TEMPLATE, SUB_DIM_TEMPLATE
 from argos.utils.misc import pformat
 
@@ -41,11 +41,11 @@ def _createFromObject(obj, *args, **kwargs):
         constructor (with exception of the FieldRti which is not auto-detected).
     """
     # logger.debug("_createFromObject: {} (args={}), (kwargs={})".format(obj, args, kwargs))
-    if is_a_sequence(obj):
+    if isASequence(obj):
         return SequenceRti(obj, *args, **kwargs)
-    elif is_a_mapping(obj):
+    elif isAMapping(obj):
         return MappingRti(obj, *args, **kwargs)
-    elif is_an_array(obj):
+    elif isAnArray(obj):
         return ArrayRti(obj, *args, **kwargs)
     elif isinstance(obj, bytearray):
         return ArrayRti(np.array(obj), *args, **kwargs)
@@ -131,7 +131,7 @@ class ScalarRti(BaseRti):
     def elementTypeName(self):
         """ String representation of the element type.
         """
-        return type_name(self._scalar)
+        return typeName(self._scalar)
 
 
     @property
@@ -160,7 +160,7 @@ class FieldRti(BaseRti):
             The attributes can be set so the parent's attributes can be reused.
         """
         super(FieldRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        check_is_an_array(array, allow_none=True)
+        checkIsAnArray(array, allow_none=True)
 
         self._array = array # The array of which this field is a part
         fieldName = self.nodeName
@@ -317,7 +317,7 @@ class ArrayRti(BaseRti):
             :type array: numpy.ndarray or None
         """
         super(ArrayRti, self).__init__(nodeName=nodeName, iconColor=iconColor, fileName=fileName)
-        check_is_an_array(array, allow_none=True)
+        checkIsAnArray(array, allow_none=True)
         self._array = array
         self._attributes = {} if attributes is None else attributes
 
@@ -466,7 +466,7 @@ class SyntheticArrayRti(ArrayRti):
         """ Evaluates the function to result an array
         """
         arr = self._fun()
-        check_is_an_array(arr)
+        checkIsAnArray(arr)
         self._array = arr
 
 
@@ -490,7 +490,7 @@ class SequenceRti(BaseRti):
             :type array: None or a Python sequence (e.g. list or tuple)
         """
         super(SequenceRti, self).__init__(nodeName=nodeName, iconColor=iconColor, fileName=fileName)
-        check_is_a_sequence(sequence, allow_none=True)
+        checkIsASequence(sequence, allow_none=True)
         self._sequence = sequence
         #self._array = NOT_SPECIFIED # To cache the sequence converted to a numpy array.
         self._attributes = {} if attributes is None else attributes
@@ -508,12 +508,12 @@ class SequenceRti(BaseRti):
     def dimensionality(self):
         """ String that describes if the RTI is an array, scalar, field, etc.
         """
-        return type_name(self._sequence)
+        return typeName(self._sequence)
 
 
     @property
     def typeName(self):
-        return type_name(self._sequence)
+        return typeName(self._sequence)
 
 
     @property
@@ -560,7 +560,7 @@ class MappingRti(BaseRti):
             The dictionary may be None for under(or None for undefined/unopened nodes)
         """
         super(MappingRti, self).__init__(nodeName=nodeName, iconColor=iconColor, fileName=fileName)
-        check_is_a_mapping(dictionary, allow_none=True)
+        checkIsAMapping(dictionary, allow_none=True)
         self._dictionary = dictionary
         self._attributes = {} if attributes is None else attributes
 

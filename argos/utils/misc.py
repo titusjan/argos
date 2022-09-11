@@ -23,7 +23,7 @@ import pprint
 from html import escape
 
 from argos.external.six import unichr
-from argos.utils.cls import is_a_string
+from argos.utils.cls import isAString
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +100,7 @@ def replaceStringsInDict(obj, old, new):
         return {key: replaceStringsInDict(value, old, new) for key, value in obj.items()}
     elif isinstance(obj, list):
         return [replaceStringsInDict(value, old, new) for value in obj]
-    elif is_a_string(obj):
+    elif isAString(obj):
         return obj.replace(old, new)
     else:
         return obj

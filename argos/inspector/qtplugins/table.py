@@ -34,8 +34,8 @@ from argos.inspector.abstract import AbstractInspector
 from argos.qt import Qt, QtCore, QtGui, QtWidgets
 from argos.widgets.constants import MONO_FONT, FONT_SIZE
 from argos.widgets.argostableview import ArgosTableView
-from argos.utils.cls import check_class, check_is_a_string
-from argos.utils.cls import to_string, is_an_array
+from argos.utils.cls import chechType, checkIsAString
+from argos.utils.cls import toString, isAnArray
 from argos.utils.misc import is_quoted
 
 logger = logging.getLogger(__name__)
@@ -74,8 +74,8 @@ def makeReplacementField(formatSpec, altFormatSpec='', testValue=None):
         :param testValue: if not None, result.format(testValue) will be evaluated as a test.
         :return: string
     """
-    check_is_a_string(formatSpec)
-    check_is_a_string(altFormatSpec)
+    checkIsAString(formatSpec)
+    checkIsAString(altFormatSpec)
     fmt = altFormatSpec if not formatSpec else formatSpec
 
     if is_quoted(fmt):
@@ -107,7 +107,7 @@ class TableInspectorCti(MainGroupCti):
 
         super(TableInspectorCti, self).__init__(nodeName)
 
-        check_class(tableInspector, TableInspector)
+        chechType(tableInspector, TableInspector)
         self.tableInspector = tableInspector
 
         # The defaultRowHeightCti and defaultColWidthCti are initialized with -1; they will get
@@ -501,7 +501,7 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
 
         nFields = len(self._fieldNames)
         mask = self._slicedArray.mask
-        if is_an_array(mask):
+        if isAnArray(mask):
             if self._separateFieldOrientation == Qt.Horizontal:
                 maskValue = mask[row, col // nFields][self._fieldNames[col % nFields]]
             elif self._separateFieldOrientation == Qt.Vertical:
@@ -513,7 +513,7 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
 
         # Here maskValue can still be a list in case of structured arrays. It can even still be
         # a numpy array in case of a structured array with sub arrays as fields
-        if is_an_array(maskValue):
+        if isAnArray(maskValue):
             allMasked = np.all(maskValue)
         else:
             try:
@@ -529,17 +529,17 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         """
         try:
             if role == Qt.DisplayRole:
-                return to_string(self._cellValue(index), masked=self._cellMask(index),
-                                 decode_bytes=self.encoding, maskFormat=self.maskFormat,
-                                 strFormat=self.strFormat, intFormat=self.intFormat,
-                                 numFormat=self.numFormat, otherFormat=self.otherFormat)
+                return toString(self._cellValue(index), masked=self._cellMask(index),
+                                decode_bytes=self.encoding, maskFormat=self.maskFormat,
+                                strFormat=self.strFormat, intFormat=self.intFormat,
+                                numFormat=self.numFormat, otherFormat=self.otherFormat)
 
             elif role == Qt.ToolTipRole:
                 fmt = '{!r}' # Use __repr__ for toolbar, except for strings
-                return to_string(self._cellValue(index), masked=self._cellMask(index),
-                                 decode_bytes=self.encoding, maskFormat=fmt,
-                                 strFormat=self.strFormat, intFormat=fmt,
-                                 numFormat=fmt, otherFormat=fmt)
+                return toString(self._cellValue(index), masked=self._cellMask(index),
+                                decode_bytes=self.encoding, maskFormat=fmt,
+                                strFormat=self.strFormat, intFormat=fmt,
+                                numFormat=fmt, otherFormat=fmt)
 
             elif role == Qt.FontRole:
                 #assert self._font, "Font undefined"
@@ -547,7 +547,7 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
 
             elif role == Qt.TextColorRole:
                 masked = self._cellMask(index)
-                if not is_an_array(masked) and masked:
+                if not isAnArray(masked) and masked:
                     return self.missingColor
                 else:
                     return self.dataColor
@@ -627,5 +627,5 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         """ Sets the font that will be returned when data() is called with the Qt.FontRole.
             Can be a QFont or None if no font is set.
         """
-        check_class(font, QtGui.QFont, allow_none=True)
+        chechType(font, QtGui.QFont, allow_none=True)
         self._font = font

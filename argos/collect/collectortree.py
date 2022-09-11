@@ -27,7 +27,7 @@ from argos.info import DEBUGGING
 from argos.qt import Qt, QtCore, QtGui, QtWidgets, QtSlot
 from argos.qt.togglecolumn import ToggleColumnTreeView
 from argos.widgets.constants import COLLECTOR_TREE_ICON_SIZE
-from argos.utils.cls import check_class
+from argos.utils.cls import chechType
 
 logger = logging.getLogger(__name__)
 
@@ -250,8 +250,8 @@ class SpinSlider(QtWidgets.QWidget):
         """
         super(SpinSlider, self).__init__(parent=parent)
 
-        check_class(spinBox, QtWidgets.QSpinBox, allow_none=True)
-        check_class(slider, QtWidgets.QSlider, allow_none=True)
+        chechType(spinBox, QtWidgets.QSpinBox, allow_none=True)
+        chechType(slider, QtWidgets.QSlider, allow_none=True)
 
         self.layout = QtWidgets.QHBoxLayout(self)
         self.layout.setContentsMargins(*layoutContentsMargins)

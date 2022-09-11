@@ -21,7 +21,7 @@ import logging, inspect, os, sys
 import traceback
 
 from argos.info import DEBUGGING
-from argos.utils.cls import import_symbol, check_is_a_string, type_name, check_class
+from argos.utils.cls import importSymbol, checkIsAString, typeName, chechType
 from argos.reg.tabmodel import BaseItem, BaseItemStore, BaseTableModel
 from argos.qt import Qt, QtGui
 from argos.utils.misc import string_to_identifier
@@ -83,7 +83,7 @@ class BaseRegItem(BaseItem):
 
 
     def __repr__(self):
-        return "<{} (Ox{:x}): {!r}>".format(type_name(self), id(self), self.name)
+        return "<{} (Ox{:x}): {!r}>".format(typeName(self), id(self), self.name)
 
 
     @property
@@ -207,7 +207,7 @@ class BaseRegItem(BaseItem):
                 if pyPath and pyPath not in sys.path:
                     logger.debug("Appending {!r} to the PythonPath.".format(pyPath))
                     sys.path.append(pyPath)
-            self._cls = import_symbol(self.absClassName)
+            self._cls = importSymbol(self.absClassName)
         except Exception as ex:
             # Add traceback in human readable form to the exception for later printing.
             # This is a hack for Python-2 to store the traceback later use. See https://stackoverflow.com/a/11415140/
@@ -288,7 +288,7 @@ class BaseRegistryModel(BaseTableModel):
             :param parent: Parent widget
         """
         super(BaseRegistryModel, self).__init__(store, parent)
-        check_class(store, BaseRegistry)
+        chechType(store, BaseRegistry)
 
         self.regularBrush = QtGui.QBrush(QCOLOR_REGULAR)
         self.notImportedBrush = QtGui.QBrush(QCOLOR_NOT_IMPORTED)
@@ -335,7 +335,7 @@ class BaseRegistryModel(BaseTableModel):
     def tryImportRegItem(self, regItem):
         """ Tries to import a registry item (plugin)
         """
-        check_class(regItem, self.store.ITEM_CLASS)
+        chechType(regItem, self.store.ITEM_CLASS)
         logger.debug("Importing {}...".format(regItem.name))
         regItem.tryImportClass()
         self.emitDataChanged(regItem)

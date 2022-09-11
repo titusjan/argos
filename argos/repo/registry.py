@@ -24,7 +24,7 @@ from fnmatch import fnmatch
 from argos.info import DEBUGGING
 from argos.reg.basereg import BaseRegItem, BaseRegistry, RegType
 from argos.repo.iconfactory import RtiIconFactory
-from argos.utils.cls import check_class, is_a_color_str
+from argos.utils.cls import chechType, isAColorString
 
 logger = logging.getLogger(__name__)
 
@@ -58,8 +58,8 @@ class RtiRegItem(BaseRegItem):
         """ Constructor. See the ClassRegItem class doc string for the parameter help.
         """
         super(RtiRegItem, self).__init__(name=name, absClassName=absClassName, pythonPath=pythonPath)
-        check_class(globs, str)
-        assert is_a_color_str(iconColor), \
+        chechType(globs, str)
+        assert isAColorString(iconColor), \
             "Icon color for {} is not a color string: {!r}".format(self, iconColor)
 
         self._data['iconColor'] = iconColor

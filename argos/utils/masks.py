@@ -28,7 +28,7 @@ import warnings
 import numpy as np
 import numpy.ma as ma
 
-from argos.utils.cls import check_class, is_an_array, check_is_an_array, array_is_structured
+from argos.utils.cls import chechType, isAnArray, checkIsAnArray, arrayIsStructured
 
 logger = logging.getLogger(__name__)
 
@@ -51,8 +51,8 @@ class ArrayWithMask(object):
             :param mask: array with mask or single boolean for the complete mask
             :param fill_value:
         """
-        check_is_an_array(data)
-        check_class(mask, (np.ndarray, bool, np.bool_))
+        checkIsAnArray(data)
+        chechType(mask, (np.ndarray, bool, np.bool_))
 
         # Init fields
         self._data = None
@@ -74,7 +74,7 @@ class ArrayWithMask(object):
     @data.setter
     def data(self, values):
         """ The array values. Must be a numpy array."""
-        check_is_an_array(values)
+        checkIsAnArray(values)
         self._data = values
 
 
@@ -87,7 +87,7 @@ class ArrayWithMask(object):
     @mask.setter
     def mask(self, mask):
         """ The mask values. Must be an array or a boolean scalar."""
-        check_class(mask, (np.ndarray, bool, np.bool_))
+        chechType(mask, (np.ndarray, bool, np.bool_))
         if isinstance(mask, (bool, np.bool_)):
             self._mask = bool(mask)
         else:
@@ -109,7 +109,7 @@ class ArrayWithMask(object):
     def checkIsConsistent(self):
         """ Raises a ConsistencyError if the mask has an incorrect shape.
         """
-        if is_an_array(self.mask) and self.mask.shape != self.data.shape:
+        if isAnArray(self.mask) and self.mask.shape != self.data.shape:
             raise ConsistencyError("Shape mismatch mask={}, data={}"
                                    .format(self.mask.shape, self.data.shape))
 
@@ -124,7 +124,7 @@ class ArrayWithMask(object):
         if isinstance(masked_arr, ArrayWithMask):
             return masked_arr
 
-        check_class(masked_arr, (np.ndarray, ma.MaskedArray))
+        chechType(masked_arr, (np.ndarray, ma.MaskedArray))
 
         # A MaskedConstant (i.e. masked) is a special case of MaskedArray. It does not seem to have
         # a fill_value so we use None to use the default.
@@ -191,7 +191,7 @@ class ArrayWithMask(object):
             :return: copy/view with transposed
         """
         tdata = np.transpose(self.data, *args, **kwargs)
-        tmask = np.transpose(self.mask, *args, **kwargs) if is_an_array(self.mask) else self.mask
+        tmask = np.transpose(self.mask, *args, **kwargs) if isAnArray(self.mask) else self.mask
         return ArrayWithMask(tdata, tmask, self.fill_value)
 
 
@@ -261,8 +261,8 @@ def nanPercentileOfSubsampledArrayWithMask(arrayWithMask, percentiles, subsample
 
         If subsample is False, no sub sampling is done and it just calls maskedNanPercentile
     """
-    check_class(subsample, bool)
-    check_class(arrayWithMask, ArrayWithMask)
+    chechType(subsample, bool)
+    chechType(arrayWithMask, ArrayWithMask)
 
     maskedArray = arrayWithMask.asMaskedArray()
 
@@ -282,7 +282,7 @@ def _subsampleArray(array, targetNumElements=40000):
 
         If the array is already smaller than 40000 elements, no subsampling will be done.
     """
-    check_class(array, np.ndarray)
+    chechType(array, np.ndarray)
     # logger.debug("_subsampleArray: {}, shape={}, dtype={}"
     #              .format(type(array), array.shape, array.dtype))
     oldShape = array.shape
@@ -304,7 +304,7 @@ def _maskedNanPercentile(maskedArray, percentiles, *args, **kwargs):
 
         The *args and **kwargs are passed on to np.nanpercentile
     """
-    check_class(maskedArray, ma.masked_array)
+    chechType(maskedArray, ma.masked_array)
 
     #https://docs.scipy.org/doc/numpy/reference/maskedarray.generic.html#accessing-the-data
     awm = ArrayWithMask.createFromMaskedArray(maskedArray)
@@ -360,7 +360,7 @@ def fillValuesToNan(masked_array):
         In that case the original array is returned.
     """
     if masked_array is not None and masked_array.dtype.kind == 'f':
-        check_class(masked_array, ma.masked_array)
+        chechType(masked_array, ma.masked_array)
         logger.debug("Replacing fill_values by NaNs")
         masked_array[:] = ma.filled(masked_array, np.nan)
         masked_array.set_fill_value(np.nan)
@@ -379,7 +379,7 @@ def maskedEqual(array, missingValue):
         If the data is a structured array the mask is applied for every field (i.e. forming a
         logical-and). Otherwise, ma.masked_equal is called.
     """
-    if array_is_structured(array):
+    if arrayIsStructured(array):
         # Enforce the array to be masked
         if not isinstance(array, ma.MaskedArray):
             array = ma.MaskedArray(array)
@@ -401,10 +401,10 @@ def maskedEqual(array, missingValue):
                     logger.warning("Missing values can't be determined for field: {}. Reason: {}"
                                    .format(field, ex))
 
-        check_class(array, ma.MaskedArray) # post-condition check
+        chechType(array, ma.MaskedArray) # post-condition check
         return array
     else:
         # masked_equal works with missing is None
         result = ma.masked_equal(array, missingValue, copy=False)
-        check_class(result, ma.MaskedArray) # post-condition check
+        chechType(result, ma.MaskedArray) # post-condition check
         return result

@@ -44,7 +44,7 @@ URL_PYTHON_ENCODINGS_DOC = "https://docs.python.org/3/library/codecs.html#standa
 # Type conversion #
 ###################
 
-def environment_var_to_bool(env_var):
+def environmentVarToBool(env_var):
     """ Converts an environment variable to a boolean
 
         Returns False if the environment variable is False, 0 or a case-insenstive string "false"
@@ -59,7 +59,7 @@ def environment_var_to_bool(env_var):
 
     if isinstance(env_var, numbers.Number):
         return bool(env_var)
-    elif is_a_string(env_var):
+    elif isAString(env_var):
         env_var = env_var.lower().strip()
         if env_var in "false":
             return False
@@ -69,14 +69,14 @@ def environment_var_to_bool(env_var):
         return bool(env_var)
 
 
-def fill_values_to_nan(masked_array):
+def fillValuesToNan(masked_array):
     """ Replaces the fill_values of the masked array by NaNs
 
         If the array is None or it does not contain floating point values, it cannot contain NaNs.
         In that case the original array is returned.
     """
     if masked_array is not None and masked_array.dtype.kind == 'f':
-        check_class(masked_array, ma.masked_array)
+        chechType(masked_array, ma.masked_array)
         logger.debug("Replacing fill_values by NaNs")
         masked_array[:] = ma.filled(masked_array, np.nan)
         masked_array.set_fill_value(np.nan)
@@ -90,8 +90,8 @@ def fill_values_to_nan(masked_array):
 
 _DEFAULT_NUM_FORMAT = '{}'  # Will print all relevant decimals (in Python 3)
 
-def to_string(var, masked=None, decode_bytes='utf-8', maskFormat='', strFormat='{}',
-              intFormat='{}', numFormat=_DEFAULT_NUM_FORMAT, noneFormat='{!r}', otherFormat='{}'):
+def toString(var, masked=None, decode_bytes='utf-8', maskFormat='', strFormat='{}',
+             intFormat='{}', numFormat=_DEFAULT_NUM_FORMAT, noneFormat='{!r}', otherFormat='{}'):
     """ Converts var to a python string or unicode string so Qt widgets can display them.
 
         If var consists of bytes, the decode_bytes is used to decode the bytes.
@@ -115,7 +115,7 @@ def to_string(var, masked=None, decode_bytes='utf-8', maskFormat='', strFormat='
     #logger.debug("to_string: {!r} ({})".format(var, type(var)))
 
     # Decode and select correct format specifier.
-    if is_binary(var):
+    if isBinary(var):
         fmt = strFormat
         try:
             decodedVar = var.decode(decode_bytes, 'replace')
@@ -126,7 +126,7 @@ def to_string(var, masked=None, decode_bytes='utf-8', maskFormat='', strFormat='
     # elif is_text(var):   # is 'str' in Python 3
     #     fmt = strFormat
     #     decodedVar = six.text_type(var)
-    elif is_a_string(var):
+    elif isAString(var):
         fmt = strFormat
         decodedVar = str(var)
     elif isinstance(var, numbers.Integral):
@@ -163,7 +163,7 @@ def to_string(var, masked=None, decode_bytes='utf-8', maskFormat='', strFormat='
     return result
 
 
-def is_a_string(var, allow_none=False):
+def isAString(var, allow_none=False):
     """ Returns True if var is a string (ascii or unicode)
 
         Result             py-2  py-3
@@ -177,15 +177,15 @@ def is_a_string(var, allow_none=False):
     return isinstance(var, str) or (var is None and allow_none)
 
 
-def check_is_a_string(var, allow_none=False):
+def checkIsAString(var, allow_none=False):
     """ Calls is_a_string and raises a type error if the check fails.
     """
-    if not is_a_string(var, allow_none=allow_none):
+    if not isAString(var, allow_none=allow_none):
         raise TypeError("var must be a string, however type(var) is {}"
                         .format(type(var)))
 
 
-def is_binary(var, allow_none=False):
+def isBinary(var, allow_none=False):
     """ Returns True if var is a binary (bytes) objects
 
         Also works with the corresponding numpy types.
@@ -193,49 +193,49 @@ def is_binary(var, allow_none=False):
     return isinstance(var, bytes) or (var is None and allow_none)
 
 
-def is_a_sequence(var, allow_none=False):  # TODO: use iterable?
+def isASequence(var, allow_none=False):  # TODO: use iterable?
     """ Returns True if var is a list or a tuple (but not a string!)
     """
     return isinstance(var, (list, tuple)) or (var is None and allow_none)
 
 
-def check_is_a_sequence(var, allow_none=False):
+def checkIsASequence(var, allow_none=False):
     """ Calls is_a_sequence and raises a type error if the check fails.
     """
-    if not is_a_sequence(var, allow_none=allow_none):
+    if not isASequence(var, allow_none=allow_none):
         raise TypeError("var must be a list or tuple, however type(var) is {}"
                         .format(type(var)))
 
 
-def is_a_mapping(var, allow_none=False):
+def isAMapping(var, allow_none=False):
     """ Returns True if var is a dictionary
     """
     return isinstance(var, dict) or (var is None and allow_none)
 
 
-def check_is_a_mapping(var, allow_none=False):
+def checkIsAMapping(var, allow_none=False):
     """ Calls is_a_mapping and raises a type error if the check fails.
     """
-    if not is_a_mapping(var, allow_none=allow_none):
+    if not isAMapping(var, allow_none=allow_none):
         raise TypeError("var must be a dict, however type(var) is {}"
                         .format(type(var)))
 
 
-def is_an_array(var, allow_none=False):
+def isAnArray(var, allow_none=False):
     """ Returns True if var is a numpy array.
     """
     return isinstance(var, np.ndarray) or (var is None and allow_none)
 
 
-def check_is_an_array(var, allow_none=False):
+def checkIsAnArray(var, allow_none=False):
     """ Calls is_an_array and raises a type error if the check fails.
     """
-    if not is_an_array(var, allow_none=allow_none):
+    if not isAnArray(var, allow_none=allow_none):
         raise TypeError("var must be a NumPy array, however type(var) is {}"
                         .format(type(var)))
 
 
-def array_is_structured(array):
+def arrayIsStructured(array):
     """ Returns True if the array has a structured data type.
     """
     return bool(array.dtype.names)
@@ -256,13 +256,13 @@ KIND_LABEL = dict(
 )
 
 
-def array_kind_label(array):
+def arrayKindLabel(array):
     """ Returns short string describing the array data type kind
     """
     return KIND_LABEL[array.dtype.kind]
 
 
-def array_has_real_numbers(array):
+def arrayHasRealNumbers(array):
     """ Uses the dtype kind of the numpy array to determine if it represents real numbers.
 
         That is, the array kind should be one of: i u f
@@ -274,7 +274,7 @@ def array_has_real_numbers(array):
     return kind in 'iuf'
 
 
-def check_class(obj, target_class, allow_none = False):
+def chechType(obj, target_class, allow_none = False):
     """ Checks that the  obj is a (sub)type of target_class.
         Raises a TypeError if this is not the case.
 
@@ -293,20 +293,20 @@ def check_class(obj, target_class, allow_none = False):
 
 COLOR_REGEXP = re.compile('^#[0-9A-Fa-f]{6}$')  # Hex color string representation
 
-def is_a_color_str(colorStr, allow_none=False):
+def isAColorString(colorStr, allow_none=False):
     """ Returns True if colorStr is a string starting with '#' folowed by 6 hexadecimal digits.
     """
-    if not is_a_string(colorStr, allow_none=allow_none):
+    if not isAString(colorStr, allow_none=allow_none):
         return False
 
     return COLOR_REGEXP.match(colorStr)
 
 
 
-def check_is_a_color_str(var, allow_none=False):
+def checkIsAColorString(var, allow_none=False):
     """ Calls is_an_array and raises a type error if the check fails.
     """
-    if not check_is_a_color_str(var, allow_none=allow_none):
+    if not checkIsAColorString(var, allow_none=allow_none):
         raise TypeError("var must be a NumPy array, however type(var) is {}"
                         .format(type(var)))
 
@@ -319,12 +319,12 @@ def check_is_a_color_str(var, allow_none=False):
 #  Fix when only using Python 3
 # #http://stackoverflow.com/questions/1060499/difference-between-typeobj-and-obj-class
 
-def type_name(var):
+def typeName(var):
     """ Returns the name of the type of var"""
     return type(var).__name__
 
 
-def get_class_name(obj):
+def getClassName(obj):
     """ Returns the class name of an object.
     """
     return obj.__class__.__name__
@@ -343,7 +343,7 @@ def get_full_class_name(obj):
 
 # TODO: use importlib.import_module?
 # Perhaps in Python 3. As long as the code below works there is no need to change it.
-def import_symbol(full_symbol_name):
+def importSymbol(full_symbol_name):
     """ Imports a symbol (e.g. class, variable, etc) from a dot separated name.
         Can be used to create a class whose type is only known at run-time.
 
@@ -370,8 +370,7 @@ def import_symbol(full_symbol_name):
         raise ImportError("full_symbol_name should contain a module")
     else:
         assert False, "Bug: parts should have 1 or elements: {}".format(parts)
-
-
+        
 
 
 class SingletonMixin():

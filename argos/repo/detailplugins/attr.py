@@ -21,7 +21,7 @@ import logging
 
 from argos.qt import QtWidgets
 from argos.repo.detailpanes import DetailTablePane
-from argos.utils.cls import to_string, type_name
+from argos.utils.cls import toString, typeName
 from argos.widgets.constants import COL_SUMMARY_WIDTH
 
 logger = logging.getLogger(__name__)
@@ -63,10 +63,10 @@ class AttributesPane(DetailTablePane):
             table.setRowCount(len(attributes))
 
             for row, (attrName, attrValue) in enumerate(sorted(attributes.items())):
-                attrStr = to_string(attrValue, decode_bytes='utf-8')
+                attrStr = toString(attrValue, decode_bytes='utf-8')
 
                 try:
-                    type_str = type_name(attrValue)
+                    type_str = typeName(attrValue)
                 except Exception as ex:
                     logger.exception(ex)
                     type_str = "<???>"

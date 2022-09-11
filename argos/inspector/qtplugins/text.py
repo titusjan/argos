@@ -24,7 +24,7 @@ from argos.config.choicecti import ChoiceCti
 from argos.config.qtctis import FontCti
 from argos.inspector.abstract import AbstractInspector
 from argos.qt import QtGui, QtWidgets
-from argos.utils.cls import to_string, check_class
+from argos.utils.cls import toString, chechType
 from argos.widgets.constants import MONO_FONT, FONT_SIZE
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ class TextInspectorCti(MainGroupCti):
         """
         super(TextInspectorCti, self).__init__(nodeName)
 
-        check_class(textInspector, TextInspector)
+        chechType(textInspector, TextInspector)
         self.textInspector = textInspector
 
         Opt = QtGui.QTextOption
@@ -128,8 +128,8 @@ class TextInspector(AbstractInspector):
         slicedScalar = maskedArr[()] # Convert to Numpy scalar
         isMasked = maskedArr.mask[()]
 
-        text = to_string(slicedScalar, masked=isMasked, maskFormat='--',
-                         decode_bytes=self.config.encodingCti.configValue)
+        text = toString(slicedScalar, masked=isMasked, maskFormat='--',
+                        decode_bytes=self.config.encodingCti.configValue)
         self.editor.setPlainText(text)
         self.editor.setWordWrapMode(self.config.wordWrapCti.configValue)
 

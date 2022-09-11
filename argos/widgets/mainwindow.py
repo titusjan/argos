@@ -46,7 +46,7 @@ from argos.repo.iconfactory import RtiIconFactory
 from argos.repo.registry import RtiRegistry
 from argos.repo.repotreeview import RepoWidget
 from argos.repo.testdata import createArgosTestData
-from argos.utils.cls import check_class, check_is_a_sequence
+from argos.utils.cls import chechType, checkIsASequence
 from argos.utils.dirs import argosConfigDirectory, argosLogDirectory
 from argos.utils.misc import string_to_identifier
 from argos.utils.moduleinfo import versionStrToTuple
@@ -662,7 +662,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         ###### Set self.inspector ######
 
-        check_class(inspector, AbstractInspector, allow_none=True)
+        chechType(inspector, AbstractInspector, allow_none=True)
 
         logger.debug("Disabling updates.")
         self.setUpdatesEnabled(False)
@@ -802,7 +802,7 @@ class MainWindow(QtWidgets.QMainWindow):
             :param fileMode: is passed to the file dialog.
             :rtype fileMode: QtWidgets.QFileDialog.FileMode constant
         """
-        check_is_a_sequence(fileNames, allow_none=True)
+        checkIsASequence(fileNames, allow_none=True)
         if fileNames is None:
             dialog = QtWidgets.QFileDialog(self, caption=caption)
 

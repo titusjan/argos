@@ -26,7 +26,7 @@ from argos.qt import Qt, QtCore, QtGui, QtWidgets, QtSlot
 from argos.qt.misc import getWidgetGeom, getWidgetState
 from argos.widgets.constants import MONO_FONT, FONT_SIZE, COLOR_ERROR
 from argos.widgets.misc import processEvents
-from argos.utils.cls import check_is_a_sequence
+from argos.utils.cls import checkIsASequence
 from argos.utils.config import ConfigDict
 from argos.utils.misc import wrapHtmlColor
 
@@ -359,7 +359,7 @@ class TestWalkDialog(QtWidgets.QDialog):
 
         try:
             timeAtStart = time.perf_counter()
-            check_is_a_sequence(nodePaths) # prevent accidental iteration over strings.
+            checkIsASequence(nodePaths) # prevent accidental iteration over strings.
 
             for numVisited, nodePath in enumerate(nodePaths):
                 nodeItem, nodeIndex = self.repoTreeView.model().findItemAndIndex(nodePath)

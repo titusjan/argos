@@ -24,7 +24,7 @@ from argos.qt.treemodels import BaseTreeModel
 from argos.repo.filesytemrtis import createRtiFromFileName
 from argos.repo.baserti import BaseRti
 from argos.repo.registry import ICON_COLOR_UNDEF, RtiRegItem
-from argos.utils.cls import to_string, type_name, check_class
+from argos.utils.cls import toString, typeName, chechType
 from argos.utils.dirs import normRealPath
 
 # The cast to int is necessary to avoid a bug in PySide, See:
@@ -98,9 +98,9 @@ class RepoTreeModel(BaseTreeModel):
             elif column == self.COL_CHUNKING:
                 return treeItem.chunksString
             elif column == self.COL_MISSING_DATA:
-                return to_string(treeItem.missingDataValue, noneFormat='') # empty str for Nones
+                return toString(treeItem.missingDataValue, noneFormat='') # empty str for Nones
             elif column == self.COL_RTI_TYPE:
-                return type_name(treeItem)
+                return typeName(treeItem)
             elif column == self.COL_EXCEPTION:
                 return str(treeItem.exception) if treeItem.exception else ''
             elif column == self.COL_SUMMARY:
@@ -133,9 +133,9 @@ class RepoTreeModel(BaseTreeModel):
             elif column == self.COL_CHUNKING:
                 return treeItem.chunksString
             elif column == self.COL_MISSING_DATA:
-                return to_string(treeItem.missingDataValue, noneFormat='') # empty str for Nones
+                return toString(treeItem.missingDataValue, noneFormat='') # empty str for Nones
             elif column == self.COL_RTI_TYPE:
-                return type_name(treeItem)
+                return typeName(treeItem)
             elif column == self.COL_KIND:
                 return treeItem.dimensionality
             elif column == self.COL_ELEM_TYPE:
@@ -238,7 +238,7 @@ class RepoTreeModel(BaseTreeModel):
             If position is None the child will be appended as the last child of the parent.
             Returns the index of the newly inserted RTI
         """
-        check_class(rtiRegItem, RtiRegItem, allow_none=True)
+        chechType(rtiRegItem, RtiRegItem, allow_none=True)
         fileName = normRealPath(fileName)
         logger.info("Loading data from: {!r}".format(fileName))
 

@@ -29,7 +29,7 @@ import h5py
 
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.repo.baserti import BaseRti, shapeToSummary
-from argos.utils.cls import to_string, check_class, is_an_array
+from argos.utils.cls import toString, chechType, isAnArray
 from argos.utils.defs import DIM_TEMPLATE, SUB_DIM_TEMPLATE, CONTIGUOUS
 from argos.utils.masks import maskedEqual
 from argos.utils.moduleinfo import versionStrToTuple
@@ -137,7 +137,7 @@ def dataSetUnit(h5Dataset):
         if key in attributes:
             # In Python3 the attributes are byte strings so we must decode them
             # This a bug in h5py, see https://github.com/h5py/h5py/issues/379
-            return to_string(attributes[key])
+            return toString(attributes[key])
     # Not found
     return ''
 
@@ -178,7 +178,7 @@ def dataSetMissingValue(h5Dataset):
     for key in ('missing_value', 'MissingValue', 'missingValue', 'FillValue', '_FillValue'):
         if key in attributes:
             missingDataValue = attributes[key]
-            if is_an_array(missingDataValue) and len(missingDataValue) == 1:
+            if isAnArray(missingDataValue) and len(missingDataValue) == 1:
                 return missingDataValue[0] # In case of HDF-EOS and NetCDF files
             else:
                 return missingDataValue
@@ -216,7 +216,7 @@ class H5pyScalarRti(BaseRti):
         """
         super(H5pyScalarRti, self).__init__(
             nodeName=nodeName, fileName=fileName, iconColor=iconColor)
-        check_class(h5Dataset, h5py.Dataset)
+        chechType(h5Dataset, h5py.Dataset)
         self._h5Dataset = h5Dataset
 
 
@@ -329,7 +329,7 @@ class H5pyFieldRti(BaseRti):
         """ Constructor.
         """
         super(H5pyFieldRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        check_class(h5Dataset, h5py.Dataset)
+        chechType(h5Dataset, h5py.Dataset)
         self._h5Dataset = h5Dataset
 
         self._subArray = subArray # The array that this field contains. Can be h5Dataset itself.
@@ -508,7 +508,7 @@ class H5pyDatasetRti(BaseRti):
         """ Constructor
         """
         super(H5pyDatasetRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        check_class(h5Dataset, h5py.Dataset)
+        chechType(h5Dataset, h5py.Dataset)
         self._h5Dataset = h5Dataset
         self._isStructured = bool(self._h5Dataset.dtype.names)
 
@@ -665,7 +665,7 @@ class H5pyGroupRti(BaseRti):
         """ Constructor
         """
         super(H5pyGroupRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        check_class(h5Group, h5py.Group, allow_none=True)
+        chechType(h5Group, h5py.Group, allow_none=True)
 
         self._h5Group = h5Group
 

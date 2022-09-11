@@ -23,7 +23,7 @@ from argos.config.abstractcti import ResetMode
 from argos.config.groupcti import MainGroupCti
 from argos.info import DEBUGGING
 from argos.qt import QtWidgets, QtSignal
-from argos.utils.cls import type_name, check_class
+from argos.utils.cls import typeName, chechType
 from argos.widgets.constants import DOCK_SPACING, DOCK_MARGIN
 from argos.widgets.display import MessageDisplay
 from argos.widgets.misc import BasePanel
@@ -231,7 +231,7 @@ class AbstractInspector(QtWidgets.QStackedWidget):
             logger.exception(ex)
             self._clearContents()
             self.setCurrentIndex(self.ERROR_PAGE_IDX)
-            self._showError(msg=str(ex), title=type_name(ex))
+            self._showError(msg=str(ex), title=typeName(ex))
 
             self.sigUpdated.emit(False)
 

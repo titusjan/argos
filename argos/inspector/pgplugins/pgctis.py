@@ -46,7 +46,7 @@ from argos.inspector.pgplugins.pghistlutitem import HistogramLUTItem
 from argos.qt import QtCore, QtGui, QtWidgets, QtSlot
 from argos.qt.misc import setWidgetSizePolicy
 from argos.repo.colors import CmLibModelSingleton, DEFAULT_COLOR_MAP
-from argos.utils.cls import check_class
+from argos.utils.cls import chechType
 from argos.utils.masks import nanPercentileOfSubsampledArrayWithMask
 
 
@@ -425,7 +425,7 @@ class PgAxisRangeCti(AbstractRangeCti):
 
         super(PgAxisRangeCti, self).__init__(autoRangeFunctions=autoRangeFunctions,
                                              nodeName=nodeName, expanded=expanded)
-        check_class(viewBox, pg.ViewBox)
+        chechType(viewBox, pg.ViewBox)
         assert axisNumber in (X_AXIS, Y_AXIS), "axisNumber must be 0 or 1"
 
         self.viewBox = viewBox
@@ -492,7 +492,7 @@ class PgHistLutColorRangeCti(AbstractRangeCti):
         """
         super(PgHistLutColorRangeCti, self).__init__(autoRangeFunctions=autoRangeFunctions,
                                                      nodeName=nodeName, expanded=expanded)
-        check_class(histLutItem, HistogramLUTItem)
+        chechType(histLutItem, HistogramLUTItem)
         self.histLutItem = histLutItem
 
         # Connect signals
@@ -538,7 +538,7 @@ class PgColorLegendCti(AbstractRangeCti):
             autoRangeFunctions=autoRangeFunctions, nodeName=nodeName,
             expanded=True, paddingDefault=0)
 
-        check_class(legend, ColorLegendItem)
+        chechType(legend, ColorLegendItem)
         self.legend = legend
 
         self.paddingCti.defaultData = 0
@@ -583,7 +583,7 @@ class PgColorLegendLabelCti(ChoiceCti):
         super(PgColorLegendLabelCti, self).__init__(
             nodeName, editable=True, defaultData=defaultData, configValues=configValues)
 
-        check_class(colorLegendItem, ColorLegendItem)
+        chechType(colorLegendItem, ColorLegendItem)
         self.colorLegendItem = colorLegendItem
         self.collector = collector
 
@@ -610,7 +610,7 @@ class PgShowHistCti(BoolCti):
         """
         super(PgShowHistCti, self).__init__(nodeName, defaultData=defaultData)
 
-        check_class(colorLegendItem, ColorLegendItem)
+        chechType(colorLegendItem, ColorLegendItem)
         self.colorLegendItem = colorLegendItem
 
 
@@ -634,7 +634,7 @@ class PgShowDragLinesCti(BoolCti):
         self.marginCti = self.insertChild(
             IntCti("margins", 40, minValue=0, maxValue=250, stepSize=5))
 
-        check_class(colorLegendItem, ColorLegendItem)
+        chechType(colorLegendItem, ColorLegendItem)
         self.colorLegendItem = colorLegendItem
 
 
@@ -662,7 +662,7 @@ class PgGradientEditorItemCti(ChoiceCti):
         """
         super(PgGradientEditorItemCti, self).__init__(nodeName, defaultData=defaultData,
                                                       configValues=list(GRADIENTS.keys()))
-        check_class(gradientEditorItem, pg.GradientEditorItem)
+        chechType(gradientEditorItem, pg.GradientEditorItem)
         self.gradientEditorItem = gradientEditorItem
 
 
@@ -681,7 +681,7 @@ class PgAspectRatioCti(BoolCti):
             The target axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
         """
         super(PgAspectRatioCti, self).__init__(nodeName, defaultData=defaultData, expanded=expanded)
-        check_class(viewBox, pg.ViewBox)
+        chechType(viewBox, pg.ViewBox)
 
         self.aspectRatioCti = self.insertChild(FloatCti("ratio", 1.0, minValue=0.0))
         self.viewBox = viewBox
@@ -703,7 +703,7 @@ class PgAxisFlipCti(BoolCti):
             The target axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
         """
         super(PgAxisFlipCti, self).__init__(nodeName, defaultData=defaultData)
-        check_class(viewBox, pg.ViewBox)
+        chechType(viewBox, pg.ViewBox)
         assert axisNumber in (X_AXIS, Y_AXIS), "axisNumber must be 0 or 1"
         self.viewBox = viewBox
         self.axisNumber = axisNumber
@@ -814,7 +814,7 @@ class PgGridCti(BoolGroupCti):
             The target axis is specified by viewBox and axisNumber (0 for x-axis, 1 for y-axis)
         """
         super(PgGridCti, self).__init__(nodeName, defaultData=defaultData, expanded=expanded)
-        check_class(plotItem, pg.PlotItem)
+        chechType(plotItem, pg.PlotItem)
         self.plotItem = plotItem
 
         self.xGridCti = self.insertChild(BoolCti('x-axis', defaultData))
@@ -924,7 +924,7 @@ class PgColorMapCti(AbstractCti):
 
             :param defaultData: the default index in the combobox that is used for editing
         """
-        check_class(colorLegendItem, ArgosColorLegendItem)
+        chechType(colorLegendItem, ArgosColorLegendItem)
         self.colorLegendItem = colorLegendItem
         self.cmLibModel = CmLibModelSingleton.instance()
 
