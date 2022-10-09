@@ -662,7 +662,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         ###### Set self.inspector ######
 
-        chechType(inspector, AbstractInspector, allow_none=True)
+        chechType(inspector, AbstractInspector, allowNone=True)
 
         logger.debug("Disabling updates.")
         self.setUpdatesEnabled(False)
@@ -802,7 +802,7 @@ class MainWindow(QtWidgets.QMainWindow):
             :param fileMode: is passed to the file dialog.
             :rtype fileMode: QtWidgets.QFileDialog.FileMode constant
         """
-        checkIsASequence(fileNames, allow_none=True)
+        checkIsASequence(fileNames, allowNone=True)
         if fileNames is None:
             dialog = QtWidgets.QFileDialog(self, caption=caption)
 

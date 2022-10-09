@@ -116,7 +116,7 @@ class RtiIconFactory(object):
                 If None, the icon will be registered for open is both True and False
             :return: QIcon
         """
-        chechType(isOpen, bool, allow_none=True)
+        chechType(isOpen, bool, allowNone=True)
 
         if fileName and not os.path.isabs(fileName):
             fileName = os.path.join(self.ICONS_DIRECTORY, fileName)

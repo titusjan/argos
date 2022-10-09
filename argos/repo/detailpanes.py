@@ -88,7 +88,7 @@ class DetailBasePane(QtWidgets.QStackedWidget):
         """ Updates the content when the current repo tree item changes.
             The rti parameter can be None when no RTI is selected in the repository tree.
         """
-        chechType(rti, (BaseRti, int), allow_none=True)
+        chechType(rti, (BaseRti, int), allowNone=True)
         assert type(rti) != int, "rti: {}".format(rti)
         try:
             self._drawContents(rti)

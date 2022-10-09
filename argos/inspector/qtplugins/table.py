@@ -627,5 +627,5 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         """ Sets the font that will be returned when data() is called with the Qt.FontRole.
             Can be a QFont or None if no font is set.
         """
-        chechType(font, QtGui.QFont, allow_none=True)
+        chechType(font, QtGui.QFont, allowNone=True)
         self._font = font

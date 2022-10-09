@@ -85,7 +85,7 @@ class OpenInspectorDialog(QtWidgets.QDialog):
     def setCurrentInspectorRegItem(self, regItem):
         """ Sets the current inspector given an InspectorRegItem
         """
-        chechType(regItem, InspectorRegItem, allow_none=True)
+        chechType(regItem, InspectorRegItem, allowNone=True)
         self.inspectorTab.setCurrentRegItem(regItem)
 
 

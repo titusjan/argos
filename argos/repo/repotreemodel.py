@@ -238,7 +238,7 @@ class RepoTreeModel(BaseTreeModel):
             If position is None the child will be appended as the last child of the parent.
             Returns the index of the newly inserted RTI
         """
-        chechType(rtiRegItem, RtiRegItem, allow_none=True)
+        chechType(rtiRegItem, RtiRegItem, allowNone=True)
         fileName = normRealPath(fileName)
         logger.info("Loading data from: {!r}".format(fileName))
 

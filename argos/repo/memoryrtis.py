@@ -160,7 +160,7 @@ class FieldRti(BaseRti):
             The attributes can be set so the parent's attributes can be reused.
         """
         super(FieldRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        checkIsAnArray(array, allow_none=True)
+        checkIsAnArray(array, allowNone=True)
 
         self._array = array # The array of which this field is a part
         fieldName = self.nodeName
@@ -317,7 +317,7 @@ class ArrayRti(BaseRti):
             :type array: numpy.ndarray or None
         """
         super(ArrayRti, self).__init__(nodeName=nodeName, iconColor=iconColor, fileName=fileName)
-        checkIsAnArray(array, allow_none=True)
+        checkIsAnArray(array, allowNone=True)
         self._array = array
         self._attributes = {} if attributes is None else attributes
 
@@ -490,7 +490,7 @@ class SequenceRti(BaseRti):
             :type array: None or a Python sequence (e.g. list or tuple)
         """
         super(SequenceRti, self).__init__(nodeName=nodeName, iconColor=iconColor, fileName=fileName)
-        checkIsASequence(sequence, allow_none=True)
+        checkIsASequence(sequence, allowNone=True)
         self._sequence = sequence
         #self._array = NOT_SPECIFIED # To cache the sequence converted to a numpy array.
         self._attributes = {} if attributes is None else attributes
@@ -560,7 +560,7 @@ class MappingRti(BaseRti):
             The dictionary may be None for under(or None for undefined/unopened nodes)
         """
         super(MappingRti, self).__init__(nodeName=nodeName, iconColor=iconColor, fileName=fileName)
-        checkIsAMapping(dictionary, allow_none=True)
+        checkIsAMapping(dictionary, allowNone=True)
         self._dictionary = dictionary
         self._attributes = {} if attributes is None else attributes
 

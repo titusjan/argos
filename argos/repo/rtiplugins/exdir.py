@@ -481,7 +481,7 @@ class ExdirRawRti(BaseRti):
         """ Constructor
         """
         super(ExdirRawRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        chechType(exdirRaw, exdir.Raw, allow_none=True)
+        chechType(exdirRaw, exdir.Raw, allowNone=True)
 
         self._exdirRaw = exdirRaw
 
@@ -516,7 +516,7 @@ class ExdirGroupRti(BaseRti):
         """ Constructor
         """
         super(ExdirGroupRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        chechType(exdirGroup, exdir.Group, allow_none=True)
+        chechType(exdirGroup, exdir.Group, allowNone=True)
 
         self._exdirGroup = exdirGroup
 

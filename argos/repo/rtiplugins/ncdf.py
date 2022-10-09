@@ -469,7 +469,7 @@ class NcdfGroupRti(BaseRti):
         """ Constructor
         """
         super(NcdfGroupRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        chechType(ncGroup, Dataset, allow_none=True)
+        chechType(ncGroup, Dataset, allowNone=True)
 
         self._ncGroup = ncGroup
 

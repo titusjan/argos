@@ -68,7 +68,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
         self._isOpen = False
         self._exception = None # Any exception that may occur when opening this item.
 
-        chechType(fileName, six.string_types, allow_none=True)
+        chechType(fileName, six.string_types, allowNone=True)
         if fileName:
             fileName = os.path.abspath(fileName)
         self._fileName = fileName

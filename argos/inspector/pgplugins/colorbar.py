@@ -72,7 +72,7 @@ class ArgosColorLegendItem(ColorLegendItem):
             plot masked values as NaNs) while it still calculates the histogram bins as if it
             where integers (to prevent aliasing)
         """
-        chechType(imageItem, pg.ImageItem, allow_none=True)
+        chechType(imageItem, pg.ImageItem, allowNone=True)
 
         if hasattr(imageItem, '_wasIntegerData'):
             return imageItem._wasIntegerData

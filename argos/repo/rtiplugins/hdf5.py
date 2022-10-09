@@ -665,7 +665,7 @@ class H5pyGroupRti(BaseRti):
         """ Constructor
         """
         super(H5pyGroupRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        chechType(h5Group, h5py.Group, allow_none=True)
+        chechType(h5Group, h5py.Group, allowNone=True)
 
         self._h5Group = h5Group
 

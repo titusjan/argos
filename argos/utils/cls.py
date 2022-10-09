@@ -17,7 +17,7 @@
 
 """ Module that contains functions that have to do with type checking, importing, etc.
 
-    The name is short for 'Class'
+    The module name is short for 'Class'
 """
 from __future__ import annotations
 
@@ -30,15 +30,12 @@ import re
 import numpy as np
 import numpy.ma as ma
 
-
 logger = logging.getLogger(__name__)
 
 # For al list of encodings the standard library see.
 URL_PYTHON_ENCODINGS_DOC = "https://docs.python.org/3/library/codecs.html#standard-encodings"
 
 
-# Temporary disable invalid names until we have decided on camelCase or snake_case here.
-#pylint: disable=invalid-name
 
 ###################
 # Type conversion #
@@ -163,7 +160,7 @@ def toString(var, masked=None, decode_bytes='utf-8', maskFormat='', strFormat='{
     return result
 
 
-def isAString(var, allow_none=False):
+def isAString(var, allowNone=False):
     """ Returns True if var is a string (ascii or unicode)
 
         Result             py-2  py-3
@@ -174,63 +171,63 @@ def isAString(var, allow_none=False):
 
         Also returns True if the var is a numpy string (numpy.string_, numpy.unicode_).
     """
-    return isinstance(var, str) or (var is None and allow_none)
+    return isinstance(var, str) or (var is None and allowNone)
 
 
-def checkIsAString(var, allow_none=False):
+def checkIsAString(var, allowNone=False):
     """ Calls is_a_string and raises a type error if the check fails.
     """
-    if not isAString(var, allow_none=allow_none):
+    if not isAString(var, allowNone=allowNone):
         raise TypeError("var must be a string, however type(var) is {}"
                         .format(type(var)))
 
 
-def isBinary(var, allow_none=False):
+def isBinary(var, allowNone=False):
     """ Returns True if var is a binary (bytes) objects
 
         Also works with the corresponding numpy types.
     """
-    return isinstance(var, bytes) or (var is None and allow_none)
+    return isinstance(var, bytes) or (var is None and allowNone)
 
 
-def isASequence(var, allow_none=False):  # TODO: use iterable?
+def isASequence(var, allowNone=False):  # TODO: use iterable?
     """ Returns True if var is a list or a tuple (but not a string!)
     """
-    return isinstance(var, (list, tuple)) or (var is None and allow_none)
+    return isinstance(var, (list, tuple)) or (var is None and allowNone)
 
 
-def checkIsASequence(var, allow_none=False):
+def checkIsASequence(var, allowNone=False):
     """ Calls is_a_sequence and raises a type error if the check fails.
     """
-    if not isASequence(var, allow_none=allow_none):
+    if not isASequence(var, allowNone=allowNone):
         raise TypeError("var must be a list or tuple, however type(var) is {}"
                         .format(type(var)))
 
 
-def isAMapping(var, allow_none=False):
+def isAMapping(var, allowNone=False):
     """ Returns True if var is a dictionary
     """
-    return isinstance(var, dict) or (var is None and allow_none)
+    return isinstance(var, dict) or (var is None and allowNone)
 
 
-def checkIsAMapping(var, allow_none=False):
+def checkIsAMapping(var, allowNone=False):
     """ Calls is_a_mapping and raises a type error if the check fails.
     """
-    if not isAMapping(var, allow_none=allow_none):
+    if not isAMapping(var, allowNone=allowNone):
         raise TypeError("var must be a dict, however type(var) is {}"
                         .format(type(var)))
 
 
-def isAnArray(var, allow_none=False):
+def isAnArray(var, allowNone=False):
     """ Returns True if var is a numpy array.
     """
-    return isinstance(var, np.ndarray) or (var is None and allow_none)
+    return isinstance(var, np.ndarray) or (var is None and allowNone)
 
 
-def checkIsAnArray(var, allow_none=False):
+def checkIsAnArray(var, allowNone=False):
     """ Calls is_an_array and raises a type error if the check fails.
     """
-    if not isAnArray(var, allow_none=allow_none):
+    if not isAnArray(var, allowNone=allowNone):
         raise TypeError("var must be a NumPy array, however type(var) is {}"
                         .format(type(var)))
 
@@ -274,7 +271,7 @@ def arrayHasRealNumbers(array):
     return kind in 'iuf'
 
 
-def chechType(obj, target_class, allow_none = False):
+def chechType(obj, target_class, allowNone = False):
     """ Checks that the  obj is a (sub)type of target_class.
         Raises a TypeError if this is not the case.
 
@@ -282,31 +279,31 @@ def chechType(obj, target_class, allow_none = False):
         :type obj: any type
         :param target_class: target type/class
         :type target_class: any class or type
-        :param allow_none: if true obj may be None
-        :type allow_none: boolean
+        :param allowNone: if true obj may be None
+        :type allowNone: boolean
     """
     if not isinstance(obj, target_class):
-        if not (allow_none and obj is None):
+        if not (allowNone and obj is None):
             raise TypeError("obj must be a of type {}, got: {}"
                             .format(target_class, type(obj)))
 
 
 COLOR_REGEXP = re.compile('^#[0-9A-Fa-f]{6}$')  # Hex color string representation
 
-def isAColorString(colorStr, allow_none=False):
+def isAColorString(colorStr, allowNone=False):
     """ Returns True if colorStr is a string starting with '#' folowed by 6 hexadecimal digits.
     """
-    if not isAString(colorStr, allow_none=allow_none):
+    if not isAString(colorStr, allowNone=allowNone):
         return False
 
     return COLOR_REGEXP.match(colorStr)
 
 
 
-def checkIsAColorString(var, allow_none=False):
+def checkIsAColorString(var, allowNone=False):
     """ Calls is_an_array and raises a type error if the check fails.
     """
-    if not checkIsAColorString(var, allow_none=allow_none):
+    if not checkIsAColorString(var, allowNone=allowNone):
         raise TypeError("var must be a NumPy array, however type(var) is {}"
                         .format(type(var)))
 
@@ -370,7 +367,7 @@ def importSymbol(full_symbol_name):
         raise ImportError("full_symbol_name should contain a module")
     else:
         assert False, "Bug: parts should have 1 or elements: {}".format(parts)
-        
+
 
 
 class SingletonMixin():

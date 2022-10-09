@@ -250,8 +250,8 @@ class SpinSlider(QtWidgets.QWidget):
         """
         super(SpinSlider, self).__init__(parent=parent)
 
-        chechType(spinBox, QtWidgets.QSpinBox, allow_none=True)
-        chechType(slider, QtWidgets.QSlider, allow_none=True)
+        chechType(spinBox, QtWidgets.QSpinBox, allowNone=True)
+        chechType(slider, QtWidgets.QSlider, allowNone=True)
 
         self.layout = QtWidgets.QHBoxLayout(self)
         self.layout.setContentsMargins(*layoutContentsMargins)

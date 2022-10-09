@@ -148,7 +148,7 @@ class AbstractPandasNDFrameRti(BaseRti):
         super(AbstractPandasNDFrameRti, self).__init__(
             nodeName=str(nodeName), fileName=fileName, iconColor = iconColor)
 
-        chechType(ndFrame, NDFrame, allow_none=True)
+        chechType(ndFrame, NDFrame, allowNone=True)
         self._ndFrame = ndFrame
         self._standAlone = standAlone
 
