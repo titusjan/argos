@@ -22,10 +22,16 @@
     allows users, for instance, to call argos.browse().
 """
 
-# IMPORTANT: do not do any imports here that (indirectly) import any dependencies (PyQt, numpy, etc)
-# The browse function is imported by the argos package, which in turn is imported by setup.py.
-# If you import (for instance) numpy here, the setup.py will fail if numpy is not installed.
+from typing import TYPE_CHECKING
 
-from .info import VERSION as __version__
-from .main import browse
+# Prevent import of further modules when type checking so that we can run mypy on individual
+# modules without other (unneeded) modules from being checked in.
+if not TYPE_CHECKING:
+
+    # IMPORTANT: do not do any imports here that (indirectly) import any dependencies (PyQt, etc)
+    # The browse function is imported by the argos package, which in turn is imported by setup.py.
+    # If you import (for instance) numpy here, the setup.py will fail if numpy is not installed.
+
+    from .info import VERSION as __version__
+    from .main import browse
 
