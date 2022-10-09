@@ -21,7 +21,7 @@
 """
 from __future__ import annotations
 
-from typing import Any, Dict, Type
+from typing import Any, Dict, Type, Optional
 
 import logging
 import numbers
@@ -41,14 +41,14 @@ URL_PYTHON_ENCODINGS_DOC = "https://docs.python.org/3/library/codecs.html#standa
 # Type conversion #
 ###################
 
-def environmentVarToBool(envVar):
+def environmentVarToBool(envVar: str) -> bool:
     """ Converts an environment variable to a boolean
 
-        Returns False if the environment variable is False, 0 or a case-insenstive string "false"
+        Returns False if the environment variable is False, 0 or a case-insensitive string "false"
         or "0".
     """
 
-    # Try to see if env_var can be converted to an int
+    # Try to see if envVar can be converted to an int
     try:
         envVar = int(envVar)
     except ValueError:
@@ -66,10 +66,10 @@ def environmentVarToBool(envVar):
         return bool(envVar)
 
 
-def fillValuesToNan(maskedArray):
+def fillValuesToNan(maskedArray: Optional[ma.masked_array]) -> Optional[ma.masked_array]:
     """ Replaces the fill_values of the masked array by NaNs
 
-        If the array is None or it does not contain floating point values, it cannot contain NaNs.
+        If the array is None, or it does not contain floating point values, it cannot contain NaNs.
         In that case the original array is returned.
     """
     if maskedArray is not None and maskedArray.dtype.kind == 'f':
@@ -88,27 +88,37 @@ def fillValuesToNan(maskedArray):
 
 _DEFAULT_NUM_FORMAT = '{}'  # Will print all relevant decimals (in Python 3)
 
-def toString(var, masked=None, decodeBytes='utf-8', maskFormat='', strFormat='{}',
-             intFormat='{}', numFormat=_DEFAULT_NUM_FORMAT, noneFormat='{!r}', otherFormat='{}'):
-    """ Converts var to a python string or unicode string so Qt widgets can display them.
+def toString(var: Any, *,
+             masked: Any = None,
+             decodeBytesAs: str = 'utf-8',
+             maskFormat: str = '',
+             strFormat: str = '{}',
+             intFormat: str = '{}',
+             numFormat: str = _DEFAULT_NUM_FORMAT,
+             noneFormat: str = '{!r}',
+             otherFormat: str = '{}') -> str:
+    """ Converts variable to a python using the appropriate format string.
 
-        If var consists of bytes, the decode_bytes is used to decode the bytes.
+        For the possible format string (replacement fields) see
+            https://docs.python.org/3/library/string.html#format-string-syntax
 
         If var consists of a numpy.str_, the result will be converted to a regular Python string.
         This is necessary to display the string in Qt widgets.
 
-        For the possible format string (replacement fields) see:
-            https://docs.python.org/3/library/string.html#format-string-syntax
+        If var consists of bytes, the decodeBytesAs is used to decode the bytes.
 
-        :param masked: if True, the element is masked. The maskFormat is used.
-        :param decode_bytes': string containing the expected encoding when var is of type bytes
-        :param strFormat' : new style format string used to format strings
-        :param intFormat' : new style format string used to format integers
-        :param numFormat' : new style format string used to format all numbers except integers.
-        :param noneFormat': new style format string used to format Nones.
-        :param maskFormat': override with this format used if masked is True.
-            If the maskFormat is empty, the format is never overriden.
-        :param otherFormat': new style format string used to format all other types
+        Args:
+            var: The variable to be checked.
+            masked: If True, the element is masked so the maskFormat will be used.
+                In case it is a sequence, all elements must be true for the maskFormate to be used.
+            decodeBytesAs: String containing the expected encoding when var is of type bytes
+            strFormat: New style format string used to format strings
+            intFormat: New style format string used to format integers
+            numFormat: New style format string used to format all numbers except integers.
+            noneFormat: New style format string used to format Nones.
+            maskFormat: This format string is used if masked is True.
+                If the maskFormat is empty, the format is never overridden.
+            otherFormat: New style format string used to format all other types.
     """
     #logger.debug("to_string: {!r} ({})".format(var, type(var)))
 
@@ -116,14 +126,11 @@ def toString(var, masked=None, decodeBytes='utf-8', maskFormat='', strFormat='{}
     if isBinary(var):
         fmt = strFormat
         try:
-            decodedVar = var.decode(decodeBytes, 'replace')
+            decodedVar = var.decode(decodeBytesAs, 'replace')
         except LookupError as ex:
             # Add URL to exception message.
             raise LookupError("{}\n\nFor a list of encodings in Python see: {}"
                               .format(ex, URL_PYTHON_ENCODINGS_DOC)) from ex
-    # elif is_text(var):   # is 'str' in Python 3
-    #     fmt = strFormat
-    #     decodedVar = six.text_type(var)
     elif isAString(var):
         fmt = strFormat
         decodedVar = str(var)
@@ -161,79 +168,73 @@ def toString(var, masked=None, decodeBytes='utf-8', maskFormat='', strFormat='{}
     return result
 
 
-def isAString(var, allowNone=False):
-    """ Returns True if var is a string (ascii or unicode)
+def isAString(var: Any, allowNone: bool = False) -> bool:
+    """ Returns True if var is a string
 
-        Result             py-2  py-3
-        -----------------  ----- -----
-        b'bytes literal'   True  False
-         'string literal'  True  True
-        u'unicode literal' True  True
-
-        Also returns True if the var is a numpy string (numpy.string_, numpy.unicode_).
+        Also returns True if the var is a numpy string.
     """
     return isinstance(var, str) or (var is None and allowNone)
 
 
-def checkIsAString(var, allowNone=False):
-    """ Calls is_a_string and raises a type error if the check fails.
+def checkIsAString(var: Any, allowNone: bool = False):
+    """ Calls isAString and raises a TypeError if the check fails.
     """
     if not isAString(var, allowNone=allowNone):
         raise TypeError("var must be a string, however type(var) is {}"
                         .format(type(var)))
 
 
-def isBinary(var, allowNone=False):
-    """ Returns True if var is a binary (bytes) objects
+def isBinary(var: Any, allowNone: bool = False) -> bool:
+    """ Returns True if var is a binary (bytes) object.
 
         Also works with the corresponding numpy types.
     """
     return isinstance(var, bytes) or (var is None and allowNone)
 
 
-def isASequence(var, allowNone=False):
+def isASequence(var: Any, allowNone: bool = False) -> bool:
     """ Returns True if var is a list or a tuple (but not a string!)
     """
     return isinstance(var, (list, tuple)) or (var is None and allowNone)
 
 
-def checkIsASequence(var, allowNone=False):
-    """ Calls is_a_sequence and raises a type error if the check fails.
+def checkIsASequence(var: Any, allowNone: bool = False):
+    """ Calls isASequence and raises a TypeError if the check fails.
     """
     if not isASequence(var, allowNone=allowNone):
         raise TypeError("var must be a list or tuple, however type(var) is {}"
                         .format(type(var)))
 
 
-def isAMapping(var, allowNone=False):
-    """ Returns True if var is a dictionary
+def isAMapping(var: Any, allowNone: bool = False) -> bool:
+    """ Returns True if var is a dictionary.
     """
     return isinstance(var, dict) or (var is None and allowNone)
 
 
-def checkIsAMapping(var, allowNone=False):
-    """ Calls is_a_mapping and raises a type error if the check fails.
+def checkIsAMapping(var: Any, allowNone: bool = False):
+    """ Calls isAMapping and raises a TypeError if the check fails.
     """
     if not isAMapping(var, allowNone=allowNone):
         raise TypeError("var must be a dict, however type(var) is {}"
                         .format(type(var)))
 
 
-def isAnArray(var, allowNone=False):
+def isAnArray(var: Any, allowNone: bool = False) -> bool:
     """ Returns True if var is a numpy array.
     """
     return isinstance(var, np.ndarray) or (var is None and allowNone)
 
 
-def checkIsAnArray(var, allowNone=False):
-    """ Calls is_an_array and raises a type error if the check fails.
+def checkIsAnArray(var: Any, allowNone: bool = False):
+    """ Calls is_an_array and raises a TypeError if the check fails.
     """
     if not isAnArray(var, allowNone=allowNone):
         raise TypeError("var must be a NumPy array, however type(var) is {}"
                         .format(type(var)))
 
 
-def arrayIsStructured(array):
+def arrayIsStructured(array: np.ndarray) -> bool:
     """ Returns True if the array has a structured data type.
     """
     return bool(array.dtype.names)
@@ -254,55 +255,50 @@ KIND_LABEL = dict(
 )
 
 
-def arrayKindLabel(array):
-    """ Returns short string describing the array data type kind
+def arrayKindLabel(array: np.ndarray) -> str:
+    """ Returns short string describing the array data type kind.
     """
     return KIND_LABEL[array.dtype.kind]
 
 
-def arrayHasRealNumbers(array):
-    """ Uses the dtype kind of the numpy array to determine if it represents real numbers.
+def arrayHasRealNumbers(array: np.ndarray) -> bool:
+    """ Uses the dtype.kind of the numpy array to determine if it represents real numbers.
 
-        That is, the array kind should be one of: i u f
-
-        Possible dtype.kind values.
-
+        That is, the array kind should be one of: i u f.
     """
     kind = array.dtype.kind
     return kind in 'iuf'
 
 
-def checkType(obj, targetClass, allowNone = False):
-    """ Checks that the  obj is a (sub)type of target_class.
-        Raises a TypeError if this is not the case.
+def checkType(var: Any, targetClass: Type, allowNone: bool = False):
+    """ Checks that a varaible is a (sub)type of target_class.
 
-        :param obj: object whos type is to be checked
-        :type obj: any type
-        :param targetClass: target type/class
-        :type targetClass: any class or type
-        :param allowNone: if true obj may be None
-        :type allowNone: boolean
+        Raises a TypeError if this is not the case, does nothing if it is.
+
+        Args:
+            var: The variable whose type is to be checked.
+            targetClass: The target type/class.
+            allowNone: If True, var may be None.
     """
-    if not isinstance(obj, targetClass):
-        if not (allowNone and obj is None):
+    if not isinstance(var, targetClass):
+        if not (allowNone and var is None):
             raise TypeError("obj must be a of type {}, got: {}"
-                            .format(targetClass, type(obj)))
+                            .format(targetClass, type(var)))
 
 
 COLOR_REGEXP = re.compile('^#[0-9A-Fa-f]{6}$')  # Hex color string representation
 
-def isAColorString(colorStr, allowNone=False):
-    """ Returns True if colorStr is a string starting with '#' folowed by 6 hexadecimal digits.
+def isAColorString(colorStr: str, allowNone: bool = False) -> bool:
+    """ Returns True if colorStr is a string starting with '#' followed by 6 hexadecimal digits.
     """
     if not isAString(colorStr, allowNone=allowNone):
         return False
 
-    return COLOR_REGEXP.match(colorStr)
+    return bool(COLOR_REGEXP.match(colorStr))
 
 
-
-def checkIsAColorString(var, allowNone=False):
-    """ Calls is_an_array and raises a type error if the check fails.
+def checkIsAColorString(var: Any, allowNone: bool = False):
+    """ Calls is_an_array and raises a TypeError if the check fails.
     """
     if not checkIsAColorString(var, allowNone=allowNone):
         raise TypeError("var must be a NumPy array, however type(var) is {}"
@@ -314,32 +310,33 @@ def checkIsAColorString(var, allowNone=False):
 #############
 
 
-def typeName(var):
-    """ Returns the name of the type of var"""
+def typeName(var: Any) -> str:
+    """ Returns the name of the type of var.
+    """
     return type(var).__name__
 
-
-def getFullClassName(obj):
-    """ Returns the full class name of an object. This includes packages and module names.
-
-        It depends on where the class is imported so only use for testing and debugging!
-    """
-    return "{}.{}".format(obj.__class__.__module__, obj.__class__.__name__)
 
 #############
 # Importing #
 #############
 
 
-def importSymbol(fullSymbolName):
-    """ Imports a symbol (e.g. class, variable, etc) from a dot separated name.
+def importSymbol(fullSymbolName: str) -> Any:
+    """ Imports a symbol (e.g. class, variable, etc.) from a dot separated name.
+
         Can be used to create a class whose type is only known at run-time.
 
-        The full_symbol_name must contain packages and module,
-        e.g.: 'argos.plugins.rti.ncdf.NcdfFileRti'
+        Args:
+            fullSymbolName: Symbol name that includes the packages name(s).
+                For instance: `argos.plugins.rti.ncdf.NcdfFileRti`
 
-        If the module doesn't exist an ImportError is raised.
-        If the class doesn't exist an AttributeError is raised.
+        Raises:
+            ImportError: If the module doesn't exist.
+            AttributeError: If the class doesn't exist.
+
+        Returns:
+            The imported symbol.
+
     """
     parts = fullSymbolName.rsplit('.', 1)
     if len(parts) == 2:

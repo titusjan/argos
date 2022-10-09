@@ -28,7 +28,7 @@ add_module_names = False
 modindex_common_prefix = ['argos.']
 
 autodoc_class_signature = "separated"
-autodoc_typehints = "both"
+autodoc_typehints = "description"
 
 # Doesn't work nicely with: autodoc_typehints = "both". It duplicates parameters, first with
 # description, then with teyp

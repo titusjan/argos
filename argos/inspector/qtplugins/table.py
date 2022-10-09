@@ -530,14 +530,14 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         try:
             if role == Qt.DisplayRole:
                 return toString(self._cellValue(index), masked=self._cellMask(index),
-                                decodeBytes=self.encoding, maskFormat=self.maskFormat,
+                                decodeBytesAs=self.encoding, maskFormat=self.maskFormat,
                                 strFormat=self.strFormat, intFormat=self.intFormat,
                                 numFormat=self.numFormat, otherFormat=self.otherFormat)
 
             elif role == Qt.ToolTipRole:
                 fmt = '{!r}' # Use __repr__ for toolbar, except for strings
                 return toString(self._cellValue(index), masked=self._cellMask(index),
-                                decodeBytes=self.encoding, maskFormat=fmt,
+                                decodeBytesAs=self.encoding, maskFormat=fmt,
                                 strFormat=self.strFormat, intFormat=fmt,
                                 numFormat=fmt, otherFormat=fmt)
 

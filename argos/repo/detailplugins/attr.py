@@ -63,7 +63,7 @@ class AttributesPane(DetailTablePane):
             table.setRowCount(len(attributes))
 
             for row, (attrName, attrValue) in enumerate(sorted(attributes.items())):
-                attrStr = toString(attrValue, decodeBytes='utf-8')
+                attrStr = toString(attrValue, decodeBytesAs='utf-8')
 
                 try:
                     type_str = typeName(attrValue)

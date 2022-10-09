@@ -129,7 +129,7 @@ class TextInspector(AbstractInspector):
         isMasked = maskedArr.mask[()]
 
         text = toString(slicedScalar, masked=isMasked, maskFormat='--',
-                        decodeBytes=self.config.encodingCti.configValue)
+                        decodeBytesAs=self.config.encodingCti.configValue)
         self.editor.setPlainText(text)
         self.editor.setWordWrapMode(self.config.wordWrapCti.configValue)
 
