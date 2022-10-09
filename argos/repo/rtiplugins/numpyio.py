@@ -27,7 +27,7 @@ from numpy.lib.npyio import NpzFile
 from argos.qt import QtWidgets
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.repo.memoryrtis import ArrayRti, SliceRti, MappingRti
-from argos.utils.cls import checkIsAnArray, chechType
+from argos.utils.cls import checkIsAnArray, checkType
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +151,7 @@ class NumpyCompressedFileRti(MappingRti):
         """ Uses numpy.load to open the underlying file
         """
         dct = np.load(self._fileName, allow_pickle=ALLOW_PICKLE)
-        chechType(dct, NpzFile)
+        checkType(dct, NpzFile)
         self._dictionary = dct
 
 

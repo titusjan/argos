@@ -21,7 +21,7 @@ import logging, inspect, os, sys
 import traceback
 
 from argos.info import DEBUGGING
-from argos.utils.cls import importSymbol, checkIsAString, typeName, chechType
+from argos.utils.cls import importSymbol, checkIsAString, typeName, checkType
 from argos.reg.tabmodel import BaseItem, BaseItemStore, BaseTableModel
 from argos.qt import Qt, QtGui
 from argos.utils.misc import string_to_identifier
@@ -288,7 +288,7 @@ class BaseRegistryModel(BaseTableModel):
             :param parent: Parent widget
         """
         super(BaseRegistryModel, self).__init__(store, parent)
-        chechType(store, BaseRegistry)
+        checkType(store, BaseRegistry)
 
         self.regularBrush = QtGui.QBrush(QCOLOR_REGULAR)
         self.notImportedBrush = QtGui.QBrush(QCOLOR_NOT_IMPORTED)
@@ -335,7 +335,7 @@ class BaseRegistryModel(BaseTableModel):
     def tryImportRegItem(self, regItem):
         """ Tries to import a registry item (plugin)
         """
-        chechType(regItem, self.store.ITEM_CLASS)
+        checkType(regItem, self.store.ITEM_CLASS)
         logger.debug("Importing {}...".format(regItem.name))
         regItem.tryImportClass()
         self.emitDataChanged(regItem)

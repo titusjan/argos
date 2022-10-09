@@ -41,7 +41,7 @@ URL_PYTHON_ENCODINGS_DOC = "https://docs.python.org/3/library/codecs.html#standa
 # Type conversion #
 ###################
 
-def environmentVarToBool(env_var):
+def environmentVarToBool(envVar):
     """ Converts an environment variable to a boolean
 
         Returns False if the environment variable is False, 0 or a case-insenstive string "false"
@@ -50,35 +50,36 @@ def environmentVarToBool(env_var):
 
     # Try to see if env_var can be converted to an int
     try:
-        env_var = int(env_var)
+        envVar = int(envVar)
     except ValueError:
         pass
 
-    if isinstance(env_var, numbers.Number):
-        return bool(env_var)
-    elif isAString(env_var):
-        env_var = env_var.lower().strip()
-        if env_var in "false":
+    if isinstance(envVar, numbers.Number):
+        return bool(envVar)
+    elif isAString(envVar):
+        envVar = envVar.lower().strip()
+        if envVar in "false":
             return False
         else:
             return True
     else:
-        return bool(env_var)
+        return bool(envVar)
 
 
-def fillValuesToNan(masked_array):
+def fillValuesToNan(maskedArray):
     """ Replaces the fill_values of the masked array by NaNs
 
         If the array is None or it does not contain floating point values, it cannot contain NaNs.
         In that case the original array is returned.
     """
-    if masked_array is not None and masked_array.dtype.kind == 'f':
-        chechType(masked_array, ma.masked_array)
+    if maskedArray is not None and maskedArray.dtype.kind == 'f':
+        checkType(maskedArray, ma.masked_array)
         logger.debug("Replacing fill_values by NaNs")
-        masked_array[:] = ma.filled(masked_array, np.nan)
-        masked_array.set_fill_value(np.nan)
+        maskedArray[:] = ma.filled(maskedArray, np.nan)
+        maskedArray.set_fill_value(np.nan)
+        return maskedArray
     else:
-        return masked_array
+        return maskedArray
 
 
 #################
@@ -87,7 +88,7 @@ def fillValuesToNan(masked_array):
 
 _DEFAULT_NUM_FORMAT = '{}'  # Will print all relevant decimals (in Python 3)
 
-def toString(var, masked=None, decode_bytes='utf-8', maskFormat='', strFormat='{}',
+def toString(var, masked=None, decodeBytes='utf-8', maskFormat='', strFormat='{}',
              intFormat='{}', numFormat=_DEFAULT_NUM_FORMAT, noneFormat='{!r}', otherFormat='{}'):
     """ Converts var to a python string or unicode string so Qt widgets can display them.
 
@@ -115,7 +116,7 @@ def toString(var, masked=None, decode_bytes='utf-8', maskFormat='', strFormat='{
     if isBinary(var):
         fmt = strFormat
         try:
-            decodedVar = var.decode(decode_bytes, 'replace')
+            decodedVar = var.decode(decodeBytes, 'replace')
         except LookupError as ex:
             # Add URL to exception message.
             raise LookupError("{}\n\nFor a list of encodings in Python see: {}"
@@ -190,7 +191,7 @@ def isBinary(var, allowNone=False):
     return isinstance(var, bytes) or (var is None and allowNone)
 
 
-def isASequence(var, allowNone=False):  # TODO: use iterable?
+def isASequence(var, allowNone=False):
     """ Returns True if var is a list or a tuple (but not a string!)
     """
     return isinstance(var, (list, tuple)) or (var is None and allowNone)
@@ -271,21 +272,21 @@ def arrayHasRealNumbers(array):
     return kind in 'iuf'
 
 
-def chechType(obj, target_class, allowNone = False):
+def checkType(obj, targetClass, allowNone = False):
     """ Checks that the  obj is a (sub)type of target_class.
         Raises a TypeError if this is not the case.
 
         :param obj: object whos type is to be checked
         :type obj: any type
-        :param target_class: target type/class
-        :type target_class: any class or type
+        :param targetClass: target type/class
+        :type targetClass: any class or type
         :param allowNone: if true obj may be None
         :type allowNone: boolean
     """
-    if not isinstance(obj, target_class):
+    if not isinstance(obj, targetClass):
         if not (allowNone and obj is None):
             raise TypeError("obj must be a of type {}, got: {}"
-                            .format(target_class, type(obj)))
+                            .format(targetClass, type(obj)))
 
 
 COLOR_REGEXP = re.compile('^#[0-9A-Fa-f]{6}$')  # Hex color string representation
@@ -312,22 +313,13 @@ def checkIsAColorString(var, allowNone=False):
 # Type info #
 #############
 
-# TODO: get_class_name and type_name the same? Not for old style classes.
-#  Fix when only using Python 3
-# #http://stackoverflow.com/questions/1060499/difference-between-typeobj-and-obj-class
 
 def typeName(var):
     """ Returns the name of the type of var"""
     return type(var).__name__
 
 
-def getClassName(obj):
-    """ Returns the class name of an object.
-    """
-    return obj.__class__.__name__
-
-
-def get_full_class_name(obj):
+def getFullClassName(obj):
     """ Returns the full class name of an object. This includes packages and module names.
 
         It depends on where the class is imported so only use for testing and debugging!
@@ -338,9 +330,8 @@ def get_full_class_name(obj):
 # Importing #
 #############
 
-# TODO: use importlib.import_module?
-# Perhaps in Python 3. As long as the code below works there is no need to change it.
-def importSymbol(full_symbol_name):
+
+def importSymbol(fullSymbolName):
     """ Imports a symbol (e.g. class, variable, etc) from a dot separated name.
         Can be used to create a class whose type is only known at run-time.
 
@@ -350,14 +341,14 @@ def importSymbol(full_symbol_name):
         If the module doesn't exist an ImportError is raised.
         If the class doesn't exist an AttributeError is raised.
     """
-    parts = full_symbol_name.rsplit('.', 1)
+    parts = fullSymbolName.rsplit('.', 1)
     if len(parts) == 2:
-        module_name, symbol_name = parts
-        module_name = str(module_name) # convert from possible unicode
-        symbol_name = str(symbol_name)
+        moduleName, symbolName = parts
+        moduleName = str(moduleName) # convert from possible unicode
+        symbolName = str(symbolName)
         #logger.debug("From module {} importing {!r}".format(module_name, symbol_name))
-        module = __import__(module_name, fromlist=[symbol_name])
-        cls = getattr(module, symbol_name)
+        module = __import__(moduleName, fromlist=[symbolName])
+        cls = getattr(module, symbolName)
         return cls
     elif len(parts) == 1:
         # No module part, only a class name. If you want to create a class

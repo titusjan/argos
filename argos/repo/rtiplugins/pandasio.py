@@ -29,7 +29,7 @@ from pandas.core.generic import NDFrame
 
 from argos.repo.baserti import BaseRti, shapeToSummary
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
-from argos.utils.cls import chechType
+from argos.utils.cls import checkType
 
 logger = logging.getLogger(__name__)
 
@@ -148,7 +148,7 @@ class AbstractPandasNDFrameRti(BaseRti):
         super(AbstractPandasNDFrameRti, self).__init__(
             nodeName=str(nodeName), fileName=fileName, iconColor = iconColor)
 
-        chechType(ndFrame, NDFrame, allowNone=True)
+        checkType(ndFrame, NDFrame, allowNone=True)
         self._ndFrame = ndFrame
         self._standAlone = standAlone
 

@@ -46,7 +46,7 @@ from argos.repo.iconfactory import RtiIconFactory
 from argos.repo.registry import RtiRegistry
 from argos.repo.repotreeview import RepoWidget
 from argos.repo.testdata import createArgosTestData
-from argos.utils.cls import chechType, checkIsASequence
+from argos.utils.cls import checkType, checkIsASequence
 from argos.utils.dirs import argosConfigDirectory, argosLogDirectory
 from argos.utils.misc import string_to_identifier
 from argos.utils.moduleinfo import versionStrToTuple
@@ -662,7 +662,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         ###### Set self.inspector ######
 
-        chechType(inspector, AbstractInspector, allowNone=True)
+        checkType(inspector, AbstractInspector, allowNone=True)
 
         logger.debug("Disabling updates.")
         self.setUpdatesEnabled(False)

@@ -22,7 +22,7 @@ import logging, copy
 from argos.config.abstractcti import AbstractCti, AbstractCtiEditor
 from argos.qt import  Qt, QtCore, QtWidgets, QtSlot
 from argos.qt.misc import setWidgetSizePolicy
-from argos.utils.cls import chechType
+from argos.utils.cls import checkType
 from argos.utils.misc import NOT_SPECIFIED
 
 
@@ -65,9 +65,9 @@ class ChoiceCti(AbstractCti):
             For the  parameters see the AbstractCti constructor documentation.
 
         """
-        chechType(insertPolicy, QtWidgets.QComboBox.InsertPolicy)
+        checkType(insertPolicy, QtWidgets.QComboBox.InsertPolicy)
         if completer: # completer may be False
-            chechType(completer, QtWidgets.QCompleter)
+            checkType(completer, QtWidgets.QCompleter)
 
         self.editable = editable
         self.insertPolicy = insertPolicy

@@ -1,7 +1,7 @@
 import logging
 
 from argos.external import six
-from argos.utils.cls import chechType, checkIsAString
+from argos.utils.cls import checkType, checkIsAString
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ class BaseTreeItem(object):
                 Currently we don't check for uniqueness in the children but this may change.
                 The nodeName may not contain slashes (/).
         """
-        chechType(nodeName, six.string_types, allowNone=False)
+        checkType(nodeName, six.string_types, allowNone=False)
         assert nodeName, "nodeName may not be empty"
         assert '/' not in nodeName, "nodeName may not contain slashes"
         self._nodeName = str(nodeName)

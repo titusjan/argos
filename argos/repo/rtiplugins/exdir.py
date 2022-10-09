@@ -34,7 +34,7 @@ from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.repo.baserti import BaseRti, shapeToSummary
 from argos.repo.filesytemrtis import createRtiFromFileName
 from argos.repo.rtiplugins.hdf5 import dimNamesFromDataset  # We can reuse it, the exdir module follows the h5py API.
-from argos.utils.cls import chechType, isAnArray
+from argos.utils.cls import checkType, isAnArray
 from argos.utils.defs import DIM_TEMPLATE, SUB_DIM_TEMPLATE
 from argos.utils.masks import maskedEqual
 
@@ -130,7 +130,7 @@ class ExdirScalarRti(BaseRti):
         """
         super(ExdirScalarRti, self).__init__(
             nodeName=nodeName, fileName=fileName, iconColor=iconColor)
-        chechType(exdirDataset, exdir.Dataset)
+        checkType(exdirDataset, exdir.Dataset)
         self._exdirDataset = exdirDataset
 
 
@@ -218,7 +218,7 @@ class ExdirFieldRti(BaseRti):
             The name of the field must be given to the nodeName parameter.
         """
         super(ExdirFieldRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        chechType(exdirDataset, exdir.Dataset)
+        checkType(exdirDataset, exdir.Dataset)
         self._exdirDataset = exdirDataset
 
 
@@ -364,7 +364,7 @@ class ExdirDatasetRti(BaseRti):
         """ Constructor
         """
         super(ExdirDatasetRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        chechType(exdirDataset, exdir.Dataset)
+        checkType(exdirDataset, exdir.Dataset)
         self._exdirDataset = exdirDataset
         self._isStructured = bool(self._exdirDataset.dtype.names)
 
@@ -481,7 +481,7 @@ class ExdirRawRti(BaseRti):
         """ Constructor
         """
         super(ExdirRawRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        chechType(exdirRaw, exdir.Raw, allowNone=True)
+        checkType(exdirRaw, exdir.Raw, allowNone=True)
 
         self._exdirRaw = exdirRaw
 
@@ -516,7 +516,7 @@ class ExdirGroupRti(BaseRti):
         """ Constructor
         """
         super(ExdirGroupRti, self).__init__(nodeName, fileName=fileName, iconColor=iconColor)
-        chechType(exdirGroup, exdir.Group, allowNone=True)
+        checkType(exdirGroup, exdir.Group, allowNone=True)
 
         self._exdirGroup = exdirGroup
 

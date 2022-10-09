@@ -37,7 +37,7 @@ from argos.inspector.pgplugins.pgctis import (X_AXIS, Y_AXIS, NO_LABEL_STR,
                                               setXYAxesAutoRangeOn, PgAxisLabelCti,
                                               PgAxisLogModeCti, PgAxisRangeCti, PgPlotDataItemCti)
 from argos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
-from argos.utils.cls import arrayHasRealNumbers, chechType, isAnArray, toString
+from argos.utils.cls import arrayHasRealNumbers, checkType, isAnArray, toString
 from argos.utils.cls import arrayKindLabel
 from argos.utils.defs import RIGHT_ARROW
 
@@ -56,7 +56,7 @@ class PgLinePlot1dCti(MainGroupCti):
         """
         super(PgLinePlot1dCti, self).__init__(nodeName=nodeName)
 
-        chechType(pgLinePlot1d, PgLinePlot1d)
+        checkType(pgLinePlot1d, PgLinePlot1d)
         self.pgLinePlot1d = pgLinePlot1d
 
         self.insertChild(ChoiceCti('title', 0, editable=True,
@@ -281,7 +281,7 @@ class PgLinePlot1d(AbstractInspector):
             Draws a vertical line and a symbol at the position of the probe.
         """
         try:
-            chechType(viewPos, QtCore.QPointF)
+            checkType(viewPos, QtCore.QPointF)
             self.crossLineVerShadow.setVisible(False)
             self.crossLineVertical.setVisible(False)
             self.probeLabel.setText("")

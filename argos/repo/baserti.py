@@ -26,7 +26,7 @@ from argos.external import six
 from argos.info import DEBUGGING
 from argos.qt.treeitems import AbstractLazyLoadTreeItem
 from argos.repo.iconfactory import RtiIconFactory
-from argos.utils.cls import chechType, isASequence, isAColorString
+from argos.utils.cls import checkType, isASequence, isAColorString
 from argos.utils.dirs import normRealPath
 from argos.utils.defs import DIM_TEMPLATE
 
@@ -68,7 +68,7 @@ class BaseRti(AbstractLazyLoadTreeItem):
         self._isOpen = False
         self._exception = None # Any exception that may occur when opening this item.
 
-        chechType(fileName, six.string_types, allowNone=True)
+        checkType(fileName, six.string_types, allowNone=True)
         if fileName:
             fileName = os.path.abspath(fileName)
         self._fileName = fileName

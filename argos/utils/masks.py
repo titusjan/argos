@@ -28,7 +28,7 @@ import warnings
 import numpy as np
 import numpy.ma as ma
 
-from argos.utils.cls import chechType, isAnArray, checkIsAnArray, arrayIsStructured
+from argos.utils.cls import checkType, isAnArray, checkIsAnArray, arrayIsStructured
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ class ArrayWithMask(object):
             :param fill_value:
         """
         checkIsAnArray(data)
-        chechType(mask, (np.ndarray, bool, np.bool_))
+        checkType(mask, (np.ndarray, bool, np.bool_))
 
         # Init fields
         self._data = None
@@ -87,7 +87,7 @@ class ArrayWithMask(object):
     @mask.setter
     def mask(self, mask):
         """ The mask values. Must be an array or a boolean scalar."""
-        chechType(mask, (np.ndarray, bool, np.bool_))
+        checkType(mask, (np.ndarray, bool, np.bool_))
         if isinstance(mask, (bool, np.bool_)):
             self._mask = bool(mask)
         else:
@@ -124,7 +124,7 @@ class ArrayWithMask(object):
         if isinstance(masked_arr, ArrayWithMask):
             return masked_arr
 
-        chechType(masked_arr, (np.ndarray, ma.MaskedArray))
+        checkType(masked_arr, (np.ndarray, ma.MaskedArray))
 
         # A MaskedConstant (i.e. masked) is a special case of MaskedArray. It does not seem to have
         # a fill_value so we use None to use the default.
@@ -261,8 +261,8 @@ def nanPercentileOfSubsampledArrayWithMask(arrayWithMask, percentiles, subsample
 
         If subsample is False, no sub sampling is done and it just calls maskedNanPercentile
     """
-    chechType(subsample, bool)
-    chechType(arrayWithMask, ArrayWithMask)
+    checkType(subsample, bool)
+    checkType(arrayWithMask, ArrayWithMask)
 
     maskedArray = arrayWithMask.asMaskedArray()
 
@@ -282,7 +282,7 @@ def _subsampleArray(array, targetNumElements=40000):
 
         If the array is already smaller than 40000 elements, no subsampling will be done.
     """
-    chechType(array, np.ndarray)
+    checkType(array, np.ndarray)
     # logger.debug("_subsampleArray: {}, shape={}, dtype={}"
     #              .format(type(array), array.shape, array.dtype))
     oldShape = array.shape
@@ -304,7 +304,7 @@ def _maskedNanPercentile(maskedArray, percentiles, *args, **kwargs):
 
         The *args and **kwargs are passed on to np.nanpercentile
     """
-    chechType(maskedArray, ma.masked_array)
+    checkType(maskedArray, ma.masked_array)
 
     #https://docs.scipy.org/doc/numpy/reference/maskedarray.generic.html#accessing-the-data
     awm = ArrayWithMask.createFromMaskedArray(maskedArray)
@@ -360,7 +360,7 @@ def fillValuesToNan(masked_array):
         In that case the original array is returned.
     """
     if masked_array is not None and masked_array.dtype.kind == 'f':
-        chechType(masked_array, ma.masked_array)
+        checkType(masked_array, ma.masked_array)
         logger.debug("Replacing fill_values by NaNs")
         masked_array[:] = ma.filled(masked_array, np.nan)
         masked_array.set_fill_value(np.nan)
@@ -401,10 +401,10 @@ def maskedEqual(array, missingValue):
                     logger.warning("Missing values can't be determined for field: {}. Reason: {}"
                                    .format(field, ex))
 
-        chechType(array, ma.MaskedArray) # post-condition check
+        checkType(array, ma.MaskedArray) # post-condition check
         return array
     else:
         # masked_equal works with missing is None
         result = ma.masked_equal(array, missingValue, copy=False)
-        chechType(result, ma.MaskedArray) # post-condition check
+        checkType(result, ma.MaskedArray) # post-condition check
         return result

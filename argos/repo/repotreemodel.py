@@ -24,7 +24,7 @@ from argos.qt.treemodels import BaseTreeModel
 from argos.repo.filesytemrtis import createRtiFromFileName
 from argos.repo.baserti import BaseRti
 from argos.repo.registry import ICON_COLOR_UNDEF, RtiRegItem
-from argos.utils.cls import toString, typeName, chechType
+from argos.utils.cls import toString, typeName, checkType
 from argos.utils.dirs import normRealPath
 
 # The cast to int is necessary to avoid a bug in PySide, See:
@@ -238,7 +238,7 @@ class RepoTreeModel(BaseTreeModel):
             If position is None the child will be appended as the last child of the parent.
             Returns the index of the newly inserted RTI
         """
-        chechType(rtiRegItem, RtiRegItem, allowNone=True)
+        checkType(rtiRegItem, RtiRegItem, allowNone=True)
         fileName = normRealPath(fileName)
         logger.info("Loading data from: {!r}".format(fileName))
 

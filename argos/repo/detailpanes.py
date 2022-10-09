@@ -23,7 +23,7 @@ from argos.info import DEBUGGING
 from argos.qt import QtSignal, QtCore, QtWidgets
 from argos.qt.togglecolumn import ToggleColumnTableWidget
 from argos.repo.baserti import BaseRti
-from argos.utils.cls import getClassName, chechType
+from argos.utils.cls import checkType, typeName
 from argos.widgets.constants import DOCK_SPACING, DOCK_MARGIN, LEFT_DOCK_WIDTH
 from argos.widgets.display import MessageDisplay
 from argos.widgets.misc import BasePanel
@@ -88,7 +88,7 @@ class DetailBasePane(QtWidgets.QStackedWidget):
         """ Updates the content when the current repo tree item changes.
             The rti parameter can be None when no RTI is selected in the repository tree.
         """
-        chechType(rti, (BaseRti, int), allowNone=True)
+        checkType(rti, (BaseRti, int), allowNone=True)
         assert type(rti) != int, "rti: {}".format(rti)
         try:
             self._drawContents(rti)
@@ -99,7 +99,7 @@ class DetailBasePane(QtWidgets.QStackedWidget):
             if DEBUGGING:
                 raise
             logger.exception(ex)
-            self.errorWidget.setError(msg=str(ex), title=getClassName(ex))
+            self.errorWidget.setError(msg=str(ex), title=typeName(ex))
             self.setCurrentIndex(self.ERROR_PAGE_IDX)
             if rti is not None:
                 self.sigUpdated.emit(False)

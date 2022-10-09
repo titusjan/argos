@@ -34,7 +34,7 @@ from argos.inspector.abstract import AbstractInspector
 from argos.qt import Qt, QtCore, QtGui, QtWidgets
 from argos.widgets.constants import MONO_FONT, FONT_SIZE
 from argos.widgets.argostableview import ArgosTableView
-from argos.utils.cls import chechType, checkIsAString
+from argos.utils.cls import checkType, checkIsAString
 from argos.utils.cls import toString, isAnArray
 from argos.utils.misc import is_quoted
 
@@ -107,7 +107,7 @@ class TableInspectorCti(MainGroupCti):
 
         super(TableInspectorCti, self).__init__(nodeName)
 
-        chechType(tableInspector, TableInspector)
+        checkType(tableInspector, TableInspector)
         self.tableInspector = tableInspector
 
         # The defaultRowHeightCti and defaultColWidthCti are initialized with -1; they will get
@@ -530,14 +530,14 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         try:
             if role == Qt.DisplayRole:
                 return toString(self._cellValue(index), masked=self._cellMask(index),
-                                decode_bytes=self.encoding, maskFormat=self.maskFormat,
+                                decodeBytes=self.encoding, maskFormat=self.maskFormat,
                                 strFormat=self.strFormat, intFormat=self.intFormat,
                                 numFormat=self.numFormat, otherFormat=self.otherFormat)
 
             elif role == Qt.ToolTipRole:
                 fmt = '{!r}' # Use __repr__ for toolbar, except for strings
                 return toString(self._cellValue(index), masked=self._cellMask(index),
-                                decode_bytes=self.encoding, maskFormat=fmt,
+                                decodeBytes=self.encoding, maskFormat=fmt,
                                 strFormat=self.strFormat, intFormat=fmt,
                                 numFormat=fmt, otherFormat=fmt)
 
@@ -627,5 +627,5 @@ class TableInspectorModel(QtCore.QAbstractTableModel):
         """ Sets the font that will be returned when data() is called with the Qt.FontRole.
             Can be a QFont or None if no font is set.
         """
-        chechType(font, QtGui.QFont, allowNone=True)
+        checkType(font, QtGui.QFont, allowNone=True)
         self._font = font

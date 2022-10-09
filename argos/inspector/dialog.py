@@ -23,7 +23,7 @@ import logging
 
 from argos.qt import Qt, QtCore, QtWidgets
 from argos.inspector.registry import InspectorRegItem
-from argos.utils.cls import chechType
+from argos.utils.cls import checkType
 from argos.widgets.pluginsdialog import RegistryTab
 
 
@@ -85,7 +85,7 @@ class OpenInspectorDialog(QtWidgets.QDialog):
     def setCurrentInspectorRegItem(self, regItem):
         """ Sets the current inspector given an InspectorRegItem
         """
-        chechType(regItem, InspectorRegItem, allowNone=True)
+        checkType(regItem, InspectorRegItem, allowNone=True)
         self.inspectorTab.setCurrentRegItem(regItem)
 
 

@@ -41,7 +41,7 @@ from argos.inspector.pgplugins.pgctis import (
 from argos.inspector.pgplugins.pgplotitem import ArgosPgPlotItem
 from argos.qt import Qt, QtCore, QtGui, QtSlot
 
-from argos.utils.cls import arrayHasRealNumbers, chechType, isAnArray, toString
+from argos.utils.cls import arrayHasRealNumbers, checkType, isAnArray, toString
 from argos.utils.cls import arrayKindLabel
 from argos.utils.defs import RIGHT_ARROW
 from argos.utils.masks import (ArrayWithMask, replaceMaskedValueWithFloat,
@@ -71,7 +71,7 @@ def calcPgImagePlot2dDataRange(pgImagePlot2d, percentage, crossPlot, subsample):
         :param bool subsample: if True, the image will be subsampled (to 200 by 200) before
             calculating the range. This to improve performance by large images.
     """
-    chechType(pgImagePlot2d.slicedArray, ArrayWithMask) # sanity check
+    checkType(pgImagePlot2d.slicedArray, ArrayWithMask) # sanity check
 
     if crossPlot is None:
         array = pgImagePlot2d.slicedArray  # the whole image
@@ -138,7 +138,7 @@ class PgImagePlot2dCti(MainGroupCti):
             Vice versa, it can connect signals to the target.
         """
         super(PgImagePlot2dCti, self).__init__(nodeName)
-        chechType(pgImagePlot2d, PgImagePlot2d)
+        checkType(pgImagePlot2d, PgImagePlot2d)
         self.pgImagePlot2d = pgImagePlot2d
         imagePlotItem = self.pgImagePlot2d.imagePlotItem
         viewBox = imagePlotItem.getViewBox()
@@ -563,7 +563,7 @@ class PgImagePlot2d(AbstractInspector):
             Draws a vertical line and a symbol at the position of the probe.
         """
         try:
-            chechType(viewPos, QtCore.QPointF)
+            checkType(viewPos, QtCore.QPointF)
             show_data_point = False # shows the data point as a circle in the cross hair plots
             self.crossPlotRow, self.crossPlotCol = None, None
 

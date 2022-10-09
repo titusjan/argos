@@ -22,7 +22,7 @@ import logging, os
 
 from argos.qt import Qt, QtCore, QtGui, QtWidgets, QtSvg
 from argos.info import program_directory, DEBUGGING
-from argos.utils.cls import chechType
+from argos.utils.cls import checkType
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +116,7 @@ class RtiIconFactory(object):
                 If None, the icon will be registered for open is both True and False
             :return: QIcon
         """
-        chechType(isOpen, bool, allowNone=True)
+        checkType(isOpen, bool, allowNone=True)
 
         if fileName and not os.path.isabs(fileName):
             fileName = os.path.join(self.ICONS_DIRECTORY, fileName)
