@@ -40,30 +40,30 @@ URL_PYTHON_ENCODINGS_DOC = "https://docs.python.org/3/library/codecs.html#standa
 ###################
 # Type conversion #
 ###################
-
-def environmentVarToBool(envVar: str) -> bool:
-    """ Converts an environment variable to a boolean
-
-        Returns False if the environment variable is False, 0 or a case-insensitive string "false"
-        or "0".
-    """
-
-    # Try to see if envVar can be converted to an int
-    try:
-        envVar = int(envVar)
-    except ValueError:
-        pass
-
-    if isinstance(envVar, numbers.Number):
-        return bool(envVar)
-    elif isAString(envVar):
-        envVar = envVar.lower().strip()
-        if envVar in "false":
-            return False
-        else:
-            return True
-    else:
-        return bool(envVar)
+#
+# def environmentVarToBool(envVar: str) -> bool:
+#     """ Converts an environment variable to a boolean
+#
+#         Returns False if the environment variable is False, 0 or a case-insensitive string "false"
+#         or "0".
+#     """
+#
+#     # Try to see if envVar can be converted to an int
+#     try:
+#         envVar = int(envVar)
+#     except ValueError:
+#         pass
+#
+#     if isinstance(envVar, numbers.Number):
+#         return bool(envVar)
+#     elif isAString(envVar):
+#         envVar = envVar.lower().strip()
+#         if envVar in "false":
+#             return False
+#         else:
+#             return True
+#     else:
+#         return bool(envVar)
 
 
 def fillValuesToNan(maskedArray: Optional[ma.masked_array]) -> Optional[ma.masked_array]:
@@ -376,8 +376,11 @@ class SingletonMixin():
 
 
     @classmethod
-    def instance(cls, **kwargs):
+    def instance(cls, **kwargs) -> SingletonMixin:
         """ Returns the singleton's instance.
+
+            Args:
+                kwargs: Keyword arguments are passed to the class constructor.
         """
         if cls in SingletonMixin.__singletons:
             return SingletonMixin.__singletons[cls]
@@ -386,8 +389,8 @@ class SingletonMixin():
 
 
     @classmethod
-    def _checkNotYetPresent(cls):
-        """ Checks that the newClass is not yet present in the singleton
+    def _checkNotYetPresent(cls) -> None:
+        """ Checks that the newClass is not yet present in the singleton.
 
             Also check that no descendants are present. This is typically due to bugs.
         """
