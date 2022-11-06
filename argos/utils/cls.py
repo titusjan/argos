@@ -149,7 +149,7 @@ def toString(var: Any, *,
 
     if maskFormat != '{}':
         try:
-            allMasked = all(masked)
+            allMasked = all(masked)  # _type: ignore
         except TypeError:
             allMasked = bool(masked)
 
@@ -176,7 +176,7 @@ def isAString(var: Any, allowNone: bool = False) -> bool:
     return isinstance(var, str) or (var is None and allowNone)
 
 
-def checkIsAString(var: Any, allowNone: bool = False):
+def checkIsAString(var: Any, allowNone: bool = False) -> None:
     """ Calls isAString and raises a TypeError if the check fails.
     """
     if not isAString(var, allowNone=allowNone):
@@ -198,7 +198,7 @@ def isASequence(var: Any, allowNone: bool = False) -> bool:
     return isinstance(var, (list, tuple)) or (var is None and allowNone)
 
 
-def checkIsASequence(var: Any, allowNone: bool = False):
+def checkIsASequence(var: Any, allowNone: bool = False) -> None:
     """ Calls isASequence and raises a TypeError if the check fails.
     """
     if not isASequence(var, allowNone=allowNone):
@@ -212,7 +212,7 @@ def isAMapping(var: Any, allowNone: bool = False) -> bool:
     return isinstance(var, dict) or (var is None and allowNone)
 
 
-def checkIsAMapping(var: Any, allowNone: bool = False):
+def checkIsAMapping(var: Any, allowNone: bool = False) -> None:
     """ Calls isAMapping and raises a TypeError if the check fails.
     """
     if not isAMapping(var, allowNone=allowNone):
@@ -226,7 +226,7 @@ def isAnArray(var: Any, allowNone: bool = False) -> bool:
     return isinstance(var, np.ndarray) or (var is None and allowNone)
 
 
-def checkIsAnArray(var: Any, allowNone: bool = False):
+def checkIsAnArray(var: Any, allowNone: bool = False) -> None:
     """ Calls is_an_array and raises a TypeError if the check fails.
     """
     if not isAnArray(var, allowNone=allowNone):
@@ -270,8 +270,8 @@ def arrayHasRealNumbers(array: np.ndarray) -> bool:
     return kind in 'iuf'
 
 
-def checkType(var: Any, targetClass: Type, allowNone: bool = False):
-    """ Checks that a varaible is a (sub)type of target_class.
+def checkType(var: Any, targetClass: type, allowNone: bool = False) -> None:
+    """ Checks that a variable is a (sub)type of target_class.
 
         Raises a TypeError if this is not the case, does nothing if it is.
 
@@ -297,10 +297,10 @@ def isAColorString(colorStr: str, allowNone: bool = False) -> bool:
     return bool(COLOR_REGEXP.match(colorStr))
 
 
-def checkIsAColorString(var: Any, allowNone: bool = False):
+def checkIsAColorString(var: Any, allowNone: bool = False) -> None:
     """ Calls is_an_array and raises a TypeError if the check fails.
     """
-    if not checkIsAColorString(var, allowNone=allowNone):
+    if not isAColorString(var, allowNone=allowNone):
         raise TypeError("var must be a NumPy array, however type(var) is {}"
                         .format(type(var)))
 
@@ -366,7 +366,7 @@ class SingletonMixin():
     """
     __singletons: Dict[Type[Any], SingletonMixin] = {}
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
         cls = type(self)
@@ -376,7 +376,7 @@ class SingletonMixin():
 
 
     @classmethod
-    def instance(cls, **kwargs) -> SingletonMixin:
+    def instance(cls, **kwargs: Any) -> SingletonMixin:
         """ Returns the singleton's instance.
 
             Args:
