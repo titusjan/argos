@@ -45,20 +45,19 @@ KEY_PROGRAM = '_program'
 KEY_VERSION = '_version'
 
 # TODO: move to utils locations
-def program_directory():
+def program_directory() -> str:
     """ Returns the program directory where this program is installed
     """
     return os.path.abspath(os.path.dirname(__file__))
 
 
-def resource_directory():
+def resource_directory() -> str:
     """ Returns directory with resources (images, style sheets, etc)
     """
     return os.path.join(program_directory(), 'img/')
 
 
-
-def icons_directory():
+def icons_directory() -> str:
     """ Returns the icons directory
     """
     return os.path.join(program_directory(), 'img/snipicons')

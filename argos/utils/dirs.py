@@ -17,12 +17,12 @@
 
 r""" Default config and log directories under the different platforms.
 
-    Config files are stored in a subdirectory of the genericConfigLocation. Log files are stored
-    in a sub directory of the genericLocalDataLocation. These are:
+    Config files are stored in a subdirectory of the baseConfigLocation. Log files are stored
+    in a subdirectory of the baseLocalDataLocation. These are: ::
 
         Windows:
-            baseConfigLocation    -> C:\Users\<user>\AppData\Local\
-            baseLocalDataLocation -> C:\Users\<user>\AppData\Local\
+            baseConfigLocation    -> C:\Users\<user>\AppData\Local
+            baseLocalDataLocation -> C:\Users\<user>\AppData\Local
 
         OS-X:
             baseConfigLocation    -> ~/Library/Preferences
@@ -33,7 +33,6 @@ r""" Default config and log directories under the different platforms.
             baseLocalDataLocation -> ~/.local/share
 
     See http://doc.qt.io/qt-5/qsettings.html#platform-specific-notes.
-
 """
 
 import logging
@@ -45,10 +44,10 @@ from argos.info import ORGANIZATION_NAME, SCRIPT_NAME
 logger  = logging.getLogger(__name__)
 
 
-def normRealPath(path):
+def normRealPath(path: str) -> str:
     """ Returns the normalized real path.
 
-        If the path is empty or None it is returned as-is. This is to prevent expanding to the
+        If the path is empty or None, it is returned as-is. This is to prevent expanding to the
         current directory in case of undefined paths.
     """
     if path:
@@ -57,7 +56,7 @@ def normRealPath(path):
         return path
 
 
-def ensureDirectoryExists(dirName):
+def ensureDirectoryExists(dirName: str) -> None:
     """ Creates a directory if it doesn't yet exist.
     """
     if not os.path.exists(dirName):
@@ -65,10 +64,14 @@ def ensureDirectoryExists(dirName):
         os.makedirs(dirName)
 
 
-def ensureFileExists(pathName):
-    """ Creates an empty file file if it doesn't yet exist. Also creates necessary directory path.
+def ensureFileExists(pathName: str) -> str:
+    """ Creates an empty file if it doesn't yet exist. Also creates necessary directory path.
 
-        :returns: the normRealPath of the path name.
+        Args:
+            pathName: file path.
+
+        Returns:
+            The normRealPath of the path name.
     """
     pathName = normRealPath(pathName)
     dirName, fileName = os.path.split(pathName)
@@ -84,15 +87,12 @@ def ensureFileExists(pathName):
     return pathName
 
 
-def homeDirectory():
+def homeDirectory() -> str:
     """ Returns the user's home directory.
 
-        https://stackoverflow.com/a/4028943/625350
+        See: https://stackoverflow.com/a/4028943/625350
     """
     return os.path.expanduser("~")
-
-
-
 
 
 ################
@@ -100,7 +100,7 @@ def homeDirectory():
 ################
 
 
-def baseConfigLocation():
+def baseConfigLocation() -> str:
     r""" Gets the base configuration directory (for all applications of the user).
 
         See the module doc string at the top for details.
@@ -121,26 +121,12 @@ def baseConfigLocation():
     return normRealPath(configDir)
 
 
-def argosConfigDirectory():
+def argosConfigDirectory() -> str:
     r""" Gets the Argos configuration directory.
 
         The config directory is platform dependent. (See the module doc string at the top).
     """
     return os.path.join(baseConfigLocation(), ORGANIZATION_NAME, SCRIPT_NAME)
-
-#
-# def appConfigFileName(configFile):
-#     """ Returns default config file if configFile is emtpy string or None
-#     """
-#     if configFile:
-#         # Config file specified on the command line
-#         return configFile
-#     else:
-#         # Use the default config file name
-#         configDir = argosConfigDirectory()
-#         configFile = normRealPath(os.path.join(configDir, 'config.yaml'))
-#         return configFile
-
 
 
 #############
@@ -148,12 +134,12 @@ def argosConfigDirectory():
 #############
 
 
-def baseLocalDataLocation():
+def baseLocalDataLocation() -> str:
     r""" Gets the base configuration directory (for all applications of the user).
 
         The config directory is platform dependent (see the Qt documentation for baseDataLocation).
         On Windows this will be something like:
-            C:\Users\<user>\AppData\Local\
+            ``C:\Users\<user>\AppData\Local\``
 
         See the module doc string at the top for details.
     """
@@ -173,7 +159,7 @@ def baseLocalDataLocation():
     return normRealPath(cfgDir)
 
 
-def argosLocalDataDirectory():
+def argosLocalDataDirectory() -> str:
     r""" Returns a directory where Argos can store files locally (not roaming).
 
         This directory is platform dependent. (See the module doc string at the top).
@@ -182,7 +168,7 @@ def argosLocalDataDirectory():
 
 
 
-def argosLogDirectory():
+def argosLogDirectory() -> str:
     r""" Returns the directory where Argos can store its log files.
 
         This is the 'logs' subdirectory of the argosLocalDataDirectory()

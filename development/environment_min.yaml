@@ -25,5 +25,6 @@ dependencies:
 
 # The following dependencies are for development only and therefore have no version number
   - mypy
+  - pylint
   - sphinx
   - sphinx_rtd_theme

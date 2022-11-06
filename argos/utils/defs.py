@@ -16,7 +16,7 @@
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
 
-""" Various definitions, errors and constants that can be used throughout the program
+""" Various definitions, errors and constants that can be used throughout the program.
 
 """
 import sys
@@ -39,6 +39,6 @@ else:
 
 
 class InvalidInputError(Exception):
-    """ Exception raised when the input is invalid after editing
+    """ Exception raised when the input is invalid after editing.z
     """
     pass

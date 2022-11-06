@@ -369,7 +369,8 @@ disable = [
     "too-few-public-methods",
     "consider-iterating-dictionary",
     "trailing-newlines",
-
+    "unnecessary-pass",
+    "consider-using-in",
 
 ]
 
