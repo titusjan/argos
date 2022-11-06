@@ -11,7 +11,7 @@ import os.path
 import numpy as np
 
 from argos.utils.dirs import ensureDirectoryExists
-from argos.utils.logs import make_log_format
+from argos.utils.logs import makeLogFormat
 
 logger = logging.getLogger("create_test_data")
 
@@ -48,5 +48,5 @@ def createTestData(outputDir):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level="DEBUG", format=make_log_format(loggerName=True, fileLine=False))
+    logging.basicConfig(level="DEBUG", format=makeLogFormat(loggerName=True, fileLine=False))
     createTestData("test_data")

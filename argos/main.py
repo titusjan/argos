@@ -193,7 +193,7 @@ def main():
     from argos.info import DEBUGGING, PROJECT_NAME, VERSION, EXIT_CODE_RESTART
     from argos.utils.dirs import resource_directory
     from argos.utils.logs import initLogging
-    from argos.utils.misc import remove_process_serial_number
+    from argos.utils.misc import removeProcessSerialNumber
 
     aboutStr = "{} version: {}".format(PROJECT_NAME, VERSION)
     parser = argparse.ArgumentParser(description = aboutStr)
@@ -252,7 +252,7 @@ def main():
         help="Walks through all the nodes in the repository tree and exits. "
              "The exit code 1 if any of the nodes failed to display.")
 
-    args = parser.parse_args(remove_process_serial_number(sys.argv[1:]))
+    args = parser.parse_args(removeProcessSerialNumber(sys.argv[1:]))
 
     initLogging(args.logConfigFileName, args.log_level)
 

@@ -139,8 +139,7 @@ def baseLocalDataLocation() -> str:
     r""" Gets the base configuration directory (for all applications of the user).
 
         The config directory is platform dependent (see the Qt documentation for baseDataLocation).
-        On Windows this will be something like:
-            ``C:\Users\<user>\AppData\Local\``
+        On Windows this will be something like: ``C:\Users\<user>\AppData\Local\``
 
         See the module doc string at the top for details.
     """

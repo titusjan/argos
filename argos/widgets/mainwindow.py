@@ -48,7 +48,7 @@ from argos.repo.repotreeview import RepoWidget
 from argos.repo.testdata import createArgosTestData
 from argos.utils.cls import checkType, checkIsASequence
 from argos.utils.dirs import argosConfigDirectory, argosLogDirectory
-from argos.utils.misc import string_to_identifier
+from argos.utils.misc import stringToIdentifier
 from argos.utils.moduleinfo import versionStrToTuple
 from argos.widgets.aboutdialog import AboutDialog
 from argos.widgets.testwalkdialog import TestWalkDialog
@@ -561,7 +561,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         dockWidget = QtWidgets.QDockWidget(title, parent=self)
         # Use dock2 as name to reset at upgrade
-        dockWidget.setObjectName("dock2_" + string_to_identifier(title)) # Use doc
+        dockWidget.setObjectName("dock2_" + stringToIdentifier(title)) # Use doc
         dockWidget.setWidget(widget)
         self.addDockWidget(area, dockWidget)
 

@@ -15,12 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
-r""" Various functions related to logging
+r""" Various functions related to logging.
 """
 import logging
 import logging.config
 import os.path
 import json
+
+from typing import List, Union, Dict, Any
 
 from argos.utils.dirs import ensureDirectoryExists, normRealPath, argosLogDirectory
 from argos.utils.misc import replaceStringsInDict
@@ -30,92 +32,31 @@ logger = logging.getLogger(__name__)
 
 THIS_MODULE_DIR = os.path.dirname(os.path.realpath(__file__))
 
-#
-# DEFAULT_LOG_CFG = {
-#     'formatters': {
-#         'fileFormatter': {
-#             'format': '%(asctime)s.%(msecs)03d : pid = %(process)5d : %(threadName)-13s tid = %(thread)5d : %(filename)25s:%(lineno)-4d : %(levelname)-8s: %(message)s',
-#             'datefmt': '%Y-%m-%d %H:%M:%S'
-#         },
-#         'screenFormatter': {
-#             'format': '%(asctime)s.%(msecs)03d : pid = %(process)5d : %(threadName)-13s tid = %(thread)5d : %(filename)25s:%(lineno)-4d : %(levelname)-8s: %(message)s',
-#             'datefmt': '%Y-%m-%d %H:%M:%S'
-#         }
-#     },
-#
-#     'handlers': {
-#         'streamHandler': {
-#             'class': 'logging.handlers.StreamHandler',
-#             'formatter': 'screenFormatter',
-#             'stream': 'ext://sys.stderr',
-#             'level': 'DEBUG',
-#         },
-#
-#         # The handler that writes to the (operational log file).
-#         # This is the log file that is shown when the user clicks the 'show log' file button in the exception dialog.
-#         # Therefore do not rename this handler.
-#         'currentRunHandler': {
-#             'class': 'logging.handlers.FileHandler',
-#             'formatter': 'fileFormatter',
-#             'filename': '@logDir@/last_run.log',
-#             'encoding': 'utf-8',
-#             'delay': 'true',  # only create file when used.
-#             'mode': 'w',
-#             'level': 'DEBUG',
-#         },
-#
-#         'rotatingFileHandler': {  #
-#             'class': 'logging.handlers.TimedRotatingFileHandler',
-#             'formatter': 'fileFormatter',
-#             'filename': '@logDir@/argos.log',
-#             'backupCount': 5,
-#             'when': 'd',
-#             'interval': '1',
-#             'encoding': 'utf-8',
-#             'delay': 'true',   # only create file when used.
-#             'mode': 'a',
-#             'level': 'DEBUG',
-#         }
-#     },
-#
-#     # This sets level of all log messages, including messages from 3rd party libraries.
-#     # In the loggers section below you can override the log levels of (sub)components.
-#     'root' : {
-#         'level': 'WARNING',
-#         'handlers': ['streamHandler', 'currentRunHandler', 'rotatingFileHandler'],
-#     },
-#
-#     'loggers': {
-#         'argos': {
-#             'level': 'DEBUG',
-#         }
-#     }
-# }
-
-def findStreamHandlersInConfig():
+def findStreamHandlersInConfig() -> List[logging.Handler]:
     """ Searches for a handlers with 'stream' their name. Returns a list of handlers.
     """
     rootLogger = logging.getLogger()
-    #logger.debug("Searching for Handlers in the root logger haveing 'stream' in their name")
+    #logger.debug("Searching for Handlers in the root logger having 'stream' in their name")
     foundHandlers = []
     for handler in rootLogger.handlers:
         #logger.debug("  handler name: {}".format(handler.name))
-        if 'stream' in handler.name.lower():
+        if handler.name and 'stream' in handler.name.lower():
             foundHandlers.append(handler)
 
     return foundHandlers
 
 
-
-def initLogging(configFileName=None, streamLogLevel=None):
+def initLogging(configFileName: str = None, streamLogLevel: str = None) -> None:
     """ Configures logging given a (JSON) config file name.
 
         If configFileName is None, the default logging (from iriscc/lib/default_logging.yaml) is
         used.
 
-        :param configFileName: JSON file with log config.
-        :param streamLogLevel: If given it overrides the log level of StreamHandlers in the config. All messages below
-            this level will be suppressed.
+        Args:
+            configFileName: JSON file with log config.
+            streamLogLevel:
+                If given it overrides the log level of StreamHandlers in the config.
+                All messages below this level will be suppressed.
     """
     if configFileName is None:
         configFileName = os.path.join(THIS_MODULE_DIR, "default_logging.json")
@@ -149,50 +90,55 @@ def initLogging(configFileName=None, streamLogLevel=None):
     logging.info("Default location of log files: '{}'".format(logDir))
 
 
-def log_dictionary(dictionary, msg='', logger=None, level='debug', item_prefix='    '):
+def logDictionary(dictionary: Dict[Any, Any],
+                  msg: str = '',
+                  logger: logging.Logger = None,
+                  level: Union[str, int] = 'debug',
+                  itemPrefix: str = '    ') -> None:
     """ Writes a log message with key and value for each item in the dictionary.
 
-        :param dictionary: the dictionary to be logged
-        :type dictionary: dict
-        :param name: An optional message that is logged before the contents
-        :type name: string
-        :param logger: A logging.Logger object to log to. If not set, the 'main' logger is used.
-        :type logger: logging.Logger or a string
-        :param level: log level. String or int as described in the logging module documentation.
-            Default: 'debug'.
-        :type level: string or int
-        :param item_prefix: String that will be prefixed to each line. Default: two spaces.
-        :type item_prefix: string
+        Args:
+            dictionary: The dictionary to be logged.
+            msg: An optional message that is logged before the contents.
+            logger: A logging.Logger object to log to. If not set, the 'main' logger is used.
+            level: The log level. String or int as described in the logging module documentation.
+                Default: 'debug'.
+            itemPrefix: String that will be prefixed to each line.
+                Default: four spaces.
     """
-    level_nr = logging.getLevelName(level.upper())
+    if isinstance(level, str):
+        level = level.upper()
+
+    levelNr = logging.getLevelName(level)
 
     if logger is None:
         logger = logging.getLogger('main')
 
     if msg :
-        logger.log(level_nr, "Logging dictionary: {}".format(msg))
+        logger.log(levelNr, "Logging dictionary: {}".format(msg))
 
     if not dictionary:
-        logger.log(level_nr,"{}<empty dictionary>".format(item_prefix))
+        logger.log(levelNr,"{}<empty dictionary>".format(itemPrefix))
         return
 
-    max_key_len = max([len(k) for k in dictionary.keys()])
+    maxKeyLen = max([len(k) for k in dictionary.keys()])
 
     for key, value in sorted(dictionary.items()):
-        logger.log(level_nr, "{0}{1:<{2}s} = {3}".format(item_prefix, key, max_key_len, value))
+        logger.log(levelNr, "{0}{1:<{2}s} = {3}".format(itemPrefix, key, maxKeyLen, value))
 
 
-def make_log_format(
-        ascTime = True,
-        processId = False,
-        threadName = False,
-        threadId = False,
-        fileLine = True,
-        loggerName = False,
-        level = True):
-    """ Creates a format string to use in logging.basicConfig.
+def makeLogFormat(
+        ascTime: bool = True,
+        processId: bool = False,
+        threadName: bool = False,
+        threadId: bool = False,
+        fileLine: bool = True,
+        loggerName: bool = False,
+        level: bool = True) -> str:
+    """ Creates a format string that can be used in logging.basicConfig.
 
-        Use example:
+        Example: ::
+
             logging.basicConfig(level="DEBUG", format=makeLogFormat(fileLine=False))
     """
     parts = []

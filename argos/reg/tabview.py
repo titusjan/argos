@@ -226,14 +226,14 @@ def main():
     from PyQt5 import QtWidgets
 
     from argos import info
-    from argos.utils.logs import make_log_format
+    from argos.utils.logs import makeLogFormat
     from argos.qt.misc import handleException
     from argos.reg.tabmodel import BaseTableModel, BaseItemStore, BaseItem
 
     info.DEBUGGING = True
     sys.excepthook = handleException
 
-    logging.basicConfig(level="DEBUG", format=make_log_format())
+    logging.basicConfig(level="DEBUG", format=makeLogFormat())
 
 
     app = QtWidgets.QApplication([])

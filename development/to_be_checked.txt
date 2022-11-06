@@ -88,10 +88,7 @@ repo/rtiplugins/pillowio.py
 repo/rtiplugins/scipyio.py
 repo/testdata.py
 utils/__init__.py
-utils/dirs.py
-utils/logs.py
 utils/masks.py
-utils/misc.py
 utils/moduleinfo.py
 widgets/__init__.py
 widgets/aboutdialog.py
@@ -108,6 +105,7 @@ widgets/testwalkdialog.py
 utils/cls.py
 utils/config.py
 utils/defs.py
-
-
+utils/dirs.py
+utils/logs.py
+utils/misc.py
 

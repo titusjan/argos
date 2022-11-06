@@ -24,7 +24,7 @@ from argos.info import DEBUGGING
 from argos.utils.cls import importSymbol, checkIsAString, typeName, checkType
 from argos.reg.tabmodel import BaseItem, BaseItemStore, BaseTableModel
 from argos.qt import Qt, QtGui
-from argos.utils.misc import string_to_identifier
+from argos.utils.misc import stringToIdentifier
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ class RegType(enum.Enum):
 def nameToIdentifier(fullName):
     """ Constructs the regItem identifier given its full name
     """
-    return string_to_identifier(fullName, white_space_becomes='')
+    return stringToIdentifier(fullName, white_space_becomes='')
 
 
 class BaseRegItem(BaseItem):

@@ -36,7 +36,7 @@ from argos.widgets.constants import MONO_FONT, FONT_SIZE
 from argos.widgets.argostableview import ArgosTableView
 from argos.utils.cls import checkType, checkIsAString
 from argos.utils.cls import toString, isAnArray
-from argos.utils.misc import is_quoted
+from argos.utils.misc import isQuoted
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +78,7 @@ def makeReplacementField(formatSpec, altFormatSpec='', testValue=None):
     checkIsAString(altFormatSpec)
     fmt = altFormatSpec if not formatSpec else formatSpec
 
-    if is_quoted(fmt):
+    if isQuoted(fmt):
         fmt = fmt[1:-1] # remove quotes
     else:
         if fmt and ':' not in fmt and '!' not in fmt:

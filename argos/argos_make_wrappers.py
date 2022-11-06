@@ -29,14 +29,14 @@ import os.path
 import sys
 
 from argos.info import DEBUGGING, VERSION
-from argos.utils.logs import make_log_format, initLogging
-from argos.utils.misc import remove_process_serial_number
+from argos.utils.logs import makeLogFormat, initLogging
+from argos.utils.misc import removeProcessSerialNumber
 
 APP_NAME = 'argos_make_wrappers'
 
 logger = logging.getLogger("argos." + APP_NAME)
 
-logging.basicConfig(level='INFO', stream=sys.stderr, format=make_log_format())
+logging.basicConfig(level='INFO', stream=sys.stderr, format=makeLogFormat())
 
 
 def eprint(*args, **kwargs):
@@ -204,7 +204,7 @@ def main():
     parser.add_argument('--version', action = 'store_true',
         help="Prints the program version and exits")
 
-    args = parser.parse_args(remove_process_serial_number(sys.argv[1:]))
+    args = parser.parse_args(removeProcessSerialNumber(sys.argv[1:]))
 
     initLogging(None, args.log_level)
 

@@ -8,7 +8,6 @@ Tests functionality from the utils package
 import unittest
 
 from argos.utils.cls import isAString, isBinary
-from argos.utils.misc import python2
 import numpy as np
 
 
@@ -38,13 +37,8 @@ class TestStringTypeDetection(unittest.TestCase):
              'string literal'  True  True
             u'unicode literal' True  True
         """
-
-        if python2():
-            self.assertTrue(isAString(self.b_lit))
-            self.assertTrue(isAString(self.np_b_lit))
-        else:
-            self.assertFalse(isAString(self.b_lit))
-            self.assertFalse(isAString(self.np_b_lit))
+        self.assertFalse(isAString(self.b_lit))
+        self.assertFalse(isAString(self.np_b_lit))
 
         self.assertTrue(isAString(self.s_lit))
         self.assertTrue(isAString(self.np_s_lit))
@@ -67,12 +61,8 @@ class TestStringTypeDetection(unittest.TestCase):
         self.assertTrue(isBinary(self.b_lit))
         self.assertTrue(isBinary(self.np_b_lit))
 
-        if python2():
-            self.assertTrue(isBinary(self.s_lit))
-            self.assertTrue(isBinary(self.np_s_lit))
-        else:
-            self.assertFalse(isBinary(self.s_lit))
-            self.assertFalse(isBinary(self.np_s_lit))
+        self.assertFalse(isBinary(self.s_lit))
+        self.assertFalse(isBinary(self.np_s_lit))
 
         self.assertFalse(isBinary(self.u_lit))
         self.assertFalse(isBinary(self.np_u_lit))

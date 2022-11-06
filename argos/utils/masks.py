@@ -16,12 +16,12 @@
 # along with Argos. If not, see <http://www.gnu.org/licenses/>.
 
 """
-Class for storing values and a mask. Masked arrays would have been a good solution but
+Contains a class for storing values and a mask. Masked arrays would have been a good solution but
 unfortunately they are very buggy.
 
 TODO: what are these issues again?
 """
-from __future__ import division, print_function
+
 import logging
 import warnings
 
@@ -39,7 +39,7 @@ class ConsistencyError(Exception):
 
 # TODO: look at Numpy’s dispatch mechanism to see if we reimplement
 # https://numpy.org/doc/stable/user/basics.dispatch.html#basics-dispatch
-class ArrayWithMask(object):
+class ArrayWithMask():
     """ Class for storing an arrays together with a mask.
 
         Used instead of the Numpy MaskedArray class, which has too many issues.

@@ -144,8 +144,8 @@ class RtiIconFactory(object):
             fileName = self._registry[(glyph, isOpen)]
         except KeyError:
             logger.warning("Unregistered icon glyph: {} (open={})".format(glyph, isOpen))
-            from argos.utils.logs import log_dictionary
-            log_dictionary(self._registry, "registry", logger=logger)
+            from argos.utils.logs import logDictionary
+            logDictionary(self._registry, "registry", logger=logger)
             raise
 
         return self.loadIcon(fileName, color=color)
