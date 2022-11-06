@@ -179,7 +179,7 @@ def argosLogDirectory() -> str:
 def program_directory() -> str:
     """ Returns the program directory where this program is installed
     """
-    return os.path.abspath(os.path.dirname(__file__))
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 
 def resource_directory() -> str:
