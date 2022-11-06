@@ -20,7 +20,8 @@
 import enum
 import logging, os
 
-from argos.info import DEBUGGING, icons_directory
+from argos.info import DEBUGGING
+from argos.utils.dirs import icons_directory
 from argos.qt import Qt, QtCore, QtGui, QtWidgets, QtSlot
 from argos.qt.treeitems import BaseTreeItem
 

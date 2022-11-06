@@ -23,7 +23,7 @@ import os.path
 
 from argos.utils.cls import typeName, checkType
 
-from argos.info import icons_directory
+from argos.utils.dirs import icons_directory
 from argos.reg.tabmodel import BaseTableModel
 from argos.qt import QtCore, QtGui, QtWidgets, Qt
 from argos.qt.togglecolumn import ToggleColumnTableView

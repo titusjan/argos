@@ -190,7 +190,8 @@ def main():
     import numpy as np
 
     from argos.widgets.constants import NUMPY_LINE_WIDTH
-    from argos.info import DEBUGGING, PROJECT_NAME, VERSION, EXIT_CODE_RESTART, resource_directory
+    from argos.info import DEBUGGING, PROJECT_NAME, VERSION, EXIT_CODE_RESTART
+    from argos.utils.dirs import resource_directory
     from argos.utils.logs import initLogging
     from argos.utils.misc import remove_process_serial_number
 

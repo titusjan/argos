@@ -26,7 +26,8 @@ import os.path
 from argos.config.abstractcti import ResetMode
 from argos.config.configitemdelegate import ConfigItemDelegate
 from argos.config.configtreemodel import ConfigTreeModel
-from argos.info import DEBUGGING, icons_directory
+from argos.info import DEBUGGING
+from argos.utils.dirs import icons_directory
 from argos.qt import Qt, QtCore, QtGui, QtWidgets, QtSlot
 from argos.widgets.argostreeview import ArgosTreeView
 from argos.widgets.constants import RIGHT_DOCK_WIDTH, DOCK_SPACING, DOCK_MARGIN

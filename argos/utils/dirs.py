@@ -36,6 +36,7 @@ r""" Default config and log directories under the different platforms.
 """
 
 import logging
+import os
 import os.path
 import platform
 
@@ -176,4 +177,19 @@ def argosLogDirectory() -> str:
     return os.path.join(argosLocalDataDirectory(), 'logs')
 
 
+def program_directory() -> str:
+    """ Returns the program directory where this program is installed
+    """
+    return os.path.abspath(os.path.dirname(__file__))
 
+
+def resource_directory() -> str:
+    """ Returns directory with resources (images, style sheets, etc)
+    """
+    return os.path.join(program_directory(), 'img/')
+
+
+def icons_directory() -> str:
+    """ Returns the icons directory
+    """
+    return os.path.join(program_directory(), 'img/snipicons')

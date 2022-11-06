@@ -17,7 +17,7 @@
 
 """ Version and other info for this program
 """
-import os, sys
+import sys
 
 # We bypass the argparse mechanism in main.py because this import is executed before main.main()
 DEBUGGING = ('-d' in sys.argv or '--debug' in sys.argv)
@@ -44,21 +44,5 @@ EXIT_CODE_RESTART = 66 # Indicates the program is being 'restarted'
 KEY_PROGRAM = '_program'
 KEY_VERSION = '_version'
 
-# TODO: move to utils locations
-def program_directory() -> str:
-    """ Returns the program directory where this program is installed
-    """
-    return os.path.abspath(os.path.dirname(__file__))
 
-
-def resource_directory() -> str:
-    """ Returns directory with resources (images, style sheets, etc)
-    """
-    return os.path.join(program_directory(), 'img/')
-
-
-def icons_directory() -> str:
-    """ Returns the icons directory
-    """
-    return os.path.join(program_directory(), 'img/snipicons')
 

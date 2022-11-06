@@ -21,7 +21,8 @@ from __future__ import print_function
 import logging, os
 
 from argos.qt import Qt, QtCore, QtGui, QtWidgets, QtSvg
-from argos.info import program_directory, DEBUGGING
+from argos.info import DEBUGGING
+from argos.utils.dirs import program_directory
 from argos.utils.cls import checkType
 
 logger = logging.getLogger(__name__)

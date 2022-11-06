@@ -23,7 +23,7 @@ import logging
 import os.path
 import sys
 
-from argos.info import icons_directory
+from argos.utils.dirs import icons_directory
 from argos.qt import QtCore, QtGui, QtWidgets, Qt, QtSlot
 from argos.qt.colorselect import ColorSelectWidget
 from argos.qt.shortcutedit import ShortCutEditor
