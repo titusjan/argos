@@ -158,7 +158,7 @@ class ArrayWithMask():
             Always has the same shape as the maksedArray.data, event if the mask is a single boolan.
         """
         if isinstance(self.mask, bool):
-            return np.full(self.data.shape, self.mask, dtype=np.bool)
+            return np.full(self.data.shape, self.mask, dtype=bool)
         else:
             return self.mask
 
@@ -248,7 +248,7 @@ def replaceMaskedValueWithFloat(data, mask, replacementValue, copyOnReplace=True
     """
     kind = data.dtype.kind
     if kind == 'i' or kind == 'u': # signed/unsigned int
-        data = data.astype(np.float, casting='safe')
+        data = data.astype(float, casting='safe')
 
     if data.dtype.kind != 'f':
         return # only replace for floats
