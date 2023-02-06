@@ -6,11 +6,15 @@ History
 Note that version 0.3 will be the last release that supports Python 2.
 
 
+0.4.4 (2023-02-06)
+------------------
+
+* Removed deprecated numpy aliases so it works with numpy 1.24.
+
 0.4.3 (2022-07-26)
 ------------------
 
-* Removed spurious log message.
-
+* Removed spurious log messages.
 
 0.4.2 (2022-07-24)
 ------------------
