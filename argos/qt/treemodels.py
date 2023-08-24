@@ -491,7 +491,7 @@ class BaseTreeModel(QtCore.QAbstractItemModel):
 
         def _auxGetByPath(parts, item, index):
             "Aux function that does the actual recursive search"
-            #logger.debug("_auxGetByPath item={}, parts={}".format(item, parts))
+            logger.info("_auxGetByPath item={}, parts={}".format(item, parts))
 
             if len(parts) == 0:
                 return [(item, index)]
