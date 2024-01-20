@@ -3,7 +3,8 @@
 
 """ Create some data files that can be used for testing.
 
-    Is by no means extensive perhaps in the future it will. For now it is updated when issues are encountered.
+    Is by no means extensive perhaps in the future it will.
+    For now, it is updated when issues are encountered.
 """
 import logging
 import os.path
@@ -15,9 +16,8 @@ from argos.utils.logs import makeLogFormat
 
 logger = logging.getLogger("create_test_data")
 
-
-def createHdfTestData():
-    """ Create files with the python h5py module.
+def createHdfEmpty():
+    """ Create test file with empty datasets and attributes.
     """
     import h5py
 
@@ -34,6 +34,34 @@ def createHdfTestData():
         ds.attrs["emptyAttr"] = h5py.Empty(np.float32)
 
 
+def createHdfDims():
+    """ Create test file with various dimensions and scales.
+    """
+    import h5py
+
+    with h5py.File('dimensions.h5', 'w') as h5Root:
+
+        dsTime = h5Root.create_dataset("tine", shape=(3, ), data=np.arange(3))
+        dsTime.dims[0].label = 'time'
+        dsTime.make_scale()
+
+        dsRow = h5Root.create_dataset("row", shape=(4, ), data=np.arange(4))
+        dsRow.make_scale(name="name-row")
+
+        dsCol = h5Root.create_dataset("col", shape=(5, ), data=np.arange(5))
+        dsCol.make_scale(name="name-col")
+
+        data = np.arange(60).reshape((3, 4, 5))
+        logger.debug(f"data shape: {data.shape}")
+
+        dsCube = h5Root.create_dataset("data_cube", data=data)
+        dsCube.dims[0].attach_scale(dsTime)
+        dsCube.dims[1].attach_scale(dsRow)
+
+        dsCube.dims[2].attach_scale(dsCol)
+        dsCube.dims[2].label = 'label-col'
+
+
 
 def createTestData(outputDir):
     """ Creates test data files in output directory
@@ -42,7 +70,8 @@ def createTestData(outputDir):
     oldDir = os.getcwd()
     os.chdir(outputDir)
     try:
-        createHdfTestData()
+        createHdfEmpty()
+        createHdfDims()
     finally:
         os.chdir(oldDir)
 

@@ -5,6 +5,11 @@ History
 
 Note that version 0.3 will be the last release that supports Python 2.
 
+0.4.5 (2024-??-??)
+------------------
+
+* HDF5 dimension label and dimension scale name take precedence when calculating dimension name.
+
 
 0.4.4 (2023-02-06)
 ------------------

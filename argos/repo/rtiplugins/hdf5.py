@@ -43,32 +43,42 @@ MAX_QUICK_LOOK_SIZE = 1000
 def dimNamesFromDataset(h5Dataset, useBaseName=True):
     """ Constructs the dimension names given a h5py dataset.
 
-        First looks in the dataset's dimension scales to see if it refers to another
-        dataset. In that case the referred dataset's name is used. If not, the label of the
-        dimension scale is used. Finally, if this is empty, the dimension is numbered.
+        For each dimension of the dataset, the dimension name is made using one of the following
+        options (from high to low precedence):
+
+        1) Use the dimension label if not empty.
+        2) Use the name of the dimension scale that is attached (rarely is there more than one).
+        3) Use the name of the dataset that is attached to the first dimension scale.
+        4) If the options above yield an empty string, fall back on 'dim-0', 'dim-1', etc.
+
+        Args:
+            h5Dataset: HDF dataset.
+            useBaseName: If True, only the part after the last slash will be used as the
+                dimension names (using os.path.basename)
     """
     dimNames = [] # TODO: cache?
-    for dimNr, dimScales in enumerate(h5Dataset.dims):
-        if len(dimScales) == 0:
-            dimNames.append(DIM_TEMPLATE.format(dimNr))
+    for dimNr, dimension in enumerate(h5Dataset.dims):
+        dimName = dimension.label
+        if not dimName:
+            dimScales = dimension.items()
+            if len(dimScales) >= 1:
+                if len(dimScales) > 1:
+                    logger.debug(f"More than one dimension scale found, using the first {dimName}")
+
+                # There can be more than one dimension scale attached, we onl use the first one.
+                dimScaleName, dimScaleDataset = dimScales[0]
+                if dimScaleName:
+                    dimName = dimScaleName
+                else:
+                    dimName = dimScaleDataset.name
+
+        # If label is empty ond no dimension scales attached, use 'dim-{nr}' fall back option.
+        if not dimName:
+            dimName = DIM_TEMPLATE.format(dimNr)
         else:
-            dimScaleLabel, dimScaleDataset = dimScales.items()[0]
-            path = dimScaleDataset.name
-            if path:
-                dimName = os.path.basename(path) if useBaseName else path
-            elif dimScaleLabel: # This could potentially be long so it's our second choice
-                dimName = dimScaleLabel
-            else:
-                dimName = DIM_TEMPLATE.format(dimNr)
+            dimName = os.path.basename(dimName) if useBaseName else dimName
 
-            if len(dimScales) > 1:
-                logger.debug("More than one dimension scale found, using the first {}"
-                             .format(dimName))
-
-            dimNames.append(dimName)
-        # else:
-        #     # TODO: multiple scales for this dimension. What to do?
-        #     dimNames.append(DIM_TEMPLATE.format(dimNr)) # For now, just number them
+        dimNames.append(dimName)
 
     return dimNames
 

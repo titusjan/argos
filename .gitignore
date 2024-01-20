@@ -102,3 +102,9 @@ tests/test_data/
 tests/create_test_data/test_data
 docs_new
 docs/source/api
+
+
+# Argos data formats
+*.h5
+*.nc4
+*.spi
