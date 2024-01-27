@@ -40,7 +40,7 @@ H5PY_MAJOR_VERSION = versionStrToTuple(h5py.__version__)[0]
 MAX_QUICK_LOOK_SIZE = 1000
 
 
-def dimNamesFromDataset(h5Dataset, useBaseName=True):
+def dimNamesFromDataset(h5Dataset, forToolTip=False):
     """ Constructs the dimension names given a h5py dataset.
 
         For each dimension of the dataset, the dimension name is made using one of the following
@@ -53,30 +53,35 @@ def dimNamesFromDataset(h5Dataset, useBaseName=True):
 
         Args:
             h5Dataset: HDF dataset.
-            useBaseName: If True, only the part after the last slash will be used as the
+            forToolTip: Returns string representation for tool tips.
+                If True is shows the full path of the linked dimension scale (and falls back on
+                name, label for dimension number (so the opposite order).
+                If False (default), only the part after the last slash will be used as the
                 dimension names (using os.path.basename)
     """
     dimNames = [] # TODO: cache?
     for dimNr, dimension in enumerate(h5Dataset.dims):
-        dimName = dimension.label
-        if not dimName:
-            dimScales = dimension.items()
-            if len(dimScales) >= 1:
-                if len(dimScales) > 1:
-                    logger.debug(f"More than one dimension scale found, using the first {dimName}")
+        dimLabel = dimension.label
 
-                # There can be more than one dimension scale attached, we onl use the first one.
-                dimScaleName, dimScaleDataset = dimScales[0]
-                if dimScaleName:
-                    dimName = dimScaleName
-                else:
-                    dimName = dimScaleDataset.name
+        dimScales = dimension.items()
+
+        if len(dimScales) >= 1:
+            # There can be more than one dimension scale attached, we onl use the first one.
+            dimScaleName, dimScaleDataset = dimScales[0]
+            dimScaleDatasetName = dimScaleDataset.name
+            if len(dimScales) > 1:
+                logger.debug(f"More than one dimension scale found for {h5Dataset} dims[{dimNr}]")
+        else:
+            dimScaleName, dimScaleDatasetName = '', ''
 
         # If label is empty ond no dimension scales attached, use 'dim-{nr}' fall back option.
-        if not dimName:
-            dimName = DIM_TEMPLATE.format(dimNr)
+        if forToolTip:
+            dimName = dimScaleDatasetName or dimScaleName or dimLabel or DIM_TEMPLATE.format(dimNr)
         else:
-            dimName = os.path.basename(dimName) if useBaseName else dimName
+            dimName = os.path.basename(
+                dimLabel or dimScaleName or dimScaleDatasetName or DIM_TEMPLATE.format(dimNr))
+            logger.debug(f"{h5Dataset.name} dim-{dimNr}: label = {dimLabel}, "
+                f"dimScaleName: {dimScaleName}, dimScaleDatasetName: {dimScaleDatasetName} -> {dimName}")
 
         dimNames.append(dimName)
 
@@ -436,7 +441,7 @@ class H5pyFieldRti(BaseRti):
         """
         nSubDims = len(self._subArray.shape)
         subArrayDims = [SUB_DIM_TEMPLATE.format(dimNr) for dimNr in range(nSubDims)]
-        return dimNamesFromDataset(self._h5Dataset, useBaseName=False) + subArrayDims
+        return dimNamesFromDataset(self._h5Dataset, forToolTip=True) + subArrayDims
 
 
     @property
@@ -607,14 +612,14 @@ class H5pyDatasetRti(BaseRti):
     def dimensionNames(self):
         """ Returns a list with the dimension names of the underlying HDF-5 dataset.
         """
-        return dimNamesFromDataset(self._h5Dataset) # TODO: cache?
+        return dimNamesFromDataset(self._h5Dataset)  # TODO: cache?
 
 
     @property
     def dimensionPaths(self):
         """ Returns a list with the full path names of the dimensions.
         """
-        return dimNamesFromDataset(self._h5Dataset, useBaseName=False)
+        return dimNamesFromDataset(self._h5Dataset, forToolTip=True)
 
 
     @property
