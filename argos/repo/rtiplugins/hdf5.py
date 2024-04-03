@@ -22,7 +22,9 @@
 """
 from __future__ import absolute_import
 
+import enum
 import logging, os
+from typing import Callable, Optional
 
 import numpy as np
 import h5py
@@ -219,6 +221,32 @@ def _dataSetQuickLook(data, string_info):
             return str(np.char.decode(bytesArray, encoding=string_info.encoding))
 
 
+def _create_enum_factory(h5Dataset: h5py.Dataset) -> Optional[Callable]:
+    """ Creates factory function that makes object array of enum types
+
+        Returns None if the dataset does not contain enum data.
+
+        If the dataset does contain an HDF% enum, the factory function can (and will) be used
+        to create a Numpy object array with Python enums. This array can't be plotted but the
+        Table inspector will show the complete Enum values.
+    """
+    enum_dict = h5py.check_enum_dtype(h5Dataset.dtype)
+    if enum_dict:
+        EnumCls = enum.IntEnum('EnumCls', enum_dict)
+        EnumCls.__str__ = lambda e: f'{e.name} ({e.value})'
+
+        def safeCreateEnum(v):
+            """ Creates EnumCls if v in the values. Otherwise, returns v"""
+            try:
+                return EnumCls(v)
+            except ValueError:
+                return v
+
+        logger.debug(f"Created enum class from {enum_dict} for: {h5Dataset.name}")
+        return np.vectorize(safeCreateEnum, otypes=[EnumCls])  # Make factory function
+    else:
+        return None
+
 
 class H5pyScalarRti(BaseRti):
     """ Repository Tree Item (RTI) that contains a scalar HDF-5 variable.
@@ -233,6 +261,7 @@ class H5pyScalarRti(BaseRti):
             nodeName=nodeName, fileName=fileName, iconColor=iconColor)
         checkType(h5Dataset, h5py.Dataset)
         self._h5Dataset = h5Dataset
+        self._vecEnumCls = _create_enum_factory(h5Dataset)
 
 
     def hasChildren(self):
@@ -252,7 +281,10 @@ class H5pyScalarRti(BaseRti):
         """ Called when using the RTI with an index (e.g. rti[0]).
             The scalar will be wrapped in an array with one element so it can be inspected.
         """
-        return self._h5Dataset[()]
+        scalar = self._h5Dataset[()]
+        if self._vecEnumCls is not None:
+            scalar = self._vecEnumCls(scalar)
+        return scalar
 
 
     @property
@@ -526,7 +558,7 @@ class H5pyDatasetRti(BaseRti):
         checkType(h5Dataset, h5py.Dataset)
         self._h5Dataset = h5Dataset
         self._isStructured = bool(self._h5Dataset.dtype.names)
-
+        self._vecEnumCls = _create_enum_factory(h5Dataset)
 
     @property
     def iconGlyph(self):
@@ -562,6 +594,8 @@ class H5pyDatasetRti(BaseRti):
         """
         # Some old HDF5 files return bytes objects when containing string data. Convert to array.
         array = np.array(self._h5Dataset.__getitem__(index))
+        if self._vecEnumCls is not None:
+            array = self._vecEnumCls(array)
         return maskedEqual(array, self.missingDataValue)
 
 
