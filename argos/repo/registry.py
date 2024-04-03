@@ -184,7 +184,7 @@ class RtiRegistry(BaseRegistry):
         # Therefore put the defaults at the top of the list. The user can changed the order in the
         # plugin configuration dialog.
 
-        hdfGlobs = '*.hdf5;*.h5;*.h5e;*.he5' # hdf extension is for HDF-4
+        hdfGlobs = '*.hdf5;*.h5;*.h5e;*.he5;*.si5' # hdf extension is for HDF-4
         return [
             RtiRegItem('HDF-5 file',
                        'argos.repo.rtiplugins.hdf5.H5pyFileRti',
