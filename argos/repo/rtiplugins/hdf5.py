@@ -775,6 +775,8 @@ class H5pyFileRti(H5pyGroupRti):
         """
         super(H5pyFileRti, self).__init__(None, nodeName, fileName=fileName, iconColor=iconColor)
         self._checkFileExists()
+        self._h5File = None
+
 
     def _openResources(self):
         """ Opens the root Dataset.
@@ -782,12 +784,18 @@ class H5pyFileRti(H5pyGroupRti):
         logger.info("Opening: {}".format(self._fileName))
         if not os.path.isfile(self._fileName):
             raise OSError("{} does not exist or is not a regular file.".format(self._fileName))
-        self._h5Group = h5py.File(self._fileName, 'r')
+        self._h5File = h5py.File(self._fileName, 'r')
+
+        # Separate _h5Group member that point to the root group is necessary as a work-around
+        # for the incorrect display of items in the root group when track_order is True.
+        # See https://github.com/h5py/h5py/issues/1577
+        self._h5Group = self._h5File['/']
 
 
     def _closeResources(self):
         """ Closes the root Dataset.
         """
         logger.info("Closing: {}".format(self._fileName))
-        self._h5Group.close()
+        self._h5File.close()
+        self._h5File = None
         self._h5Group = None
