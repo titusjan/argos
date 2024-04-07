@@ -104,6 +104,38 @@ def createHdfDims():
         dsCube.dims[2].label = 'label-col'
 
 
+def createHdfSubArray():
+    """ Create test file with structured arrays where fields are arrays in itself.
+        Forked also ``createArgosTestData``, which creates the same arrays in memory.
+    """
+    import h5py
+
+    with h5py.File('sub_arrays.h5', 'w') as h5Root:
+
+        h5Root.create_dataset('structured_arr1',
+            data=np.array([(1, 2., 'Hello'), (2, 3., "World")],
+                          dtype=[('foo', 'i4'), ('bar', 'f4'), ('baz', 'S10')] ))
+
+        h5Root.create_dataset('structured_arr2',
+            data=np.array([(1.5,2.5,(1.0,2.0)),(3.,4.,(4.,5.)),(1.,3.,(2.,6.))],
+                          dtype=[('x','f4'),('y',np.float32),('value','f4',(2,2))] ))
+
+        h5Root.create_dataset('structured_arr3',
+            data=np.array([(1.5,2.5,[2.0, -1.0]),(3.,4.,[5., 88]),(1.,3.,[2., 0.01])],
+                          dtype=[('1st','f4'),('2nd',np.float32),('3rd','f4',(2,))] ))
+
+        # A structured array with offsets and titles
+        dt4 = np.dtype({'names': ['r', 'b'], 'formats': ['u1', 'u1'], 'offsets': [0, 2]})
+        h5Root.create_dataset('structured_arr4',
+            data=np.array([(255, 11), (1, 50)], dtype=dt4 ))
+
+        # Nested structured array
+        dt5 = [('year', '<i4'), ('countries', [('c1', [('iso','a3'), ('my_value','<f4')]),
+                                               ('c2', [('iso','a3'), ('your_value','<f8', (3,))])])]
+        h5Root.create_dataset('structured_arr5',
+            data=np.array([(2009, (('USA', 10.0), ('CHN', [-16.9, 0, 1000]))),
+                           (2010, (('BRA', 11.2), ('ARG', [12.0, 17.2, np.nan])))], dtype=dt5))
+
 
 def createTestData(outputDir):
     """ Creates test data files in output directory
@@ -117,9 +149,12 @@ def createTestData(outputDir):
         readEnum()
         createHdfEmpty()
         createHdfDims()
+        createHdfSubArray()
     finally:
         logger.info("Changing output dir back to: {}".format(os.path.abspath(oldDir)))
         os.chdir(oldDir)
+
+
 
 
 if __name__ == "__main__":

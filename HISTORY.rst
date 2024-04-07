@@ -11,6 +11,7 @@ Note that version 0.3 will be the last release that supports Python 2.
 * HDF5 dimension label and dimension scale name take precedence when calculating dimension name.
 * HDF5 support for enumerations. These can't be plotted but enum values are displayed in the table.
 * HDF5 plugin opens *.si5 extension by default.
+* HDF5 fix sub array dimension names (since 0.4.2)
 
 0.4.4 (2023-02-06)
 ------------------

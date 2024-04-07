@@ -462,18 +462,20 @@ class H5pyFieldRti(BaseRti):
     def dimensionNames(self):
         """ Returns a list with the dimension names of the underlying HDF5 variable
         """
-        nSubDims = len(self._subArray.shape)
+        datasetDimNames = dimNamesFromDataset(self._h5Dataset)
+        nSubDims = len(self._subArray.shape) - len(datasetDimNames)
         subArrayDims = [SUB_DIM_TEMPLATE.format(dimNr) for dimNr in range(nSubDims)]
-        return dimNamesFromDataset(self._h5Dataset) + subArrayDims
+        return datasetDimNames + subArrayDims
 
 
     @property
     def dimensionPaths(self):
         """ Returns a list with the full path names of the dimensions.
         """
-        nSubDims = len(self._subArray.shape)
+        datasetDimNames = dimNamesFromDataset(self._h5Dataset, forToolTip=True)
+        nSubDims = len(self._subArray.shape) - len(datasetDimNames)
         subArrayDims = [SUB_DIM_TEMPLATE.format(dimNr) for dimNr in range(nSubDims)]
-        return dimNamesFromDataset(self._h5Dataset, forToolTip=True) + subArrayDims
+        return datasetDimNames + subArrayDims
 
 
     @property
