@@ -105,5 +105,5 @@ def wrapHtmlColor(html: str, color: str) -> str:
     """ Wraps HTML in a span with a certain color
     """
     return '<span style="color:{}; white-space:pre;">{}</span>'\
-        .format(color, escape(html, quote=False))
+        .format(color, html)
 

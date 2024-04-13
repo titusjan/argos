@@ -35,14 +35,14 @@ logger = logging.getLogger(__name__)
 class DetailBasePane(QtWidgets.QStackedWidget):
     """ Base class for plugins that show details of the current repository tree item.
         Serves as an interface but can also be instantiated for debugging purposes.
-        A detail pane is a stacked widget; it has a contents page and and error page.
+        A detail pane is a stacked widget; it has a contents page and error page.
     """
     _label = "Details"
 
     ERROR_PAGE_IDX = 0
     CONTENTS_PAGE_IDX = 1
 
-    sigUpdated = QtSignal(bool)  # Parameter indicates sucess
+    sigUpdated = QtSignal(bool)  # Parameter indicates success
 
     def __init__(self, repoTreeView, parent=None):
         """ Constructor takes a reference to the repository tree view it monitors
