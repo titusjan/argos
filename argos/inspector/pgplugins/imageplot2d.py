@@ -712,3 +712,5 @@ class PgImagePlot2d(AbstractInspector):
             else:
                 logger.exception(ex)
 
+    def getPlotItem(self):
+        return self.imagePlotItem

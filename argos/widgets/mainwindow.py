@@ -38,7 +38,7 @@ from argos.info import DEBUGGING, PROJECT_NAME, PROFILING, EXIT_CODE_RESTART
 from argos.inspector.abstract import AbstractInspector, UpdateReason
 from argos.inspector.errormsg import ErrorMsgInspector
 from argos.inspector.selectionpane import InspectorSelectionPane
-from argos.qt import Qt, QUrl, QtCore, QtGui, QtWidgets, QtSignal, QtSlot
+from argos.qt import Qt, QUrl, QtCore, QtGui, QtWidgets, QtSignal, QtSlot, QtSvg
 from argos.qt.misc import getWidgetGeom, getWidgetState
 from argos.reg.basereg import nameToIdentifier
 from argos.reg.dialog import PluginsDialog
@@ -255,6 +255,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.myTestAction.triggered.connect(self.myTest)
         self.addAction(self.myTestAction)
 
+        self.exportImageAction = QtWidgets.QAction("Export Image", self)
+        self.exportImageAction.setToolTip("Export current plot in one of many support raster and vector formats")
+        self.exportImageAction.triggered.connect(self.exportImage)
+        self.addAction(self.exportImageAction)
+
 
     def __setupMenus(self):
         """ Sets up the main menu.
@@ -307,9 +312,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.viewMenu.addSeparator()
         self.panelsMenu = self.viewMenu.addMenu("&Panels")
         self.tableHeadersMenu = self.viewMenu.addMenu("&Table Headers")
+        self.viewMenu.addSeparator()
 
         self.viewMenu.addSeparator()
         self.viewMenu.addAction(self.showTestWalkDialogAction)
+
+        self.viewMenu.addSeparator()
+        self.viewMenu.addAction(self.exportImageAction)
 
         ### Config Menu ###
 
@@ -1044,6 +1053,24 @@ class MainWindow(QtWidgets.QMainWindow):
         self.testWalkDialog.show()
         self.testWalkDialog.raise_()
 
+    def exportImage(self):
+        """ Exports plot to image
+        """
+        logger.info("Exporting plot to image.")
+        logger.info(f'Plot has type : {self.inspector}')
+        plotItem = self.inspector.getPlotItem()
+        exportFileName = 'temp.svg'
+        if isinstance(plotItem, QtWidgets.QWidget): # Qt widgets
+            generator = QtSvg.QSvgGenerator()
+            generator.setFileName(exportFileName)
+            generator.setSize(plotItem.size())
+            generator.setViewBox(plotItem.rect())
+            plotItem.render(generator)
+        else: # pyqtgraph widgets
+            import pyqtgraph as pg
+            import pyqtgraph.exporters
+            self.exporter = pg.exporters.SVGExporter(self.inspector.getPlotItem())
+            self.exporter.export(exportFileName)
 
     @QtSlot()
     def myTest(self):

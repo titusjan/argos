@@ -21,6 +21,7 @@ from __future__ import division, print_function
 
 import logging
 import pyqtgraph as pg
+import pyqtgraph.exporters
 
 from argos.info import DEBUGGING
 from argos.qt import Qt, QtCore, QtWidgets, QtSignal
@@ -117,6 +118,7 @@ class ArgosPgPlotItem(PlotItem):
         """ Is called before destruction. Can be used to clean-up resources
             Could be called 'finalize' but PlotItem already has a close so we reuse that.
         """
+        #self.exporter.export('~/temp.svg')
         logger.debug("Finalizing: {}".format(self))
         super(ArgosPgPlotItem, self).close()
 

@@ -382,6 +382,9 @@ class TableInspector(AbstractInspector):
             else:
                 logger.debug("Can't restore selection")
 
+    def getPlotItem(self):
+        return self.tableView.viewport()
+
 
 
 class TableInspectorModel(QtCore.QAbstractTableModel):

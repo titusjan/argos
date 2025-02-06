@@ -283,3 +283,8 @@ class AbstractInspector(QtWidgets.QStackedWidget):
         """
         self.errorWidget.setError(msg=msg, title=title)
 
+    def getPlotItem(self):
+        """ Override to return the plot widget member
+
+        """
+        raise NotImplementedError()

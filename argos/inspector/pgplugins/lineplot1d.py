@@ -322,3 +322,5 @@ class PgLinePlot1d(AbstractInspector):
             else:
                 logger.exception(ex)
 
+    def getPlotItem(self):
+        return self.plotItem
