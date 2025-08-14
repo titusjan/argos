@@ -9,5 +9,5 @@ else
 fi
 
 #echo ${input_files}
-pylint-3.4 --rcfile=.pylintrc '--msg-template={path}:{line}: [{msg_id} ({symbol}), {obj}] {msg}' ${input_files}
+pylint --rcfile=pylintrc.toml '--msg-template={path}:{line}: [{msg_id} ({symbol}), {obj}] {msg}' ${input_files}
 
