@@ -1,13 +1,16 @@
 # Use this file to create an Anaconda environment with:
-# %> conda env create -f environment.yml [-n better_name]
+# %> mamba env create -f environment.yaml [-n better_name]
 
 # It does NOT install argos itself, so you can use this as a development environment.
 # At the moment Python 3.10 doesn't work with PyQt 5.12, which is the most recent PyQt version
 # on Anaconda.
 
-name: argos
+name: argos-dev
+channels:
+  - conda-forge
+
 dependencies:
-  - python <3.10
+  - python
   - numpy
   - pyqt
   - h5py
@@ -15,9 +18,9 @@ dependencies:
   - pillow
   - scipy
   - pandas
-  - pyqtgraph >= 0.11.0
-  - conda-forge::cmlib >= 1.1.2
-  - conda-forge::pgcolorbar >= 1.1.1
+  - pyqtgraph >= 0.12.4  # Otherwise LinePlot gives The truth value of an array with more than one element is ambiguous.
+  - conda-forge::cmlib >= 1.1.3
+  - conda-forge::pgcolorbar >= 1.1.3
 
 
 # The following dependencies are for development only and therefore have no version number
