@@ -181,7 +181,7 @@ def program_directory() -> str:
     """
     return os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
-
+# TODO: Import look at data at run-time: https://setuptools.pypa.io/en/latest/userguide/datafiles.html#accessing-data-files-at-runtime
 def resource_directory() -> str:
     """ Returns directory with resources (images, style sheets, etc)
     """

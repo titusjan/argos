@@ -24,15 +24,10 @@ DEBUGGING = ('-d' in sys.argv or '--debug' in sys.argv)
 TESTING = True # add some test menu options
 PROFILING = False# and DEBUGGING
 
-VERSION = '0.4.4'
+VERSION = '0.4.5-rc1'
 REPO_NAME = "argos"
 SCRIPT_NAME = "argos"
-PACKAGE_NAME = "argos"
 PROJECT_NAME = "Argos"
-SHORT_DESCRIPTION = "Argos HDF5/NetCDF/scientific data viewer."
-PROJECT_URL = "https://github.com/titusjan/argos"
-AUTHOR = "Pepijn Kenter"
-EMAIL = "titusjan@gmail.com"
 ORGANIZATION_NAME = "titusjan"
 ORGANIZATION_DOMAIN = "titusjan.nl"
 

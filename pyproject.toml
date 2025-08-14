@@ -1,0 +1,115 @@
+# Based on https://packaging.python.org/en/latest/tutorials/packaging-projects/
+# and https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#a-full-example
+
+# You may have to install 'build' with pip first, as it is not available for Python 3.13 on on anaconda.
+# Also install twine to be to upload the package.
+# Note that PiPy recommends upload both the source and wheel distributions.
+#
+#   rm -rf argos.egg-info/ dist/
+#   python -m build
+#   twine check dist/*
+#   twine upload dist/*
+
+
+# TODO: how to handle development installs? Optional dev? Probably at the top in the build-system table
+
+[build-system]
+requires = ["setuptools"]  # TODO: which is minimal. ( >= 77.0.3)
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "argos"
+dynamic = ["version"]
+description = "Data inspector for HDF5, NetCDF4 and other file formats."
+readme = "README.rst"
+license = "GPL-3.0-only"
+license-files = ["LICENSE"]
+authors = [
+    {name = "Pepijn Kenter", email = "titusjan@gmail.com"},
+]
+keywords = [
+    "NetCDF",
+    "HDF5",
+    "plotting",
+    "graphs"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: X11 Applications :: Qt",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Science/Research",
+    "Natural Language :: English",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Utilities",
+]
+
+requires-python = ">=3.7"  # TODO: which version
+
+# Don't require PyQt for two reasons. First users may use PySide2 (although at the moment PySide is
+# not yet working). Second, users may use Anaconda to install PyQt. Anaconda uses a different
+# package name (pyqt) than pip (PyQt5) and the tools can't detect correctly if PyQt has been
+# installed. This leads to trouble. See:
+#   https://www.anaconda.com/using-pip-in-a-conda-environment/
+#   https://github.com/ContinuumIO/anaconda-issues/issues/1554
+# TODO: how to handle PyQt?
+
+# Argos will technically work without PyQtGraph, but the Line-plot and Image-plot plugins will not
+# work (only the Table and Text plugins will work). Therefore, we add PyQtGraph as a required
+# dependency. If you want to run without PyQtGraph, you will have to make minimal environment
+# by hand yourself.
+dependencies = [
+    #"PyQt5 >= 5.15.0", # Don't require PyQt. See comment above
+    "numpy >= 1.11",
+    "pyqtgraph >= 0.12.4",  # Otherwise LinePlot gives The truth value of an array with more than one element is ambiguous.
+    "pgcolorbar >= 1.1.3",
+    "cmlib >= 1.1.3",  # Needed, even if no plugins are installed.
+]
+
+[project.optional-dependencies]
+pyqt5 = ["PyQt5 >= 5.15"]
+all-formats = [
+    "h5py",
+    "netCDF4",
+    "pillow",
+    "scipy",
+    "pandas",
+    "exdir",
+]
+
+
+[project.urls]
+homepage = "https://github.com/titusjan/argos"
+documentation = "https://github.com/titusjan/argos"  # No read-the-docs yet.
+repository = "https://github.com/titusjan/argos.git"
+changelog = "https://github.com/titusjan/argos/blob/master/HISTORY.rst"
+
+[project.scripts]
+argos = "argos.main:main"
+argos_make_wrappers = "argos.argos_make_wrappers:main"  # TODO: still needed?
+
+[project.gui-scripts]
+argosw = "argos.main:main"
+
+#
+# Setup tools specific setting below.
+#
+
+[tool.setuptools.dynamic]
+version = {attr = "argos.__version__"}
+
+# See https://setuptools.pypa.io/en/latest/userguide/package_discovery.html#custom-discovery
+[tool.setuptools.packages.find]
+include = ["argos*"]  # Automatic package discovery was confused by the 'development' dir.
+namespaces = true  # It true (default), directories withouth __init.py__ are scanned as well.
+
+# There are also some data files included from the development dir.
+# These are listed in the manifest.in file, since the development directory is not scanned.
+[tool.setuptools.package-data]
+"argos.img" = ["argos.css"]
+"argos.img.snipicons" = ["*"]
+"argos.utils" = ["default_logging.json"]
