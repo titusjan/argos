@@ -113,3 +113,14 @@ namespaces = true  # It true (default), directories withouth __init.py__ are sca
 "argos.img" = ["argos.css"]
 "argos.img.snipicons" = ["*"]
 "argos.utils" = ["default_logging.json"]
+
+
+[tool.conda-lock]
+channels = ["conda-forge"]
+platforms = ["linux-64", "win-64"]
+default-non-conda-source = "pip"
+
+[tool.conda-lock.dependencies]
+python = "3.12"
+pip = "*"
+
