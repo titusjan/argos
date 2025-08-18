@@ -12,8 +12,6 @@
     in the pyproject.toml file.
 
     Platform independent pacakges are drawn a ellipses. Platform dependent packages are boxes.
-
-    TODO: how to handle nodes that occur in multiple categories (libxcb)
 """
 import copy
 import enum
@@ -26,7 +24,7 @@ import yaml
 # If false, dependencies to '__glibc' are NOT plotted. This makes the graph much smaller
 # and more readable. The __glibc is an implicit package anyway (there is no actual glibc package)
 # Note that the Windows equivalent of glibc (ucrt) *is* installed as a package.
-SHOW_GLIBC = True
+SHOW_GLIBC = False
 
 GLIBC = '__glibc'
 UCRT = 'ucrt'     # Windows equivalent of GLIBC
@@ -64,12 +62,39 @@ def find_implicit_packages(packages: list) -> list[str]:
 
     return implicit_packages
 
+def merge_duplicate_packages(packages: list) -> list[dict]:
+    """ Returns package list where packages that occur in multiple categories are merged.
 
-def set_packege_architecture(packages: list):
-    """ Sets the packages kind for all pakages in the list
-
-        SIDE EFFECT: will add the 'arch' key to all package dicts in the list
+        Returns a copy of the list.
+        The 'category' item is replaced by a 'categories' item in every dict in the list.
     """
+    result = []
+    pkg_dict = {}  # Temporary dict to look up packages
+    for pkg in packages:
+        name = pkg['name']
+        if name in pkg_dict:
+            print(f"Duplicate package name '{name}'")
+            pkg_old = pkg_dict[name]
+            assert pkg['version'] == pkg_old['version']
+            assert pkg['dependencies'] == pkg_old['dependencies']
+            assert pkg['hash']['md5'] == pkg_old['hash']['md5']
+            pkg_old['categories'].append(pkg['category'])
+        else:
+            pkg['categories'] = [pkg['category']]
+            del pkg['category']
+            result.append(pkg)
+            pkg_dict[name] = pkg
+
+    return result
+
+
+def set_package_architecture(packages: list) -> list[dict]:
+    """ Sets the packages kind for all pakages in the list.
+
+        Returns a copy of the list.
+        Will add the 'arch' key to all package dicts in the list
+    """
+    result = []
     for pkg in packages:
         url = pkg['url']
         if url.startswith('https://conda.anaconda.org/conda-forge/noarch'):
@@ -79,14 +104,17 @@ def set_packege_architecture(packages: list):
         elif url.startswith('https://conda.anaconda.org/conda-forge/win-64'):
             pkg['arch'] = Architecture.WINDOWS
         else:
-            raise ValueError(f"Unknown architedture for URL: {url}")
+            raise ValueError(f"Unknown architecture for URL: {url}")
+        result.append(pkg)
+    return result
+
 
 
 def render_packages(packages: list):
 
     dot = graphviz.Digraph(name='Dependencies')
     dot.attr(rankdir='LR')
-    dot.attr('node', shape='box', style='filled')
+    dot.attr('node', shape='box', style='filled', gradientangle='270')
 
     implicit_packages = find_implicit_packages(packages)
 
@@ -97,14 +125,16 @@ def render_packages(packages: list):
 
     for pkg in packages:
         name = pkg['name']
-        category = pkg['category']
+
+        #category = pkg['category']
 
         if name == 'python':
             fill_color = 'pink'
         elif name in implicit_packages:
             fill_color = 'lightgrey'
         else:
-            fill_color =  FILL_COLORS[category]
+            colors = [FILL_COLORS[cat] for cat in pkg['categories']]
+            fill_color = ':'.join(colors) # Gradient fill if multiple categories.
 
         label = f"{name}\n{pkg['version']}"
 
@@ -137,12 +167,16 @@ def main():
     input_file = sys.argv[1]
     dct = load_lock_file(input_file)
 
-    packages = copy.deepcopy(dct['package'])
-    set_packege_architecture(packages)
+    packages = dct['package']
+    packages = set_package_architecture(packages)
+    packages = merge_duplicate_packages(packages)
 
-    print(f"Number of packages: {len(packages)}")
+    print('')
+    print(f"Number of unique packages: {len(packages)}")
     for pkg in packages:
-        print(f"{pkg['name']:25s}  {pkg['version']:15s} {pkg['category']:15s} {pkg['arch']:10s} {pkg['dependencies']}")
+        categories = ','.join(pkg['categories'])
+        print(f"{pkg['name']:25s}  {pkg['version']:15s} {categories:20s} "
+              f"{pkg['arch']:10s} {pkg['dependencies']}")
     print('-' * 100)
 
     dot = render_packages(packages)
