@@ -11,7 +11,8 @@
 #   twine upload dist/*
 
 
-# TODO: how to handle development installs? Optional dev? Probably at the top in the build-system table
+# TODO: how to handle development installs? Optional dev!
+# https://pydevtools.com/handbook/explanation/what-are-optional-dependencies-and-dependency-groups/
 
 [build-system]
 requires = ["setuptools"]  # TODO: which is minimal. ( >= 77.0.3)

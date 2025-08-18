@@ -22,7 +22,7 @@ import graphviz
 import yaml
 
 # If false, dependencies to '__glibc' are NOT plotted. This makes the graph much smaller
-# and more readable. The __glibc is an implicit package anyway (there is no actual glibc package)
+# and more readable. The __glibc is a virtual package anyway (there is no actual glibc package)
 # Note that the Windows equivalent of glibc (ucrt) *is* installed as a package.
 SHOW_GLIBC = False
 
@@ -48,19 +48,21 @@ def load_lock_file(file_name):
         return yaml.safe_load(lock_file)
 
 
-def find_implicit_packages(packages: list) -> list[str]:
+def find_virtual_packages(packages: list) -> list[str]:
     """ Find dependencies that are not an actual package (__glibc, __unix, etc.)
+
+        Type 'conda info' on the shell to see a complete list.
     """
     packages_names = [pkg['name'] for pkg in packages]
 
-    implicit_packages = []
+    virtual_packages = []
     for pkg in packages:
         for dep in pkg['dependencies']:
-            if dep not in packages_names and dep not in implicit_packages:
+            if dep not in packages_names and dep not in virtual_packages:
                 #print(f"Dependency {dep} not in package names")
-                implicit_packages.append(dep)
+                virtual_packages.append(dep)
 
-    return implicit_packages
+    return virtual_packages
 
 def merge_duplicate_packages(packages: list) -> list[dict]:
     """ Returns package list where packages that occur in multiple categories are merged.
@@ -116,10 +118,10 @@ def render_packages(packages: list):
     dot.attr(rankdir='LR')
     dot.attr('node', shape='box', style='filled', gradientangle='270')
 
-    implicit_packages = find_implicit_packages(packages)
+    virtual_packages = find_virtual_packages(packages)
 
-    # Add nodes for implicit packages. Not strictly necessary since GraphVis will draw them anyway.
-    for pkg_name in implicit_packages:
+    # Add nodes for virtual packages. Not strictly necessary since GraphVis will draw them anyway.
+    for pkg_name in virtual_packages:
         if SHOW_GLIBC or pkg_name != GLIBC:
             dot.node(pkg_name)
 
@@ -130,7 +132,7 @@ def render_packages(packages: list):
 
         if name == 'python':
             fill_color = 'pink'
-        elif name in implicit_packages:
+        elif name in virtual_packages:
             fill_color = 'lightgrey'
         else:
             colors = [FILL_COLORS[cat] for cat in pkg['categories']]
