@@ -24,8 +24,13 @@ import graphviz
 import yaml
 
 # If false, dependencies to '__glibc' are NOT plotted. This makes the graph much smaller
-# and more readable. The __glibc is an implicit package anyway.
-SHOW_GLIBC = False
+# and more readable. The __glibc is an implicit package anyway (there is no actual glibc package)
+# Note that the Windows equivalent of glibc (ucrt) *is* installed as a package.
+SHOW_GLIBC = True
+
+GLIBC = '__glibc'
+UCRT = 'ucrt'     # Windows equivalent of GLIBC
+
 
 
 FILL_COLORS = {
@@ -46,7 +51,7 @@ def load_lock_file(file_name):
 
 
 def find_implicit_packages(packages: list) -> list[str]:
-    """ Find packages that are not in the dependencies (__glibc, __unix, etc.)
+    """ Find dependencies that are not an actual package (__glibc, __unix, etc.)
     """
     packages_names = [pkg['name'] for pkg in packages]
 
@@ -71,8 +76,10 @@ def set_packege_architecture(packages: list):
             pkg['arch'] = Architecture.NO_ARCH
         elif url.startswith('https://conda.anaconda.org/conda-forge/linux-64'):
             pkg['arch'] = Architecture.LINUX
+        elif url.startswith('https://conda.anaconda.org/conda-forge/win-64'):
+            pkg['arch'] = Architecture.WINDOWS
         else:
-            raise ValueError(f"Unknown architedture for URL: {url}")  # TODO: windows
+            raise ValueError(f"Unknown architedture for URL: {url}")
 
 
 def render_packages(packages: list):
@@ -85,7 +92,7 @@ def render_packages(packages: list):
 
     # Add nodes for implicit packages. Not strictly necessary since GraphVis will draw them anyway.
     for pkg_name in implicit_packages:
-        if SHOW_GLIBC or pkg_name != '__glibc':
+        if SHOW_GLIBC or pkg_name != GLIBC:
             dot.node(pkg_name)
 
     for pkg in packages:
@@ -102,8 +109,10 @@ def render_packages(packages: list):
         label = f"{name}\n{pkg['version']}"
 
         label_deps = [] # Dependencies added to the label
-        if '__glibc' in pkg['dependencies']:
+        if GLIBC in pkg['dependencies']:
             label_deps.append('glibc')
+        if UCRT in pkg['dependencies']:
+            label_deps.append('ucrt')
         if 'python' in pkg['dependencies']:
             label_deps.append('python')
 
@@ -117,7 +126,7 @@ def render_packages(packages: list):
 
     for pkg in packages:
         for dep, version in pkg['dependencies'].items():
-            if SHOW_GLIBC or dep != '__glibc':
+            if SHOW_GLIBC or dep != GLIBC:
                 dot.edge(pkg['name'], dep)
 
     return dot
