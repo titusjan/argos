@@ -53,14 +53,14 @@ def find_implicit_packages(packages: list) -> list[str]:
     implicit_packages = []
     for pkg in packages:
         for dep in pkg['dependencies']:
-            if dep not in packages_names:
+            if dep not in packages_names and dep not in implicit_packages:
                 #print(f"Dependency {dep} not in package names")
                 implicit_packages.append(dep)
 
     return implicit_packages
 
 
-def set_packege_archicture(packages: list):
+def set_packege_architecture(packages: list):
     """ Sets the packages kind for all pakages in the list
 
         SIDE EFFECT: will add the 'arch' key to all package dicts in the list
@@ -77,11 +77,16 @@ def set_packege_archicture(packages: list):
 
 def render_packages(packages: list):
 
-    implicit_packages = find_implicit_packages(packages)
-
     dot = graphviz.Digraph(name='Dependencies')
     dot.attr(rankdir='LR')
     dot.attr('node', shape='box', style='filled')
+
+    implicit_packages = find_implicit_packages(packages)
+
+    # Add nodes for implicit packages. Not strictly necessary since GraphVis will draw them anyway.
+    for pkg_name in implicit_packages:
+        if SHOW_GLIBC or pkg_name != '__glibc':
+            dot.node(pkg_name)
 
     for pkg in packages:
         name = pkg['name']
@@ -110,8 +115,6 @@ def render_packages(packages: list):
                  fillcolor=fill_color,
                  shape='ellipse' if pkg['arch'] == Architecture.NO_ARCH else 'box')
 
-
-
     for pkg in packages:
         for dep, version in pkg['dependencies'].items():
             if SHOW_GLIBC or dep != '__glibc':
@@ -126,7 +129,7 @@ def main():
     dct = load_lock_file(input_file)
 
     packages = copy.deepcopy(dct['package'])
-    set_packege_archicture(packages)
+    set_packege_architecture(packages)
 
     print(f"Number of packages: {len(packages)}")
     for pkg in packages:
@@ -141,7 +144,7 @@ def main():
     dot.name = stem_name
     dot.comment = f"Dependency table of: {input_file}"
 
-    #print(dot.source)
+    # print(dot.source)
 
     dot.render(filename=output_file, cleanup=True)
     dot.view()
