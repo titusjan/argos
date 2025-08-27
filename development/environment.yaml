@@ -5,13 +5,16 @@
 # At the moment Python 3.10 doesn't work with PyQt 5.12, which is the most recent PyQt version
 # on Anaconda.
 
+
+
+
 name: argos-dev
 channels:
   - conda-forge
 
 dependencies:
   - python
-  - numpy >= 1.11
+  - numpy
   - pyqt
   - h5py
   - netcdf4

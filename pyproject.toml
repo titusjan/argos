@@ -11,11 +11,11 @@
 #   twine upload dist/*
 
 
-# TODO: how to handle development installs? Optional dev!
+# TODO: Use dependency groups for development/build dependencies
 # https://pydevtools.com/handbook/explanation/what-are-optional-dependencies-and-dependency-groups/
 
 [build-system]
-requires = ["setuptools"]  # TODO: which is minimal. ( >= 77.0.3)
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -49,7 +49,7 @@ classifiers = [
     "Topic :: Utilities",
 ]
 
-requires-python = ">=3.7"  # TODO: which version
+requires-python = ">=3.8"  # Might work with older versions.
 
 # Don't require PyQt for two reasons. First users may use PySide2 (although at the moment PySide is
 # not yet working). Second, users may use Anaconda to install PyQt. Anaconda uses a different
@@ -57,7 +57,6 @@ requires-python = ">=3.7"  # TODO: which version
 # installed. This leads to trouble. See:
 #   https://www.anaconda.com/using-pip-in-a-conda-environment/
 #   https://github.com/ContinuumIO/anaconda-issues/issues/1554
-# TODO: how to handle PyQt?
 
 # Argos will technically work without PyQtGraph, but the Line-plot and Image-plot plugins will not
 # work (only the Table and Text plugins will work). Therefore, we add PyQtGraph as a required
@@ -65,7 +64,7 @@ requires-python = ">=3.7"  # TODO: which version
 # by hand yourself.
 dependencies = [
     #"PyQt5 >= 5.15.0", # Don't require PyQt. See comment above
-    "numpy >= 1.11",
+    "numpy >= 1.20",
     "pyqtgraph >= 0.12.4",  # Otherwise LinePlot gives The truth value of an array with more than one element is ambiguous.
     "pgcolorbar >= 1.1.3",
     "cmlib >= 1.1.3",  # Needed, even if no plugins are installed.

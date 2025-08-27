@@ -3,9 +3,8 @@
 History
 =======
 
-Note that version 0.3 will be the last release that supports Python 2.
 
-0.4.5 (2024-??-??)
+0.4.5 (2025-08-27)
 ------------------
 
 * HDF5 dimension label and dimension scale name take precedence when calculating dimension name.
@@ -41,6 +40,7 @@ Note that version 0.3 will be the last release that supports Python 2.
 0.4.0 (2022-02-27)
 ------------------
 
+*   Drop Python 2 support.
 *   Quick Look panel for showing quickly the contents of scalars and small arrays.
 *   The Repository tree shows Kind, Element Type and Summary columns by default.
 *   If one file or directory is opened, or given on the command line, it is expanded.
