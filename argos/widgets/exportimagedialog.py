@@ -72,6 +72,31 @@ class ExportImageDialog(QtWidgets.QDialog):
 
         self.mainLayout.addWidget(self.previewGroupBox)
 
+        # Export options group
+        self.optionsGroupBox = QtWidgets.QGroupBox("Include in Export")
+        self.optionsLayout = QtWidgets.QVBoxLayout()
+        self.optionsGroupBox.setLayout(self.optionsLayout)
+
+        self.includeColorScaleCheckbox = QtWidgets.QCheckBox("Color Scale")
+        self.includeColorScaleCheckbox.setChecked(True)
+        self.includeColorScaleCheckbox.setToolTip("Include the color scale/legend in the exported image")
+        self.includeColorScaleCheckbox.stateChanged.connect(self._updateThumbnail)
+        self.optionsLayout.addWidget(self.includeColorScaleCheckbox)
+
+        self.includeHistogramCheckbox = QtWidgets.QCheckBox("Histogram")
+        self.includeHistogramCheckbox.setChecked(True)
+        self.includeHistogramCheckbox.setToolTip("Include the histogram in the exported image")
+        self.includeHistogramCheckbox.stateChanged.connect(self._updateThumbnail)
+        self.optionsLayout.addWidget(self.includeHistogramCheckbox)
+
+        self.includeCrossHairCheckbox = QtWidgets.QCheckBox("Cross-hair Plots")
+        self.includeCrossHairCheckbox.setChecked(False)
+        self.includeCrossHairCheckbox.setToolTip("Include the cross-hair line plots in the exported image")
+        self.includeCrossHairCheckbox.stateChanged.connect(self._updateThumbnail)
+        self.optionsLayout.addWidget(self.includeCrossHairCheckbox)
+
+        self.mainLayout.addWidget(self.optionsGroupBox)
+
         # Format selection group
         self.formatGroupBox = QtWidgets.QGroupBox("Export Format")
         self.formatLayout = QtWidgets.QVBoxLayout()
@@ -107,7 +132,7 @@ class ExportImageDialog(QtWidgets.QDialog):
         self.exportButton.clicked.connect(self._onExport)
         self.buttonLayout.addWidget(self.exportButton)
 
-        self.resize(QtCore.QSize(400, 400))
+        self.resize(QtCore.QSize(400, 500))
 
     def finalize(self):
         """ Is called before destruction (when closing).
@@ -124,51 +149,141 @@ class ExportImageDialog(QtWidgets.QDialog):
     def _updateThumbnail(self):
         """ Capture the current plot and display it as a thumbnail.
         """
-        plotItem = self._getPlotWidget()
+        pixmap = self._captureCurrentView()
 
-        if plotItem is None:
+        if pixmap is None:
             self.thumbnailLabel.setText("No plot available")
             return
 
         try:
-            pixmap = self._captureAsPixmap(plotItem)
-            if pixmap is not None:
-                # Scale to fit the label while maintaining aspect ratio
-                scaledPixmap = pixmap.scaled(
-                    self.thumbnailLabel.size(),
-                    QtCore.Qt.KeepAspectRatio,
-                    QtCore.Qt.SmoothTransformation
-                )
-                self.thumbnailLabel.setPixmap(scaledPixmap)
-            else:
-                self.thumbnailLabel.setText("Unable to capture plot")
+            # Scale to fit the label while maintaining aspect ratio
+            scaledPixmap = pixmap.scaled(
+                self.thumbnailLabel.size(),
+                QtCore.Qt.KeepAspectRatio,
+                QtCore.Qt.SmoothTransformation
+            )
+            self.thumbnailLabel.setPixmap(scaledPixmap)
         except Exception as ex:
-            logger.warning(f"Failed to capture thumbnail: {ex}")
+            logger.warning(f"Failed to update thumbnail: {ex}")
             self.thumbnailLabel.setText("Preview not available")
 
-    def _captureAsPixmap(self, plotItem):
-        """ Capture the plot item as a QPixmap.
+    def _getExportOptions(self):
+        """ Get the current export options from checkboxes.
         """
-        if self._isPyQtGraphItem(plotItem):
-            return self._capturePyQtGraphAsPixmap(plotItem)
-        elif isinstance(plotItem, QtWidgets.QWidget):
-            return plotItem.grab()
+        return {
+            'colorScale': self.includeColorScaleCheckbox.isChecked(),
+            'histogram': self.includeHistogramCheckbox.isChecked(),
+            'crossHair': self.includeCrossHairCheckbox.isChecked(),
+        }
+
+    def _captureCurrentView(self):
+        """ Capture the current view based on selected options.
+        """
+        inspector = self._mainWindow.inspector
+        options = self._getExportOptions()
+
+        # Check if this is an image plot inspector with the relevant components
+        if hasattr(inspector, 'graphicsLayoutWidget'):
+            return self._captureImagePlotWithOptions(inspector, options)
+        else:
+            # Fall back to basic plot capture
+            plotItem = self._getPlotWidget()
+            if plotItem is not None:
+                return self._captureAsPixmap(plotItem)
+        return None
+
+    def _captureImagePlotWithOptions(self, inspector, options):
+        """ Capture an image plot with the specified options.
+        """
+        try:
+            # Get the graphics layout widget
+            graphicsWidget = inspector.graphicsLayoutWidget
+
+            # If all options are off, just capture the main plot
+            if not any(options.values()):
+                return self._capturePyQtGraphAsPixmap(inspector.imagePlotItem)
+
+            # Temporarily hide/show elements based on options
+            originalStates = {}
+
+            # Handle color legend (contains both color scale and histogram)
+            if hasattr(inspector, 'colorLegendItem'):
+                colorLegend = inspector.colorLegendItem
+                originalStates['colorLegendVisible'] = colorLegend.isVisible()
+
+                # Get original histogram state from the inspector's config
+                if hasattr(inspector, 'config') and hasattr(inspector.config, 'showHistCti'):
+                    originalStates['histogramVisible'] = inspector.config.showHistCti.configValue
+                else:
+                    originalStates['histogramVisible'] = True  # Default assumption
+
+                # Show color legend if either colorScale or histogram is checked
+                shouldShowColorLegend = options['colorScale'] or options['histogram']
+                colorLegend.setVisible(shouldShowColorLegend)
+
+                # Control histogram visibility independently
+                if shouldShowColorLegend and hasattr(colorLegend, 'showHistogram'):
+                    colorLegend.showHistogram(options['histogram'])
+
+            # Handle cross-hair plots - currently just tracking state, not modifying
+            # (modifying the layout items causes issues with restoring the original plot)
+            if hasattr(inspector, 'horCrossPlotItem') and hasattr(inspector, 'horPlotAdded'):
+                originalStates['horPlotAdded'] = inspector.horPlotAdded
+            if hasattr(inspector, 'verCrossPlotItem') and hasattr(inspector, 'verPlotAdded'):
+                originalStates['verPlotAdded'] = inspector.verPlotAdded
+
+            # Capture the widget
+            pixmap = graphicsWidget.grab()
+
+            # Restore original states
+            if hasattr(inspector, 'colorLegendItem'):
+                colorLegend = inspector.colorLegendItem
+                # Restore histogram first (before restoring color legend visibility)
+                if hasattr(colorLegend, 'showHistogram'):
+                    colorLegend.showHistogram(originalStates['histogramVisible'])
+                # Then restore color legend visibility
+                colorLegend.setVisible(originalStates['colorLegendVisible'])
+
+            return pixmap
+
+        except Exception as ex:
+            logger.warning(f"Failed to capture image plot with options: {ex}")
+            # Fall back to capturing just the plot item
+            if hasattr(inspector, 'imagePlotItem'):
+                return self._capturePyQtGraphAsPixmap(inspector.imagePlotItem)
+            return None
+
+    def _captureAsPixmap(self, widget):
+        """ Capture a QWidget as a QPixmap.
+        """
+        if isinstance(widget, QtWidgets.QWidget):
+            return widget.grab()
         return None
 
     def _capturePyQtGraphAsPixmap(self, plotItem):
-        """ Capture a PyQtGraph item as a QPixmap.
+        """ Capture a PyQtGraph plot item as a QPixmap.
         """
         try:
             import pyqtgraph as pg
             import pyqtgraph.exporters
             exporter = pg.exporters.ImageExporter(plotItem)
-            # Export returns a QImage when toBytes=True
             qimage = exporter.export(toBytes=True)
-            # Convert QImage to QPixmap
             pixmap = QtGui.QPixmap.fromImage(qimage)
             return pixmap
         except Exception as ex:
             logger.warning(f"Failed to capture PyQtGraph plot: {ex}")
+            return None
+
+    def _getPlotWidget(self):
+        """ Returns the plot widget from the current inspector.
+        """
+        try:
+            return self._mainWindow.inspector.getPlotItem()
+        except NotImplementedError:
+            logger.warning("Current inspector does not support image export")
+            return None
+        except Exception as ex:
+            logger.error(f"Error getting plot item: {ex}")
             return None
 
     def _getSelectedFormat(self):
@@ -252,18 +367,6 @@ class ExportImageDialog(QtWidgets.QDialog):
 
         self.accept()
 
-    def _getPlotWidget(self):
-        """ Returns the plot widget from the current inspector.
-        """
-        try:
-            return self._mainWindow.inspector.getPlotItem()
-        except NotImplementedError:
-            logger.warning("Current inspector does not support image export")
-            return None
-        except Exception as ex:
-            logger.error(f"Error getting plot item: {ex}")
-            return None
-
     def _isPyQtGraphItem(self, plotItem):
         """ Check if the plot item is a PyQtGraph item.
         """
@@ -279,6 +382,15 @@ class ExportImageDialog(QtWidgets.QDialog):
         """ Export the current visualization as PNG.
         """
         logger.info(f"Exporting to PNG: {filePath}")
+
+        # Try to capture with options first (for image plot inspectors)
+        pixmap = self._captureCurrentView()
+        if pixmap is not None:
+            pixmap.save(filePath, "PNG")
+            logger.info(f"Successfully exported PNG to: {filePath}")
+            return
+
+        # Fall back to basic plot export
         plotItem = self._getPlotWidget()
 
         if plotItem is None:
@@ -296,6 +408,58 @@ class ExportImageDialog(QtWidgets.QDialog):
         """ Export the current visualization as SVG.
         """
         logger.info(f"Exporting to SVG: {filePath}")
+
+        # Try to export with options using the graphics layout widget
+        inspector = self._mainWindow.inspector
+        options = self._getExportOptions()
+
+        if hasattr(inspector, 'graphicsLayoutWidget'):
+            try:
+                import pyqtgraph as pg
+                import pyqtgraph.exporters
+
+                graphicsWidget = inspector.graphicsLayoutWidget
+                originalStates = {}
+
+                # Handle color legend (contains both color scale and histogram)
+                if hasattr(inspector, 'colorLegendItem'):
+                    colorLegend = inspector.colorLegendItem
+                    originalStates['colorLegendVisible'] = colorLegend.isVisible()
+
+                    # Get original histogram state from the inspector's config
+                    if hasattr(inspector, 'config') and hasattr(inspector.config, 'showHistCti'):
+                        originalStates['histogramVisible'] = inspector.config.showHistCti.configValue
+                    else:
+                        originalStates['histogramVisible'] = True  # Default assumption
+
+                    # Show color legend if either colorScale or histogram is checked
+                    shouldShowColorLegend = options['colorScale'] or options['histogram']
+                    colorLegend.setVisible(shouldShowColorLegend)
+
+                    # Control histogram visibility independently
+                    if shouldShowColorLegend and hasattr(colorLegend, 'showHistogram'):
+                        colorLegend.showHistogram(options['histogram'])
+
+                # Handle cross-hair plots - currently just tracking state, not modifying
+                # (modifying the layout items causes issues with restoring the original plot)
+
+                # Use PyQtGraph's SVGExporter on the central item (GraphicsLayout)
+                exporter = pg.exporters.SVGExporter(graphicsWidget.ci)
+                exporter.export(filePath)
+
+                # Restore original states
+                if hasattr(inspector, 'colorLegendItem'):
+                    colorLegend = inspector.colorLegendItem
+                    if hasattr(colorLegend, 'showHistogram'):
+                        colorLegend.showHistogram(originalStates['histogramVisible'])
+                    colorLegend.setVisible(originalStates['colorLegendVisible'])
+
+                logger.info(f"Successfully exported SVG to: {filePath}")
+                return
+            except Exception as ex:
+                logger.warning(f"Failed to export with options, falling back: {ex}")
+
+        # Fall back to basic plot export
         plotItem = self._getPlotWidget()
 
         if plotItem is None:
@@ -317,6 +481,15 @@ class ExportImageDialog(QtWidgets.QDialog):
         """ Export the current visualization as TIFF.
         """
         logger.info(f"Exporting to TIFF: {filePath}")
+
+        # Try to capture with options first (for image plot inspectors)
+        pixmap = self._captureCurrentView()
+        if pixmap is not None:
+            pixmap.save(filePath, "TIFF")
+            logger.info(f"Successfully exported TIFF to: {filePath}")
+            return
+
+        # Fall back to basic plot export
         plotItem = self._getPlotWidget()
 
         if plotItem is None:
