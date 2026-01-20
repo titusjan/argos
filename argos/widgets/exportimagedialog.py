@@ -162,10 +162,10 @@ class ExportImageDialog(QtWidgets.QDialog):
             import pyqtgraph as pg
             import pyqtgraph.exporters
             exporter = pg.exporters.ImageExporter(plotItem)
-            # Export to bytes and convert to QPixmap
-            imageData = exporter.export(toBytes=True)
-            pixmap = QtGui.QPixmap()
-            pixmap.loadFromData(imageData)
+            # Export returns a QImage when toBytes=True
+            qimage = exporter.export(toBytes=True)
+            # Convert QImage to QPixmap
+            pixmap = QtGui.QPixmap.fromImage(qimage)
             return pixmap
         except Exception as ex:
             logger.warning(f"Failed to capture PyQtGraph plot: {ex}")
