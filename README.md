@@ -51,6 +51,22 @@ After that, install the optional dependencies with `conda install <package>` (or
 `pip install <package>` for exdir).
 
 
+#### Installing Argos from Source
+
+To install Argos from a local git clone, first clone the repository:
+
+    %> git clone https://github.com/titusjan/argos.git
+    %> cd argos
+
+Then install using pip. For a regular installation:
+
+    %> pip install .
+
+For development/editable mode (changes to the source code are reflected immediately without reinstalling):
+
+    %> pip install -e .
+
+
 ### Starting Argos
 
 After installation, Argos can be started from the command-line with

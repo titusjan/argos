@@ -89,12 +89,6 @@ class ExportImageDialog(QtWidgets.QDialog):
         self.includeHistogramCheckbox.stateChanged.connect(self._updateThumbnail)
         self.optionsLayout.addWidget(self.includeHistogramCheckbox)
 
-        self.includeCrossHairCheckbox = QtWidgets.QCheckBox("Cross-hair Plots")
-        self.includeCrossHairCheckbox.setChecked(False)
-        self.includeCrossHairCheckbox.setToolTip("Include the cross-hair line plots in the exported image")
-        self.includeCrossHairCheckbox.stateChanged.connect(self._updateThumbnail)
-        self.optionsLayout.addWidget(self.includeCrossHairCheckbox)
-
         self.mainLayout.addWidget(self.optionsGroupBox)
 
         # Format selection group
@@ -173,7 +167,6 @@ class ExportImageDialog(QtWidgets.QDialog):
         return {
             'colorScale': self.includeColorScaleCheckbox.isChecked(),
             'histogram': self.includeHistogramCheckbox.isChecked(),
-            'crossHair': self.includeCrossHairCheckbox.isChecked(),
         }
 
     def _captureCurrentView(self):
@@ -224,13 +217,6 @@ class ExportImageDialog(QtWidgets.QDialog):
                 # Control histogram visibility independently
                 if shouldShowColorLegend and hasattr(colorLegend, 'showHistogram'):
                     colorLegend.showHistogram(options['histogram'])
-
-            # Handle cross-hair plots - currently just tracking state, not modifying
-            # (modifying the layout items causes issues with restoring the original plot)
-            if hasattr(inspector, 'horCrossPlotItem') and hasattr(inspector, 'horPlotAdded'):
-                originalStates['horPlotAdded'] = inspector.horPlotAdded
-            if hasattr(inspector, 'verCrossPlotItem') and hasattr(inspector, 'verPlotAdded'):
-                originalStates['verPlotAdded'] = inspector.verPlotAdded
 
             # Capture the widget
             pixmap = graphicsWidget.grab()
@@ -439,9 +425,6 @@ class ExportImageDialog(QtWidgets.QDialog):
                     # Control histogram visibility independently
                     if shouldShowColorLegend and hasattr(colorLegend, 'showHistogram'):
                         colorLegend.showHistogram(options['histogram'])
-
-                # Handle cross-hair plots - currently just tracking state, not modifying
-                # (modifying the layout items causes issues with restoring the original plot)
 
                 # Use PyQtGraph's SVGExporter on the central item (GraphicsLayout)
                 exporter = pg.exporters.SVGExporter(graphicsWidget.ci)
