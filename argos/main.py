@@ -48,7 +48,7 @@ def browse(filePatterns=None, *,
            qtStyle=None,
            styleSheet=None,
            settingsFile=None,
-           addTestData=True,
+           addTestData=False,
            runTestWalk=False):
     """ Opens the main window(s) for the persistent settings and executes the application.
 
