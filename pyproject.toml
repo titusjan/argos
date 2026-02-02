@@ -78,6 +78,7 @@ all-formats = [
     "pillow",
     "scipy",
     "pandas",
+    "pyarrow",
     "exdir",
 ]
 

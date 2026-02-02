@@ -211,6 +211,16 @@ class RtiRegistry(BaseRegistry):
                        iconColor=ICON_COLOR_PANDAS,
                        globs='*.csv'),
 
+            RtiRegItem('Pandas parquet file',
+                       'argos.repo.rtiplugins.pandasio.PandasParquetFileRti',
+                       iconColor=ICON_COLOR_PANDAS,
+                       globs='*.parquet'),
+
+            RtiRegItem('Pandas ipc file',
+                       'argos.repo.rtiplugins.pandasio.PandasIpcFileRti',
+                       iconColor=ICON_COLOR_PANDAS,
+                       globs='*.ipc'),
+
             RtiRegItem('NumPy binary file',
                        'argos.repo.rtiplugins.numpyio.NumpyBinaryFileRti',
                        iconColor=ICON_COLOR_NUMPY,

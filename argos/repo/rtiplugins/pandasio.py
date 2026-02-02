@@ -333,16 +333,30 @@ class PandasCsvFileRti(PandasDataFrameRti):
 
 
     def _openResources(self):
-        """ Uses pandas.read_cs to open the underlying file
+        """ Uses pandas.read_csv to open the underlying file
         """
         self._ndFrame = pd.read_csv(self._fileName, comment='#')
-
 
     def _closeResources(self):
         """ Closes the underlying resources
         """
         self._ndFrame = None
 
+class PandasParquetFileRti(PandasCsvFileRti):
+    """ Reads a parquet into a Pandas DataFrame.
+    """
+    def _openResources(self):
+        """ Uses pandas.read_parquet to open the underlying file
+        """
+        self._ndFrame = pd.read_parquet(self._fileName)
+
+class PandasIpcFileRti(PandasCsvFileRti):
+    """ Reads a ipc into a Pandas DataFrame.*.csv;*.parquet;
+    """
+    def _openResources(self):
+        """ Uses pandas.read_ipc to open the underlying file
+        """
+        self._ndFrame = pd.read_ipc(self._fileName)
 
 
 class PandasHdfFileRti(BaseRti):
