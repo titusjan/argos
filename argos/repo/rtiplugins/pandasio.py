@@ -356,8 +356,7 @@ class PandasIpcFileRti(PandasCsvFileRti):
     def _openResources(self):
         """ Uses pandas.read_ipc to open the underlying file
         """
-        self._ndFrame = pd.read_ipc(self._fileName)
-
+        self._ndFrame = pd.read_feather(self._fileName)
 
 class PandasHdfFileRti(BaseRti):
     """ Reads Pandas data stored in a HDF-5 file.
