@@ -394,9 +394,6 @@ class PandasHdfFileRti(BaseRti):
             elif isinstance(obj, pd.DataFrame):
                 childItem = PandasDataFrameRti(
                     obj, nodeName=key, fileName=self.fileName, iconColor=self.iconColor)
-            elif isinstance(obj, pd.Panel):
-                childItem = PandasPanelRti(
-                    obj, nodeName=key, fileName=self.fileName, iconColor=self.iconColor)
             else:
                 logger.warning("Unexpected child type: {}".format(type(obj)))
                 childItem = BaseRti(nodeName=key, fileName=self.fileName, iconColor=self.iconColor)
