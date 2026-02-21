@@ -72,7 +72,9 @@ class PandasIndexRti(BaseRti):
         """ Called when using the RTI with an index (e.g. rti[0]).
             Returns np.array(index[idx]), where index is the underlying Pandas index.
         """
-        return np.array(self._index.__getitem__(idx))
+        # First convert the Pandas index to an array before calling __getitem__ because
+        # running PandasIndex.__getitem__ with a tuple may not always work (e.g. with idx = (1,))
+        return np.array(self._index).__getitem__(idx)
 
 
     @property
