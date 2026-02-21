@@ -82,8 +82,8 @@ def dimNamesFromDataset(h5Dataset, forToolTip=False):
         else:
             dimName = os.path.basename(
                 dimLabel or dimScaleName or dimScaleDatasetName or DIM_TEMPLATE.format(dimNr))
-            logger.debug(f"{h5Dataset.name} dim-{dimNr}: label = {dimLabel}, "
-                f"dimScaleName: {dimScaleName}, dimScaleDatasetName: {dimScaleDatasetName} -> {dimName}")
+            # logger.debug(f"{h5Dataset.name} dim-{dimNr}: label = {dimLabel}, "
+            #     f"dimScaleName: {dimScaleName}, dimScaleDatasetName: {dimScaleDatasetName} -> {dimName}")
 
         dimNames.append(dimName)
 

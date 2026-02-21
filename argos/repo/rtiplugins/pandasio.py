@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 class PandasIndexRti(BaseRti):
-    """ Contains a Pandas undex.
+    """ Contains a Pandas index.
     """
     _defaultIconGlyph = RtiIconFactory.DIMENSION
 
