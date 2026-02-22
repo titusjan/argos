@@ -34,6 +34,7 @@ ICON_COLOR_ERROR = RtiIconFactory.COLOR_ERROR
 ICON_COLOR_MEMORY = RtiIconFactory.COLOR_MEMORY
 
 ICON_COLOR_EXDIR = '#00BBFF'
+ICON_COLOR_ARROW = ICON_COLOR_EXDIR  # TODO separate?
 ICON_COLOR_H5PY = '#00EE88'
 ICON_COLOR_NCDF4 = '#0088FF'
 ICON_COLOR_NUMPY = '#987456'
@@ -200,6 +201,12 @@ class RtiRegistry(BaseRegistry):
                        'argos.repo.rtiplugins.ncdf.NcdfFileRti',
                        iconColor=ICON_COLOR_NCDF4,
                        globs='*.nc;*.nc4'),
+
+            RtiRegItem('PyArrow Parquet file',
+                       'argos.repo.rtiplugins.arrowio.ArrowParquetDatasetRti',
+                       iconColor=ICON_COLOR_ARROW,
+                       globs='*.parquet'),
+
 
             RtiRegItem('Pandas HDF file',
                        'argos.repo.rtiplugins.pandasio.PandasHdfFileRti',
