@@ -108,3 +108,8 @@ docs/source/api
 *.h5
 *.nc4
 *.spi
+# Potential data formats
+*.arrow
+*.ipc
+*.feather
+*.parquet
