@@ -24,6 +24,8 @@ import numpy as np
 import numpy.ma as ma
 
 from decimal import Decimal
+
+from argos.info import DEBUGGING
 from argos.repo.memoryrtis import MappingRti, SyntheticArrayRti
 from argos.repo.registry import ICON_COLOR_MEMORY, ICON_COLOR_PANDAS
 from argos.utils.moduleinfo import versionStrToTuple
@@ -117,7 +119,7 @@ def createArgosTestData():
     myDict['ghosts'] = ['Inky', 'Blinky', 'Pinky', 'Clyde']
     myDict['none'] = None
     myDict['numbers'] = {'int': 5, 'float': -6.6, 'large float': 7e77,
-                         '-inf': np.NINF, 'nan': np.nan, 'complex': 8-9j, 'decimal': Decimal(4.444)}
+                         '-inf': np.inf, 'nan': np.nan, 'complex': 8-9j, 'decimal': Decimal(4.444)}
 
     myDict['random'] = np.random.randn(8, 5)
     array = np.arange(240, dtype=np.float64).reshape(8, 30).transpose()
@@ -150,7 +152,7 @@ def createArgosTestData():
 
     inf_array = np.arange(2400, dtype=np.float16).reshape(60, 40)
     inf_array[:, 0:7] = np.inf
-    inf_array[15:45, 10:17] = np.NINF
+    inf_array[15:45, 10:17] = np.inf
     myDict['array_with_infs'] = inf_array
 
     myDict['empty_array1D'] = np.ones(shape=(0, ))
@@ -227,11 +229,13 @@ def addPandasTestData(rti):
     """
     try:
         import pandas as pd
-        from argos.repo.rtiplugins.pandasio import (PandasSeriesRti, PandasDataFrameRti,
-                                                    PandasPanelRti)
+        from argos.repo.rtiplugins.pandasio import PandasSeriesRti, PandasDataFrameRti
     except ImportError as ex:
         logger.warning("No pandas test data created: {}".format(ex))
-        return
+        if DEBUGGING:
+            raise
+        else:
+            return
 
     versionInfo = versionStrToTuple(pd.__version__)
 

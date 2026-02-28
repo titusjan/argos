@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 
 class PandasIndexRti(BaseRti):
-    """ Contains a Pandas undex.
+    """ Contains a Pandas index.
     """
     _defaultIconGlyph = RtiIconFactory.DIMENSION
 
@@ -73,7 +73,9 @@ class PandasIndexRti(BaseRti):
         """ Called when using the RTI with an index (e.g. rti[0]).
             Returns np.array(index[idx]), where index is the underlying Pandas index.
         """
-        return np.array(self._index.__getitem__(idx))
+        # First convert the Pandas index to an array before calling __getitem__ because
+        # running PandasIndex.__getitem__ with a tuple may not always work (e.g. with idx = (1,))
+        return np.array(self._index).__getitem__(idx)
 
 
     @property
@@ -405,9 +407,6 @@ class PandasHdfFileRti(BaseRti):
                     obj, nodeName=key, fileName=self.fileName, iconColor=self.iconColor)
             elif isinstance(obj, pd.DataFrame):
                 childItem = PandasDataFrameRti(
-                    obj, nodeName=key, fileName=self.fileName, iconColor=self.iconColor)
-            elif isinstance(obj, pd.Panel):
-                childItem = PandasPanelRti(
                     obj, nodeName=key, fileName=self.fileName, iconColor=self.iconColor)
             else:
                 logger.warning("Unexpected child type: {}".format(type(obj)))

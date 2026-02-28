@@ -41,7 +41,7 @@ After that, install the optional dependencies with `pip install <package>`.
 
 For convenience, you can install Argos with Qt and all optional dependencies in one command like so:
 
-    %> pip install argos[pyqt,all-formats]
+    %> pip install argos[pyqt5,all-formats]
 
 #### Installing Argos with Anaconda
 

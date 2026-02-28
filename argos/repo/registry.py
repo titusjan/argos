@@ -181,7 +181,7 @@ class RtiRegistry(BaseRegistry):
         """
 
         # Note that when finding a plugin by extension, Argos uses the first one that matches.
-        # Therefore put the defaults at the top of the list. The user can changed the order in the
+        # Therefore put the defaults at the top of the list. The user can change the order in the
         # plugin configuration dialog.
 
         hdfGlobs = '*.hdf5;*.h5;*.h5e;*.he5;*.si5' # hdf extension is for HDF-4
