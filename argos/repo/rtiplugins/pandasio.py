@@ -24,6 +24,7 @@ from __future__ import absolute_import
 import logging
 import numpy as np
 import pandas as pd
+import polars as pl
 
 from pandas.core.generic import NDFrame
 
@@ -335,17 +336,30 @@ class PandasCsvFileRti(PandasDataFrameRti):
 
 
     def _openResources(self):
-        """ Uses pandas.read_cs to open the underlying file
+        """ Uses pandas.read_csv to open the underlying file
         """
         self._ndFrame = pd.read_csv(self._fileName, comment='#')
-
 
     def _closeResources(self):
         """ Closes the underlying resources
         """
         self._ndFrame = None
 
+class PandasParquetFileRti(PandasCsvFileRti):
+    """ Reads a parquet into a Pandas DataFrame.
+    """
+    def _openResources(self):
+        """ Uses pandas.read_parquet to open the underlying file
+        """
+        self._ndFrame = pl.read_parquet(self._fileName).with_columns(pl.col(pl.Int128).cast(pl.Utf8), pl.col(pl.UInt128).cast(pl.Utf8)).to_pandas()
 
+class PandasIpcFileRti(PandasCsvFileRti):
+    """ Reads a ipc into a Pandas DataFrame.*.csv;*.parquet;
+    """
+    def _openResources(self):
+        """ Uses pandas.read_ipc to open the underlying file
+        """
+        self._ndFrame = pl.read_ipc(self._fileName).with_columns(pl.col(pl.Int128).cast(pl.Utf8), pl.col(pl.UInt128).cast(pl.Utf8)).to_pandas()
 
 class PandasHdfFileRti(BaseRti):
     """ Reads Pandas data stored in a HDF-5 file.
