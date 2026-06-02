@@ -49,5 +49,5 @@ rm -rf "${OUTPUT_DIR}"
 export PYTHONPATH="${ROOT_DIR}"
 
 EXCLUDE="${PACKAGE_DIR}/external"
-sphinx-apidoc --no-toc --module-first --separate -o "${OUTPUT_DIR}" "${PACKAGE_DIR}" "${EXCLUDE}"
+uv run sphinx-apidoc --no-toc --module-first --separate -o "${OUTPUT_DIR}" "${PACKAGE_DIR}" "${EXCLUDE}"
 make html

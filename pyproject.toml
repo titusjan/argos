@@ -132,4 +132,10 @@ required-environments = [
     "sys_platform == 'darwin'"
 ]
 
+[dependency-groups]
+dev = [
+    "sphinx>=7.1.2",
+    "sphinx-rtd-theme>=3.1.0",
+]
+
 
