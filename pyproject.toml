@@ -68,6 +68,7 @@ dependencies = [
     "pyqtgraph >= 0.12.4",  # Otherwise LinePlot gives The truth value of an array with more than one element is ambiguous.
     "pgcolorbar >= 1.1.3",
     "cmlib >= 1.1.3",  # Needed, even if no plugins are installed.
+    "polars>=1.8.2",
 ]
 
 [project.optional-dependencies]
@@ -78,6 +79,7 @@ all-formats = [
     "pillow",
     "scipy",
     "pandas",
+    "pyarrow",
     "exdir",
 ]
 
